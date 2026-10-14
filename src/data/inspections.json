@@ -1132,7 +1132,7 @@
     ],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
-    "notes": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity."
+    "notes": "Rejected due to being closed during inspections (**)"
   },
   {
     "id": "dunkin-burgers-insp-1",
@@ -1185,7 +1185,7 @@
     ],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
-    "notes": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity."
+    "notes": "Rejected due to an unacceptable drop in consistent quality (*)"
   },
   {
     "id": "street-food-kitchen-by-eastzeast-insp-1",
@@ -1198,6 +1198,6 @@
     ],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
-    "notes": "Historical street food operation adjacent to eastZeast restaurant; postcode is approximate."
+    "notes": "Rejected due to being closed during inspections (**)"
   }
 ]

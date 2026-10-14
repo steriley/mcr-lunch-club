@@ -55,7 +55,7 @@
               {{ venue.cost }}
             </span>
             <span class="text-[11px] text-stone-500 font-serif-header mt-1">
-              {{ venue.cost === '£' ? 'Budget / Grab' : venue.cost === '££' ? 'Standard Protocol' : 'Payday Splurge' }}
+              {{ venue.cost === '£' ? 'Under £10' : venue.cost === '££' ? 'Above £10' : 'Payday Treat' }}
             </span>
           </div>
         </div>
@@ -242,37 +242,37 @@ const statusBannerStyle = computed(() => {
       return {
         bg: 'bg-[#8b1e22]',
         icon: '🏆',
-        quote: 'Returned to, deservedly — The Pantheon of Sustenance',
+        quote: 'The Highest Honour in Manchester Lunching: The Right to be Returned To',
       };
     case 'Under Consideration':
       return {
         bg: 'bg-[#d97706]',
         icon: '⏳',
-        quote: 'Waiting chamber of judgement — One visit logged, confirmatory audit pending',
+        quote: 'The Waiting Chamber of Judgement — Pending further evidence and appetite',
       };
     case 'To Be Assessed':
       return {
         bg: 'bg-[#2563eb]',
         icon: '📜',
-        quote: 'Pleadings of the petitioner — Awaiting preliminary inspection tribunal',
+        quote: 'Entered the Field of Vision — Fate remains undecided pending inspection',
       };
     case 'If We Must':
       return {
         bg: 'bg-[#854d0e]',
         icon: '🌧',
-        quote: 'Tolerated in direst circumstance — The compromise of despair',
+        quote: 'Not Celebrated, But Tolerated — Acceptable only when circumstance forces our hand',
       };
     case 'Rejected':
       return {
         bg: 'bg-[#374151]',
         icon: '⛔',
-        quote: 'Cast into outer darkness — Condemned by solemn executive decree',
+        quote: 'Removed from the Sacred Lunch Rotation — Returnable only through exceptional redemption',
       };
     case 'Gone But Not Forgotten':
       return {
         bg: 'bg-[#78716c]',
         icon: '🕊',
-        quote: 'Departed, mourned, or defunct — In memoriam of appetites past',
+        quote: 'Doors Closed, But Legend Remains in the Lunching Annals',
       };
     default:
       return {

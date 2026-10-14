@@ -22,37 +22,37 @@ const STATUS_CONFIG: Record<string, { bg: string; text: string; quote: string; i
   'Approved': {
     bg: 'bg-[#8b1e22]',
     text: 'text-amber-100',
-    quote: 'Returned to, deservedly — The Pantheon of Sustenance',
+    quote: 'The Highest Honour in Manchester Lunching: The Right to be Returned To',
     icon: '🏆',
   },
   'Under Consideration': {
     bg: 'bg-[#d97706]',
     text: 'text-amber-100',
-    quote: 'Waiting chamber of judgement — One visit logged, confirmatory audit pending',
+    quote: 'The Waiting Chamber of Judgement — Pending further evidence and appetite',
     icon: '⏳',
   },
   'To Be Assessed': {
     bg: 'bg-[#2563eb]',
     text: 'text-blue-100',
-    quote: 'Pleadings of the petitioner — Awaiting preliminary inspection tribunal',
+    quote: 'Entered the Field of Vision — Fate remains undecided pending inspection',
     icon: '📜',
   },
   'If We Must': {
     bg: 'bg-[#854d0e]',
     text: 'text-yellow-100',
-    quote: 'Tolerated in direst circumstance — The compromise of despair',
+    quote: 'Not Celebrated, But Tolerated — Acceptable only when circumstance forces our hand',
     icon: '🌧',
   },
   'Rejected': {
     bg: 'bg-[#374151]',
     text: 'text-stone-200',
-    quote: 'Cast into outer darkness — Condemned by solemn executive decree',
+    quote: 'Removed from the Sacred Lunch Rotation — Returnable only through exceptional redemption',
     icon: '⛔',
   },
   'Gone But Not Forgotten': {
     bg: 'bg-[#78716c]',
     text: 'text-stone-200',
-    quote: 'Departed, mourned, or defunct — In memoriam of appetites past',
+    quote: 'Doors Closed, But Legend Remains in the Lunching Annals',
     icon: '🕊',
   },
 };
@@ -63,14 +63,19 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
 <Layout title={`${venue.name} — Official Ledger Dossier | MCR Lunch Club`}>
   <div class="max-w-4xl mx-auto px-4 py-8 sm:py-12 w-full space-y-6">
     <!-- Back breadcrumb -->
-    <div class="flex items-center justify-between text-xs font-serif-header">
+    <div class="flex flex-wrap items-center justify-between gap-2 text-xs font-serif-header">
       <a href="/" class="text-[#8b1e22] hover:underline flex items-center gap-1 font-bold">
         <span>←</span>
         <span>Return to Sovereign Map</span>
       </a>
-      <a href={`/tiers/${venue.status.toLowerCase().replace(/\s+/g, '-')}`} class="text-stone-500 hover:text-stone-800">
-        Registry: <span class="underline">{venue.status}</span>
-      </a>
+      <div class="flex items-center gap-3">
+        <a href="/manifesto" class="text-stone-600 hover:text-[#8b1e22] underline decoration-[#c59b27]">
+          📜 Manifesto
+        </a>
+        <a href={`/tiers/${venue.status.toLowerCase().replace(/\s+/g, '-')}`} class="text-stone-500 hover:text-stone-800">
+          Registry: <span class="underline">{venue.status}</span>
+        </a>
+      </div>
     </div>
 
     <!-- Official Dossier Paper Card -->
@@ -98,8 +103,8 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
 
         <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 border-white/20 pt-3 sm:pt-0">
           <span class="text-2xl font-mono font-bold text-[#c59b27]">{venue.cost}</span>
-          <span class="text-[11px] text-stone-300 font-sans uppercase tracking-wider">
-            {venue.cost === '£' ? 'Budget / Grab' : venue.cost === '££' ? 'Standard Protocol' : 'Payday Feast'}
+          <span class="text-[11px] text-stone-200 font-sans uppercase tracking-wider font-semibold">
+            {venue.cost === '£' ? 'Under £10' : venue.cost === '££' ? 'Above £10' : 'Payday Treat'}
           </span>
         </div>
       </div>

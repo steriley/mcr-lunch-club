@@ -50,6 +50,9 @@ export interface Incident {
   value: string;
   context: string;
   outcome: string;
+  location?: string;
+  time?: string;
+  formattedDate?: string;
 }
 
 export interface FilterState {

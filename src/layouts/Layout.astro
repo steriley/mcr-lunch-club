@@ -57,6 +57,17 @@ const currentPath = Astro.url.pathname;
               🗺️ Map
             </a>
             <a
+              href="/manifesto"
+              class={`px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 font-bold ${
+                currentPath === '/manifesto'
+                  ? 'bg-[#c59b27] text-[#1a1e24] border-[#c59b27] shadow-sm'
+                  : 'bg-[#c59b27]/15 text-[#c59b27] border-[#c59b27]/60 hover:bg-[#c59b27] hover:text-[#1a1e24]'
+              }`}
+            >
+              <span>📜</span>
+              <span>The Manifesto</span>
+            </a>
+            <a
               href="/tiers/approved"
               class={`px-2.5 py-1.5 rounded transition-colors ${currentPath.startsWith('/tiers') ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800'}`}
             >
@@ -66,13 +77,7 @@ const currentPath = Astro.url.pathname;
               href="/hall-of-shame"
               class={`px-2.5 py-1.5 rounded transition-colors ${currentPath === '/hall-of-shame' ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800'}`}
             >
-              📜 Hall of Shame
-            </a>
-            <a
-              href="/manifesto"
-              class={`px-2.5 py-1.5 rounded transition-colors ${currentPath === '/manifesto' ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800'}`}
-            >
-              ⚖️ Manifesto
+              🌹 Hall of Shame
             </a>
             <a
               href="/inspections"
@@ -97,16 +102,19 @@ const currentPath = Astro.url.pathname;
           <div class="text-[#c59b27] font-bold tracking-wider uppercase text-[11px]">
             The Sovereign Committee of the Manchester Lunch Club
           </div>
+          <p class="text-stone-300 italic text-xs max-w-xl">
+            “We lunch with purpose. We judge with integrity. We return only where deserved.”
+          </p>
           <p class="text-stone-400 text-[11px] max-w-xl">
-            Established at the Spinningfields Crown Square Quorum. Two separate satisfactory inspections required for Approved status. A single sub-par audit shall precipitate summary eviction to the outer darkness.
+            Independent venues first. Two separate satisfactory inspections required for Approved status. Cost Key: £ (&lt;£10), ££ (&gt;£10), £££ (payday treat).
           </p>
         </div>
 
         <div class="flex flex-col items-center md:items-end gap-1 text-[11px]">
-          <span class="text-stone-300 font-mono">Boundary: 2.5 Miles from Base</span>
+          <span class="text-stone-300 font-mono">Jurisdiction: Central Manchester &bull; 2.5 Miles from Base</span>
           <span class="text-stone-500 italic">No right of appeal is recognized. All decisions of the Chairs are final.</span>
           <div class="flex items-center gap-3 mt-1 text-[10px] text-stone-400">
-            <a href="/manifesto" class="hover:underline">Articles of Governance</a>
+            <a href="/manifesto" class="text-[#c59b27] font-bold hover:underline">The Manifesto</a>
             <span>&bull;</span>
             <a href="/hall-of-shame" class="hover:underline">Bribery Register</a>
             <span>&bull;</span>

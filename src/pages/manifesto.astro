@@ -3,33 +3,45 @@ import Layout from '@/layouts/Layout.astro';
 ---
 
 <Layout title="The Manifesto & Articles of Governance — MCR Lunch Club">
-  <div class="max-w-4xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
+  <div class="max-w-4xl mx-auto px-4 py-8 sm:py-12 w-full space-y-10 font-serif-header">
     <!-- Breadcrumb -->
-    <div class="text-xs">
+    <div class="flex items-center justify-between text-xs">
       <a href="/" class="text-[#8b1e22] hover:underline flex items-center gap-1 font-bold">
         <span>←</span>
         <span>Return to Sovereign Map</span>
       </a>
+      <a href="/hall-of-shame" class="text-stone-600 hover:text-[#8b1e22] flex items-center gap-1 underline decoration-[#c59b27]">
+        <span>🌹</span>
+        <span>Register of Improper Benefit Attempts</span>
+      </a>
     </div>
 
-    <!-- Pompous Header Card -->
+    <!-- Official Header Card -->
     <div class="bg-[#1a1e24] text-[#f9f7f1] p-6 sm:p-10 rounded-2xl border-2 border-[#c59b27] shadow-2xl relative overflow-hidden">
-      <div class="relative z-10 space-y-3">
+      <div class="relative z-10 space-y-4">
         <div class="flex items-center gap-3">
           <span class="text-4xl">📜</span>
           <div>
             <span class="text-xs uppercase tracking-widest text-[#c59b27] font-bold font-mono">
               The Constitutional Code
             </span>
-            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-[#f9f7f1]">
-              The Manifesto of the MCR Lunch Club
+            <h1 class="text-3xl sm:text-5xl font-bold tracking-tight text-[#f9f7f1]">
+              The Manifesto
             </h1>
           </div>
         </div>
 
-        <p class="text-sm sm:text-base text-stone-300 italic pt-1 border-t border-[#c59b27]/30 max-w-3xl">
-          “Adopted by solemn acclamation at Crown Square, Spinningfields. Wherein are set forth the eternal standards of sustenance, the sovereign powers of the Chairs, and the mathematical boundaries of lunchtime dignity.”
+        <p class="text-base sm:text-lg text-amber-100/90 italic pt-2 border-t border-[#c59b27]/30 max-w-3xl leading-relaxed">
+          “The MCR Lunch Club exists to seek out, assess, and celebrate the finest lunch offerings Manchester has to offer.”
         </p>
+
+        <!-- The Sovereign Creed Banner -->
+        <div class="bg-black/40 border border-[#c59b27]/40 p-4 rounded-xl text-center">
+          <span class="text-[11px] uppercase tracking-widest text-[#c59b27] font-mono block mb-1 font-semibold">The Lunch Club Creed</span>
+          <p class="text-lg sm:text-xl font-bold text-white tracking-wide">
+            “We lunch with purpose. We judge with integrity. We return only where deserved.”
+          </p>
+        </div>
       </div>
 
       <div class="absolute -right-8 -bottom-12 text-9xl text-white/5 pointer-events-none select-none">
@@ -37,106 +49,260 @@ import Layout from '@/layouts/Layout.astro';
       </div>
     </div>
 
-    <!-- The Articles -->
+    <!-- The 5 Articles of the Manifesto -->
     <div class="space-y-6 font-sans">
-      <!-- Article I -->
+      <div class="border-b border-[#dcd6c8] pb-2 font-serif-header flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-[#1a1e24] flex items-center gap-2">
+          <span>Articles of Governance</span>
+        </h2>
+        <span class="text-xs font-mono text-stone-500">Official Standards of Sustenance</span>
+      </div>
+
+      <!-- Article I: The Mission & Commitment to Independents -->
       <section class="bg-[#fdfcf9] rounded-2xl border border-[#dcd6c8] p-6 sm:p-8 space-y-3 shadow-sm">
         <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2 font-serif-header">
-          <h2 class="text-lg sm:text-xl font-bold text-[#8b1e22]">
-            Article I: The Sovereign Authority of the Chairs
-          </h2>
+          <h3 class="text-lg sm:text-xl font-bold text-[#8b1e22]">
+            Article I: Independence, Originality & Quality
+          </h3>
           <span class="text-xs font-mono bg-stone-100 text-stone-600 px-2 py-0.5 rounded">Art. 1.0</span>
         </div>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          1.1 The governance of lunchtime within Central Manchester is vested wholly and indivisibly in the Chairs. Their authority is impartial, absolute, and not subject to plebiscite, office polling, or Slack message sentiment analysis.
-        </p>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          1.2 <strong>No Member Voting:</strong> In accordance with the doctrine of culinary purity, democratic voting is strictly forbidden. History proves that democracy at 12:25 invariably descends into an uninspired compromise at Pret A Manger.
-        </p>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          1.3 Members may suggest candidates for entry into <em>To Be Assessed</em>, but the verdict of admission belongs exclusively to the tribunal.
+        <p class="text-base text-stone-800 leading-relaxed font-serif-header">
+          The MCR Lunch Club exists to seek out, assess, and celebrate the finest lunch offerings Manchester has to offer. We are committed to independent venues first and foremost, championing originality, quality, and local character over the predictability of large chains. Exceptions may be made where a new chain enters the area and warrants official verification by the Lunch Club Chairs.
         </p>
       </section>
 
-      <!-- Article II -->
+      <!-- Article II: Consistency & The Two-Visit Rule -->
       <section class="bg-[#fdfcf9] rounded-2xl border border-[#dcd6c8] p-6 sm:p-8 space-y-3 shadow-sm">
         <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2 font-serif-header">
-          <h2 class="text-lg sm:text-xl font-bold text-[#8b1e22]">
-            Article II: The Sacred Two-Visit Rule & Ejection Protocol
-          </h2>
+          <h3 class="text-lg sm:text-xl font-bold text-[#8b1e22]">
+            Article II: Consistency & The Two-Visit Rule
+          </h3>
           <span class="text-xs font-mono bg-stone-100 text-stone-600 px-2 py-0.5 rounded">Art. 2.0</span>
         </div>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          2.1 <strong>The Dual Satisfactory Benchmark:</strong> No establishment shall attain the coveted status of <em>Approved</em> upon a solitary outing. Two separate, chronologically distinct visits conducted under full operational duress (12:15 to 13:00) must receive a formal verdict of <em>Satisfactory</em>.
-        </p>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          2.2 <strong>The Guillotine Clause:</strong> Conversely, while excellence requires patient replication, mediocrity is rewarded swiftly. A single <em>Sub-par</em> audit by an official quorum shall precipitate summary ejection into <em>Rejected</em> or <em>If We Must</em>.
-        </p>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          2.3 Re-evaluation of a condemned venue may not occur until six calendar months have elapsed and a written petition of contrition is filed.
+        <p class="text-base text-stone-800 leading-relaxed font-serif-header">
+          No venue earns its place in the Lunch Club rotation lightly. Each must be visited on at least two separate occasions and deliver satisfactory outcomes on both. Consistency is king. A single sub-par performance constitutes desecration of the Chairs and may result in immediate ejection from the approved list.
         </p>
       </section>
 
-      <!-- Article III -->
-      <section class="bg-[#fdfcf9] rounded-2xl border border-[#dcd6c8] p-6 sm:p-8 space-y-3 shadow-sm">
+      <!-- Article III: Value as a Core Principle & Cost Key -->
+      <section class="bg-[#fdfcf9] rounded-2xl border border-[#dcd6c8] p-6 sm:p-8 space-y-4 shadow-sm">
         <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2 font-serif-header">
-          <h2 class="text-lg sm:text-xl font-bold text-[#8b1e22]">
-            Article III: The 2.5-Mile Boundary & Walking Isochrones
-          </h2>
+          <h3 class="text-lg sm:text-xl font-bold text-[#8b1e22]">
+            Article III: Value as a Core Principle
+          </h3>
           <span class="text-xs font-mono bg-stone-100 text-stone-600 px-2 py-0.5 rounded">Art. 3.0</span>
         </div>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          3.1 <strong>The Spinningfields Datum:</strong> The official origin of all geographical measurement is Crown Square / Hardman Square, Spinningfields (53.47985°N, 2.25105°W).
+        <p class="text-base text-stone-800 leading-relaxed font-serif-header">
+          Value is a core principle. Price range will always be considered alongside quality, portion, and overall experience. We recognise excellence at all price points, but extravagance without merit will not pass inspection.
         </p>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          3.2 <strong>The 2.5-Mile Frontier:</strong> No establishment located beyond 2.5 miles from Base shall be admitted to the official ledger, save by extraordinary dispensation. Butty’s Booth (Old Trafford, 2.2 miles) and Rusholme Chippy (Wilmslow Road, 2.2 miles) demarcate the outermost perimeter of civilized jurisdiction.
-        </p>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          3.3 <strong>Temporal Supremacy:</strong> Decisions are governed by walking minutes, not statutory miles. Isochrones of 5, 10, 15, 20, and 25 minutes are etched upon the map to prevent catastrophic calendar overruns.
-        </p>
+
+        <!-- Official Cost Key Callout -->
+        <div class="bg-amber-50 border-2 border-[#c59b27] p-5 rounded-xl space-y-2 font-serif-header">
+          <div class="flex items-center gap-2 text-xs uppercase tracking-wider font-bold text-[#8b1e22]">
+            <span>🪙</span>
+            <span>Official Cost Key</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-2xs">
+              <span class="text-xl font-bold font-mono text-[#8b1e22] block">£</span>
+              <span class="text-sm font-bold text-stone-900 block mt-0.5">under £10</span>
+              <span class="text-[11px] text-stone-500 font-sans">Everyday budget & grab</span>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-2xs">
+              <span class="text-xl font-bold font-mono text-[#8b1e22] block">££</span>
+              <span class="text-sm font-bold text-stone-900 block mt-0.5">above £10</span>
+              <span class="text-[11px] text-stone-500 font-sans">Standard municipal protocol</span>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-2xs">
+              <span class="text-xl font-bold font-mono text-[#8b1e22] block">£££</span>
+              <span class="text-sm font-bold text-stone-900 block mt-0.5">payday treat</span>
+              <span class="text-[11px] text-stone-500 font-sans">Special celebration feast</span>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <!-- Article IV -->
+      <!-- Article IV: Geographical Jurisdiction & Radius -->
       <section class="bg-[#fdfcf9] rounded-2xl border border-[#dcd6c8] p-6 sm:p-8 space-y-3 shadow-sm">
         <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2 font-serif-header">
-          <h2 class="text-lg sm:text-xl font-bold text-[#8b1e22]">
-            Article IV: The "Eat Like Us" Mandate
-          </h2>
+          <h3 class="text-lg sm:text-xl font-bold text-[#8b1e22]">
+            Article IV: City Centre Jurisdiction & The 2.5-Mile Radius
+          </h3>
           <span class="text-xs font-mono bg-stone-100 text-stone-600 px-2 py-0.5 rounded">Art. 4.0</span>
         </div>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          4.1 Every Approved venue is endowed with an official recommended order known as <em>“Eat Like Us”</em>.
-        </p>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          4.2 This order reflects the optimal balance of flavor, nutritional fortitude, and cost. While personal variation is permitted in private life, during official club sessions members are strongly encouraged to align their palates with the Chairs’ prescribed selection.
+        <p class="text-base text-stone-800 leading-relaxed font-serif-header">
+          Within Manchester city centre, no distance is too far for proper evaluation. Beyond the centre, noteworthy venues within a 2.5-mile radius may be inducted where they demonstrate exceptional standards worthy of special recognition.
         </p>
       </section>
 
-      <!-- Article V -->
+      <!-- Article V: Impartial Authority of the Chairs & Non-Influence -->
       <section class="bg-[#fdfcf9] rounded-2xl border border-[#dcd6c8] p-6 sm:p-8 space-y-3 shadow-sm">
         <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2 font-serif-header">
-          <h2 class="text-lg sm:text-xl font-bold text-[#8b1e22]">
-            Article V: Incorruptibility & The Hall of Shame
-          </h2>
+          <h3 class="text-lg sm:text-xl font-bold text-[#8b1e22]">
+            Article V: Impartial Authority & Integrity of the Chairs
+          </h3>
           <span class="text-xs font-mono bg-stone-100 text-stone-600 px-2 py-0.5 rounded">Art. 5.0</span>
         </div>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          5.1 Any benefit, hospitality, complimentary side portion, or preferential treatment proffered to influence a venue’s tier or rank shall be categorized as <em>Improper Benefit</em>.
+        <p class="text-base text-stone-800 leading-relaxed font-serif-header">
+          The Club is open to all who wish to join in the pursuit of lunchtime excellence. However, members must respect the impartial authority of the Lunch Club Chairs and refrain from attempting to unduly influence their verdicts.
         </p>
-        <p class="text-sm text-stone-800 leading-relaxed font-serif-header">
-          5.2 All such incidents shall be recorded in the <a href="/hall-of-shame" class="text-[#8b1e22] underline font-bold">Hall of Shame</a> with date, value, and names of offending parties. Confiscated tenders, soft drinks, or fries shall be examined and dispatched by the Chairs with solemn impartiality.
-        </p>
+        <div class="pt-2 text-xs font-sans text-stone-600 flex items-center gap-2">
+          <span>⚖️</span>
+          <span>
+            Violations of this principle are logged in the
+            <a href="/hall-of-shame" class="text-[#8b1e22] underline font-bold">Hall of Shame</a>
+            (see the permanent record of the <em>Red Roses for Forgiveness</em> incident).
+          </span>
+        </div>
       </section>
     </div>
 
+    <!-- The Official Codex of Tiers -->
+    <div class="space-y-6 font-sans">
+      <div class="border-b border-[#dcd6c8] pb-2 font-serif-header flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-[#1a1e24] flex items-center gap-2">
+          <span>The Codex of Tiers</span>
+        </h2>
+        <span class="text-xs font-mono text-stone-500">Official Status Classifications</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 font-serif-header">
+        <!-- Approved -->
+        <div class="bg-[#fdfcf9] rounded-2xl border-2 border-[#8b1e22] p-6 space-y-3 shadow-sm flex flex-col justify-between">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-[#8b1e22] font-bold flex items-center gap-1.5">
+                <span>🏆</span>
+                <span>The Sovereign Rotation</span>
+              </span>
+              <a href="/tiers/approved" class="text-xs text-[#8b1e22] hover:underline font-bold">View Tier →</a>
+            </div>
+            <h3 class="text-2xl font-bold text-[#8b1e22]">Approved</h3>
+            <p class="text-sm text-stone-800 leading-relaxed">
+              Venue has survived the Chairs’ scrutiny by delivering consistent, good-value, characterful lunches across multiple visits. It has earned the highest honour in Manchester lunching: <strong>the right to be returned to</strong>.
+            </p>
+          </div>
+          <div class="bg-stone-50 p-3 rounded-xl border border-stone-200 text-xs text-stone-600 font-mono">
+            <strong>Cost Key:</strong> £ (under £10), ££ (above £10), £££ (payday treat)
+          </div>
+        </div>
+
+        <!-- Under Consideration -->
+        <div class="bg-[#fdfcf9] rounded-2xl border-2 border-amber-600 p-6 space-y-3 shadow-sm flex flex-col justify-between">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-amber-700 font-bold flex items-center gap-1.5">
+                <span>⏳</span>
+                <span>The Waiting Chamber</span>
+              </span>
+              <a href="/tiers/under-consideration" class="text-xs text-amber-700 hover:underline font-bold">View Tier →</a>
+            </div>
+            <h3 class="text-2xl font-bold text-amber-700">Under Consideration</h3>
+            <p class="text-sm text-stone-800 leading-relaxed">
+              Venue has shown enough promise to warrant serious attention, but has not yet earned a final verdict from the Chairs. It sits in the waiting chamber of judgement, pending further evidence, appetite, and official lunching scrutiny.
+            </p>
+          </div>
+          <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-xs text-amber-900 font-sans">
+            Pending confirmatory secondary visit & tribunal audit.
+          </div>
+        </div>
+
+        <!-- To Be Assessed -->
+        <div class="bg-[#fdfcf9] rounded-2xl border-2 border-blue-600 p-6 space-y-3 shadow-sm flex flex-col justify-between">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-blue-700 font-bold flex items-center gap-1.5">
+                <span>📜</span>
+                <span>The Field of Vision</span>
+              </span>
+              <a href="/tiers/to-be-assessed" class="text-xs text-blue-700 hover:underline font-bold">View Tier →</a>
+            </div>
+            <h3 class="text-2xl font-bold text-blue-700">To Be Assessed</h3>
+            <p class="text-sm text-stone-800 leading-relaxed">
+              Venue has entered the Lunch Club’s field of vision, but has not yet faced the full judgement of the Chairs. Its fate remains undecided until proper inspection confirms whether it is worthy of approval, rejection, or reluctant tolerance.
+            </p>
+          </div>
+          <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 text-xs text-blue-900 font-sans">
+            Docketed for exploratory inspection by the Committee.
+          </div>
+        </div>
+
+        <!-- If We Must -->
+        <div class="bg-[#fdfcf9] rounded-2xl border-2 border-yellow-700 p-6 space-y-3 shadow-sm flex flex-col justify-between">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-yellow-800 font-bold flex items-center gap-1.5">
+                <span>🌧</span>
+                <span>Reluctant Permission</span>
+              </span>
+              <a href="/tiers/if-we-must" class="text-xs text-yellow-800 hover:underline font-bold">View Tier →</a>
+            </div>
+            <h3 class="text-2xl font-bold text-yellow-800">If We Must</h3>
+            <p class="text-sm text-stone-800 leading-relaxed">
+              Venue is not celebrated, but tolerated: acceptable only when circumstance, convenience, or lack of better options forces the Club’s hand. It remains outside true approval, granted not honour, but reluctant permission.
+            </p>
+          </div>
+          <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-200 text-xs text-yellow-950 font-sans">
+            Reserved for extreme meteorological duress or proximity emergencies.
+          </div>
+        </div>
+
+        <!-- Rejected Venues -->
+        <div class="bg-[#fdfcf9] rounded-2xl border-2 border-stone-800 p-6 space-y-3 shadow-sm md:col-span-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase tracking-wider text-rose-800 font-bold flex items-center gap-1.5">
+              <span>⛔</span>
+              <span>Removed from the Sacred Rotation</span>
+            </span>
+            <a href="/tiers/rejected" class="text-xs text-rose-800 hover:underline font-bold">View Rejected Venues →</a>
+          </div>
+          <h3 class="text-2xl font-bold text-stone-900">Rejected Venues</h3>
+          <p class="text-sm text-stone-800 leading-relaxed">
+            Venue has failed to meet the standards of the Chairs, whether through poor value, weak quality, lack of character, or the unforgivable sin of inconsistency. It is removed from the sacred lunch rotation and may only return through exceptional redemption.
+          </p>
+
+          <!-- Specific Rejected Venues Notice -->
+          <div class="bg-stone-100 border border-stone-300 p-4 rounded-xl space-y-2">
+            <span class="text-xs font-bold text-stone-700 uppercase tracking-wide block">
+              Specific Rejection Censure Entries:
+            </span>
+            <ul class="text-sm font-mono font-bold text-stone-900 space-y-1 list-disc list-inside">
+              <li><a href="/venues/pho-cue" class="hover:underline text-[#8b1e22]">Pho Cue**</a></li>
+              <li><a href="/venues/sqew-shawarma-bar" class="hover:underline text-[#8b1e22]">Sqew Shawarma Bar*</a></li>
+              <li><a href="/venues/street-food-kitchen-by-eastzeast" class="hover:underline text-[#8b1e22]">Street Food Kitchen by eastZeast**</a></li>
+            </ul>
+            <div class="border-t border-stone-300/80 pt-2 text-xs text-stone-600 font-mono italic space-y-0.5">
+              <div>* rejected due to an unacceptable drop in consistent quality</div>
+              <div>** rejected due to being closed during inspections</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gone But Not Forgotten -->
+        <div class="bg-[#fdfcf9] rounded-2xl border-2 border-stone-500 p-6 space-y-3 shadow-sm md:col-span-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase tracking-wider text-stone-600 font-bold flex items-center gap-1.5">
+              <span>🕊</span>
+              <span>In Memoriam</span>
+            </span>
+            <a href="/tiers/gone-but-not-forgotten" class="text-xs text-stone-600 hover:underline font-bold">View In Memoriam →</a>
+          </div>
+          <h3 class="text-2xl font-bold text-stone-700">Gone But Not Forgotten</h3>
+          <p class="text-sm text-stone-800 leading-relaxed">
+            Venue once held a place in the Club’s affections, but is no longer available to be judged, revisited, or relied upon. Its doors may be closed, but its legend remains in the lunching annals.
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- Sign-off seal -->
-    <div class="text-center py-6 font-serif-header text-stone-600 text-xs space-y-1">
-      <div class="text-xl">🔏</div>
+    <div class="text-center py-6 font-serif-header text-stone-600 text-xs space-y-1 border-t border-[#dcd6c8]">
+      <div class="text-2xl">🔏</div>
       <div class="font-bold text-[#8b1e22] uppercase tracking-wider">
         Enacted by Order of The Chairs
       </div>
-      <div class="italic">
-        Chair Fletcher &bull; Vice-Chair Sterling &bull; Comptroller Davies
+      <div class="italic text-stone-500">
+        “We lunch with purpose. We judge with integrity. We return only where deserved.”
       </div>
     </div>
   </div>

@@ -1,17 +1,19 @@
 {
   "id": "inc-001",
-  "date": "2026-07-14",
-  "title": "The Extra Tenders Solicitation",
+  "date": "2026-07-08",
+  "time": "09:00",
+  "formattedDate": "8th July 2026 at 9am",
+  "location": "Manchester Spinningfields",
+  "title": "Red Roses for Forgiveness",
   "peopleInvolved": [
-    "Arthur Pendelton (Junior Member)",
-    "Kitchen Supervisor at Bird of Prey"
+    "@Tom Pritchard (Deactivated)",
+    "@Stephen Riley"
   ],
   "witnesses": [
-    "Chair Fletcher",
-    "Vice-Chair Sterling"
+    "@Tommy Clark"
   ],
-  "benefitOffered": "Complimentary portion of salted butter tenders and honey sriracha dip in exchange for upgrading venue to Approved Rank 1",
-  "value": "£5.20 (and compromised moral standing)",
-  "context": "During the official 12:35 audit, Member Pendelton was observed exchanging conspiratorial glances with kitchen staff and attempting to return to the table with an unauthorised side carton.",
-  "outcome": "Tenders promptly confiscated and consumed as physical evidence by the Chairs. Member Pendelton sentenced to 3 weeks of solo Tesco meal deal lunches."
+  "benefitOffered": "Red roses for forgiveness",
+  "value": "£6.50",
+  "context": "After a termination of position in the lunch club, Tom offered Stephen a bunch of Red M&S Roses in an attempt to have his termination rescinded.",
+  "outcome": "Termination firmly upheld; rescission of termination denied. The bunch of Red M&S Roses was documented into the official archives as the sole recorded improper benefit attempt in Lunch Club history. Impartial authority of the Chairs preserved intact."
 }

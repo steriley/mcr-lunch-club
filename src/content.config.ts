@@ -57,7 +57,10 @@ const incidents = defineCollection({
     benefitOffered: z.string(),
     value: z.string(),
     context: z.string(),
-    outcome: z.string()
+    outcome: z.string(),
+    location: z.string().optional(),
+    time: z.string().optional(),
+    formattedDate: z.string().optional()
   })
 });
 

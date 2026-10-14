@@ -25,6 +25,16 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center flex-wrap gap-2">
+        <!-- Prominent Manifesto Link -->
+        <a
+          href="/manifesto"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1a1e24] hover:bg-[#8b1e22] text-[#c59b27] hover:text-white border border-[#c59b27] text-xs font-bold font-serif-header shadow-sm transition-colors"
+          title="The MCR Lunch Club Manifesto & Articles of Governance"
+        >
+          <span>📜</span>
+          <span>The Manifesto</span>
+        </a>
+
         <!-- 12:25 "Where to today?" helper -->
         <button
           @click="openWhereToday"
@@ -40,7 +50,7 @@
           @click="openSuggestModal"
           class="flex items-center gap-1 px-3 py-1.5 rounded-md bg-white hover:bg-stone-100 text-stone-800 border border-[#dcd6c8] text-xs font-semibold shadow-sm transition-colors"
         >
-          <span>📜</span>
+          <span>📋</span>
           <span>Suggest Venue</span>
         </button>
 
@@ -92,18 +102,24 @@
     <!-- Third Row: Secondary Filters (Cost, Walk Time, Inspected Freshness, Cuisine) -->
     <div class="mt-2.5 pt-2 border-t border-[#dcd6c8]/60 flex flex-wrap items-center justify-between gap-y-2 text-xs">
       <div class="flex flex-wrap items-center gap-3">
-        <!-- Cost Filter -->
+        <!-- Cost Filter with Cost Key tooltips -->
         <div class="flex items-center gap-1">
           <span class="text-stone-500 font-serif-header font-semibold text-[11px]">Cost:</span>
           <div class="inline-flex rounded-md shadow-xs bg-white border border-[#dcd6c8] p-0.5">
             <button
-              v-for="c in ['all', '£', '££', '£££']"
-              :key="c"
-              @click="setCost(c as any)"
-              :class="filters.cost === c ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-700 hover:bg-stone-100'"
+              v-for="c in [
+                { id: 'all', label: 'All', title: 'All price brackets' },
+                { id: '£', label: '£', title: '£: Under £10' },
+                { id: '££', label: '££', title: '££: Above £10' },
+                { id: '£££', label: '£££', title: '£££: Payday treat' }
+              ]"
+              :key="c.id"
+              @click="setCost(c.id as any)"
+              :title="c.title"
+              :class="filters.cost === c.id ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-700 hover:bg-stone-100'"
               class="px-2 py-0.5 text-[11px] rounded transition-colors font-mono"
             >
-              {{ c === 'all' ? 'All' : c }}
+              {{ c.label }}
             </button>
           </div>
         </div>

@@ -29,44 +29,44 @@ const TIER_METADATA: Record<string, { bannerBg: string; quote: string; descripti
   'Approved': {
     bannerBg: 'bg-[#8b1e22]',
     icon: '🏆',
-    quote: 'Returned to, deservedly — The Pantheon of Sustenance',
-    description: 'Establishments that have withstood two independent, satisfactory audits under peak 12:25 conditions. Ranked strictly by walking distance from Spinningfields Base.',
-    rule: 'Two satisfactory inspections required for admission. A single sub-par audit precipitates immediate demotion.',
+    quote: 'The Highest Honour in Manchester Lunching: The Right to be Returned To',
+    description: 'Venue has survived the Chairs’ scrutiny by delivering consistent, good-value, characterful lunches across multiple visits. It has earned the highest honour in Manchester lunching: the right to be returned to.',
+    rule: 'Each must be visited on at least two separate occasions and deliver satisfactory outcomes on both. Consistency is king.',
   },
   'Under Consideration': {
     bannerBg: 'bg-[#d97706]',
     icon: '⏳',
-    quote: 'Waiting chamber of judgement — The Purgatory of Palates',
-    description: 'Establishments that have successfully logged one satisfactory audit and await the mandatory confirmatory secondary audit before admission to the Approved rank.',
-    rule: 'Must complete a second satisfactory audit by a distinct Quorum within 90 days.',
+    quote: 'The Waiting Chamber of Judgement',
+    description: 'Venue has shown enough promise to warrant serious attention, but has not yet earned a final verdict from the Chairs. It sits in the waiting chamber of judgement, pending further evidence, appetite, and official lunching scrutiny.',
+    rule: 'Pending further evidence, appetite, and official lunching scrutiny.',
   },
   'To Be Assessed': {
     bannerBg: 'bg-[#2563eb]',
     icon: '📜',
-    quote: 'Pleadings of the petitioner — The Antechamber of Hope',
-    description: 'Venues formally petitioned by members or observed in passing. Uninspected, unvalidated, but permitted onto the preliminary ledger docket.',
-    rule: 'Members may submit proposals freely; executive inspection priority is determined solely by the Chairs.',
+    quote: 'Entered the Lunch Club’s Field of Vision',
+    description: 'Venue has entered the Lunch Club’s field of vision, but has not yet faced the full judgement of the Chairs. Its fate remains undecided until proper inspection confirms whether it is worthy of approval, rejection, or reluctant tolerance.',
+    rule: 'Fate remains undecided until proper inspection confirms whether it is worthy of approval, rejection, or reluctant tolerance.',
   },
   'If We Must': {
     bannerBg: 'bg-[#854d0e]',
     icon: '🌧',
-    quote: 'Tolerated in direst circumstance — The compromise of despair',
-    description: 'Establishments that do not meet the dignified standards of the Pantheon, but remain geographically convenient during biblical Manchester downpours or logistical catastrophes.',
-    rule: 'Permitted only when unanimous consensus determines alternative journeys impossible.',
+    quote: 'Not Celebrated, But Tolerated',
+    description: 'Venue is not celebrated, but tolerated: acceptable only when circumstance, convenience, or lack of better options forces the Club’s hand. It remains outside true approval, granted not honour, but reluctant permission.',
+    rule: 'Acceptable only when circumstance, convenience, or lack of better options forces the Club’s hand.',
   },
   'Rejected': {
     bannerBg: 'bg-[#374151]',
     icon: '⛔',
-    quote: 'Cast into outer darkness — The Index of the Damned',
-    description: 'Establishments formally condemned by executive decree. Grievous variance in quality, unacceptable queue mechanics, or egregious lack of portion dignity.',
-    rule: 'Re-inspection requests require a formal apology and a mandatory 6-month cooling off period.',
+    quote: 'Removed from the Sacred Lunch Rotation',
+    description: 'Venue has failed to meet the standards of the Chairs, whether through poor value, weak quality, lack of character, or the unforgivable sin of inconsistency. It is removed from the sacred lunch rotation and may only return through exceptional redemption.',
+    rule: 'Removed from the sacred lunch rotation and may only return through exceptional redemption.',
   },
   'Gone But Not Forgotten': {
     bannerBg: 'bg-[#78716c]',
     icon: '🕊',
-    quote: 'Departed, mourned, or defunct — In Memoriam of appetites past',
-    description: 'Historical establishments that once served the Club with honor or intrigue, but have surrendered their premises to redevelopment, rebranding, or closure.',
-    rule: 'Preserved in the ledger in perpetuity as a matter of civic culinary record.',
+    quote: 'Legend Remains in the Lunching Annals',
+    description: 'Venue once held a place in the Club’s affections, but is no longer available to be judged, revisited, or relied upon. Its doors may be closed, but its legend remains in the lunching annals.',
+    rule: 'Preserved in the lunching annals in perpetuity.',
   },
 };
 
@@ -75,6 +75,18 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
 
 <Layout title={`${tierName} Tier — The Official Ledger Registry`}>
   <div class="max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
+    <!-- Breadcrumbs & Manifesto Link -->
+    <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+      <a href="/" class="text-[#8b1e22] hover:underline flex items-center gap-1 font-bold">
+        <span>←</span>
+        <span>Return to Sovereign Map</span>
+      </a>
+      <a href="/manifesto" class="text-stone-600 hover:text-[#8b1e22] flex items-center gap-1.5 underline decoration-[#c59b27] font-semibold">
+        <span>📜</span>
+        <span>Read The Official Manifesto</span>
+      </a>
+    </div>
+
     <!-- Tier Navigation Tabs -->
     <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#dcd6c8] text-xs">
       {allTiers.map((t) => (
@@ -88,7 +100,7 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
     </div>
 
     <!-- Tier Header Hero Card -->
-    <div class={`${meta.bannerBg} text-white p-6 sm:p-8 rounded-2xl border-2 border-[#c59b27] shadow-xl space-y-3`}>
+    <div class={`${meta.bannerBg} text-white p-6 sm:p-8 rounded-2xl border-2 border-[#c59b27] shadow-xl space-y-4`}>
       <div class="flex items-center gap-3">
         <span class="text-3xl sm:text-4xl">{meta.icon}</span>
         <div>
@@ -101,19 +113,65 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
         </div>
       </div>
 
-      <p class="text-base italic text-stone-200 pt-1">
+      <p class="text-base sm:text-lg italic text-[#f9f7f1] pt-1">
         “{meta.quote}”
       </p>
 
-      <p class="text-xs sm:text-sm text-stone-300 font-sans max-w-3xl leading-relaxed pt-2 border-t border-white/20">
+      <p class="text-xs sm:text-sm text-stone-200 font-sans max-w-3xl leading-relaxed pt-2 border-t border-white/20">
         {meta.description}
       </p>
 
-      <div class="inline-flex items-center gap-2 bg-black/30 border border-white/20 px-3 py-1.5 rounded-lg text-xs font-sans text-amber-200">
-        <strong>Constitutional Rule:</strong>
-        <span>{meta.rule}</span>
+      <div class="flex flex-wrap items-center gap-3 pt-1">
+        <div class="inline-flex items-center gap-2 bg-black/30 border border-white/20 px-3 py-1.5 rounded-lg text-xs font-sans text-amber-200">
+          <strong>Constitutional Standard:</strong>
+          <span>{meta.rule}</span>
+        </div>
+
+        {tierName === 'Approved' && (
+          <div class="inline-flex items-center gap-2 bg-black/30 border border-white/20 px-3 py-1.5 rounded-lg text-xs font-sans text-stone-200">
+            <strong class="text-[#c59b27] font-mono">Cost Key:</strong>
+            <span>£ (under £10) &bull; ££ (above £10) &bull; £££ (payday treat)</span>
+          </div>
+        )}
       </div>
     </div>
+
+    <!-- Rejected Venues Specific Censure Notice -->
+    {tierName === 'Rejected' && (
+      <div class="bg-[#1a1e24] text-[#f9f7f1] border-2 border-rose-800 p-6 rounded-2xl shadow-lg space-y-3 font-sans">
+        <div class="flex items-center gap-2 text-rose-400 font-bold uppercase tracking-wider text-xs font-serif-header">
+          <span class="text-lg">⛔</span>
+          <span>Specific Rejection Decrees & Footnotes</span>
+        </div>
+        <p class="text-xs sm:text-sm text-stone-300">
+          The following venues were formally removed from the rotation under specific inspection findings:
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 font-serif-header">
+          <div class="bg-rose-950/60 border border-rose-700/60 p-3 rounded-xl">
+            <a href="/venues/pho-cue" class="font-bold text-white hover:text-amber-300 text-sm block">
+              Pho Cue**
+            </a>
+            <span class="text-[11px] text-rose-300 font-sans block mt-1">Closed during inspections</span>
+          </div>
+          <div class="bg-rose-950/60 border border-rose-700/60 p-3 rounded-xl">
+            <a href="/venues/sqew-shawarma-bar" class="font-bold text-white hover:text-amber-300 text-sm block">
+              Sqew Shawarma Bar*
+            </a>
+            <span class="text-[11px] text-rose-300 font-sans block mt-1">Unacceptable drop in consistent quality</span>
+          </div>
+          <div class="bg-rose-950/60 border border-rose-700/60 p-3 rounded-xl">
+            <a href="/venues/street-food-kitchen-by-eastzeast" class="font-bold text-white hover:text-amber-300 text-sm block">
+              Street Food Kitchen by eastZeast**
+            </a>
+            <span class="text-[11px] text-rose-300 font-sans block mt-1">Closed during inspections</span>
+          </div>
+        </div>
+        <div class="border-t border-white/10 pt-2 text-xs text-stone-400 space-y-0.5 font-mono italic">
+          <div>* rejected due to an unacceptable drop in consistent quality</div>
+          <div>** rejected due to being closed during inspections</div>
+        </div>
+      </div>
+    )}
 
     <!-- Venue Grid -->
     <div class="space-y-4">

@@ -57,12 +57,12 @@
           </div>
         </div>
 
-        <!-- 2. Budget -->
+        <!-- 2. Budget (Cost Key) -->
         <div>
           <label class="block font-serif-header font-bold text-sm text-[#1a1e24] mb-1.5">
-            2. Treasury Impact (Budget):
+            2. Treasury Impact (Cost Key):
           </label>
-          <div class="grid grid-cols-3 gap-2 font-mono">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono">
             <button
               v-for="b in budgetOptions"
               :key="b.val"
@@ -176,8 +176,9 @@ const timeOptions = [
 
 const budgetOptions = [
   { val: 'any', label: 'Any Cost', sub: 'Whatever it takes' },
-  { val: '£', label: '£ (Modest)', sub: 'Pre-payday economy' },
-  { val: '££', label: '££ / £££', sub: 'Comfort or Splurge' },
+  { val: '£', label: '£ (<£10)', sub: 'Under £10' },
+  { val: '££', label: '££ (>£10)', sub: 'Above £10' },
+  { val: '£££', label: '£££ (Payday)', sub: 'Payday treat' },
 ];
 
 const moodOptions = [
@@ -206,7 +207,9 @@ function consultOracle() {
     if (selectedBudget.value === '£') {
       pool = pool.filter((v) => v.cost === '£');
     } else if (selectedBudget.value === '££') {
-      pool = pool.filter((v) => v.cost === '££' || v.cost === '£££');
+      pool = pool.filter((v) => v.cost === '££');
+    } else if (selectedBudget.value === '£££') {
+      pool = pool.filter((v) => v.cost === '£££');
     }
 
     if (selectedMood.value === 'rice') {

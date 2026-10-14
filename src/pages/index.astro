@@ -1,5 +1,6 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import ManifestoBanner from '@/components/islands/ManifestoBanner.vue';
 import FilterBar from '@/components/islands/FilterBar.vue';
 import LunchMap from '@/components/islands/LunchMap.vue';
 import VenueSheet from '@/components/islands/VenueSheet.vue';
@@ -9,6 +10,9 @@ import SuggestModal from '@/components/islands/SuggestModal.vue';
 ---
 
 <Layout title="MCR Lunch Club — The Chairs' Official Ledger Map">
+  <!-- Prominent Manifesto Proclamation Banner -->
+  <ManifestoBanner client:load />
+
   <!-- Top Interactive Filter Controls -->
   <FilterBar client:load />
 
