@@ -1,0 +1,20 @@
+{
+  "id": "crazy-pedros",
+  "name": "Crazy Pedro’s",
+  "slug": "crazy-pedros",
+  "status": "Approved",
+  "rank": 1,
+  "lat": 53.48127,
+  "lng": -2.24983,
+  "distanceMiles": 0.11,
+  "walkingTimeMin": 3,
+  "cost": "££",
+  "cuisine": "Pizza & Slices",
+  "eatLikeUs": "The Chippy Tea slice with curry sauce dip, washed down with a can of Ting. Do not hesitate.",
+  "lastInspectionDate": "2026-09-18",
+  "rejectionReason": null,
+  "address": "55–57 Bridge Street, M3 3BQ",
+  "evidenceUrl": "https://mapcarta.com/N4302638089",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481270%2C-2.249830",
+  "notes": "Late-night slice joint that functions as an emergency lunchtime oasis. Fast, greasy, righteous."
+}

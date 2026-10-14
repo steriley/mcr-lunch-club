@@ -1,0 +1,20 @@
+{
+  "id": "bada-bing",
+  "name": "Bada Bing",
+  "slug": "bada-bing",
+  "status": "Approved",
+  "rank": 29,
+  "lat": 53.484328,
+  "lng": -2.233537,
+  "distanceMiles": 0.78,
+  "walkingTimeMin": 17,
+  "cost": "££",
+  "cuisine": "Italian-American Subs",
+  "eatLikeUs": "The Carmela sub: fennel salami, spicy mortadella, aged provolone, shredded iceberg, and house vinaigrette on focaccia.",
+  "lastInspectionDate": "2026-09-26",
+  "rejectionReason": null,
+  "address": "125 Oldham Street, Manchester M4 1LN",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201LN",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484328%2C-2.233537",
+  "notes": "Oldham Street colossus. Two-fisted Italian-American heavyweight."
+}

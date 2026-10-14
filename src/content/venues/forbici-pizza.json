@@ -1,0 +1,20 @@
+{
+  "id": "forbici-pizza",
+  "name": "Forbici Pizza",
+  "slug": "forbici-pizza",
+  "status": "Under Consideration",
+  "rank": null,
+  "lat": 53.480412,
+  "lng": -2.245284,
+  "distanceMiles": 0.24,
+  "walkingTimeMin": 6,
+  "cost": "££",
+  "cuisine": "Pizza",
+  "eatLikeUs": "The committee signature recommendation for Forbici Pizza: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-09-10",
+  "rejectionReason": null,
+  "address": "86 Cross Street, M2 4LA",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M2%204LA",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480412%2C-2.245284",
+  "notes": ""
+}

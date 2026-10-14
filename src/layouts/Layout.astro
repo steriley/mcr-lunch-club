@@ -1,0 +1,119 @@
+---
+import '@/styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "MCR Lunch Club — The Chairs' Official Ledger",
+  description = "A map of Manchester where every pin is a verdict. Formal, a bit pompous, and actually useful at 12:25."
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang="en" class="h-full bg-[#f9f7f1]">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚖️</text></svg>" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+  </head>
+  <body class="min-h-full flex flex-col text-[#1a1e24] bg-[#f9f7f1] antialiased selection:bg-[#8b1e22] selection:text-white">
+    <!-- Official Ledger Banner & Header -->
+    <header class="bg-[#1a1e24] text-[#f9f7f1] border-b-2 border-[#c59b27] shadow-md sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo & Brand Crest -->
+          <a href="/" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 rounded-full bg-[#8b1e22] border-2 border-[#c59b27] flex items-center justify-center text-lg shadow-inner group-hover:rotate-6 transition-transform">
+              🏛️
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-serif-header text-lg sm:text-xl font-bold tracking-tight text-[#f9f7f1]">
+                  MCR Lunch Club
+                </span>
+                <span class="bg-[#c59b27]/20 border border-[#c59b27]/50 text-[#c59b27] text-[10px] font-mono px-1.5 py-0.5 rounded uppercase tracking-widest hidden sm:inline-block">
+                  Ledger of Verdicts
+                </span>
+              </div>
+              <p class="text-[10px] text-stone-400 font-serif-header italic -mt-1 hidden sm:block">
+                Sovereign culinary jurisdiction across Central Manchester
+              </p>
+            </div>
+          </a>
+
+          <!-- Navigation Links -->
+          <nav class="flex items-center gap-1 sm:gap-2 font-serif-header text-xs sm:text-sm">
+            <a
+              href="/"
+              class={`px-2.5 py-1.5 rounded transition-colors ${currentPath === '/' ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800'}`}
+            >
+              🗺️ Map
+            </a>
+            <a
+              href="/tiers/approved"
+              class={`px-2.5 py-1.5 rounded transition-colors ${currentPath.startsWith('/tiers') ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800'}`}
+            >
+              🏆 Tiers
+            </a>
+            <a
+              href="/hall-of-shame"
+              class={`px-2.5 py-1.5 rounded transition-colors ${currentPath === '/hall-of-shame' ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800'}`}
+            >
+              📜 Hall of Shame
+            </a>
+            <a
+              href="/manifesto"
+              class={`px-2.5 py-1.5 rounded transition-colors ${currentPath === '/manifesto' ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800'}`}
+            >
+              ⚖️ Manifesto
+            </a>
+            <a
+              href="/inspections"
+              class={`px-2.5 py-1.5 rounded transition-colors ${currentPath === '/inspections' ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800'}`}
+            >
+              📋 Audits
+            </a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 flex flex-col">
+      <slot />
+    </main>
+
+    <!-- Pompous Archival Footer -->
+    <footer class="bg-[#16243b] text-stone-400 border-t border-[#c59b27]/30 text-xs py-8 px-4 font-serif-header">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+        <div class="space-y-1">
+          <div class="text-[#c59b27] font-bold tracking-wider uppercase text-[11px]">
+            The Sovereign Committee of the Manchester Lunch Club
+          </div>
+          <p class="text-stone-400 text-[11px] max-w-xl">
+            Established at the Spinningfields Crown Square Quorum. Two separate satisfactory inspections required for Approved status. A single sub-par audit shall precipitate summary eviction to the outer darkness.
+          </p>
+        </div>
+
+        <div class="flex flex-col items-center md:items-end gap-1 text-[11px]">
+          <span class="text-stone-300 font-mono">Boundary: 2.5 Miles from Base</span>
+          <span class="text-stone-500 italic">No right of appeal is recognized. All decisions of the Chairs are final.</span>
+          <div class="flex items-center gap-3 mt-1 text-[10px] text-stone-400">
+            <a href="/manifesto" class="hover:underline">Articles of Governance</a>
+            <span>&bull;</span>
+            <a href="/hall-of-shame" class="hover:underline">Bribery Register</a>
+            <span>&bull;</span>
+            <a href="/api/venues.json" class="hover:underline">Ledger Data (JSON)</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "id": "rajdoot-tandoori",
+  "name": "Rajdoot Tandoori",
+  "slug": "rajdoot-tandoori",
+  "status": "To Be Assessed",
+  "rank": null,
+  "lat": 53.478866,
+  "lng": -2.245652,
+  "distanceMiles": 0.23,
+  "walkingTimeMin": 5,
+  "cost": "££",
+  "cuisine": "Indian",
+  "eatLikeUs": "The committee signature recommendation for Rajdoot Tandoori: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-01-10",
+  "rejectionReason": null,
+  "address": "Carlton House, Albert Square, M2 5PE",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M2%205PE",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478866%2C-2.245652",
+  "notes": ""
+}

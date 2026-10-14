@@ -1,0 +1,20 @@
+{
+  "id": "house-of-social",
+  "name": "House of Social",
+  "slug": "house-of-social",
+  "status": "Under Consideration",
+  "rank": null,
+  "lat": 53.472098,
+  "lng": -2.245402,
+  "distanceMiles": 0.58,
+  "walkingTimeMin": 13,
+  "cost": "££",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for House of Social: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-09-10",
+  "rejectionReason": null,
+  "address": "10 Sir Howard Bernstein Approach, M15 4ND",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M15%204ND",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.472098%2C-2.245402",
+  "notes": ""
+}

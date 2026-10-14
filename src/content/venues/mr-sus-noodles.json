@@ -1,0 +1,20 @@
+{
+  "id": "mr-sus-noodles",
+  "name": "Mr Su’s Noodles",
+  "slug": "mr-sus-noodles",
+  "status": "If We Must",
+  "rank": null,
+  "lat": 53.473111,
+  "lng": -2.237905,
+  "distanceMiles": 0.71,
+  "walkingTimeMin": 16,
+  "cost": "££",
+  "cuisine": "Asian Noodles & Soups",
+  "eatLikeUs": "The committee signature recommendation for Mr Su’s Noodles: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-01-10",
+  "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
+  "address": "Vita Circle Square, 7 Nobel Way, Manchester M1 7FU",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%207FU",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.473111%2C-2.237905",
+  "notes": ""
+}

@@ -1,0 +1,20 @@
+{
+  "id": "soup-co",
+  "name": "Soup Co",
+  "slug": "soup-co",
+  "status": "Under Consideration",
+  "rank": null,
+  "lat": 53.48051,
+  "lng": -2.23931,
+  "distanceMiles": 0.48,
+  "walkingTimeMin": 10,
+  "cost": "££",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for Soup Co: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-09-10",
+  "rejectionReason": null,
+  "address": "City Tower, Mosley Street, M1 4BT",
+  "evidenceUrl": "https://mapcarta.com/N6535193711",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480510%2C-2.239310",
+  "notes": "Mapped Soup Co at Piccadilly Plaza (B4, M1 4AH); previously listed City Tower M1 4BT; check storefront address."
+}

@@ -1,0 +1,20 @@
+{
+  "id": "burgerism",
+  "name": "Burgerism",
+  "slug": "burgerism",
+  "status": "Approved",
+  "rank": 18,
+  "lat": 53.48033,
+  "lng": -2.23671,
+  "distanceMiles": 0.59,
+  "walkingTimeMin": 14,
+  "cost": "£",
+  "cuisine": "Smash Burgers",
+  "eatLikeUs": "The Cheesed burger (double smash patty, American cheese, house sauce), seasoned skin-on fries, and chicken bites.",
+  "lastInspectionDate": "2026-08-31",
+  "rejectionReason": null,
+  "address": "1 Piccadilly Gardens, M1 1RN",
+  "evidenceUrl": "https://mapcarta.com/N6404969129",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480330%2C-2.236710",
+  "notes": "The benchmark Manchester smash burger. Quick collection at Piccadilly Gardens."
+}

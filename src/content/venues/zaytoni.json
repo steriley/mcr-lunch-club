@@ -1,0 +1,20 @@
+{
+  "id": "zaytoni",
+  "name": "Zaytoni",
+  "slug": "zaytoni",
+  "status": "Approved",
+  "rank": 26,
+  "lat": 53.470479,
+  "lng": -2.237062,
+  "distanceMiles": 0.87,
+  "walkingTimeMin": 19,
+  "cost": "£",
+  "cuisine": "Levantine / Shawarma",
+  "eatLikeUs": "Chicken and lamb mixed shawarma wrap toasted on the saj with extra garlic toum and pickled gherkins.",
+  "lastInspectionDate": "2026-06-25",
+  "rejectionReason": null,
+  "address": "127A Oxford Road, M1 7DY",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%207DY",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.470479%2C-2.237062",
+  "notes": "Oxford Road haven of authentic Levantine spices and fragrant spit-roasted meats."
+}

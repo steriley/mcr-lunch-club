@@ -1,0 +1,20 @@
+{
+  "id": "only-pho-u",
+  "name": "Only Pho U",
+  "slug": "only-pho-u",
+  "status": "To Be Assessed",
+  "rank": null,
+  "lat": 53.484806,
+  "lng": -2.250327,
+  "distanceMiles": 0.34,
+  "walkingTimeMin": 8,
+  "cost": "££",
+  "cuisine": "Asian Noodles & Soups",
+  "eatLikeUs": "The committee signature recommendation for Only Pho U: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-01-10",
+  "rejectionReason": null,
+  "address": "102 Chapel Street, Salford M3 5DW",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%205DW",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484806%2C-2.250327",
+  "notes": ""
+}

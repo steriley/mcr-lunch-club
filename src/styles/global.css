@@ -1,0 +1,47 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@layer base {
+  :root {
+    --ledger-parchment: #f9f7f1;
+    --ledger-ink: #1a1e24;
+    --ledger-gold: #c59b27;
+    --ledger-crimson: #8b1e22;
+    --ledger-navy: #16243b;
+    --ledger-border: #dcd6c8;
+  }
+
+  body {
+    background-color: var(--ledger-parchment);
+    color: var(--ledger-ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  h1, h2, h3, .font-serif-header {
+    font-family: "Georgia", "Cambria", "Times New Roman", serif;
+  }
+}
+
+/* Custom Leaflet Map styling to feel like an authoritative archival ledger map */
+.leaflet-container {
+  font-family: inherit;
+  background-color: #f4efe4;
+}
+
+.custom-ledger-pin {
+  background: transparent;
+  border: none;
+}
+
+/* Walking ring labels */
+.ring-label {
+  background: rgba(25, 30, 36, 0.85);
+  color: #f9f7f1;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  border: 1px solid rgba(197, 155, 39, 0.4);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  white-space: nowrap;
+}

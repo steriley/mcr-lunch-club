@@ -1,0 +1,20 @@
+{
+  "id": "wrights-fish-chips",
+  "name": "Wright's Fish & Chips",
+  "slug": "wrights-fish-chips",
+  "status": "Approved",
+  "rank": 6,
+  "lat": 53.48041,
+  "lng": -2.24522,
+  "distanceMiles": 0.24,
+  "walkingTimeMin": 6,
+  "cost": "£",
+  "cuisine": "Traditional Chippy",
+  "eatLikeUs": "Fresh haddock, proper beef dripping chips, marrowfat mushy peas, Irish curry sauce, and a floured barm cake for assembly.",
+  "lastInspectionDate": "2026-09-11",
+  "rejectionReason": null,
+  "address": "86 Cross Street, M2 4LA",
+  "evidenceUrl": "https://mapcarta.com/N9608497683",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480410%2C-2.245220",
+  "notes": "Cross Street heritage institution. The aroma alone commands immediate obedience."
+}

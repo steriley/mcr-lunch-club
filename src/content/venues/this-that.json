@@ -1,0 +1,20 @@
+{
+  "id": "this-that",
+  "name": "This & That",
+  "slug": "this-that",
+  "status": "Approved",
+  "rank": 25,
+  "lat": 53.484561,
+  "lng": -2.238195,
+  "distanceMiles": 0.62,
+  "walkingTimeMin": 14,
+  "cost": "£",
+  "cuisine": "Rice 'n' Three",
+  "eatLikeUs": "Rice 'n' Three: Lamb Nihari, Chicken Tikka Masala, and Chana Dal, accompanied by a fresh tandoori roti.",
+  "lastInspectionDate": "2026-09-22",
+  "rejectionReason": null,
+  "address": "3 Soap Street, M4 1EW",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201EW",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484561%2C-2.238195",
+  "notes": "The foundational temple of Manchester lunchtime culture on Soap Street since 1984."
+}

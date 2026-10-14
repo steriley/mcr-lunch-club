@@ -1,0 +1,20 @@
+{
+  "id": "zaap-thai-street-food",
+  "name": "Zaap Thai Street Food",
+  "slug": "zaap-thai-street-food",
+  "status": "If We Must",
+  "rank": null,
+  "lat": 53.479995,
+  "lng": -2.24703,
+  "distanceMiles": 0.17,
+  "walkingTimeMin": 4,
+  "cost": "££",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for Zaap Thai Street Food: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-01-10",
+  "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
+  "address": "Unit 3, The Lincoln, 9 Brazennose Street, Manchester M2 5AD",
+  "evidenceUrl": "https://zaapthai.co.uk/locations/manchester/",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.479995%2C-2.247030",
+  "notes": ""
+}

@@ -1,0 +1,20 @@
+{
+  "id": "bird-of-prey",
+  "name": "Bird of Prey",
+  "slug": "bird-of-prey",
+  "status": "Approved",
+  "rank": 17,
+  "lat": 53.47348,
+  "lng": -2.23912,
+  "distanceMiles": 0.66,
+  "walkingTimeMin": 15,
+  "cost": "££",
+  "cuisine": "Fried Chicken",
+  "eatLikeUs": "The Messy Bird burger with spicy fried thigh, slaw, house pickles, and seasoned crinkle fries.",
+  "lastInspectionDate": "2026-07-28",
+  "rejectionReason": null,
+  "address": "49A Charles Street, M1 7DF",
+  "evidenceUrl": "https://mapcarta.com/N9764825294",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.473480%2C-2.239120",
+  "notes": "Buttermilk mastery on Charles Street. High crunch-to-meat ratio."
+}

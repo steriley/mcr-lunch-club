@@ -1,0 +1,20 @@
+{
+  "id": "thai-kitchen-no-6",
+  "name": "Thai Kitchen No. 6",
+  "slug": "thai-kitchen-no-6",
+  "status": "To Be Assessed",
+  "rank": null,
+  "lat": 53.48171,
+  "lng": -2.243498,
+  "distanceMiles": 0.34,
+  "walkingTimeMin": 8,
+  "cost": "£££",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for Thai Kitchen No. 6: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-01-10",
+  "rejectionReason": null,
+  "address": "Chapel Walks, M2 1HN",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M2%201HN",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481710%2C-2.243498",
+  "notes": ""
+}

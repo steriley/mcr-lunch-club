@@ -1,0 +1,20 @@
+{
+  "id": "happy-seasons",
+  "name": "Happy Seasons",
+  "slug": "happy-seasons",
+  "status": "Approved",
+  "rank": 12,
+  "lat": 53.47806,
+  "lng": -2.24013,
+  "distanceMiles": 0.47,
+  "walkingTimeMin": 10,
+  "cost": "££",
+  "cuisine": "Cantonese BBQ",
+  "eatLikeUs": "Three-roast meat platter (Crispy Pork Belly, Roast Duck, Char Siu) on boiled rice with supreme ginger-scallion sauce.",
+  "lastInspectionDate": "2026-09-14",
+  "rejectionReason": null,
+  "address": "59 Faulkner Street, M1 4FF",
+  "evidenceUrl": "https://mapcarta.com/N2692887693",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478060%2C-2.240130",
+  "notes": "Chinatown royalty. Queue strictly commences at 11:50; tardiness results in forfeit."
+}

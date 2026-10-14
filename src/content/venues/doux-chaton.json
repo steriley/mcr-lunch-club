@@ -1,0 +1,20 @@
+{
+  "id": "doux-chaton",
+  "name": "Doux Chaton",
+  "slug": "doux-chaton",
+  "status": "If We Must",
+  "rank": null,
+  "lat": 53.476357,
+  "lng": -2.250474,
+  "distanceMiles": 0.24,
+  "walkingTimeMin": 6,
+  "cost": "££",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for Doux Chaton: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-01-10",
+  "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
+  "address": "265-267 Deansgate, Manchester M3 4EW",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%204EW",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.476357%2C-2.250474",
+  "notes": "The Great Northern website reports the Manchester site is now closed."
+}

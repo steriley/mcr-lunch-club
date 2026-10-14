@@ -1,0 +1,20 @@
+{
+  "id": "almost-famous",
+  "name": "Almost Famous",
+  "slug": "almost-famous",
+  "status": "Gone But Not Forgotten",
+  "rank": null,
+  "lat": 53.47755,
+  "lng": -2.24881,
+  "distanceMiles": 0.18,
+  "walkingTimeMin": 5,
+  "cost": "££",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for Almost Famous: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-01-10",
+  "rejectionReason": null,
+  "address": "Former Deansgate/Great Northern site, 235 Deansgate, Manchester M3 4FN",
+  "evidenceUrl": "https://mapcarta.com/N2775492848",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.477550%2C-2.248810",
+  "notes": "Mapped historical Great Northern branch. Northern Quarter branch at 49-51 Edge Street M4 1HW is operating again in 2026. | Historical Deansgate/Great Northern POI"
+}

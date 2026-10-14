@@ -1,0 +1,201 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import venuesData from '@/data/venues.json';
+import type { TierStatus } from '@/types';
+
+export async function getStaticPaths() {
+  const tiers: { slug: string; name: TierStatus }[] = [
+    { slug: 'approved', name: 'Approved' },
+    { slug: 'under-consideration', name: 'Under Consideration' },
+    { slug: 'to-be-assessed', name: 'To Be Assessed' },
+    { slug: 'if-we-must', name: 'If We Must' },
+    { slug: 'rejected', name: 'Rejected' },
+    { slug: 'gone-but-not-forgotten', name: 'Gone But Not Forgotten' },
+  ];
+
+  return tiers.map((t) => {
+    const list = venuesData.filter((v) => v.status === t.name);
+    return {
+      params: { tier: t.slug },
+      props: { tierName: t.name, venues: list, allTiers: tiers },
+    };
+  });
+}
+
+const { tierName, venues, allTiers } = Astro.props;
+const currentTierSlug = Astro.params.tier;
+
+const TIER_METADATA: Record<string, { bannerBg: string; quote: string; description: string; rule: string; icon: string }> = {
+  'Approved': {
+    bannerBg: 'bg-[#8b1e22]',
+    icon: '🏆',
+    quote: 'Returned to, deservedly — The Pantheon of Sustenance',
+    description: 'Establishments that have withstood two independent, satisfactory audits under peak 12:25 conditions. Ranked strictly by walking distance from Spinningfields Base.',
+    rule: 'Two satisfactory inspections required for admission. A single sub-par audit precipitates immediate demotion.',
+  },
+  'Under Consideration': {
+    bannerBg: 'bg-[#d97706]',
+    icon: '⏳',
+    quote: 'Waiting chamber of judgement — The Purgatory of Palates',
+    description: 'Establishments that have successfully logged one satisfactory audit and await the mandatory confirmatory secondary audit before admission to the Approved rank.',
+    rule: 'Must complete a second satisfactory audit by a distinct Quorum within 90 days.',
+  },
+  'To Be Assessed': {
+    bannerBg: 'bg-[#2563eb]',
+    icon: '📜',
+    quote: 'Pleadings of the petitioner — The Antechamber of Hope',
+    description: 'Venues formally petitioned by members or observed in passing. Uninspected, unvalidated, but permitted onto the preliminary ledger docket.',
+    rule: 'Members may submit proposals freely; executive inspection priority is determined solely by the Chairs.',
+  },
+  'If We Must': {
+    bannerBg: 'bg-[#854d0e]',
+    icon: '🌧',
+    quote: 'Tolerated in direst circumstance — The compromise of despair',
+    description: 'Establishments that do not meet the dignified standards of the Pantheon, but remain geographically convenient during biblical Manchester downpours or logistical catastrophes.',
+    rule: 'Permitted only when unanimous consensus determines alternative journeys impossible.',
+  },
+  'Rejected': {
+    bannerBg: 'bg-[#374151]',
+    icon: '⛔',
+    quote: 'Cast into outer darkness — The Index of the Damned',
+    description: 'Establishments formally condemned by executive decree. Grievous variance in quality, unacceptable queue mechanics, or egregious lack of portion dignity.',
+    rule: 'Re-inspection requests require a formal apology and a mandatory 6-month cooling off period.',
+  },
+  'Gone But Not Forgotten': {
+    bannerBg: 'bg-[#78716c]',
+    icon: '🕊',
+    quote: 'Departed, mourned, or defunct — In Memoriam of appetites past',
+    description: 'Historical establishments that once served the Club with honor or intrigue, but have surrendered their premises to redevelopment, rebranding, or closure.',
+    rule: 'Preserved in the ledger in perpetuity as a matter of civic culinary record.',
+  },
+};
+
+const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
+---
+
+<Layout title={`${tierName} Tier — The Official Ledger Registry`}>
+  <div class="max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
+    <!-- Tier Navigation Tabs -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#dcd6c8] text-xs">
+      {allTiers.map((t) => (
+        <a
+          href={`/tiers/${t.slug}`}
+          class={`px-3 py-1.5 rounded-full whitespace-nowrap transition-colors border font-serif-header ${t.slug === currentTierSlug ? 'bg-[#1a1e24] text-[#c59b27] border-[#c59b27] font-bold shadow-xs' : 'bg-white text-stone-700 hover:bg-stone-100 border-[#dcd6c8]'}`}
+        >
+          {t.name}
+        </a>
+      ))}
+    </div>
+
+    <!-- Tier Header Hero Card -->
+    <div class={`${meta.bannerBg} text-white p-6 sm:p-8 rounded-2xl border-2 border-[#c59b27] shadow-xl space-y-3`}>
+      <div class="flex items-center gap-3">
+        <span class="text-3xl sm:text-4xl">{meta.icon}</span>
+        <div>
+          <span class="text-xs uppercase tracking-widest text-[#f9f7f1] font-bold font-mono">
+            Official Tier Classification
+          </span>
+          <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+            {tierName}
+          </h1>
+        </div>
+      </div>
+
+      <p class="text-base italic text-stone-200 pt-1">
+        “{meta.quote}”
+      </p>
+
+      <p class="text-xs sm:text-sm text-stone-300 font-sans max-w-3xl leading-relaxed pt-2 border-t border-white/20">
+        {meta.description}
+      </p>
+
+      <div class="inline-flex items-center gap-2 bg-black/30 border border-white/20 px-3 py-1.5 rounded-lg text-xs font-sans text-amber-200">
+        <strong>Constitutional Rule:</strong>
+        <span>{meta.rule}</span>
+      </div>
+    </div>
+
+    <!-- Venue Grid -->
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2 font-serif-header">
+        <h2 class="text-xl font-bold text-[#1a1e24] flex items-center gap-2">
+          <span>Enrolled Establishments</span>
+          <span class="text-xs font-mono font-bold bg-[#8b1e22] text-white px-2 py-0.5 rounded">
+            {venues.length} Venues
+          </span>
+        </h2>
+        <span class="text-xs text-stone-500 font-sans">
+          Origin: Spinningfields Base Quorum
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {venues.map((venue) => (
+          <div class="bg-[#fdfcf9] rounded-xl border border-[#dcd6c8] shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between font-sans">
+            <div>
+              <div class="flex items-start justify-between gap-2 border-b border-stone-100 pb-2 mb-2 font-serif-header">
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    {venue.rank && venue.status === 'Approved' && (
+                      <span class="text-xs font-mono font-bold bg-[#c59b27] text-[#1a1e24] px-1.5 py-0.2 rounded">
+                        #{venue.rank}
+                      </span>
+                    )}
+                    <h3 class="font-bold text-base text-[#1a1e24] leading-snug">
+                      {venue.name}
+                    </h3>
+                  </div>
+                  <span class="text-[11px] text-stone-500 font-sans block mt-0.5">
+                    {venue.cuisine}
+                  </span>
+                </div>
+
+                <span class="font-mono font-bold text-sm text-[#8b1e22] bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
+                  {venue.cost}
+                </span>
+              </div>
+
+              <!-- Distance / Walk time -->
+              <div class="flex items-center justify-between text-xs text-stone-700 bg-[#f4efe4] p-2 rounded mb-3 font-mono">
+                <span>🚶 {venue.walkingTimeMin} min walk</span>
+                <span>📏 {venue.distanceMiles} miles</span>
+              </div>
+
+              <!-- Eat like us snippet -->
+              <div class="text-xs text-stone-800 bg-amber-50/60 p-2.5 rounded border border-amber-200/60 mb-3">
+                <strong class="font-serif-header text-[#8b1e22] text-[11px] block">Eat Like Us:</strong>
+                <p class="italic text-[11px] text-stone-700 line-clamp-2 mt-0.5 font-serif-header">
+                  “{venue.eatLikeUs}”
+                </p>
+              </div>
+
+              {venue.rejectionReason && (
+                <div class="text-[11px] text-rose-900 bg-rose-50 p-2 rounded border border-rose-200 mb-3">
+                  <strong class="block">Censure Note:</strong>
+                  <p class="italic line-clamp-2">{venue.rejectionReason}</p>
+                </div>
+              )}
+            </div>
+
+            <div class="pt-3 border-t border-stone-100 flex items-center justify-between gap-2 text-xs">
+              <a
+                href={`/venues/${venue.slug}`}
+                class="flex-1 bg-[#1a1e24] hover:bg-[#8b1e22] text-white py-1.5 px-3 rounded font-serif-header font-semibold text-center transition-colors"
+              >
+                Dossier 📜
+              </a>
+              <a
+                href={venue.mapSearchLink}
+                target="_blank"
+                class="p-1.5 text-stone-600 hover:text-stone-900 bg-white border border-[#dcd6c8] rounded text-center"
+                title="Directions in Google Maps"
+              >
+                🧭
+              </a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</Layout>

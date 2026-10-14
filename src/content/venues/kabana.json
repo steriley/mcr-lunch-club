@@ -1,0 +1,20 @@
+{
+  "id": "kabana",
+  "name": "Kabana",
+  "slug": "kabana",
+  "status": "Approved",
+  "rank": 27,
+  "lat": 53.483791,
+  "lng": -2.23694,
+  "distanceMiles": 0.64,
+  "walkingTimeMin": 14,
+  "cost": "£",
+  "cuisine": "Rice 'n' Three",
+  "eatLikeUs": "Karahi Gosht and Daal over saffron basmati rice with freshly slapped roti.",
+  "lastInspectionDate": "2026-01-20",
+  "rejectionReason": null,
+  "address": "52 Back Turner Street, M4 1FR",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201FR",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483791%2C-2.236940",
+  "notes": "Northern Quarter backstreet legend. OVERDUE FOR RE-INSPECTION (Article 7 warning issued)."
+}

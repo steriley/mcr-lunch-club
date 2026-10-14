@@ -1,0 +1,25 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import FilterBar from '@/components/islands/FilterBar.vue';
+import LunchMap from '@/components/islands/LunchMap.vue';
+import VenueSheet from '@/components/islands/VenueSheet.vue';
+import WhereToday from '@/components/islands/WhereToday.vue';
+import InspectionModal from '@/components/islands/InspectionModal.vue';
+import SuggestModal from '@/components/islands/SuggestModal.vue';
+---
+
+<Layout title="MCR Lunch Club — The Chairs' Official Ledger Map">
+  <!-- Top Interactive Filter Controls -->
+  <FilterBar client:load />
+
+  <!-- Main Map Workspace -->
+  <section class="flex-1 relative w-full h-[calc(100vh-140px)] min-h-[550px] flex flex-col">
+    <LunchMap client:load />
+
+    <!-- Modals & Slide-up Panels -->
+    <VenueSheet client:load />
+    <WhereToday client:idle />
+    <InspectionModal client:idle />
+    <SuggestModal client:idle />
+  </section>
+</Layout>

@@ -1,0 +1,20 @@
+{
+  "id": "double-zero",
+  "name": "Double Zero",
+  "slug": "double-zero",
+  "status": "Approved",
+  "rank": 10,
+  "lat": 53.480187,
+  "lng": -2.241139,
+  "distanceMiles": 0.41,
+  "walkingTimeMin": 9,
+  "cost": "££",
+  "cuisine": "Neapolitan Pizza",
+  "eatLikeUs": "Diavola with nduja and hot honey drizzle. Crust blistering is exemplary.",
+  "lastInspectionDate": "2026-09-02",
+  "rejectionReason": null,
+  "address": "55 Spring Gardens, M2 2BY",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M2%202BY",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480187%2C-2.241139",
+  "notes": "Spring Gardens outpost delivers blistered perfection. Fast 90-second bake."
+}

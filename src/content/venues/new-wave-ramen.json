@@ -1,0 +1,20 @@
+{
+  "id": "new-wave-ramen",
+  "name": "New Wave Ramen",
+  "slug": "new-wave-ramen",
+  "status": "Approved",
+  "rank": 9,
+  "lat": 53.48043,
+  "lng": -2.24434,
+  "distanceMiles": 0.28,
+  "walkingTimeMin": 6,
+  "cost": "££",
+  "cuisine": "Ramen",
+  "eatLikeUs": "Shoyu paitan ramen, double chashu pork, ajitsuke tamago, nori, and a side of chili rayu. Slurp with dignity.",
+  "lastInspectionDate": "2026-08-19",
+  "rejectionReason": null,
+  "address": "16 Tib Lane, M2 4JB",
+  "evidenceUrl": "https://mapcarta.com/N9604296155",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480430%2C-2.244340",
+  "notes": "Precision broth chemistry on Tib Lane. Deep contemplation guaranteed."
+}

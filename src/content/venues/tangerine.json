@@ -1,0 +1,20 @@
+{
+  "id": "tangerine",
+  "name": "Tangerine",
+  "slug": "tangerine",
+  "status": "Rejected",
+  "rank": null,
+  "lat": 53.48266,
+  "lng": -2.253721,
+  "distanceMiles": 0.22,
+  "walkingTimeMin": 5,
+  "cost": "££",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for Tangerine: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2025-11-20",
+  "rejectionReason": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity.",
+  "address": "Arch 60-61, 13-17 New Bailey Street, Salford M3 5FS",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%205FS",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482660%2C-2.253721",
+  "notes": ""
+}

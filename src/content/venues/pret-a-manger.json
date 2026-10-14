@@ -1,0 +1,20 @@
+{
+  "id": "pret-a-manger",
+  "name": "Pret A Manger",
+  "slug": "pret-a-manger",
+  "status": "Rejected",
+  "rank": null,
+  "lat": 53.479607,
+  "lng": -2.252211,
+  "distanceMiles": 0.05,
+  "walkingTimeMin": 2,
+  "cost": "£",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for Pret A Manger: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2025-11-20",
+  "rejectionReason": "PROVISIONAL BRANCH: 4 Hardman Square, Spinningfields, chosen as a plausible central location; the Lunch Club did not specify which Pret. This is the M3 3EB postcode centroid, not a verified shop doorway; please confirm branch.",
+  "address": "Pret A Manger, Unit R2, 4 Hardman Square, Spinningfields, Manchester M3 3EB",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%203EB",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.479607%2C-2.252211",
+  "notes": "PROVISIONAL BRANCH: 4 Hardman Square, Spinningfields, chosen as a plausible central location; the Lunch Club did not specify which Pret. This is the M3 3EB postcode centroid, not a verified shop doorway; please confirm branch."
+}

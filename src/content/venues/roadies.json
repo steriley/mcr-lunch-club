@@ -1,0 +1,20 @@
+{
+  "id": "roadies",
+  "name": "Roadies",
+  "slug": "roadies",
+  "status": "If We Must",
+  "rank": null,
+  "lat": 53.476948,
+  "lng": -2.238062,
+  "distanceMiles": 0.57,
+  "walkingTimeMin": 13,
+  "cost": "££",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for Roadies: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-01-10",
+  "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
+  "address": "Roadie's, 41 Bloom Street, Manchester M1 3LY",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%203LY",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.476948%2C-2.238062",
+  "notes": ""
+}

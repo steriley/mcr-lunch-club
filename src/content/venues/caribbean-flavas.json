@@ -1,0 +1,20 @@
+{
+  "id": "caribbean-flavas",
+  "name": "Caribbean Flavas",
+  "slug": "caribbean-flavas",
+  "status": "Rejected",
+  "rank": null,
+  "lat": 53.48331,
+  "lng": -2.2551,
+  "distanceMiles": 0.29,
+  "walkingTimeMin": 7,
+  "cost": "££",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for Caribbean Flavas: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2025-11-20",
+  "rejectionReason": "Historic map record; operation/current venue not confirmed.",
+  "address": "Salford, city centre (historic OSM POI)",
+  "evidenceUrl": "https://mapcarta.com/N10174719256",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483310%2C-2.255100",
+  "notes": "Historic map record; operation/current venue not confirmed."
+}

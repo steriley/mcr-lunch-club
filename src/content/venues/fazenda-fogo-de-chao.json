@@ -1,0 +1,20 @@
+{
+  "id": "fazenda-fogo-de-chao",
+  "name": "Fazenda “Fogo de Chão“",
+  "slug": "fazenda-fogo-de-chao",
+  "status": "Approved",
+  "rank": 2,
+  "lat": 53.48033,
+  "lng": -2.25074,
+  "distanceMiles": 0.04,
+  "walkingTimeMin": 2,
+  "cost": "£££",
+  "cuisine": "Brazilian Rodizio",
+  "eatLikeUs": "Picanha medium-rare straight off the skewer. Skip the salad bar filler; preserve maximum abdominal capacity for continuous skewers.",
+  "lastInspectionDate": "2026-09-04",
+  "rejectionReason": null,
+  "address": "The Avenue, Spinningfields, M3 3AP",
+  "evidenceUrl": "https://aroundus.com/p/171791486-fazenda",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480330%2C-2.250740",
+  "notes": "Official Payday summit venue. Green card must remain displayed until breathing becomes noticeably labored."
+}

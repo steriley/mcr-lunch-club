@@ -1,0 +1,20 @@
+{
+  "id": "ohannes-burger",
+  "name": "Ohannes Burger",
+  "slug": "ohannes-burger",
+  "status": "Under Consideration",
+  "rank": null,
+  "lat": 53.484806,
+  "lng": -2.250327,
+  "distanceMiles": 0.34,
+  "walkingTimeMin": 8,
+  "cost": "££",
+  "cuisine": "Burgers",
+  "eatLikeUs": "The committee signature recommendation for Ohannes Burger: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-09-10",
+  "rejectionReason": null,
+  "address": "104 Chapel Street, Salford M3 5DW",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%205DW",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484806%2C-2.250327",
+  "notes": ""
+}

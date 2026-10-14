@@ -1,0 +1,20 @@
+{
+  "id": "viet-deli",
+  "name": "Viet Deli",
+  "slug": "viet-deli",
+  "status": "Under Consideration",
+  "rank": null,
+  "lat": 53.484216,
+  "lng": -2.248697,
+  "distanceMiles": 0.32,
+  "walkingTimeMin": 7,
+  "cost": "£",
+  "cuisine": "Deli & Sandwiches",
+  "eatLikeUs": "The committee signature recommendation for Viet Deli: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-09-10",
+  "rejectionReason": null,
+  "address": "22 Blackfriars Street, M3 5BQ",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%205BQ",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484216%2C-2.248697",
+  "notes": ""
+}

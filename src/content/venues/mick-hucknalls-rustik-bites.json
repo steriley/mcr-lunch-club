@@ -1,0 +1,20 @@
+{
+  "id": "mick-hucknalls-rustik-bites",
+  "name": "Mick Hucknall’s Rustik Bites",
+  "slug": "mick-hucknalls-rustik-bites",
+  "status": "Approved",
+  "rank": 8,
+  "lat": 53.473839,
+  "lng": -2.251288,
+  "distanceMiles": 0.42,
+  "walkingTimeMin": 9,
+  "cost": "£",
+  "cuisine": "Cafe & Bakes",
+  "eatLikeUs": "The Deansgate sausage bap with brown sauce, followed by an unapologetic square of flapjack.",
+  "lastInspectionDate": "2026-07-09",
+  "rejectionReason": null,
+  "address": "343 Deansgate, M3 4LG",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%204LG",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.473839%2C-2.251288",
+  "notes": "Holds curious local folklore appeal. Reliable grab-and-go fuel."
+}

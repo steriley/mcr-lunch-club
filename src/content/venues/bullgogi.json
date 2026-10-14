@@ -1,0 +1,20 @@
+{
+  "id": "bullgogi",
+  "name": "Bullgogi",
+  "slug": "bullgogi",
+  "status": "To Be Assessed",
+  "rank": null,
+  "lat": 53.480497,
+  "lng": -2.239107,
+  "distanceMiles": 0.49,
+  "walkingTimeMin": 11,
+  "cost": "££",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for Bullgogi: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-01-10",
+  "rejectionReason": null,
+  "address": "6A Piccadilly Plaza, Manchester M1 4AH",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%204AH",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480497%2C-2.239107",
+  "notes": ""
+}

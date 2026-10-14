@@ -1,0 +1,20 @@
+{
+  "id": "trading-route",
+  "name": "Trading Route",
+  "slug": "trading-route",
+  "status": "If We Must",
+  "rank": null,
+  "lat": 53.478835,
+  "lng": -2.255989,
+  "distanceMiles": 0.21,
+  "walkingTimeMin": 5,
+  "cost": "££",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for Trading Route: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-01-10",
+  "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
+  "address": "1 Goods Yard Street, Manchester M3 3BG",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%203BG",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478835%2C-2.255989",
+  "notes": ""
+}

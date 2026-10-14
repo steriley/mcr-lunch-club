@@ -1,0 +1,13 @@
+{
+  "id": "dunkin-burgers-insp-1",
+  "venueSlug": "dunkin-burgers",
+  "venueName": "Dunkin' Burgers",
+  "date": "2025-11-20",
+  "attendees": [
+    "Chair Fletcher",
+    "Comptroller Davies"
+  ],
+  "verdict": "sub-par",
+  "whatWasOrdered": "Standard committee inspection test order.",
+  "notes": "Verified FSA listing identifies Unit F8 in Manchester Arndale Market. Postcode coordinates locate the market, not an individual market stall."
+}

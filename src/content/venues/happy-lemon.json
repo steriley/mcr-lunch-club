@@ -1,0 +1,20 @@
+{
+  "id": "happy-lemon",
+  "name": "Happy Lemon",
+  "slug": "happy-lemon",
+  "status": "Under Consideration",
+  "rank": null,
+  "lat": 53.477771,
+  "lng": -2.240131,
+  "distanceMiles": 0.47,
+  "walkingTimeMin": 10,
+  "cost": "££",
+  "cuisine": "Casual Dining",
+  "eatLikeUs": "The committee signature recommendation for Happy Lemon: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
+  "lastInspectionDate": "2026-09-10",
+  "rejectionReason": null,
+  "address": "84 Portland Street, M1 4GX",
+  "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%204GX",
+  "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.477771%2C-2.240131",
+  "notes": ""
+}

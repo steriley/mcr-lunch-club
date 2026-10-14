@@ -1,0 +1,133 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import incidentsData from '@/data/incidents.json';
+---
+
+<Layout title="The Hall of Shame — Register of Improper Benefit Attempts | MCR Lunch Club">
+  <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
+    <!-- Breadcrumb -->
+    <div class="text-xs">
+      <a href="/" class="text-[#8b1e22] hover:underline flex items-center gap-1 font-bold">
+        <span>←</span>
+        <span>Return to Sovereign Map</span>
+      </a>
+    </div>
+
+    <!-- Pompous Header Card -->
+    <div class="bg-[#1a1e24] text-[#f9f7f1] p-6 sm:p-10 rounded-2xl border-2 border-[#c59b27] shadow-2xl relative overflow-hidden">
+      <div class="relative z-10 space-y-3">
+        <div class="flex items-center gap-3">
+          <span class="text-4xl">⚖️</span>
+          <div>
+            <span class="text-xs uppercase tracking-widest text-[#c59b27] font-bold font-mono">
+              Confidential Ledger &bull; Article 9.4
+            </span>
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-[#f9f7f1]">
+              The Hall of Shame
+            </h1>
+          </div>
+        </div>
+
+        <p class="text-sm sm:text-base text-stone-300 italic pt-1 border-t border-[#c59b27]/30 max-w-3xl">
+          “The Official Registry of Bribery, Improper Benefit Attempts, and Corrupt Solicitations documented in perpetuity to preserve the impartial integrity of the Chairs.”
+        </p>
+
+        <div class="bg-amber-950/60 border border-[#c59b27]/40 p-4 rounded-xl text-xs text-amber-200 font-sans leading-relaxed">
+          <strong class="font-serif-header text-amber-100 block mb-1">Preamble to the Register:</strong>
+          Any member or petitioner who attempts to sway an inspection audit through the provision of complimentary chicken tenders, off-the-record soft drinks, queue-skipping privileges, or table favoritism shall have their ignominy inscribed herein. The Chairs remain incorruptible; all confiscated items are retained as material evidence.
+        </div>
+      </div>
+
+      <!-- Watermark emblem background -->
+      <div class="absolute -right-8 -bottom-12 text-9xl text-white/5 pointer-events-none select-none">
+        🏛️
+      </div>
+    </div>
+
+    <!-- Timeline of Impropriety -->
+    <div class="space-y-6">
+      <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2">
+        <h2 class="text-xl font-bold text-[#1a1e24] flex items-center gap-2">
+          <span>Inscribed Incidents</span>
+          <span class="text-xs font-mono font-bold bg-[#8b1e22] text-white px-2 py-0.5 rounded">
+            {incidentsData.length} Documented Offenses
+          </span>
+        </h2>
+        <span class="text-xs text-stone-500 font-sans">
+          Permanent Archival Audit Trail
+        </span>
+      </div>
+
+      <div class="relative border-l-2 border-[#c59b27] ml-4 sm:ml-6 pl-6 sm:pl-8 space-y-8 font-sans">
+        {incidentsData.map((inc) => (
+          <div class="relative group">
+            <!-- Timeline Node Wax Seal Icon -->
+            <div class="absolute -left-[35px] sm:-left-[43px] top-1.5 w-6 h-6 rounded-full bg-[#8b1e22] border-2 border-[#c59b27] text-white flex items-center justify-center text-[10px] shadow">
+              ⚖️
+            </div>
+
+            <!-- Incident Card -->
+            <div class="bg-[#fdfcf9] rounded-2xl border border-[#dcd6c8] shadow-md p-6 space-y-4 hover:border-[#8b1e22] transition-colors">
+              <!-- Top Row: Date, Value, Severity -->
+              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 pb-3 font-serif-header">
+                <div>
+                  <span class="text-xs font-mono font-bold text-stone-500 block">
+                    Logged on {inc.date}
+                  </span>
+                  <h3 class="text-xl font-bold text-[#8b1e22] mt-0.5">
+                    {inc.title}
+                  </h3>
+                </div>
+
+                <div class="text-right">
+                  <span class="text-[10px] text-stone-500 uppercase tracking-wider block font-sans">Illicit Value</span>
+                  <span class="text-sm font-bold font-mono text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+                    {inc.value}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Personnel Involved -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-[#f4efe4] p-3 rounded-xl border border-[#dcd6c8]">
+                <div>
+                  <span class="font-bold text-stone-700 font-serif-header block">Offending Parties:</span>
+                  <span class="text-stone-900">{inc.peopleInvolved.join(' & ')}</span>
+                </div>
+                <div>
+                  <span class="font-bold text-stone-700 font-serif-header block">Witnessing Quorum:</span>
+                  <span class="text-stone-900">{inc.witnesses.join(', ')}</span>
+                </div>
+              </div>
+
+              <!-- Benefit Offered -->
+              <div class="text-xs">
+                <span class="font-bold text-[#8b1e22] font-serif-header block mb-0.5">
+                  Proffered Inducement:
+                </span>
+                <p class="text-stone-800 italic bg-amber-50 p-2.5 rounded border border-amber-200/60">
+                  “{inc.benefitOffered}”
+                </p>
+              </div>
+
+              <!-- Context -->
+              <div class="text-xs text-stone-700 leading-relaxed">
+                <span class="font-bold text-stone-900 font-serif-header block mb-0.5">
+                  Tribunal Finding of Fact:
+                </span>
+                <p>{inc.context}</p>
+              </div>
+
+              <!-- Outcome / Penalty -->
+              <div class="bg-rose-50 border-l-4 border-rose-600 p-3 rounded-r-lg text-xs text-rose-950 font-serif-header">
+                <span class="font-bold text-rose-900 uppercase tracking-wide block text-[10px]">
+                  Executive Verdict & Sanctions:
+                </span>
+                <p class="mt-0.5 italic">{inc.outcome}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</Layout>
