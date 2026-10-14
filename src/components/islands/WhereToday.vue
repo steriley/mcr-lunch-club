@@ -119,9 +119,18 @@
             <span class="text-xs font-mono font-bold text-[#8b1e22]">{{ pickedVenue.cost }}</span>
           </div>
 
-          <h3 class="text-xl font-bold font-serif-header text-[#1a1e24]">
-            {{ pickedVenue.name }}
-          </h3>
+          <div class="flex items-center gap-2">
+            <h3 class="text-xl font-bold font-serif-header text-[#1a1e24]">
+              {{ pickedVenue.name }}
+            </h3>
+            <img
+              v-if="pickedVenue.status === 'Approved'"
+              src="/brand/approved-sticker.png"
+              alt="MCR Lunch Club Approved"
+              class="w-6 h-6 object-contain inline-block shrink-0"
+              title="Official MCR Lunch Club Approved Prize Winner"
+            />
+          </div>
           <p class="text-xs text-stone-600 font-sans mt-0.5">
             {{ pickedVenue.cuisine }} &bull; {{ pickedVenue.walkingTimeMin }} mins walk ({{ pickedVenue.distanceMiles }} mi)
           </p>

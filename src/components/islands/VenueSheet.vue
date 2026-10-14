@@ -12,8 +12,14 @@
         :class="statusBannerStyle.bg"
         class="p-4 border-b text-white flex items-center justify-between transition-colors"
       >
-        <div class="flex items-center gap-2">
-          <span class="text-xl">{{ statusBannerStyle.icon }}</span>
+        <div class="flex items-center gap-2.5">
+          <img
+            v-if="venue.status === 'Approved'"
+            src="/brand/approved-sticker.png"
+            alt="MCR Lunch Club Approved"
+            class="w-9 h-9 object-contain drop-shadow shrink-0"
+          />
+          <span v-else class="text-xl">{{ statusBannerStyle.icon }}</span>
           <div>
             <div class="flex items-center gap-2">
               <span class="text-xs uppercase tracking-widest font-bold font-serif-header">
@@ -39,6 +45,23 @@
 
       <!-- Main Body (Scrollable) -->
       <div class="p-5 overflow-y-auto space-y-4 text-[#1a1e24]">
+        <!-- Approved Prize Award Callout -->
+        <div v-if="venue.status === 'Approved'" class="bg-[#1a1e24] text-[#f9f7f1] border border-[#c59b27] p-3 rounded-xl flex items-center gap-3 shadow-xs">
+          <img
+            src="/brand/approved-sticker.png"
+            alt="Official Approved Sticker"
+            class="w-11 h-11 object-contain drop-shadow shrink-0"
+          />
+          <div class="text-xs">
+            <span class="text-[10px] font-mono font-bold text-[#c59b27] uppercase tracking-wider block">
+              Official Prize &bull; Manchester’s Lunch Star
+            </span>
+            <span class="text-stone-200 font-serif-header">
+              Awarded the official MCR Lunch Club Approved physical sticker by the Chairs.
+            </span>
+          </div>
+        </div>
+
         <!-- Title & Badges -->
         <div class="flex items-start justify-between gap-3">
           <div>

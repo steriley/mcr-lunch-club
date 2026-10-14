@@ -136,6 +136,38 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
       </div>
     </div>
 
+    <!-- Approved Tier Michelin Star Style Prize Banner -->
+    {tierName === 'Approved' && (
+      <div class="bg-[#1a1e24] text-[#f9f7f1] border-2 border-[#c59b27] p-6 sm:p-7 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-6 font-serif-header relative overflow-hidden">
+        <div class="relative z-10 shrink-0">
+          <img
+            src="/brand/approved-sticker.png"
+            alt="Official MCR Lunch Club Approved Sticker"
+            class="w-28 h-28 sm:w-32 sm:h-32 object-contain drop-shadow-[0_0_20px_rgba(197,155,39,0.4)] select-none hover:scale-105 transition-transform"
+          />
+        </div>
+        <div class="space-y-2 text-center sm:text-left relative z-10">
+          <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+            <span class="text-xs uppercase tracking-widest text-[#c59b27] font-mono font-bold">
+              The Official Prize of Excellence
+            </span>
+            <span class="bg-[#8b1e22] text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase">
+              Manchester’s Lunch Star
+            </span>
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            The MCR Lunch Club Approved Sticker
+          </h2>
+          <p class="text-xs sm:text-sm text-stone-300 font-sans leading-relaxed">
+            We hand these official physical stickers out as prizes to venues that meet our rigorous standards. Treated like Manchester’s own lunchtime Michelin star, only establishments that survive the Chairs’ inspection across multiple visits earn the right to display this badge of lunchtime honour.
+          </p>
+        </div>
+        <div class="absolute -right-8 -bottom-10 text-8xl text-white/5 pointer-events-none select-none">
+          ⭐
+        </div>
+      </div>
+    )}
+
     <!-- Rejected Venues Specific Censure Notice -->
     {tierName === 'Rejected' && (
       <div class="bg-[#1a1e24] text-[#f9f7f1] border-2 border-rose-800 p-6 rounded-2xl shadow-lg space-y-3 font-sans">
@@ -193,7 +225,7 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
             <div>
               <div class="flex items-start justify-between gap-2 border-b border-stone-100 pb-2 mb-2 font-serif-header">
                 <div>
-                  <div class="flex items-center gap-1.5">
+                  <div class="flex items-center gap-1.5 flex-wrap">
                     {venue.rank && venue.status === 'Approved' && (
                       <span class="text-xs font-mono font-bold bg-[#c59b27] text-[#1a1e24] px-1.5 py-0.2 rounded">
                         #{venue.rank}
@@ -202,6 +234,14 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
                     <h3 class="font-bold text-base text-[#1a1e24] leading-snug">
                       {venue.name}
                     </h3>
+                    {venue.status === 'Approved' && (
+                      <img
+                        src="/brand/approved-sticker.png"
+                        alt="Approved Sticker Awarded"
+                        class="w-5 h-5 object-contain inline-block shrink-0"
+                        title="Official MCR Lunch Club Approved Sticker Awarded"
+                      />
+                    )}
                   </div>
                   <span class="text-[11px] text-stone-500 font-sans block mt-0.5">
                     {venue.cuisine}
