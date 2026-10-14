@@ -173,7 +173,9 @@ onMounted(async () => {
   L.control.zoom({ position: 'topright' }).addTo(mapInstance);
 
   // CartoDB Positron / Voyager Muted Archival Tile Layer
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  const cartoApiKey = import.meta.env.PUBLIC_MAP_API_KEY;
+  const tileUrl = `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${cartoApiKey ? `?key=${encodeURIComponent(cartoApiKey)}` : ''}`;
+  L.tileLayer(tileUrl, {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 19,
