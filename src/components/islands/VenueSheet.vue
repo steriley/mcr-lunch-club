@@ -10,7 +10,7 @@
       <!-- Header Bar / Manifesto Status Banner -->
       <div
         :class="statusBannerStyle.bg"
-        class="p-4 border-b text-white flex items-center justify-between transition-colors"
+        class="tier-header-gradient p-4 border-b text-white flex items-center justify-between transition-colors"
       >
         <div class="flex items-center gap-2.5">
           <img
@@ -263,37 +263,37 @@ const statusBannerStyle = computed(() => {
   switch (s) {
     case 'Approved':
       return {
-        bg: 'bg-[#8b1e22]',
+        bg: 'bg-[#1E7A4E]',
         icon: '🏆',
         quote: 'The Highest Honour in Manchester Lunching: The Right to be Returned To',
       };
     case 'Under Consideration':
       return {
-        bg: 'bg-[#d97706]',
+        bg: 'bg-[#C27803]',
         icon: '⏳',
         quote: 'The Waiting Chamber of Judgement — Pending further evidence and appetite',
       };
     case 'To Be Assessed':
       return {
-        bg: 'bg-[#2563eb]',
+        bg: 'bg-[#5A6474]',
         icon: '📜',
         quote: 'Entered the Field of Vision — Fate remains undecided pending inspection',
       };
     case 'If We Must':
       return {
-        bg: 'bg-[#854d0e]',
+        bg: 'bg-[#7C3A82]',
         icon: '🌧',
         quote: 'Not Celebrated, But Tolerated — Acceptable only when circumstance forces our hand',
       };
     case 'Rejected':
       return {
-        bg: 'bg-[#374151]',
+        bg: 'bg-[#B92B27]',
         icon: '⛔',
         quote: 'Removed from the Sacred Lunch Rotation — Returnable only through exceptional redemption',
       };
     case 'Gone But Not Forgotten':
       return {
-        bg: 'bg-[#78716c]',
+        bg: 'bg-[#71717A]',
         icon: '🕊',
         quote: 'Doors Closed, But Legend Remains in the Lunching Annals',
       };

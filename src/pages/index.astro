@@ -1,6 +1,5 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import ManifestoBanner from '@/components/islands/ManifestoBanner.vue';
 import FilterBar from '@/components/islands/FilterBar.vue';
 import LunchMap from '@/components/islands/LunchMap.vue';
 import VenueSheet from '@/components/islands/VenueSheet.vue';
@@ -17,7 +16,6 @@ const docketVenues = approvedVenues.slice(1, 5);
 ---
 
 <Layout title="MCR Lunch Club — The Official Manchester Lunch Ledger">
-  <ManifestoBanner client:load />
   <FilterBar client:load />
 
   <div class="home-workspace">
