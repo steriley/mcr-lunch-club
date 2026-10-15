@@ -1,101 +1,42 @@
 <template>
-  <aside class="bg-[#1a1e24] text-[#f9f7f1] border-b-2 border-[#c59b27] shadow-md transition-all">
-    <!-- Compact Top Bar -->
-    <div class="max-w-7xl mx-auto px-4 py-2.5 sm:py-3 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 font-serif-header">
-      <div class="flex items-center gap-3">
-        <span class="text-2xl sm:text-3xl select-none">⚖️</span>
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <span class="text-[10px] uppercase tracking-widest text-[#c59b27] font-mono font-bold bg-[#c59b27]/20 border border-[#c59b27]/40 px-2 py-0.5 rounded">
-              The Official Manifesto
-            </span>
-            <span class="text-stone-300 italic text-xs hidden sm:inline">
-              “We lunch with purpose. We judge with integrity. We return only where deserved.”
-            </span>
-          </div>
-          <p class="text-xs text-stone-300 font-sans mt-0.5 hidden md:block">
-            <strong>Independent venues first.</strong> Two separate visits required for Approved status. Extravagance without merit will not pass inspection.
-          </p>
-        </div>
+  <aside class="manifesto-ribbon">
+    <div class="manifesto-ribbon-inner">
+      <div class="manifesto-ribbon-copy">
+        <span class="manifesto-seal" aria-hidden="true">⚖</span>
+        <span class="manifesto-ribbon-text">
+          <span class="manifesto-ribbon-title">THE OFFICIAL MANIFESTO</span>
+          <span class="manifesto-ribbon-creed">“We lunch with purpose. We judge with integrity. We return only where deserved.”</span>
+        </span>
       </div>
-
-      <div class="flex items-center gap-2 w-full md:w-auto justify-end text-xs">
+      <div class="manifesto-ribbon-actions">
+        <span class="manifesto-ribbon-note">Independent venues first · Two visits for approval</span>
         <button
+          class="manifesto-expand"
+          type="button"
           @click="isExpanded = !isExpanded"
-          class="px-2.5 py-1.5 rounded-md bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-600 transition-colors flex items-center gap-1.5 cursor-pointer"
-          :title="isExpanded ? 'Collapse Proclamation' : 'Expand Manifesto Summary'"
+          :aria-expanded="isExpanded"
         >
-          <span>{{ isExpanded ? "▲ Hide Summary" : "▼ Quick Read" }}</span>
+          {{ isExpanded ? 'Hide summary' : 'Quick read' }}
+          <span aria-hidden="true">{{ isExpanded ? '−' : '+' }}</span>
         </button>
-
-        <a
-          href="/manifesto"
-          class="px-3.5 py-1.5 rounded-md bg-[#8b1e22] hover:bg-[#a32429] text-white font-bold border border-[#c59b27]/60 shadow transition-colors flex items-center gap-1.5 whitespace-nowrap"
-        >
-          <span>📜</span>
-          <span>The Full Manifesto</span>
-          <span>→</span>
-        </a>
+        <a class="manifesto-full-link" href="/manifesto">Read the full manifesto →</a>
       </div>
     </div>
 
-    <!-- Expandable Proclamation Drawer -->
-    <div
-      v-if="isExpanded"
-      class="border-t border-[#c59b27]/30 bg-[#14181d] px-4 py-5 animate-in slide-in-from-top-2 duration-200"
-    >
-      <div class="max-w-7xl mx-auto space-y-4 font-serif-header">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-sans text-stone-300">
-          <!-- Article I & II -->
-          <div class="bg-[#1e232b] p-4 rounded-xl border border-stone-700/60 space-y-2">
-            <span class="text-[#c59b27] font-serif-header font-bold text-sm block">
-              1. Independents & The Two-Visit Rule
-            </span>
-            <p class="text-stone-300 leading-relaxed">
-              We are committed to independent venues first and foremost, championing originality and local character over large chains. No venue earns its place in the Lunch Club rotation lightly: each must be visited on at least two separate occasions with satisfactory outcomes on both. Consistency is king.
-            </p>
-          </div>
-
-          <!-- Article III & Cost Key -->
-          <div class="bg-[#1e232b] p-4 rounded-xl border border-stone-700/60 space-y-2">
-            <span class="text-[#c59b27] font-serif-header font-bold text-sm block">
-              2. Value as Principle & Cost Key
-            </span>
-            <p class="text-stone-300 leading-relaxed">
-              Price range is always considered alongside quality and portion. Extravagance without merit will not pass inspection.
-            </p>
-            <div class="pt-1 border-t border-stone-700 text-[11px] font-mono space-y-1">
-              <div><strong class="text-amber-200">£:</strong> under £10 (Everyday grab)</div>
-              <div><strong class="text-amber-200">££:</strong> above £10 (Standard protocol)</div>
-              <div><strong class="text-amber-200">£££:</strong> payday treat (Payday feast)</div>
-            </div>
-          </div>
-
-          <!-- Article IV & V -->
-          <div class="bg-[#1e232b] p-4 rounded-xl border border-stone-700/60 space-y-2">
-            <span class="text-[#c59b27] font-serif-header font-bold text-sm block">
-              3. 2.5-Mile Radius & Incorruptibility
-            </span>
-            <p class="text-stone-300 leading-relaxed">
-              In Manchester city centre, no distance is too far for proper evaluation. Beyond the centre, noteworthy venues within a 2.5-mile radius may be inducted. Members must respect the impartial authority of the Chairs and refrain from attempting to unduly influence their verdicts.
-            </p>
-            <div class="pt-1 border-t border-stone-700 text-[11px]">
-              <a href="/hall-of-shame" class="text-rose-400 hover:underline flex items-center gap-1">
-                <span>🌹</span>
-                <span>See the M&S Red Roses Bribery Attempt →</span>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between pt-2 border-t border-stone-800 text-xs">
-          <span class="italic text-stone-400 font-serif-header">
-            “We lunch with purpose. We judge with integrity. We return only where deserved.”
-          </span>
-          <a href="/manifesto" class="text-[#c59b27] hover:underline font-bold font-serif-header">
-            Read complete Constitutional Code & Codex of Tiers →
-          </a>
-        </div>
+    <div v-if="isExpanded" class="manifesto-drawer">
+      <div class="manifesto-drawer-grid">
+        <section>
+          <span>01 · THE TWO-VISIT RULE</span>
+          <p>Each venue must deliver satisfactory outcomes on at least two separate visits before it earns Approved status.</p>
+        </section>
+        <section>
+          <span>02 · VALUE &amp; INDEPENDENCE</span>
+          <p>We champion local character and judge every meal on quality, portion, and value—not price alone.</p>
+        </section>
+        <section>
+          <span>03 · OUR JURISDICTION</span>
+          <p>Central Manchester is our territory, with a 2.5-mile boundary from the Spinningfields base.</p>
+        </section>
       </div>
     </div>
   </aside>
@@ -106,3 +47,162 @@ import { ref } from 'vue';
 
 const isExpanded = ref(false);
 </script>
+
+<style>
+.manifesto-ribbon {
+  z-index: 30;
+  border-bottom: 1px solid #D9CFB8;
+  background: #F3ECDB;
+  color: #1e1b17;
+}
+
+.manifesto-ribbon-inner {
+  width: min(100% - 40px, 1440px);
+  min-height: 38px;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.manifesto-ribbon-copy,
+.manifesto-ribbon-actions {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.manifesto-seal {
+  color: #8a5100;
+  font-size: 16px;
+}
+
+.manifesto-ribbon-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.manifesto-ribbon-title,
+.manifesto-ribbon-note {
+  color: #8a5100;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+
+.manifesto-ribbon-creed {
+  color: #1B2F6B;
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.manifesto-ribbon-actions {
+  gap: 8px;
+}
+
+.manifesto-expand,
+.manifesto-full-link {
+  padding: 5px 9px;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.manifesto-expand {
+  border: 1px solid #D9CFB8;
+  background: #FBF6EA;
+  color: #454650;
+}
+
+.manifesto-expand:hover {
+  background: white;
+}
+
+.manifesto-full-link {
+  background: #1B2F6B;
+  color: white;
+  text-decoration: none;
+}
+
+.manifesto-full-link:hover {
+  background: #111E47;
+}
+
+.manifesto-drawer {
+  border-top: 1px solid #D9CFB8;
+  background: #F7F0DF;
+}
+
+.manifesto-drawer-grid {
+  width: min(100% - 40px, 1440px);
+  margin-inline: auto;
+  padding-block: 14px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.manifesto-drawer-grid section {
+  padding: 12px;
+  border: 1px solid #D9CFB8;
+  border-radius: 7px;
+  background: #FBF6EA;
+}
+
+.manifesto-drawer-grid section span {
+  color: #8a5100;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+}
+
+.manifesto-drawer-grid section p {
+  margin: 6px 0 0;
+  color: #454650;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+@media (max-width: 900px) {
+  .manifesto-ribbon-inner {
+    flex-wrap: wrap;
+    padding-block: 7px;
+  }
+
+  .manifesto-ribbon-note,
+  .manifesto-ribbon-creed {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .manifesto-ribbon-inner,
+  .manifesto-drawer-grid {
+    width: min(100% - 24px, 1440px);
+  }
+
+  .manifesto-ribbon-inner {
+    gap: 6px;
+  }
+
+  .manifesto-ribbon-copy,
+  .manifesto-ribbon-actions {
+    gap: 6px;
+  }
+
+  .manifesto-ribbon-title,
+  .manifesto-expand,
+  .manifesto-full-link {
+    font-size: 8px;
+  }
+
+  .manifesto-drawer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

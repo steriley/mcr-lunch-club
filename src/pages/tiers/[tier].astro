@@ -27,42 +27,42 @@ const currentTierSlug = Astro.params.tier;
 
 const TIER_METADATA: Record<string, { bannerBg: string; quote: string; description: string; rule: string; icon: string }> = {
   'Approved': {
-    bannerBg: 'bg-[#8b1e22]',
+    bannerBg: 'bg-[#1E7A4E]',
     icon: '🏆',
     quote: 'The Highest Honour in Manchester Lunching: The Right to be Returned To',
     description: 'Venue has survived the Chairs’ scrutiny by delivering consistent, good-value, characterful lunches across multiple visits. It has earned the highest honour in Manchester lunching: the right to be returned to.',
     rule: 'Each must be visited on at least two separate occasions and deliver satisfactory outcomes on both. Consistency is king.',
   },
   'Under Consideration': {
-    bannerBg: 'bg-[#d97706]',
+    bannerBg: 'bg-[#C27803]',
     icon: '⏳',
     quote: 'The Waiting Chamber of Judgement',
     description: 'Venue has shown enough promise to warrant serious attention, but has not yet earned a final verdict from the Chairs. It sits in the waiting chamber of judgement, pending further evidence, appetite, and official lunching scrutiny.',
     rule: 'Pending further evidence, appetite, and official lunching scrutiny.',
   },
   'To Be Assessed': {
-    bannerBg: 'bg-[#2563eb]',
+    bannerBg: 'bg-[#5A6474]',
     icon: '📜',
     quote: 'Entered the Lunch Club’s Field of Vision',
     description: 'Venue has entered the Lunch Club’s field of vision, but has not yet faced the full judgement of the Chairs. Its fate remains undecided until proper inspection confirms whether it is worthy of approval, rejection, or reluctant tolerance.',
     rule: 'Fate remains undecided until proper inspection confirms whether it is worthy of approval, rejection, or reluctant tolerance.',
   },
   'If We Must': {
-    bannerBg: 'bg-[#854d0e]',
+    bannerBg: 'bg-[#7C3A82]',
     icon: '🌧',
     quote: 'Not Celebrated, But Tolerated',
     description: 'Venue is not celebrated, but tolerated: acceptable only when circumstance, convenience, or lack of better options forces the Club’s hand. It remains outside true approval, granted not honour, but reluctant permission.',
     rule: 'Acceptable only when circumstance, convenience, or lack of better options forces the Club’s hand.',
   },
   'Rejected': {
-    bannerBg: 'bg-[#374151]',
+    bannerBg: 'bg-[#B92B27]',
     icon: '⛔',
     quote: 'Removed from the Sacred Lunch Rotation',
     description: 'Venue has failed to meet the standards of the Chairs, whether through poor value, weak quality, lack of character, or the unforgivable sin of inconsistency. It is removed from the sacred lunch rotation and may only return through exceptional redemption.',
     rule: 'Removed from the sacred lunch rotation and may only return through exceptional redemption.',
   },
   'Gone But Not Forgotten': {
-    bannerBg: 'bg-[#78716c]',
+    bannerBg: 'bg-[#71717A]',
     icon: '🕊',
     quote: 'Legend Remains in the Lunching Annals',
     description: 'Venue once held a place in the Club’s affections, but is no longer available to be judged, revisited, or relied upon. Its doors may be closed, but its legend remains in the lunching annals.',

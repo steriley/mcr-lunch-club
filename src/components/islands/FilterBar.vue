@@ -1,194 +1,121 @@
 <template>
-  <div class="bg-[#f9f7f1] border-b border-[#dcd6c8] p-3 md:p-4 shadow-sm transition-all font-sans text-[#1a1e24]">
-    <!-- Top Row: Title / Search / Quick Actions -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-      <!-- Search Input -->
-      <div class="relative flex-1 max-w-md">
-        <input
-          type="text"
-          v-model="searchQueryModel"
-          placeholder="Search ledger (e.g. Bada Bing, Ramen, Slices)..."
-          class="w-full pl-9 pr-8 py-2 text-xs md:text-sm bg-white rounded-md border border-[#dcd6c8] focus:border-[#8b1e22] focus:ring-1 focus:ring-[#8b1e22] outline-none shadow-inner placeholder:text-stone-400 font-serif-header"
-        />
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 absolute left-3 top-2.5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <circle cx="11" cy="11" r="8"/>
-          <path d="m21 21-4.3-4.3"/>
+  <section class="ledger-filters" aria-label="Search and filter the venue ledger">
+    <div class="ledger-filters-inner">
+      <div class="ledger-search-wrap">
+        <svg class="ledger-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="11" cy="11" r="7.5" />
+          <path d="m16.5 16.5 4 4" />
         </svg>
+        <input
+          id="ledger-search-input"
+          v-model="searchQueryModel"
+          type="search"
+          autocomplete="off"
+          aria-label="Search the venue ledger"
+          placeholder="Search ledger by name, street, dish, or cuisine (e.g. Bada Bing, Bundobust, Rudy's, Salt Beef, Biryani)..."
+          class="ledger-search-input"
+        />
+        <span class="ledger-search-shortcut" aria-hidden="true">⌘ K</span>
+      </div>
+
+      <div class="ledger-tier-filters" role="group" aria-label="Filter by verdict">
         <button
-          v-if="searchQueryModel"
-          @click="searchQueryModel = ''"
-          class="absolute right-2.5 top-2.5 text-stone-400 hover:text-stone-700 text-xs"
+          v-for="tier in allTiers"
+          :key="tier.name"
+          type="button"
+          :aria-pressed="filters.tiers.includes(tier.name)"
+          :class="['ledger-tier-chip', filters.tiers.includes(tier.name) && 'is-selected']"
+          :style="filters.tiers.includes(tier.name)
+            ? { backgroundColor: tier.color, borderColor: tier.color } : undefined"
+          @click="toggleTier(tier.name)"
         >
-          ✕
+          <span
+            :class="['ledger-tier-dot', filters.tiers.includes(tier.name) && 'is-selected']"
+            :style="!filters.tiers.includes(tier.name) ? { backgroundColor: tier.color } : undefined"
+            aria-hidden="true"
+          ></span>
+          <span>{{ tier.name }} ({{ getTierCount(tier.name) }})</span>
+          <span v-if="filters.tiers.includes(tier.name)" class="ledger-tier-check" aria-hidden="true">✓</span>
         </button>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="flex items-center flex-wrap gap-2">
-        <!-- Prominent Manifesto Link -->
-        <a
-          href="/manifesto"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#1a1e24] hover:bg-[#8b1e22] text-[#c59b27] hover:text-white border border-[#c59b27] text-xs font-bold font-serif-header shadow-sm transition-colors"
-          title="The MCR Lunch Club Manifesto & Articles of Governance"
-        >
-          <span>📜</span>
-          <span>The Manifesto</span>
-        </a>
-
-        <!-- 12:25 "Where to today?" helper -->
-        <button
-          @click="openWhereToday"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#8b1e22] hover:bg-[#70161a] text-white text-xs font-bold font-serif-header shadow transition-transform active:scale-95"
-        >
-          <span class="text-sm">🎲</span>
-          <span>Where To Today?</span>
-          <span class="bg-[#c59b27] text-[#1a1e24] px-1.5 py-0.2 rounded text-[10px] font-mono font-bold">12:25</span>
-        </button>
-
-        <!-- Member Suggestion Button -->
-        <button
-          @click="openSuggestModal"
-          class="flex items-center gap-1 px-3 py-1.5 rounded-md bg-white hover:bg-stone-100 text-stone-800 border border-[#dcd6c8] text-xs font-semibold shadow-sm transition-colors"
-        >
-          <span>📋</span>
-          <span>Suggest Venue</span>
-        </button>
-
-        <!-- Chairs' Mode Toggle Switch -->
-        <button
-          @click="toggleChairsMode"
-          :class="isChairsMode ? 'bg-[#1a1e24] text-[#c59b27] border-[#c59b27]' : 'bg-stone-200 text-stone-600 border-stone-300'"
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-md border text-xs font-serif-header font-bold shadow-sm transition-colors"
-          title="Toggle Chairs' Executive Mode"
-        >
-          <span>🏛</span>
-          <span>{{ isChairsMode ? "Chairs' Authority: ON" : "Member Mode" }}</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Second Row: Tier Filters -->
-    <div class="mt-3 flex flex-wrap items-center gap-1.5 md:gap-2">
-      <!-- Toggle All / Approved Only -->
-      <button
-        @click="toggleAllTiers"
-        :class="filters.showAllTiers ? 'bg-[#1a1e24] text-[#f9f7f1] border-[#1a1e24]' : 'bg-[#8b1e22] text-[#f9f7f1] border-[#8b1e22]'"
-        class="text-xs px-2.5 py-1 rounded-full border font-serif-header font-bold transition-colors shadow-xs"
-      >
-        {{ filters.showAllTiers ? "Show All Tiers" : "Approved Only (Default)" }}
-      </button>
-
-      <span class="h-4 w-px bg-stone-300 mx-1 hidden sm:inline-block"></span>
-
-      <!-- Individual Tier Chips -->
-      <button
-        v-for="t in allTiers"
-        :key="t.name"
-        @click="toggleTier(t.name)"
-        :class="[
-          filters.tiers.includes(t.name)
-            ? 'opacity-100 shadow-sm font-bold ring-1'
-            : 'opacity-40 grayscale bg-white/50 text-stone-600',
-          t.badgeClass
-        ]"
-        class="text-[11px] px-2.5 py-0.5 rounded-full border transition-all flex items-center gap-1.5"
-      >
-        <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: t.dotColor }"></span>
-        <span>{{ t.name }}</span>
-        <span class="text-[10px] opacity-75 font-mono">({{ getTierCount(t.name) }})</span>
-      </button>
-    </div>
-
-    <!-- Third Row: Secondary Filters (Cost, Walk Time, Inspected Freshness, Cuisine) -->
-    <div class="mt-2.5 pt-2 border-t border-[#dcd6c8]/60 flex flex-wrap items-center justify-between gap-y-2 text-xs">
-      <div class="flex flex-wrap items-center gap-3">
-        <!-- Cost Filter with Cost Key tooltips -->
-        <div class="flex items-center gap-1">
-          <span class="text-stone-500 font-serif-header font-semibold text-[11px]">Cost:</span>
-          <div class="inline-flex rounded-md shadow-xs bg-white border border-[#dcd6c8] p-0.5">
-            <button
-              v-for="c in [
-                { id: 'all', label: 'All', title: 'All price brackets' },
-                { id: '£', label: '£', title: '£: Under £10' },
-                { id: '££', label: '££', title: '££: Above £10' },
-                { id: '£££', label: '£££', title: '£££: Payday treat' }
-              ]"
-              :key="c.id"
-              @click="setCost(c.id as any)"
-              :title="c.title"
-              :class="filters.cost === c.id ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-700 hover:bg-stone-100'"
-              class="px-2 py-0.5 text-[11px] rounded transition-colors font-mono"
-            >
-              {{ c.label }}
-            </button>
+      <div class="ledger-secondary-filters">
+        <div class="ledger-filter-groups">
+          <div class="ledger-filter-group">
+            <span class="ledger-filter-label">Cost:</span>
+            <div class="ledger-cost-selector" role="group" aria-label="Filter by cost">
+              <button
+                v-for="cost in costOptions"
+                :key="cost.id"
+                type="button"
+                :aria-pressed="filters.cost === cost.id"
+                :title="cost.title"
+                :class="['ledger-cost-button', filters.cost === cost.id && 'is-selected']"
+                @click="setCost(cost.id)"
+              >{{ cost.label }}</button>
+            </div>
           </div>
+
+          <label class="ledger-filter-group">
+            <span class="ledger-filter-label">Max Walk:</span>
+            <select
+              :value="filters.maxWalkMinutes"
+              aria-label="Maximum walking time"
+              class="ledger-select"
+              @change="onWalkChange"
+            >
+              <option :value="25">🗺 25 min (2.5 mi Max Bound)</option>
+              <option :value="20">🚶 20 min (1.00 mi)</option>
+              <option :value="15">🚶 15 min (0.75 mi)</option>
+              <option :value="10">🏃 10 min (0.50 mi)</option>
+              <option :value="5">⚡ 5 min (0.25 mi)</option>
+              <option :value="60">All within 2.5 mi</option>
+            </select>
+          </label>
+
+          <label class="ledger-filter-group">
+            <span class="ledger-filter-label">Inspected:</span>
+            <select
+              :value="filters.inspectedDays"
+              aria-label="Filter by inspection date"
+              class="ledger-select"
+              @change="onInspectedChange"
+            >
+              <option value="all">Any Inspection Date</option>
+              <option :value="30">Last 30 Days (Fresh Gazette)</option>
+              <option :value="90">Last 90 Days</option>
+              <option :value="180">Last 180 Days</option>
+            </select>
+          </label>
+
+          <label class="ledger-filter-group">
+            <span class="ledger-filter-label">Cuisine:</span>
+            <select
+              :value="filters.cuisine"
+              aria-label="Filter by cuisine"
+              class="ledger-select cuisine-select"
+              @change="onCuisineChange"
+            >
+              <option value="all">All Cuisines</option>
+              <option v-for="cuisine in availableCuisines" :key="cuisine" :value="cuisine">{{ cuisine }}</option>
+            </select>
+          </label>
         </div>
 
-        <!-- Max Walk Slider / Pills -->
-        <div class="flex items-center gap-1.5">
-          <span class="text-stone-500 font-serif-header font-semibold text-[11px]">Max Walk:</span>
-          <select
-            :value="filters.maxWalkMinutes"
-            @change="onWalkChange"
-            class="bg-white border border-[#dcd6c8] rounded px-2 py-1 text-[11px] font-sans focus:outline-none"
-          >
-            <option :value="5">⚡ 5 min (Immediate)</option>
-            <option :value="10">🏃 10 min (Close)</option>
-            <option :value="15">🚶 15 min (Standard)</option>
-            <option :value="20">🚶‍♂️ 20 min (Stroll)</option>
-            <option :value="25">🗺 25 min (Perimeter)</option>
-            <option :value="60">All within 2.5 mi</option>
-          </select>
-        </div>
-
-        <!-- Inspection Recency Filter -->
-        <div class="flex items-center gap-1.5">
-          <span class="text-stone-500 font-serif-header font-semibold text-[11px]">Inspected:</span>
-          <select
-            :value="filters.inspectedDays"
-            @change="onInspectedChange"
-            class="bg-white border border-[#dcd6c8] rounded px-2 py-1 text-[11px] font-sans focus:outline-none"
-          >
-            <option value="all">Any Inspection Date</option>
-            <option :value="30">Last 30 Days (Fresh)</option>
-            <option :value="90">Last 90 Days</option>
-            <option :value="180">Last 180 Days</option>
-          </select>
-        </div>
-
-        <!-- Cuisine Filter -->
-        <div class="flex items-center gap-1.5">
-          <span class="text-stone-500 font-serif-header font-semibold text-[11px]">Type:</span>
-          <select
-            :value="filters.cuisine"
-            @change="onCuisineChange"
-            class="bg-white border border-[#dcd6c8] rounded px-2 py-1 text-[11px] font-sans focus:outline-none"
-          >
-            <option value="all">All Cuisines</option>
-            <option v-for="c in availableCuisines" :key="c" :value="c">{{ c }}</option>
-          </select>
+        <div class="ledger-filter-actions">
+          <button type="button" class="ledger-reset-button" @click="resetAll">Reset Filters</button>
         </div>
       </div>
-
-      <!-- Reset Filter Button -->
-      <button
-        @click="resetAll"
-        class="text-stone-500 hover:text-[#8b1e22] text-[11px] underline font-serif-header cursor-pointer"
-      >
-        Reset Filters
-      </button>
     </div>
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { useStore } from '@nanostores/vue';
 import {
   $filters,
-  $isChairsMode,
   toggleTier,
-  toggleAllTiers,
   setCost,
   setMaxWalkMinutes,
   setInspectedDays,
@@ -197,53 +124,84 @@ import {
   resetFilters,
   openWhereToday,
   openSuggestModal,
-  toggleChairsMode,
 } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
-import type { TierStatus } from '@/types';
+import type { CostTier, TierStatus } from '@/types';
 
 const filters = useStore($filters);
-const isChairsMode = useStore($isChairsMode);
 const venuesList = useStore($venuesList);
 
-const allTiers: { name: TierStatus; dotColor: string; badgeClass: string }[] = [
-  { name: 'Approved', dotColor: '#8b1e22', badgeClass: 'bg-[#8b1e22]/10 text-[#8b1e22] border-[#8b1e22]/40' },
-  { name: 'Under Consideration', dotColor: '#d97706', badgeClass: 'bg-amber-100 text-amber-800 border-amber-300' },
-  { name: 'To Be Assessed', dotColor: '#3b82f6', badgeClass: 'bg-blue-100 text-blue-800 border-blue-300' },
-  { name: 'Rejected', dotColor: '#4b5563', badgeClass: 'bg-stone-200 text-stone-700 border-stone-300' },
-  { name: 'If We Must', dotColor: '#854d0e', badgeClass: 'bg-yellow-100 text-yellow-900 border-yellow-300' },
-  { name: 'Gone But Not Forgotten', dotColor: '#78716c', badgeClass: 'bg-stone-100 text-stone-500 border-stone-300 border-dashed' },
+const allTiers: { name: TierStatus; color: string }[] = [
+  { name: 'Approved', color: '#1E7A4E' },
+  { name: 'Under Consideration', color: '#C27803' },
+  { name: 'To Be Assessed', color: '#5A6474' },
+  { name: 'Rejected', color: '#B92B27' },
+  { name: 'If We Must', color: '#7C3A82' },
+  { name: 'Gone But Not Forgotten', color: '#71717A' },
+];
+
+const costOptions: { id: CostTier | 'all'; label: string; title: string }[] = [
+  { id: 'all', label: 'All', title: 'All price brackets' },
+  { id: '£', label: '£', title: '£: Under £10' },
+  { id: '££', label: '££', title: '££: Above £10' },
+  { id: '£££', label: '£££', title: '£££: Payday treat' },
 ];
 
 const searchQueryModel = computed({
   get: () => filters.value.searchQuery,
-  set: (val: string) => setSearchQuery(val),
+  set: (value: string) => setSearchQuery(value),
+});
+
+function handleActionLink() {
+  if (window.location.hash === '#suggest-a-venue') openSuggestModal();
+  if (window.location.hash === '#where-to-today') openWhereToday();
+}
+
+function handleWhereTodayClick(event: MouseEvent) {
+  if (!(event.target instanceof Element) || window.location.pathname !== '/') return;
+
+  const trigger = event.target.closest('[data-open-where-today]');
+  if (!trigger) return;
+
+  event.preventDefault();
+  openWhereToday();
+}
+
+onMounted(() => {
+  handleActionLink();
+  window.addEventListener('hashchange', handleActionLink);
+  document.addEventListener('click', handleWhereTodayClick);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('hashchange', handleActionLink);
+  document.removeEventListener('click', handleWhereTodayClick);
 });
 
 const availableCuisines = computed(() => {
-  const set = new Set<string>();
-  venuesList.value.forEach((v) => {
-    if (v.cuisine) set.add(v.cuisine);
+  const cuisines = new Set<string>();
+  venuesList.value.forEach((venue) => {
+    if (venue.cuisine) cuisines.add(venue.cuisine);
   });
-  return Array.from(set).sort();
+  return Array.from(cuisines).sort();
 });
 
 function getTierCount(tier: TierStatus) {
-  return venuesList.value.filter((v) => v.status === tier).length;
+  return venuesList.value.filter((venue) => venue.status === tier).length;
 }
 
-function onWalkChange(e: Event) {
-  const target = e.target as HTMLSelectElement;
+function onWalkChange(event: Event) {
+  const target = event.target as HTMLSelectElement;
   setMaxWalkMinutes(Number(target.value));
 }
 
-function onInspectedChange(e: Event) {
-  const target = e.target as HTMLSelectElement;
+function onInspectedChange(event: Event) {
+  const target = event.target as HTMLSelectElement;
   setInspectedDays(target.value === 'all' ? 'all' : Number(target.value));
 }
 
-function onCuisineChange(e: Event) {
-  const target = e.target as HTMLSelectElement;
+function onCuisineChange(event: Event) {
+  const target = event.target as HTMLSelectElement;
   setCuisine(target.value);
 }
 
@@ -251,3 +209,302 @@ function resetAll() {
   resetFilters();
 }
 </script>
+
+<style>
+.ledger-filters {
+  border-bottom: 1px solid #D9CFB8;
+  background: #F3ECDB;
+  box-shadow: 0 2px 8px rgb(22 19 15 / 5%);
+}
+
+.ledger-filters-inner {
+  width: min(100% - 40px, 1440px);
+  margin-inline: auto;
+  padding-block: 11px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.ledger-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ledger-search-input {
+  width: 100%;
+  min-height: 39px;
+  padding: 9px 68px 9px 39px;
+  border: 1px solid #D9CFB8;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: inset 0 1px 2px rgb(22 19 15 / 4%);
+  color: #1e1b17;
+  font: 400 12px/1.45 "Plus Jakarta Sans", sans-serif;
+}
+
+.ledger-search-input::placeholder {
+  color: #757681;
+  opacity: 1;
+}
+
+.ledger-search-input:focus {
+  border-color: #1B2F6B;
+  outline: 1px solid #1B2F6B;
+  outline-offset: 0;
+}
+
+.ledger-search-input::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+.ledger-search-icon {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  stroke: #454650;
+  stroke-width: 2;
+  pointer-events: none;
+}
+
+.ledger-search-shortcut {
+  position: absolute;
+  right: 10px;
+  padding: 3px 6px;
+  border: 1px solid #D9CFB8;
+  border-radius: 4px;
+  background: #F3ECDB;
+  color: #757681;
+  font-size: 9px;
+}
+
+.ledger-tier-filters {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-x: auto;
+  padding-block: 1px 3px;
+  scrollbar-width: none;
+}
+
+.ledger-tier-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.ledger-tier-chip {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  min-height: 27px;
+  padding: 5px 10px;
+  border: 1px solid #D9CFB8;
+  border-radius: 999px;
+  background: #F7F0DF;
+  color: #1e1b17;
+  font: 600 10px/1.2 "Plus Jakarta Sans", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.ledger-tier-chip:hover:not(.is-selected) {
+  background: #fff8f3;
+  border-color: #b9ae94;
+}
+
+.ledger-tier-chip.is-selected {
+  color: white;
+}
+
+.ledger-tier-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.ledger-tier-dot.is-selected {
+  background: white !important;
+}
+
+.ledger-tier-check {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.ledger-secondary-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 7px;
+  border-top: 1px solid rgb(217 207 184 / 70%);
+}
+
+.ledger-filter-groups,
+.ledger-filter-group,
+.ledger-filter-actions {
+  display: flex;
+  align-items: center;
+}
+
+.ledger-filter-groups {
+  flex-wrap: wrap;
+  gap: 10px 13px;
+}
+
+.ledger-filter-group {
+  gap: 6px;
+  min-width: 0;
+}
+
+.ledger-filter-label {
+  color: #454650;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ledger-cost-selector {
+  display: inline-flex;
+  gap: 1px;
+  padding: 2px;
+  border: 1px solid #D9CFB8;
+  border-radius: 6px;
+  background: #F7F0DF;
+}
+
+.ledger-cost-button {
+  min-width: 24px;
+  padding: 3px 6px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #454650;
+  font: 600 10px/1.2 "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+}
+
+.ledger-cost-button:hover:not(.is-selected) {
+  color: #1e1b17;
+  background: #efe7d8;
+}
+
+.ledger-cost-button.is-selected {
+  background: #001854;
+  color: white;
+}
+
+.ledger-select {
+  max-width: 225px;
+  min-height: 26px;
+  padding: 4px 21px 4px 7px;
+  border: 1px solid #D9CFB8;
+  border-radius: 5px;
+  background-color: #F7F0DF;
+  color: #1e1b17;
+  font: 500 10px/1.2 "Plus Jakarta Sans", sans-serif;
+}
+
+.cuisine-select {
+  max-width: 180px;
+}
+
+.ledger-select:focus-visible,
+.ledger-cost-button:focus-visible,
+.ledger-tier-chip:focus-visible,
+.ledger-reset-button:focus-visible {
+  outline: 2px solid #1B2F6B;
+  outline-offset: 2px;
+}
+
+.ledger-filter-actions {
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.ledger-reset-button {
+  padding: 4px 0 4px 5px;
+  border: 0;
+  background: none;
+  color: #8a5100;
+  font: 700 9px/1.2 "Plus Jakarta Sans", sans-serif;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ledger-reset-button:hover {
+  color: #454650;
+}
+
+@media (max-width: 1050px) {
+  .ledger-secondary-filters {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ledger-filter-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 720px) {
+  .ledger-filters-inner {
+    width: min(100% - 24px, 1440px);
+    padding-block: 9px;
+    gap: 7px;
+  }
+
+  .ledger-search-input {
+    min-height: 38px;
+    font-size: 11px;
+  }
+
+  .ledger-tier-filters {
+    margin-inline: -1px;
+  }
+
+  .ledger-tier-chip {
+    min-height: 28px;
+    font-size: 10px;
+  }
+
+  .ledger-filter-groups {
+    width: 100%;
+    gap: 8px 10px;
+  }
+
+  .ledger-filter-group {
+    flex-wrap: wrap;
+  }
+
+  .ledger-filter-label {
+    font-size: 9px;
+  }
+
+  .ledger-select {
+    max-width: min(58vw, 225px);
+  }
+
+  .ledger-filter-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 420px) {
+  .ledger-filter-actions {
+    gap: 5px;
+  }
+
+}
+</style>

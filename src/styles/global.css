@@ -1,31 +1,561 @@
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
 @layer base {
   :root {
-    --ledger-parchment: #f9f7f1;
-    --ledger-ink: #1a1e24;
-    --ledger-gold: #c59b27;
-    --ledger-crimson: #8b1e22;
-    --ledger-navy: #16243b;
-    --ledger-border: #dcd6c8;
+    --ledger-parchment: #FBF6EA;
+    --ledger-paper: #F7F0DF;
+    --ledger-card: #F3ECDB;
+    --ledger-ink: #1e1b17;
+    --ledger-gold: #F29A2E;
+    --ledger-navy: #1B2F6B;
+    --ledger-deep: #111E47;
+    --ledger-border: #D9CFB8;
+    --ledger-green: #1E7A4E;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
     background-color: var(--ledger-parchment);
     color: var(--ledger-ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
   }
 
   h1, h2, h3, .font-serif-header {
-    font-family: "Georgia", "Cambria", "Times New Roman", serif;
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  }
+
+  .font-sans {
+    font-family: "Plus Jakarta Sans", sans-serif;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ledger-navy);
+    outline-offset: 2px;
   }
 }
 
-/* Custom Leaflet Map styling to feel like an authoritative archival ledger map */
+[class~="bg-[#f9f7f1]"] { background-color: var(--ledger-parchment); }
+[class~="bg-[#fdfcf9]"] { background-color: var(--ledger-card); }
+[class~="bg-[#f4efe4]"] { background-color: var(--ledger-paper); }
+[class~="bg-[#1a1e24]"],
+[class~="bg-[#16243b]"] { background-color: var(--ledger-deep); }
+[class~="bg-[#8b1e22]"] { background-color: var(--ledger-navy); }
+[class~="text-[#1a1e24]"] { color: var(--ledger-ink); }
+[class~="text-[#f9f7f1]"] { color: var(--ledger-parchment); }
+[class~="text-[#8b1e22]"] { color: var(--ledger-navy); }
+[class~="text-[#c59b27]"] { color: var(--ledger-gold); }
+[class~="border-[#dcd6c8]"] { border-color: var(--ledger-border); }
+[class~="border-[#c59b27]"] { border-color: var(--ledger-gold); }
+[class~="border-[#8b1e22]"] { border-color: var(--ledger-navy); }
+[class~="hover:bg-[#8b1e22]"]:hover { background-color: var(--ledger-deep); }
+[class~="hover:text-[#8b1e22]"]:hover { color: var(--ledger-deep); }
+
+.site-header {
+  background: var(--ledger-parchment);
+  border-bottom: 1px solid var(--ledger-border);
+  box-shadow: 0 2px 10px rgb(22 19 15 / 6%);
+}
+
+.site-header-inner {
+  width: min(100% - 40px, 1440px);
+  min-height: 76px;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  color: var(--ledger-deep);
+  text-decoration: none;
+}
+
+.brand-crest {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  transition: transform 160ms ease;
+}
+
+.brand-lockup:hover .brand-crest {
+  transform: rotate(-5deg);
+}
+
+.brand-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.brand-name {
+  font: 700 17px/1.2 "Playfair Display", Georgia, serif;
+  letter-spacing: -.02em;
+}
+
+.brand-caption {
+  color: #8a5100;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .13em;
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px;
+  border: 1px solid rgb(217 207 184 / 80%);
+  border-radius: 999px;
+  background: var(--ledger-card);
+}
+
+.site-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  color: #454650;
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.site-nav-link:hover,
+.site-nav-link.is-active {
+  color: var(--ledger-deep);
+  background: var(--ledger-parchment);
+}
+
+.site-nav-link.is-active {
+  box-shadow: inset 0 0 0 1px var(--ledger-border);
+}
+
+.nav-count {
+  min-width: 20px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: #E8F5EE;
+  color: var(--ledger-green);
+  font-size: 9px;
+  text-align: center;
+}
+
+.header-lunch-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border: 1px solid rgb(138 81 0 / 20%);
+  border-radius: 999px;
+  background: #ffdcbd;
+  color: #2c1600;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.header-lunch-link:hover {
+  background: #ffb86d;
+}
+
+.header-time {
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: rgb(255 255 255 / 55%);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+
+.site-footer {
+  background: var(--ledger-deep);
+  color: #d6d8e0;
+  border-top: 2px solid #F29A2E;
+  padding: 30px 20px;
+}
+
+.site-footer-inner {
+  width: min(100%, 1440px);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: 5fr 4fr 3fr;
+  gap: 24px;
+}
+
+.footer-column {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.footer-column-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #fff8f3;
+  font: 700 14px/1.4 "Playfair Display", Georgia, serif;
+}
+
+.footer-column-icon {
+  color: #ffdcbd;
+  font: 600 20px/1 "Plus Jakarta Sans", sans-serif;
+}
+
+.footer-section-title {
+  color: #ffdcbd;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.footer-creed {
+  margin: 0;
+  color: #fff8f3;
+  font: italic 12px/1.6 "Playfair Display", Georgia, serif;
+}
+
+.footer-detail {
+  margin: 0;
+  color: #c5c6d1;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.footer-jurisdiction {
+  align-content: start;
+}
+
+.footer-fact {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #e9e1da;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.footer-fact-icon {
+  flex: 0 0 15px;
+  color: #ffdcbd;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.footer-fact strong {
+  color: #fff8f3;
+}
+
+.footer-codex {
+  align-content: start;
+}
+
+.footer-links {
+  display: grid;
+  gap: 8px;
+}
+
+.footer-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #e9e1da;
+  font-size: 10px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 140ms ease;
+}
+
+.footer-links a:hover {
+  color: #fff8f3;
+}
+
+.footer-links a span {
+  width: 14px;
+  color: #F29A2E;
+  font-size: 12px;
+  text-align: center;
+}
+
+.footer-legal {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 11px;
+  border-top: 1px solid #25315b;
+  color: #aeb1c0;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.home-workspace {
+  width: min(100% - 40px, 1440px);
+  margin: 0 auto;
+  padding: 18px 0 28px;
+}
+
+.home-workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 1fr);
+  align-items: start;
+  gap: 18px;
+}
+
+.home-map-column {
+  min-width: 0;
+}
+
+.home-map-column > section {
+  height: min(68vh, 720px);
+  min-height: 520px;
+}
+
+.docket-panel {
+  overflow: hidden;
+  border: 1px solid var(--ledger-border);
+  border-radius: 12px;
+  background: var(--ledger-card);
+  box-shadow: 0 3px 12px -2px rgb(22 19 15 / 8%), 0 1px 3px rgb(22 19 15 / 4%);
+}
+
+.docket-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 1px 12px;
+}
+
+.docket-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: #8a5100;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.docket-title {
+  margin: 0;
+  color: var(--ledger-deep);
+  font: 600 24px/1.2 "Playfair Display", Georgia, serif;
+}
+
+.docket-sort {
+  color: #757681;
+  font-size: 9px;
+  text-align: right;
+}
+
+.docket-feature {
+  padding: 10px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 10px;
+  background: var(--ledger-parchment);
+}
+
+.docket-register {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--ledger-border);
+  color: #454650;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+}
+
+.docket-register strong {
+  color: var(--ledger-green);
+}
+
+.docket-feature-main {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+}
+
+.docket-award {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.docket-venue-name {
+  color: var(--ledger-deep);
+  font: 600 18px/1.2 "Playfair Display", Georgia, serif;
+  text-decoration: none;
+}
+
+.docket-venue-name:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--ledger-gold);
+}
+
+.docket-venue-meta {
+  margin-top: 4px;
+  color: #5a5b64;
+  font-size: 10px;
+}
+
+.docket-cost {
+  align-self: start;
+  padding: 5px 7px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 6px;
+  color: var(--ledger-deep);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.docket-food-order {
+  margin: 0;
+  padding: 10px 11px;
+  border-left: 2px solid var(--ledger-gold);
+  background: var(--ledger-paper);
+  color: #393831;
+  font: italic 12px/1.55 "Playfair Display", Georgia, serif;
+}
+
+.docket-feature-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.docket-action {
+  flex: 1;
+  padding: 9px 10px;
+  border: 1px solid var(--ledger-deep);
+  border-radius: 6px;
+  background: var(--ledger-deep);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.docket-action:hover {
+  background: var(--ledger-navy);
+}
+
+.docket-action.is-secondary {
+  border-color: var(--ledger-border);
+  background: transparent;
+  color: var(--ledger-ink);
+}
+
+.docket-list {
+  display: grid;
+  margin-top: 10px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 9px;
+  background: var(--ledger-parchment);
+}
+
+.docket-list-item {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.docket-list-item + .docket-list-item {
+  border-top: 1px solid var(--ledger-border);
+}
+
+.docket-list-item:hover {
+  background: #fffdf7;
+}
+
+.docket-rank {
+  color: #8a5100;
+  font: 700 10px/1 "Plus Jakarta Sans", sans-serif;
+}
+
+.docket-list-name {
+  display: block;
+  color: var(--ledger-deep);
+  font: 600 14px/1.25 "Playfair Display", Georgia, serif;
+}
+
+.docket-list-meta {
+  display: block;
+  margin-top: 3px;
+  color: #5a5b64;
+  font-size: 9px;
+}
+
+.docket-list-cost {
+  color: #454650;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.weekly-bulletin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 12px;
+  padding: 11px 13px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 9px;
+  background: var(--ledger-card);
+  color: var(--ledger-ink);
+  font-size: 10px;
+}
+
+.weekly-bulletin strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #8a5100;
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.weekly-bulletin a {
+  flex: 0 0 auto;
+  padding: 6px 8px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 5px;
+  color: var(--ledger-deep);
+  font-weight: 700;
+  text-decoration: none;
+}
+
 .leaflet-container {
-  font-family: inherit;
-  background-color: #f4efe4;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  background-color: var(--ledger-paper);
+}
+
+.leaflet-control-zoom a {
+  color: var(--ledger-deep) !important;
 }
 
 .custom-ledger-pin {
@@ -33,15 +563,126 @@
   border: none;
 }
 
-/* Walking ring labels */
 .ring-label {
-  background: rgba(25, 30, 36, 0.85);
-  color: #f9f7f1;
+  background: rgb(17 30 71 / 88%);
+  color: var(--ledger-parchment);
   font-size: 10px;
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 9999px;
-  border: 1px solid rgba(197, 155, 39, 0.4);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  border: 1px solid rgb(242 154 46 / 50%);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
   white-space: nowrap;
+}
+
+@media (max-width: 1000px) {
+  .site-header-inner {
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    padding-block: 9px;
+  }
+
+  .site-nav {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .home-workspace-grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(290px, .85fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .site-header-inner {
+    width: min(100% - 28px, 1440px);
+  }
+
+  .brand-crest {
+    width: 36px;
+    height: 36px;
+  }
+
+  .brand-name {
+    font-size: 15px;
+  }
+
+  .brand-caption {
+    font-size: 8px;
+  }
+
+  .site-nav {
+    justify-content: flex-start;
+    overflow-x: auto;
+    border-radius: 9px;
+  }
+
+  .site-nav-link {
+    padding-inline: 9px;
+    font-size: 10px;
+  }
+
+  .header-lunch-link {
+    padding: 7px 9px;
+    font-size: 10px;
+  }
+
+  .home-workspace {
+    width: min(100% - 24px, 1440px);
+    padding-top: 12px;
+  }
+
+  .home-workspace-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .home-map-column > section {
+    height: 58vh;
+    min-height: 420px;
+  }
+
+  .docket-heading {
+    padding-inline: 2px;
+  }
+
+  .docket-title {
+    font-size: 22px;
+  }
+
+  .site-footer-inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .footer-editorial {
+    grid-column: 1 / -1;
+  }
+
+  .footer-legal {
+    flex-direction: column;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-footer-inner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .footer-editorial,
+  .footer-legal {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .site-nav-link {
+    gap: 5px;
+    padding-inline: 7px;
+  }
+
+  .site-nav-link > span:first-child {
+    display: none;
+  }
 }

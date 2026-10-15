@@ -5,7 +5,7 @@ export const initialFilterState: FilterState = {
   tiers: ['Approved'],
   showAllTiers: false,
   cost: 'all',
-  maxWalkMinutes: 30,
+  maxWalkMinutes: 25,
   inspectedDays: 'all',
   cuisine: 'all',
   searchQuery: '',

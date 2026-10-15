@@ -12,116 +12,109 @@ const {
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
+const navigation = [
+  { href: '/manifesto', label: 'The Manifesto', icon: '📜' },
+  { href: '/tiers/approved', label: 'Tiers', icon: '🏅' },
+  { href: '/inspections', label: 'Inspections', icon: '▤' },
+  { href: '/hall-of-shame', label: 'Hall of Shame', icon: '⚖' },
+];
 ---
 
 <!doctype html>
-<html lang="en" class="h-full bg-[#f9f7f1]">
+<html lang="en" class="min-h-full">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#FBF6EA" />
     <link rel="icon" type="image/png" href="/brand/logo.png" />
     <title>{title}</title>
     <meta name="description" content={description} />
   </head>
-  <body class="min-h-full flex flex-col text-[#1a1e24] bg-[#f9f7f1] antialiased selection:bg-[#8b1e22] selection:text-white">
-    <!-- Official Ledger Banner & Header -->
-    <header class="bg-[#1a1e24] text-[#f9f7f1] border-b-2 border-[#c59b27] shadow-md sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-          <!-- Logo & Brand Crest -->
-          <a href="/" class="flex items-center gap-3 group">
-            <img
-              src="/brand/logo.png"
-              alt="MCR Lunch Club Official Logo"
-              class="w-11 h-11 object-contain drop-shadow-md group-hover:rotate-6 transition-transform select-none"
-            />
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-serif-header text-lg sm:text-xl font-bold tracking-tight text-[#f9f7f1]">
-                  MCR Lunch Club
-                </span>
-                <span class="bg-[#c59b27]/20 border border-[#c59b27]/50 text-[#c59b27] text-[10px] font-mono px-1.5 py-0.5 rounded uppercase tracking-widest hidden sm:inline-block">
-                  Ledger of Verdicts
-                </span>
-              </div>
-              <p class="text-[10px] text-stone-400 font-serif-header italic -mt-1 hidden sm:block">
-                Sovereign culinary jurisdiction across Central Manchester
-              </p>
-            </div>
-          </a>
+  <body class="min-h-screen flex flex-col text-[#1e1b17] bg-[#FBF6EA] antialiased selection:bg-[#1B2F6B] selection:text-white">
+    <header class="site-header sticky top-0 z-50">
+      <div class="site-header-inner">
+        <a href="/" class="brand-lockup" aria-label="MCR Lunch Club home">
+          <img src="/brand/logo.png" alt="" class="brand-crest" />
+          <span class="brand-copy">
+            <span class="brand-name">MCR LUNCH CLUB</span>
+            <span class="brand-caption">LEDGER OF VERDICTS · MANCHESTER</span>
+          </span>
+        </a>
 
-          <!-- Navigation Links -->
-          <nav class="flex items-center gap-1 sm:gap-2 font-serif-header text-xs sm:text-sm">
-            <a
-              href="/"
-              class={`px-2.5 py-1.5 rounded transition-colors ${currentPath === '/' ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800'}`}
-            >
-              🗺️ Map
-            </a>
-            <a
-              href="/manifesto"
-              class={`px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 font-bold ${
-                currentPath === '/manifesto'
-                  ? 'bg-[#c59b27] text-[#1a1e24] border-[#c59b27] shadow-sm'
-                  : 'bg-[#c59b27]/15 text-[#c59b27] border-[#c59b27]/60 hover:bg-[#c59b27] hover:text-[#1a1e24]'
-              }`}
-            >
-              <span>📜</span>
-              <span>The Manifesto</span>
-            </a>
-            <a
-              href="/tiers/approved"
-              class={`px-2.5 py-1.5 rounded transition-colors ${currentPath.startsWith('/tiers') ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800'}`}
-            >
-              🏆 Tiers
-            </a>
-            <a
-              href="/hall-of-shame"
-              class={`px-2.5 py-1.5 rounded transition-colors ${currentPath === '/hall-of-shame' ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800'}`}
-            >
-              🌹 Hall of Shame
-            </a>
-            <a
-              href="/inspections"
-              class={`px-2.5 py-1.5 rounded transition-colors ${currentPath === '/inspections' ? 'bg-[#8b1e22] text-white font-bold' : 'text-stone-300 hover:text-white hover:bg-stone-800'}`}
-            >
-              📋 Audits
-            </a>
-          </nav>
-        </div>
+        <nav class="site-nav" aria-label="Main navigation">
+          {navigation.map((item) => {
+            const active = item.href === '/tiers/approved'
+              ? currentPath.startsWith('/tiers')
+              : currentPath === item.href;
+            return (
+              <a
+                href={item.href}
+                class:list={['site-nav-link', active && 'is-active']}
+                aria-current={active ? 'page' : undefined}
+              >
+                <span aria-hidden="true">{item.icon}</span>
+                <span>{item.label}</span>
+                {item.label === 'Inspections' && <span class="nav-count">90</span>}
+              </a>
+            );
+          })}
+        </nav>
+
+        <a href="/#where-to-today" class="header-lunch-link" data-open-where-today>
+          <span aria-hidden="true">◉</span>
+          <span>Where to today?</span>
+          <span class="header-time">12:25</span>
+        </a>
       </div>
     </header>
 
-    <!-- Main Content Container -->
     <main class="flex-1 flex flex-col">
       <slot />
     </main>
 
-    <!-- Pompous Archival Footer -->
-    <footer class="bg-[#16243b] text-stone-400 border-t border-[#c59b27]/30 text-xs py-8 px-4 font-serif-header">
-      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-        <div class="space-y-1">
-          <div class="text-[#c59b27] font-bold tracking-wider uppercase text-[11px]">
-            The Sovereign Committee of the Manchester Lunch Club
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <div class="footer-column footer-editorial">
+          <div class="footer-column-title">
+            <span class="footer-column-icon" aria-hidden="true">⚖</span>
+            <span>The Sovereign Committee of the Manchester Lunch Club</span>
           </div>
-          <p class="text-stone-300 italic text-xs max-w-xl">
-            “We lunch with purpose. We judge with integrity. We return only where deserved.”
-          </p>
-          <p class="text-stone-400 text-[11px] max-w-xl">
-            Independent venues first. Two separate satisfactory inspections required for Approved status. Cost Key: £ (&lt;£10), ££ (&gt;£10), £££ (payday treat).
+          <p class="footer-creed">“We lunch with purpose. We judge with integrity. We return only where deserved.”</p>
+          <p class="footer-detail">
+            Independent venues first. Two separate satisfactory inspections required for Approved status.
+            Extravagance without merit will not pass inspection.
           </p>
         </div>
 
-        <div class="flex flex-col items-center md:items-end gap-1 text-[11px]">
-          <span class="text-stone-300 font-mono">Jurisdiction: Central Manchester &bull; 2.5 Miles from Base</span>
-          <span class="text-stone-500 italic">No right of appeal is recognized. All decisions of the Chairs are final.</span>
-          <div class="flex items-center gap-3 mt-1 text-[10px] text-stone-400">
-            <a href="/manifesto" class="text-[#c59b27] font-bold hover:underline">The Manifesto</a>
-            <span>&bull;</span>
-            <a href="/hall-of-shame" class="hover:underline">Bribery Register</a>
-            <span>&bull;</span>
-            <a href="/api/venues.json" class="hover:underline">Ledger Data (JSON)</a>
+        <div class="footer-column footer-jurisdiction">
+          <span class="footer-section-title">Jurisdictional Scope &amp; Currency Key</span>
+          <div class="footer-fact">
+            <span class="footer-fact-icon" aria-hidden="true">⌖</span>
+            <span>Jurisdiction: Central Manchester · 2.5 Miles from Base at Spinningfields Crown Square.</span>
           </div>
+          <div class="footer-fact">
+            <span class="footer-fact-icon" aria-hidden="true">£</span>
+            <span><strong>Cost Key:</strong> £ (&lt;£10) · ££ (£10–£20) · £££ (Payday treat)</span>
+          </div>
+          <div class="footer-fact">
+            <span class="footer-fact-icon" aria-hidden="true">✓</span>
+            <span>No right of appeal is recognized. All decisions of the Chairs are final.</span>
+          </div>
+        </div>
+
+        <div class="footer-column footer-codex">
+          <span class="footer-section-title">Tribunal Codex</span>
+          <div class="footer-links">
+            <a href="/manifesto"><span aria-hidden="true">▤</span>The Manifesto</a>
+            <a href="/hall-of-shame"><span aria-hidden="true">⚖</span>Bribery Register</a>
+            <a href="/#suggest-a-venue"><span aria-hidden="true">＋</span>Suggest a Venue</a>
+            <a href="/manifesto"><span aria-hidden="true">▣</span>Chairs' Code of Conduct</a>
+          </div>
+        </div>
+
+        <div class="footer-legal">
+          <span>© 2024 The High Tribunal of MCR Lunch Club. Recorded at Spinningfields, Manchester. All official decrees gazetted.</span>
+          <span>Transcripts entered in perpetuity under the Crown Square Accord.</span>
         </div>
       </div>
     </footer>

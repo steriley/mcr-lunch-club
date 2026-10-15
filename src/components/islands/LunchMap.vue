@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full h-full min-h-[500px] overflow-hidden bg-[#f4efe4] rounded-lg border border-[#dcd6c8] shadow-inner">
+  <div class="relative isolate w-full h-full min-h-[500px] overflow-hidden bg-[#f4efe4] rounded-lg border border-[#dcd6c8] shadow-inner">
     <!-- Map Container -->
     <div ref="mapContainer" class="w-full h-full min-h-[500px] z-0"></div>
 
@@ -93,12 +93,12 @@ let ringsLayer: any = null;
 
 // Status colors
 const STATUS_COLORS: Record<TierStatus, { bg: string; border: string; text: string; pinBg: string }> = {
-  'Approved': { bg: '#8b1e22', border: '#c59b27', text: '#ffffff', pinBg: '#8b1e22' },
-  'Under Consideration': { bg: '#d97706', border: '#f59e0b', text: '#ffffff', pinBg: '#d97706' },
-  'To Be Assessed': { bg: '#3b82f6', border: '#60a5fa', text: '#ffffff', pinBg: '#3b82f6' },
-  'Rejected': { bg: '#4b5563', border: '#9ca3af', text: '#ffffff', pinBg: '#374151' },
-  'If We Must': { bg: '#854d0e', border: '#ca8a04', text: '#ffffff', pinBg: '#854d0e' },
-  'Gone But Not Forgotten': { bg: '#78716c', border: '#a8a29e', text: '#f5f5f4', pinBg: '#78716c' },
+  'Approved': { bg: '#1E7A4E', border: '#155b39', text: '#ffffff', pinBg: '#1E7A4E' },
+  'Under Consideration': { bg: '#C27803', border: '#8a5100', text: '#ffffff', pinBg: '#C27803' },
+  'To Be Assessed': { bg: '#5A6474', border: '#454e5c', text: '#ffffff', pinBg: '#5A6474' },
+  'Rejected': { bg: '#B92B27', border: '#8f201d', text: '#ffffff', pinBg: '#B92B27' },
+  'If We Must': { bg: '#7C3A82', border: '#602d64', text: '#ffffff', pinBg: '#7C3A82' },
+  'Gone But Not Forgotten': { bg: '#71717A', border: '#52525b', text: '#ffffff', pinBg: '#71717A' },
 };
 
 // Filtered venues calculation
