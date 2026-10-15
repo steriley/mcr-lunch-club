@@ -686,51 +686,171 @@
 .docket-list {
   display: grid;
   margin-top: 10px;
-  border: 1px solid var(--ledger-border);
-  border-radius: 9px;
-  background: var(--ledger-parchment);
+  gap: 8px;
 }
 
 .docket-list-item {
-  display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 11px;
+  min-width: 0;
   padding: 10px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 10px;
+  background: var(--ledger-card);
   color: inherit;
   text-decoration: none;
+  box-shadow: 0 1px 3px rgb(22 19 15 / 4%);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
 }
 
-.docket-list-item + .docket-list-item {
-  border-top: 1px solid var(--ledger-border);
+.docket-list-image-wrap {
+  position: relative;
+  display: block;
+  flex: 0 0 96px;
+  width: 96px;
+  height: 96px;
+  overflow: hidden;
+  border: 1px solid var(--ledger-border);
+  border-radius: 8px;
+  background: var(--ledger-parchment);
 }
 
-.docket-list-item:hover {
+.docket-list-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 300ms ease;
+}
+
+.docket-list-item:hover,
+.docket-list-item:focus-visible {
+  border-color: rgb(17 30 71 / 45%);
   background: #fffdf7;
+  box-shadow: 0 4px 12px rgb(22 19 15 / 9%);
+}
+
+.docket-list-item:hover .docket-list-image,
+.docket-list-item:focus-visible .docket-list-image {
+  transform: scale(1.06);
+}
+
+.docket-list-item:focus-visible {
+  outline: 2px solid var(--ledger-gold);
+  outline-offset: 2px;
 }
 
 .docket-rank {
-  color: #8a5100;
-  font: 700 10px/1 "Plus Jakarta Sans", sans-serif;
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  padding: 3px 5px;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: 4px;
+  background: var(--ledger-deep);
+  color: white;
+  font: 700 9px/1 "Plus Jakarta Sans", sans-serif;
+}
+
+.docket-list-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+  align-self: stretch;
+  padding: 1px 0;
+}
+
+.docket-list-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 7px;
+  min-width: 0;
+}
+
+.docket-list-heading {
+  min-width: 0;
 }
 
 .docket-list-name {
   display: block;
   color: var(--ledger-deep);
-  font: 600 14px/1.25 "Playfair Display", Georgia, serif;
+  font: 600 15px/1.2 "Playfair Display", Georgia, serif;
+  transition: color 180ms ease;
+}
+
+.docket-list-item:hover .docket-list-name,
+.docket-list-item:focus-visible .docket-list-name {
+  color: #8a5100;
 }
 
 .docket-list-meta {
   display: block;
   margin-top: 3px;
+  overflow: hidden;
   color: #5a5b64;
-  font-size: 9px;
+  font-size: 8px;
+  letter-spacing: .035em;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .docket-list-cost {
-  color: #454650;
-  font-size: 11px;
+  flex: 0 0 auto;
+  padding: 3px 5px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 4px;
+  background: var(--ledger-paper);
+  color: var(--ledger-deep);
+  font-size: 10px;
   font-weight: 700;
+}
+
+.docket-list-description {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #454650;
+  font-size: 9px;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.docket-list-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  padding-top: 5px;
+  border-top: 1px solid rgb(213 204 183 / 65%);
+}
+
+.docket-list-walk {
+  overflow: hidden;
+  color: var(--ledger-deep);
+  font-size: 8px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.docket-list-tier {
+  flex: 0 0 auto;
+  padding: 3px 5px;
+  border: 1px solid rgb(30 122 78 / 20%);
+  border-radius: 4px;
+  background: #E8F5EE;
+  color: var(--ledger-green);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
 }
 
 .weekly-bulletin {

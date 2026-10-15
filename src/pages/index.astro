@@ -146,12 +146,32 @@ const featuredAddress = featuredVenue?.address.split(',')[0] ?? '';
         <div class="docket-list" aria-label="More approved venues">
           {docketVenues.map((venue) => (
             <a class="docket-list-item" href={`/venues/${venue.slug}`}>
-              <span class="docket-rank">#{String(venue.rank).padStart(2, '0')}</span>
-              <span>
-                <span class="docket-list-name">{venue.name}</span>
-                <span class="docket-list-meta">{venue.cuisine} · {venue.walkingTimeMin} min walk</span>
+              <span class="docket-list-image-wrap">
+                <img
+                  class="docket-list-image"
+                  src={`/venues/${venue.slug}.jpg`}
+                  alt=""
+                  width="96"
+                  height="96"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span class="docket-rank">#{String(venue.rank).padStart(2, '0')}</span>
               </span>
-              <span class="docket-list-cost">{venue.cost}</span>
+              <span class="docket-list-content">
+                <span class="docket-list-header">
+                  <span class="docket-list-heading">
+                    <span class="docket-list-name">{venue.name}</span>
+                    <span class="docket-list-meta">{venue.cuisine}</span>
+                  </span>
+                  <span class="docket-list-cost">{venue.cost}</span>
+                </span>
+                <span class="docket-list-description">{venue.eatLikeUs}</span>
+                <span class="docket-list-footer">
+                  <span class="docket-list-walk">{venue.walkingTimeMin} min walk · {venue.distanceMiles.toFixed(2)} mi</span>
+                  <span class="docket-list-tier">Approved tier</span>
+                </span>
+              </span>
             </a>
           ))}
         </div>
