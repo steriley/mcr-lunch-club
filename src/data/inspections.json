@@ -4,23 +4,17 @@
     "venueSlug": "crazy-pedros",
     "venueName": "Crazy Pedro’s",
     "date": "2026-09-18",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Ste Riley", "T Bag"],
     "verdict": "satisfactory",
     "whatWasOrdered": "The Chippy Tea slice with curry sauce dip, washed down with a can of Ting. Do not hesitate.",
-    "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
+    "notes": "Proof that excellence needn’t be extravagant: two proper slices and a beer for less than most places charge for a sad meal deal."
   },
   {
     "id": "crazy-pedros-insp-2",
     "venueSlug": "crazy-pedros",
     "venueName": "Crazy Pedro’s",
     "date": "2026-05-14",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -30,10 +24,7 @@
     "venueSlug": "fazenda-fogo-de-chao",
     "venueName": "Fazenda “Fogo de Chão“",
     "date": "2026-09-04",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Picanha medium-rare straight off the skewer. Skip the salad bar filler; preserve maximum abdominal capacity for continuous skewers.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -43,11 +34,7 @@
     "venueSlug": "fazenda-fogo-de-chao",
     "venueName": "Fazenda “Fogo de Chão“",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -57,10 +44,7 @@
     "venueSlug": "flat-iron",
     "venueName": "Flat Iron",
     "date": "2026-08-28",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "The signature flat iron steak, medium-rare, beef dripping chips, béarnaise, and the ceremonial salted caramel soft serve cone on exit.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -70,10 +54,7 @@
     "venueSlug": "flat-iron",
     "venueName": "Flat Iron",
     "date": "2026-05-14",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -83,11 +64,7 @@
     "venueSlug": "street-guys-street-star",
     "venueName": "Street Guys (Street Star)",
     "date": "2026-08-15",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Double beef smash burger with grilled jalapeños, signature sauce, and cajun seasoned fries.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -97,10 +74,7 @@
     "venueSlug": "street-guys-street-star",
     "venueName": "Street Guys (Street Star)",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -110,10 +84,7 @@
     "venueSlug": "wok-to-walk",
     "venueName": "Wok to Walk",
     "date": "2026-07-22",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Egg noodles, sweet & sour sauce, chicken breast, broccoli florets, and crispy fried garlic on top.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -123,10 +94,7 @@
     "venueSlug": "wok-to-walk",
     "venueName": "Wok to Walk",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -136,10 +104,7 @@
     "venueSlug": "wrights-fish-chips",
     "venueName": "Wright's Fish & Chips",
     "date": "2026-09-11",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Fresh haddock, proper beef dripping chips, marrowfat mushy peas, Irish curry sauce, and a floured barm cake for assembly.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -149,10 +114,7 @@
     "venueSlug": "wrights-fish-chips",
     "venueName": "Wright's Fish & Chips",
     "date": "2026-05-14",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -162,10 +124,7 @@
     "venueSlug": "lakeland-grocers-in-the-city",
     "venueName": "Lakeland Grocers in the City",
     "date": "2026-06-30",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Cumbrian shortcrust pasty, thick Cumberland sausage roll, and a slice of gingerbread.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -175,11 +134,7 @@
     "venueSlug": "lakeland-grocers-in-the-city",
     "venueName": "Lakeland Grocers in the City",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -189,10 +144,7 @@
     "venueSlug": "mick-hucknalls-rustik-bites",
     "venueName": "Mick Hucknall’s Rustik Bites",
     "date": "2026-07-09",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "The Deansgate sausage bap with brown sauce, followed by an unapologetic square of flapjack.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -202,10 +154,7 @@
     "venueSlug": "mick-hucknalls-rustik-bites",
     "venueName": "Mick Hucknall’s Rustik Bites",
     "date": "2026-05-14",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -215,11 +164,7 @@
     "venueSlug": "new-wave-ramen",
     "venueName": "New Wave Ramen",
     "date": "2026-08-19",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Shoyu paitan ramen, double chashu pork, ajitsuke tamago, nori, and a side of chili rayu. Slurp with dignity.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -229,10 +174,7 @@
     "venueSlug": "new-wave-ramen",
     "venueName": "New Wave Ramen",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -242,10 +184,7 @@
     "venueSlug": "double-zero",
     "venueName": "Double Zero",
     "date": "2026-09-02",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Diavola with nduja and hot honey drizzle. Crust blistering is exemplary.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -255,10 +194,7 @@
     "venueSlug": "double-zero",
     "venueName": "Double Zero",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -268,10 +204,7 @@
     "venueSlug": "fat-pats",
     "venueName": "Fat Pat’s",
     "date": "2026-09-25",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Hot Honey Fried Chicken 8-inch milk bread sub with pimento cheese and pickles. Grab four napkins immediately.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -281,10 +214,7 @@
     "venueSlug": "fat-pats",
     "venueName": "Fat Pat’s",
     "date": "2026-05-14",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -294,10 +224,7 @@
     "venueSlug": "happy-seasons",
     "venueName": "Happy Seasons",
     "date": "2026-09-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Three-roast meat platter (Crispy Pork Belly, Roast Duck, Char Siu) on boiled rice with supreme ginger-scallion sauce.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -307,11 +234,7 @@
     "venueSlug": "happy-seasons",
     "venueName": "Happy Seasons",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -321,10 +244,7 @@
     "venueSlug": "listos-burrito",
     "venueName": "Listos Burrito",
     "date": "2026-08-04",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Slow-braised pork carnitas burrito, black beans, lime rice, charred habanero salsa, and Monterey Jack.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -334,10 +254,7 @@
     "venueSlug": "listos-burrito",
     "venueName": "Listos Burrito",
     "date": "2026-05-14",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -347,11 +264,7 @@
     "venueSlug": "lotties-bakehouse",
     "venueName": "Lottie’s Bakehouse",
     "date": "2026-02-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Artisanal grilled cheese on seeded sourdough, followed by the pistachio cardamom custard bun.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -361,10 +274,7 @@
     "venueSlug": "lotties-bakehouse",
     "venueName": "Lottie’s Bakehouse",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -374,10 +284,7 @@
     "venueSlug": "that-ziki",
     "venueName": "That Ziki",
     "date": "2026-08-11",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Pork belly gyros wrap loaded with oregano fries, pickled onions, and house tzatziki.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -387,10 +294,7 @@
     "venueSlug": "that-ziki",
     "venueName": "That Ziki",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -400,10 +304,7 @@
     "venueSlug": "bunny-jacksons",
     "venueName": "Bunny Jacksons",
     "date": "2026-07-17",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "A tower of 20p wings (Buffalo and Nashville Hot), loaded tater tots, and an ice-cold root beer.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -413,10 +314,7 @@
     "venueSlug": "bunny-jacksons",
     "venueName": "Bunny Jacksons",
     "date": "2026-05-14",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -426,10 +324,7 @@
     "venueSlug": "bird-of-prey",
     "venueName": "Bird of Prey",
     "date": "2026-07-28",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "The Messy Bird burger with spicy fried thigh, slaw, house pickles, and seasoned crinkle fries.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -439,11 +334,7 @@
     "venueSlug": "bird-of-prey",
     "venueName": "Bird of Prey",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -453,10 +344,7 @@
     "venueSlug": "burgerism",
     "venueName": "Burgerism",
     "date": "2026-08-31",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "The Cheesed burger (double smash patty, American cheese, house sauce), seasoned skin-on fries, and chicken bites.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -466,10 +354,7 @@
     "venueSlug": "burgerism",
     "venueName": "Burgerism",
     "date": "2026-05-14",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -479,11 +364,7 @@
     "venueSlug": "daves-hot-chicken",
     "venueName": "Dave’s Hot Chicken",
     "date": "2026-08-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Two tender slider combo at 'Hot' spice tier with crinkle fries and Dave's sauce. (Do not order Reaper before tribunal sessions).",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -493,10 +374,7 @@
     "venueSlug": "daves-hot-chicken",
     "venueName": "Dave’s Hot Chicken",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -506,10 +384,7 @@
     "venueSlug": "detroit-slims",
     "venueName": "Detroit Slims",
     "date": "2026-09-08",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Pepperoni square pan slice with caramelized frico cheese crust and spicy marinara dip.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -519,10 +394,7 @@
     "venueSlug": "detroit-slims",
     "venueName": "Detroit Slims",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -532,10 +404,7 @@
     "venueSlug": "wing-stop",
     "venueName": "Wing Stop",
     "date": "2026-07-15",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "8 boneless wings tossed in Garlic Parmesan and Mango Habanero, plus seasoned voodoo fries.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -545,10 +414,7 @@
     "venueSlug": "wing-stop",
     "venueName": "Wing Stop",
     "date": "2026-05-14",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -558,10 +424,7 @@
     "venueSlug": "northern-soul",
     "venueName": "Northern Soul",
     "date": "2026-08-25",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "The Soul Classic (secret three-cheese blend on sourdough) with caramelized onion chutney and a pot of tomato soup dip.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -571,11 +434,7 @@
     "venueSlug": "northern-soul",
     "venueName": "Northern Soul",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -585,10 +444,7 @@
     "venueSlug": "popeyes",
     "venueName": "Popeyes",
     "date": "2026-06-18",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Spicy Chicken Sandwich, cajun fries, and a buttermilk biscuit with honey.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -598,10 +454,7 @@
     "venueSlug": "popeyes",
     "venueName": "Popeyes",
     "date": "2026-05-14",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -611,11 +464,7 @@
     "venueSlug": "salt-pepper",
     "venueName": "Salt & Pepper",
     "date": "2026-09-17",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "The Half-and-Half (salt & pepper crispy chicken over chips and egg fried rice) with sweet curry sauce and extra fresh chilies.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -625,10 +474,7 @@
     "venueSlug": "salt-pepper",
     "venueName": "Salt & Pepper",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -638,10 +484,7 @@
     "venueSlug": "this-that",
     "venueName": "This & That",
     "date": "2026-09-22",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Rice 'n' Three: Lamb Nihari, Chicken Tikka Masala, and Chana Dal, accompanied by a fresh tandoori roti.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -651,10 +494,7 @@
     "venueSlug": "this-that",
     "venueName": "This & That",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -664,10 +504,7 @@
     "venueSlug": "zaytoni",
     "venueName": "Zaytoni",
     "date": "2026-06-25",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Chicken and lamb mixed shawarma wrap toasted on the saj with extra garlic toum and pickled gherkins.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -677,10 +514,7 @@
     "venueSlug": "zaytoni",
     "venueName": "Zaytoni",
     "date": "2026-05-14",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -690,10 +524,7 @@
     "venueSlug": "kabana",
     "venueName": "Kabana",
     "date": "2026-01-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Karahi Gosht and Daal over saffron basmati rice with freshly slapped roti.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -703,11 +534,7 @@
     "venueSlug": "kabana",
     "venueName": "Kabana",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -717,10 +544,7 @@
     "venueSlug": "nells-pizza",
     "venueName": "Nell’s Pizza",
     "date": "2026-08-05",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "14-inch Original Sausage slice or cheese slice folded in half, dipped in hot honey.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -730,10 +554,7 @@
     "venueSlug": "nells-pizza",
     "venueName": "Nell’s Pizza",
     "date": "2026-05-14",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -743,11 +564,7 @@
     "venueSlug": "bada-bing",
     "venueName": "Bada Bing",
     "date": "2026-09-26",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "The Carmela sub: fennel salami, spicy mortadella, aged provolone, shredded iceberg, and house vinaigrette on focaccia.",
     "notes": "Confirmatory audit conducted under standard 12:25 operational conditions. Standards maintained, portion ratio exemplary, decorum upheld."
@@ -757,10 +574,7 @@
     "venueSlug": "bada-bing",
     "venueName": "Bada Bing",
     "date": "2026-05-14",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Secondary benchmark sampling and thermal temperature audit.",
     "notes": "Inaugural assessment visit. Met stringent criteria for tier admission under Article 2.1."
@@ -770,10 +584,7 @@
     "venueSlug": "pizza-pilgrims",
     "venueName": "Pizza Pilgrims",
     "date": "2026-09-10",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -783,10 +594,7 @@
     "venueSlug": "sandys-smoke-shed",
     "venueName": "Sandy’s Smoke Shed",
     "date": "2026-09-10",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -796,10 +604,7 @@
     "venueSlug": "forbici-pizza",
     "venueName": "Forbici Pizza",
     "date": "2026-09-10",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -809,10 +614,7 @@
     "venueSlug": "ohannes-burger",
     "venueName": "Ohannes Burger",
     "date": "2026-09-10",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -822,11 +624,7 @@
     "venueSlug": "viet-deli",
     "venueName": "Viet Deli",
     "date": "2026-09-10",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -836,10 +634,7 @@
     "venueSlug": "china-buffet",
     "venueName": "China Buffet",
     "date": "2026-09-10",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -849,10 +644,7 @@
     "venueSlug": "oppa-chicken",
     "venueName": "Oppa Chicken",
     "date": "2026-09-10",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -862,10 +654,7 @@
     "venueSlug": "happy-lemon",
     "venueName": "Happy Lemon",
     "date": "2026-09-10",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -875,10 +664,7 @@
     "venueSlug": "soup-co",
     "venueName": "Soup Co",
     "date": "2026-09-10",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -888,11 +674,7 @@
     "venueSlug": "house-of-social",
     "venueName": "House of Social",
     "date": "2026-09-10",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -902,10 +684,7 @@
     "venueSlug": "vietshack",
     "venueName": "VietShack",
     "date": "2026-09-10",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -915,10 +694,7 @@
     "venueSlug": "ad-maiora",
     "venueName": "Ad Maiora",
     "date": "2026-09-10",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -928,10 +704,7 @@
     "venueSlug": "buttys-booth",
     "venueName": "Butty’s Booth",
     "date": "2026-09-10",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "satisfactory",
     "whatWasOrdered": "Trial tasting platter and speed-of-service trial.",
     "notes": "Single satisfactory inspection logged. One further confirmatory inspection required before admission to the Approved pantheon."
@@ -941,10 +714,7 @@
     "venueSlug": "arndale-shawarma",
     "venueName": "Arndale Shawarma",
     "date": "2025-11-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity."
@@ -954,10 +724,7 @@
     "venueSlug": "cafe-istanbul",
     "venueName": "Cafe Istanbul",
     "date": "2025-11-20",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity."
@@ -967,11 +734,7 @@
     "venueSlug": "caribbean-flavas",
     "venueName": "Caribbean Flavas",
     "date": "2025-11-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Historic map record; operation/current venue not confirmed."
@@ -981,10 +744,7 @@
     "venueSlug": "great-british-doner",
     "venueName": "Great British Doner",
     "date": "2025-11-20",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Selected Deansgate branch; Great British Doner also operates other Manchester branches."
@@ -994,10 +754,7 @@
     "venueSlug": "hop-vietnamese",
     "venueName": "Hop Vietnamese",
     "date": "2025-11-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity."
@@ -1007,10 +764,7 @@
     "venueSlug": "itsu",
     "venueName": "Itsu",
     "date": "2025-11-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Selected Spinningfields branch; multiple Manchester branches possible."
@@ -1020,10 +774,7 @@
     "venueSlug": "katsouris-deli",
     "venueName": "Katsouris Deli",
     "date": "2025-11-20",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity."
@@ -1033,11 +784,7 @@
     "venueSlug": "koreana",
     "venueName": "Koreana",
     "date": "2025-11-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity."
@@ -1047,10 +794,7 @@
     "venueSlug": "panchos-burritos",
     "venueName": "Panchos Burritos",
     "date": "2025-11-20",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Market stall; postcode centroid represents whole market, not FC1 stall."
@@ -1060,10 +804,7 @@
     "venueSlug": "pret-a-manger",
     "venueName": "Pret A Manger",
     "date": "2025-11-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "PROVISIONAL BRANCH: 4 Hardman Square, Spinningfields, chosen as a plausible central location; the Lunch Club did not specify which Pret. This is the M3 3EB postcode centroid, not a verified shop doorway; please confirm branch."
@@ -1073,10 +814,7 @@
     "venueSlug": "salvis",
     "venueName": "Salvi’s",
     "date": "2025-11-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Provisional choice: Corn Exchange. Multiple Salvi’s branches, and some have closed; confirm visited branch."
@@ -1086,10 +824,7 @@
     "venueSlug": "smoke-pepper",
     "venueName": "Smoke & Pepper",
     "date": "2025-11-20",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity."
@@ -1099,11 +834,7 @@
     "venueSlug": "tangerine",
     "venueName": "Tangerine",
     "date": "2025-11-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity."
@@ -1113,10 +844,7 @@
     "venueSlug": "wagamama",
     "venueName": "Wagamama",
     "date": "2025-11-20",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Provisional choice: St Peter’s Square; multiple branches including Printworks. Postcode is recorded as terminated on doogal; use as approximate only."
@@ -1126,10 +854,7 @@
     "venueSlug": "pho-cue",
     "venueName": "Pho Cue",
     "date": "2025-11-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Rejected due to being closed during inspections (**)"
@@ -1139,10 +864,7 @@
     "venueSlug": "dunkin-burgers",
     "venueName": "Dunkin' Burgers",
     "date": "2025-11-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Chair Fletcher", "Comptroller Davies"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Verified FSA listing identifies Unit F8 in Manchester Arndale Market. Postcode coordinates locate the market, not an individual market stall."
@@ -1152,10 +874,7 @@
     "venueSlug": "maki-ramen",
     "venueName": "Maki & Ramen",
     "date": "2025-11-20",
-    "attendees": [
-      "Vice-Chair Sterling",
-      "Comptroller Davies"
-    ],
+    "attendees": ["Vice-Chair Sterling", "Comptroller Davies"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Provisional choice: Northern Quarter; alternative 11 York Street (M2 2AW)."
@@ -1165,11 +884,7 @@
     "venueSlug": "ancoats-deli",
     "venueName": "Ancoats Deli",
     "date": "2025-11-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling",
-      "Lord Higgins"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling", "Lord Higgins"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity."
@@ -1179,10 +894,7 @@
     "venueSlug": "sqew-shawarma-bar",
     "venueName": "Sqew Shawarma Bar",
     "date": "2025-11-20",
-    "attendees": [
-      "Comptroller Davies",
-      "Secretary Thorne"
-    ],
+    "attendees": ["Comptroller Davies", "Secretary Thorne"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Rejected due to an unacceptable drop in consistent quality (*)"
@@ -1192,10 +904,7 @@
     "venueSlug": "street-food-kitchen-by-eastzeast",
     "venueName": "Street Food Kitchen by eastZeast",
     "date": "2025-11-20",
-    "attendees": [
-      "Chair Fletcher",
-      "Vice-Chair Sterling"
-    ],
+    "attendees": ["Chair Fletcher", "Vice-Chair Sterling"],
     "verdict": "sub-par",
     "whatWasOrdered": "Standard committee inspection test order.",
     "notes": "Rejected due to being closed during inspections (**)"

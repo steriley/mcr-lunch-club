@@ -7,12 +7,24 @@ import WhereToday from '@/components/islands/WhereToday.vue';
 import InspectionModal from '@/components/islands/InspectionModal.vue';
 import SuggestModal from '@/components/islands/SuggestModal.vue';
 import venuesData from '@/data/venues.json';
+import inspectionsData from '@/data/inspections.json';
 
 const approvedVenues = venuesData
   .filter((venue) => venue.status === 'Approved')
   .sort((a, b) => (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER));
-const featuredVenue = approvedVenues[0];
-const docketVenues = approvedVenues.slice(1, 5);
+const featuredVenue = approvedVenues.find((venue) => venue.slug === 'crazy-pedros');
+const docketVenues = approvedVenues
+  .filter((venue) => venue.slug !== featuredVenue?.slug)
+  .slice(0, 4);
+const featuredInspections = featuredVenue
+  ? inspectionsData.filter((inspection) => inspection.venueSlug === featuredVenue.slug)
+  : [];
+const satisfactoryAudits = featuredInspections.filter((inspection) => inspection.verdict === 'satisfactory');
+const latestAudit = featuredInspections
+  .slice()
+  .sort((a, b) => b.date.localeCompare(a.date))[0];
+const featuredReview = latestAudit?.notes ?? featuredVenue?.notes ?? '';
+const featuredAddress = featuredVenue?.address.split(',')[0] ?? '';
 ---
 
 <Layout title="MCR Lunch Club — The Official Manchester Lunch Ledger">
@@ -49,28 +61,84 @@ const docketVenues = approvedVenues.slice(1, 5);
 
         {featuredVenue && (
           <article class="docket-panel docket-feature">
-            <div class="docket-register">
-              <span>Ledger ref: #{String(featuredVenue.rank).padStart(2, '0')} · {featuredVenue.address?.split(',')[0]}</span>
-              <strong>Approved</strong>
+            <div class="docket-feature-ribbon">
+              <div class="docket-register">
+                <span>Ledger ref: #{String(featuredVenue.rank).padStart(2, '0')}-{featuredAddress.split(' ')[1]?.toUpperCase()}</span>
+                <span class="docket-ribbon-divider">/</span>
+                <span>Inspection confirmed</span>
+              </div>
+              <strong class="docket-double-visited">Double visited</strong>
             </div>
-            <div class="docket-feature-main">
+
+            <div class="docket-photo">
+              <img
+                src="/venues/crazy-pedros-promo.jpg"
+                alt="Crazy Pedro’s pizzas outside the Manchester venue"
+                class="docket-photo-image"
+              />
               <img
                 src="/brand/approved-sticker.png"
-                alt="MCR Lunch Club Approved award"
-                class="docket-award"
+                alt="MCR Lunch Club Approved"
+                class="docket-photo-seal"
               />
-              <div>
-                <a class="docket-venue-name" href={`/venues/${featuredVenue.slug}`}>{featuredVenue.name}</a>
-                <div class="docket-venue-meta">{featuredVenue.cuisine} · {featuredVenue.walkingTimeMin} min walk</div>
+              <div class="docket-verdict-stamp">
+                <span class="docket-verdict-stamp-icon" aria-hidden="true">✓</span>
+                <span>
+                  <strong>Approved</strong>
+                  <small>{satisfactoryAudits.length} satisfactory audits</small>
+                </span>
               </div>
-              <span class="docket-cost">{featuredVenue.cost}</span>
             </div>
-            <p class="docket-food-order">“{featuredVenue.eatLikeUs}”</p>
-            <div class="docket-feature-actions">
-              <a class="docket-action" href={`/venues/${featuredVenue.slug}`}>View Full Dossier</a>
-              <a class="docket-action is-secondary" href={featuredVenue.mapSearchLink} target="_blank" rel="noopener noreferrer">
-                Route ({featuredVenue.walkingTimeMin}m)
-              </a>
+
+            <div class="docket-feature-body">
+              <div class="docket-feature-title-row">
+                <div>
+                  <a class="docket-venue-name" href={`/venues/${featuredVenue.slug}`}>{featuredVenue.name}</a>
+                  <div class="docket-venue-meta">{featuredVenue.cuisine} · {featuredAddress}</div>
+                </div>
+                <span class="docket-cost">{featuredVenue.cost}</span>
+              </div>
+
+              <div class="docket-stat-grid">
+                <div>
+                  <span>From base</span>
+                  <strong>{featuredVenue.walkingTimeMin} min walk</strong>
+                </div>
+                <div>
+                  <span>Distance</span>
+                  <strong>{featuredVenue.distanceMiles.toFixed(2)} miles</strong>
+                </div>
+                <div>
+                  <span>Audits filed</span>
+                  <strong>{satisfactoryAudits.length} passed</strong>
+                </div>
+              </div>
+
+              {featuredReview && (
+                <blockquote class="docket-review">
+                  “{featuredReview}”
+                  {latestAudit && (
+                    <cite>— Official review · {latestAudit.date}</cite>
+                  )}
+                </blockquote>
+              )}
+
+              <div class="docket-feature-tags">
+                <span class="docket-feature-tag is-approved">Eat Like Us: 2 Slice Lunch Deal</span>
+                {latestAudit && <span class="docket-feature-tag">Last audit: {latestAudit.date}</span>}
+                <span class="docket-feature-tag">Tier: Approved</span>
+              </div>
+
+              <div class="docket-feature-actions">
+                <a class="docket-action" href={`/venues/${featuredVenue.slug}`}>
+                  <span aria-hidden="true">▤</span>
+                  View Full Audit
+                </a>
+                <a class="docket-action is-secondary" href={featuredVenue.mapSearchLink} target="_blank" rel="noopener noreferrer">
+                  <span aria-hidden="true">♙</span>
+                  Route ({featuredVenue.walkingTimeMin}m)
+                </a>
+              </div>
             </div>
           </article>
         )}
