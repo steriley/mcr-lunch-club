@@ -34,7 +34,8 @@
             :style="!filters.tiers.includes(tier.name) ? { backgroundColor: tier.color } : undefined"
             aria-hidden="true"
           ></span>
-          <span>{{ tier.name }} ({{ getTierCount(tier.name) }})</span>
+          <span>{{ tier.name }}</span>
+          <span class="nav-count ledger-tier-count">{{ getTierCount(tier.name) }}</span>
           <span v-if="filters.tiers.includes(tier.name)" class="ledger-tier-check" aria-hidden="true">✓</span>
         </button>
       </div>
