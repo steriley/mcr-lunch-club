@@ -1,0 +1,12 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import LoginForm from '@/components/islands/LoginForm.vue';
+
+const next = Astro.url.searchParams.get('next') ?? '/admin';
+---
+
+<Layout title="Sign in — Chairs' Area" description="Sign in to the MCR Lunch Club Chairs' Area.">
+  <section class="mx-auto flex w-full max-w-5xl flex-1 items-center justify-center px-4 py-12">
+    <LoginForm client:load next={next} />
+  </section>
+</Layout>

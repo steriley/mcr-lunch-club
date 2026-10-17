@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { getWeatherApiKey } from '@/lib/env';
 
 export const prerender = false;
 
@@ -64,7 +65,7 @@ export const GET: APIRoute = async ({ params }) => {
     });
   }
 
-  const apiKey = import.meta.env.METOFFICE_API_KEY || import.meta.env.WEATHER_API_KEY;
+  const apiKey = getWeatherApiKey();
   if (!apiKey) {
     console.warn(`Met Office ${step} forecast unavailable: METOFFICE_API_KEY is not configured.`);
     const stale = staleResponse(step, 503);

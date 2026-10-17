@@ -1,0 +1,26 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import VenueForm from '@/components/islands/VenueForm.vue';
+
+const user = Astro.locals.user;
+
+if (!user || user.role !== 'admin') {
+  return Astro.redirect(`/admin/login?next=${encodeURIComponent(Astro.url.pathname)}`);
+}
+---
+
+<AdminLayout title="New venue — Chairs' Area" userName={user?.name ?? 'Chair'}>
+  <div class="space-y-6">
+    <div class="flex items-center justify-between gap-4">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Venue management</p>
+        <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Create a venue</h1>
+      </div>
+      <a href="/admin/venues" class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">
+        Back to list
+      </a>
+    </div>
+
+    <VenueForm client:load mode="create" />
+  </div>
+</AdminLayout>

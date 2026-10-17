@@ -76,6 +76,10 @@ import { $filters, selectVenue } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
 import type { Venue, TierStatus } from '@/types';
 
+const props = defineProps<{
+  mapApiKey?: string;
+}>();
+
 const mapContainer = ref<HTMLElement | null>(null);
 const filters = useStore($filters);
 const venuesList = useStore($venuesList);
@@ -170,7 +174,7 @@ onMounted(async () => {
   L.control.zoom({ position: 'topright' }).addTo(mapInstance);
 
   // CartoDB Positron / Voyager Muted Archival Tile Layer
-  const cartoApiKey = import.meta.env.PUBLIC_MAP_API_KEY;
+  const cartoApiKey = props.mapApiKey;
   const tileUrl = `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${cartoApiKey ? `?key=${encodeURIComponent(cartoApiKey)}` : ''}`;
   L.tileLayer(tileUrl, {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',

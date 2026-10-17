@@ -63,6 +63,31 @@ npm run preview
 
 ---
 
+## Admin setup
+
+Copy `.env.example` to `.env.local` for local development and set the required
+values. In Vercel, keep the Neon integration's variable names unchanged and add
+the Better Auth variables in project settings.
+
+| Variable | Used for |
+| --- | --- |
+| `DATABASE_URL` | Pooled Neon connection used by the running application. |
+| `DATABASE_URL_UNPOOLED` | Direct Neon connection used by Drizzle Kit, migrations, and database scripts; falls back to `DATABASE_URL` if unset. |
+| `BETTER_AUTH_SECRET` | Better Auth signing/encryption secret; must be at least 32 characters. |
+| `BETTER_AUTH_URL` | Application origin used by Better Auth (for example, `http://localhost:4321` locally or the production site URL). |
+| `SEED_CHAIR_EMAIL` | Email for the first Chair created by `pnpm db:seed`. |
+| `SEED_CHAIR_PASSWORD` | Initial password for that Chair; use at least 12 characters. |
+| `SEED_CHAIR_NAME` | Optional name for the seeded Chair; defaults to `Chair`. |
+
+Run `pnpm db:generate` when schema changes need a migration, then
+`pnpm db:migrate` to apply migrations. Run `pnpm db:seed` to create or promote
+the configured first Chair; use `--force` only when intentionally seeding in
+production. The application uses only the pooled connection at runtime.
+
+Optional integrations use `METOFFICE_API_KEY` (or `WEATHER_API_KEY`) for server
+weather requests and `PUBLIC_MAP_API_KEY` for the public CARTO map tile key.
+`BLOB_READ_WRITE_TOKEN` is reserved for the later image-upload phase.
+
 ## 📁 Project Structure
 
 ```text
