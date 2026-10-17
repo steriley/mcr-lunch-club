@@ -4,15 +4,12 @@
     <div ref="mapContainer" class="w-full h-full min-h-[500px] z-0"></div>
 
     <!-- Map Overlays / Quick Status Bar -->
-    <div class="absolute top-3 left-3 z-[1000] flex flex-wrap gap-2 pointer-events-none">
-      <div class="pointer-events-auto bg-[#1a1e24]/90 backdrop-blur-md text-[#f9f7f1] px-3 py-1.5 rounded-full text-xs font-serif-header border border-[#c59b27]/40 shadow-lg flex items-center gap-2">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-        <span class="font-bold">Base:</span> Spinningfields Crown Sq
-      </div>
-
-      <div class="pointer-events-auto bg-[#f9f7f1]/95 backdrop-blur-md text-[#1a1e24] px-3 py-1.5 rounded-full text-xs border border-[#dcd6c8] shadow-md flex items-center gap-2 font-mono">
-        <span class="font-bold text-[#8b1e22]">{{ visibleVenuesCount }}</span>
-        <span>/ {{ totalVenuesCount }} pins on ledger</span>
+    <div class="absolute top-3 left-3 z-[1000] max-w-[calc(100%-1.5rem)]">
+      <div class="map-status-pill">
+        <span class="map-status-dot" aria-hidden="true"></span>
+        <span class="map-status-base">Base: Spinningfields</span>
+        <span class="map-status-divider" aria-hidden="true"></span>
+        <span class="map-status-count">{{ visibleVenuesCount }} / {{ totalVenuesCount }} <span>Active Pins</span></span>
       </div>
     </div>
 
@@ -308,7 +305,7 @@ function renderMarkers() {
       </div>
       <h3 class="font-bold text-sm text-[#1a1e24] leading-tight">${venue.name}</h3>
       <p class="text-[11px] text-stone-600 font-sans mt-0.5">${venue.cuisine} &bull; ${venue.walkingTimeMin} min walk (${venue.distanceMiles} mi)</p>
-      
+
       <div class="mt-2 p-1.5 bg-stone-100/90 rounded border border-stone-200 text-[11px] font-sans">
         <strong class="text-stone-800 font-serif-header">Eat Like Us:</strong>
         <p class="text-stone-700 italic mt-0.5 line-clamp-2">${venue.eatLikeUs}</p>

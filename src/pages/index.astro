@@ -25,6 +25,39 @@ const latestAudit = featuredInspections
   .sort((a, b) => b.date.localeCompare(a.date))[0];
 const featuredReview = latestAudit?.notes ?? featuredVenue?.notes ?? '';
 const featuredAddress = featuredVenue?.address.split(',')[0] ?? '';
+const valueShortcut = approvedVenues
+  .filter((venue) => venue.cost === '£')
+  .sort((a, b) => a.walkingTimeMin - b.walkingTimeMin)[0];
+const swiftShortcut = approvedVenues.find((venue) => venue.notes.toLowerCase().includes('fast'));
+const scrutinyShortcut = venuesData
+  .filter((venue) => venue.status === 'Under Consideration')
+  .sort((a, b) => a.walkingTimeMin - b.walkingTimeMin)[0];
+const latestLedgerEntry = inspectionsData
+  .slice()
+  .sort((a, b) => b.date.localeCompare(a.date))[0];
+const scrutinyAuditCount = scrutinyShortcut
+  ? inspectionsData.filter((inspection) => inspection.venueSlug === scrutinyShortcut.slug && inspection.verdict === 'satisfactory').length
+  : 0;
+const fieldShortcuts = [
+  {
+    label: 'High value',
+    venue: valueShortcut,
+    detail: valueShortcut ? `${valueShortcut.cost} · ${valueShortcut.cuisine} · ${valueShortcut.walkingTimeMin} min walk` : '',
+    variant: 'is-approved',
+  },
+  {
+    label: 'Swift exit',
+    venue: swiftShortcut,
+    detail: swiftShortcut?.notes ?? '',
+    variant: 'is-approved',
+  },
+  {
+    label: 'Under scrutiny',
+    venue: scrutinyShortcut,
+    detail: `${scrutinyAuditCount} satisfactory ${scrutinyAuditCount === 1 ? 'visit' : 'visits'} filed · ${scrutinyShortcut?.walkingTimeMin ?? 0} min walk`,
+    variant: 'is-consideration',
+  },
+].filter((shortcut) => shortcut.venue);
 ---
 
 <Layout title="MCR Lunch Club — The Official Manchester Lunch Ledger">
@@ -41,13 +74,90 @@ const featuredAddress = featuredVenue?.address.split(',')[0] ?? '';
           <SuggestModal client:idle />
         </section>
 
-        <div class="weekly-bulletin">
-          <div>
-            <strong>Weekly inspection bulletin</strong>
-            Every Approved establishment has earned its place through two satisfactory visits.
+        <section class="field-dispatch" aria-label="Tribunal field dispatch">
+          <div class="weekly-bulletin">
+            <span class="bulletin-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="m14.2 5.1 4.7 4.7m-7.1-2.4 4.8-4.8m-9.8 7.4 7.1-7.1m-8.6 9.6 7.1 7.1m-2.8-4.7 4.8-4.8M4 20h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <div class="bulletin-copy">
+              <strong>Weekly inspection bulletin</strong>
+              <p>2 venues re-inspected on Bridge St this Wednesday. 1 elevation to Approved, 1 referral.</p>
+            </div>
+            <a href="/inspections">Gazette #41</a>
           </div>
-          <a href="/inspections">Open the audit ledger →</a>
-        </div>
+
+          <div class="field-panel-grid">
+            <article class="field-panel">
+              <div class="field-panel-heading">
+                <h2>
+                  <svg class="field-icon is-gold" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 3v17M5 6h14M7 6 3.8 13h6.4L7 6Zm10 0-3.2 7h6.4L17 6ZM7 20h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  Chairs' Deliberation
+                </h2>
+                <span class="decree-badge">Decree #284</span>
+              </div>
+              <blockquote class="deliberation-quote">
+                “Never queue past 12:35 without contingency pastry. If a venue has no lunchtime trade by 12:45, suspect refrigeration failure.”
+              </blockquote>
+              <div class="field-panel-footer">
+                <span>Chair Henderson presiding</span>
+                <a href="/manifesto">Read Codex <span aria-hidden="true">→</span></a>
+              </div>
+            </article>
+
+            <article class="field-panel">
+              <div class="field-panel-heading">
+                <h2>
+                  <svg class="field-icon is-green" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M7 17a4 4 0 0 1-.2-8A5.5 5.5 0 0 1 17.5 10 3.5 3.5 0 0 1 17 17M8 20l1-2m4 2 1-2m4 2 1-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  Atmospheric Dispatch
+                </h2>
+                <span class="field-panel-time">12:00–14:30</span>
+              </div>
+              <div class="weather-report">
+                <span class="weather-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M12 3s7 7.1 7 12a7 7 0 1 1-14 0c0-4.9 7-12 7-12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
+                    <path d="M8.5 15.5a3.5 3.5 0 0 0 3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                  </svg>
+                </span>
+                <div>
+                  <strong>MCR Drizzle: Moderate</strong>
+                  <span>10-min umbrella bound strictly recommended.</span>
+                </div>
+              </div>
+              <div class="field-panel-footer weather-footer">
+                <span>Wind: 9 mph NW</span>
+                <strong>Spinningfields sheltered</strong>
+              </div>
+            </article>
+          </div>
+
+          <section class="field-shortcuts" aria-labelledby="field-shortcuts-title">
+            <div class="field-shortcuts-heading">
+              <h2 id="field-shortcuts-title">
+                <svg class="field-icon is-gold" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M5 3h10l4 4v4M5 3v18h7m3-18v5h5m-9 9 2.5 2.5L19 13m-8 5h-2v-2l6.6-6.6a1.4 1.4 0 0 1 2 2L11 18Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                Auditor's Fast Docket &amp; Field Shortcuts
+              </h2>
+              {latestLedgerEntry && <span>Latest audit · {latestLedgerEntry.date}</span>}
+            </div>
+            <div class="field-shortcut-grid">
+              {fieldShortcuts.map(({ label, venue, detail, variant }) => venue && (
+                <a class:list={['field-shortcut', variant]} href={`/venues/${venue.slug}`}>
+                  <span class="field-shortcut-label">{label}</span>
+                  <strong>{venue.name}</strong>
+                  <span class="field-shortcut-detail">{detail}</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        </section>
       </div>
 
       <aside aria-labelledby="docket-title">
