@@ -4,6 +4,8 @@ import { getCollection } from 'astro:content';
 import venuesData from '@/data/venues.json';
 import inspectionsData from '@/data/inspections.json';
 
+export const prerender = true;
+
 export async function getStaticPaths() {
   return venuesData.map((venue) => ({
     params: { slug: venue.slug },

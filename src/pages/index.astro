@@ -4,6 +4,7 @@ import FilterBar from '@/components/islands/FilterBar.vue';
 import LunchMap from '@/components/islands/LunchMap.vue';
 import VenueSheet from '@/components/islands/VenueSheet.vue';
 import WhereToday from '@/components/islands/WhereToday.vue';
+import WeatherCard from '@/components/WeatherCard.vue';
 import InspectionModal from '@/components/islands/InspectionModal.vue';
 import SuggestModal from '@/components/islands/SuggestModal.vue';
 import venuesData from '@/data/venues.json';
@@ -66,7 +67,7 @@ const fieldShortcuts = [
   <div class="home-workspace">
     <div class="home-workspace-grid">
       <div class="home-map-column">
-        <section class="relative w-full flex flex-col">
+        <section class="home-map-stage relative w-full flex flex-col">
           <LunchMap client:load />
           <VenueSheet client:load />
           <WhereToday client:idle />
@@ -118,22 +119,7 @@ const fieldShortcuts = [
                 </h2>
                 <span class="field-panel-time">12:00–14:30</span>
               </div>
-              <div class="weather-report">
-                <span class="weather-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 3s7 7.1 7 12a7 7 0 1 1-14 0c0-4.9 7-12 7-12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
-                    <path d="M8.5 15.5a3.5 3.5 0 0 0 3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-                  </svg>
-                </span>
-                <div>
-                  <strong>MCR Drizzle: Moderate</strong>
-                  <span>10-min umbrella bound strictly recommended.</span>
-                </div>
-              </div>
-              <div class="field-panel-footer weather-footer">
-                <span>Wind: 9 mph NW</span>
-                <strong>Spinningfields sheltered</strong>
-              </div>
+              <WeatherCard client:visible />
             </article>
           </div>
 

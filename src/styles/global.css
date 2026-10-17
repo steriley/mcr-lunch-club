@@ -330,7 +330,7 @@
   min-width: 0;
 }
 
-.home-map-column > section {
+.home-map-stage {
   height: min(68vh, 720px);
   min-height: 520px;
 }
@@ -1097,53 +1097,6 @@
   font-size: 9px;
 }
 
-.weather-report {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  flex: 1;
-  padding-block: 4px;
-}
-
-.weather-icon {
-  display: grid;
-  flex: 0 0 40px;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border: 1px solid var(--ledger-border);
-  border-radius: 8px;
-  background: var(--ledger-paper);
-  color: var(--ledger-deep);
-}
-
-.weather-icon svg {
-  width: 23px;
-  height: 23px;
-}
-
-.weather-report strong,
-.weather-report div > span {
-  display: block;
-}
-
-.weather-report strong {
-  color: var(--ledger-ink);
-  font-size: 11px;
-}
-
-.weather-report div > span {
-  margin-top: 2px;
-  color: #666974;
-  font-size: 10px;
-  line-height: 1.35;
-}
-
-.weather-footer strong {
-  color: var(--ledger-green);
-  font-size: 9px;
-}
-
 .field-shortcuts {
   display: flex;
   flex-direction: column;
@@ -1266,7 +1219,7 @@
   }
 
   .home-workspace-grid {
-    grid-template-columns: minmax(0, 1.15fr) minmax(290px, .85fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1314,7 +1267,7 @@
     gap: 14px;
   }
 
-  .home-map-column > section {
+  .home-map-stage {
     height: 58vh;
     min-height: 420px;
   }
