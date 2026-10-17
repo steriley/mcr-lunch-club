@@ -1,14 +1,28 @@
 export type WeatherIcon =
-  | 'sun'
-  | 'moon'
-  | 'partly-cloudy'
-  | 'cloud'
+  | 'sunny'
+  | 'clear-night'
+  | 'partly-cloudy-day'
+  | 'partly-cloudy-night'
+  | 'overcast'
   | 'fog'
-  | 'rain'
-  | 'sleet'
+  | 'haze'
+  | 'light-drizzle'
+  | 'light-rain'
+  | 'heavy-rain'
+  | 'rain-showers-day'
+  | 'rain-showers-night'
+  | 'freezing-rain'
+  | 'thunderstorm'
+  | 'severe-storm'
   | 'snow'
+  | 'sleet'
   | 'hail'
-  | 'thunder';
+  | 'blizzard'
+  | 'windy'
+  | 'extreme-heat'
+  | 'frost'
+  | 'tornado'
+  | 'system-sync';
 
 export interface WeatherPoint {
   time: string;
@@ -31,21 +45,21 @@ export interface NormalizedWeather {
 type UnknownRecord = Record<string, unknown>;
 
 const weatherConditions: Record<number, { condition: string; icon: WeatherIcon }> = {
-  0: { condition: 'Clear night', icon: 'moon' },
-  1: { condition: 'Sunny', icon: 'sun' },
-  2: { condition: 'Partly cloudy night', icon: 'partly-cloudy' },
-  3: { condition: 'Partly cloudy', icon: 'partly-cloudy' },
-  5: { condition: 'Mist', icon: 'fog' },
+  0: { condition: 'Clear night', icon: 'clear-night' },
+  1: { condition: 'Sunny', icon: 'sunny' },
+  2: { condition: 'Partly cloudy night', icon: 'partly-cloudy-night' },
+  3: { condition: 'Partly cloudy', icon: 'partly-cloudy-day' },
+  5: { condition: 'Mist', icon: 'haze' },
   6: { condition: 'Fog', icon: 'fog' },
-  7: { condition: 'Cloudy', icon: 'cloud' },
-  8: { condition: 'Overcast', icon: 'cloud' },
-  9: { condition: 'Light rain shower', icon: 'rain' },
-  10: { condition: 'Light rain shower', icon: 'rain' },
-  11: { condition: 'Drizzle', icon: 'rain' },
-  12: { condition: 'Light rain', icon: 'rain' },
-  13: { condition: 'Heavy rain shower', icon: 'rain' },
-  14: { condition: 'Heavy rain shower', icon: 'rain' },
-  15: { condition: 'Heavy rain', icon: 'rain' },
+  7: { condition: 'Cloudy', icon: 'overcast' },
+  8: { condition: 'Overcast', icon: 'overcast' },
+  9: { condition: 'Light rain shower', icon: 'rain-showers-day' },
+  10: { condition: 'Light rain shower', icon: 'rain-showers-day' },
+  11: { condition: 'Drizzle', icon: 'light-drizzle' },
+  12: { condition: 'Light rain', icon: 'light-rain' },
+  13: { condition: 'Heavy rain shower', icon: 'rain-showers-day' },
+  14: { condition: 'Heavy rain shower', icon: 'rain-showers-day' },
+  15: { condition: 'Heavy rain', icon: 'heavy-rain' },
   16: { condition: 'Sleet shower', icon: 'sleet' },
   17: { condition: 'Sleet shower', icon: 'sleet' },
   18: { condition: 'Sleet', icon: 'sleet' },
@@ -55,12 +69,12 @@ const weatherConditions: Record<number, { condition: string; icon: WeatherIcon }
   22: { condition: 'Light snow shower', icon: 'snow' },
   23: { condition: 'Light snow shower', icon: 'snow' },
   24: { condition: 'Light snow', icon: 'snow' },
-  25: { condition: 'Heavy snow shower', icon: 'snow' },
-  26: { condition: 'Heavy snow shower', icon: 'snow' },
-  27: { condition: 'Heavy snow', icon: 'snow' },
-  28: { condition: 'Thunder shower', icon: 'thunder' },
-  29: { condition: 'Thunder shower', icon: 'thunder' },
-  30: { condition: 'Thunder', icon: 'thunder' },
+  25: { condition: 'Heavy snow shower', icon: 'blizzard' },
+  26: { condition: 'Heavy snow shower', icon: 'blizzard' },
+  27: { condition: 'Heavy snow', icon: 'blizzard' },
+  28: { condition: 'Thunder shower', icon: 'thunderstorm' },
+  29: { condition: 'Thunder shower', icon: 'severe-storm' },
+  30: { condition: 'Thunder', icon: 'thunderstorm' },
 };
 
 function isRecord(value: unknown): value is UnknownRecord {
@@ -154,8 +168,8 @@ function weatherPoint(record: UnknownRecord, metadata: UnknownRecord, daily: boo
     : ['significantWeatherCode', 'weatherCode'];
   const weatherCode = numberValue(record, weatherCodeKeys);
   const condition = weatherCode === null
-    ? { condition: 'Conditions unavailable', icon: 'cloud' as const }
-    : weatherConditions[weatherCode] ?? { condition: 'Mixed conditions', icon: 'cloud' as const };
+    ? { condition: 'Conditions unavailable', icon: 'overcast' as const }
+    : weatherConditions[weatherCode] ?? { condition: 'Mixed conditions', icon: 'overcast' as const };
   const temperatureValues = temperatureKeys
     .map((key) => numberValue(record, [key]))
     .filter((value): value is number => value !== null);
