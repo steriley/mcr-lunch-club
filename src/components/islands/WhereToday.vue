@@ -15,7 +15,7 @@
             <h2 class="text-base font-bold font-serif-header text-[#c59b27]">
               The 12:25 Executive Decision Oracle
             </h2>
-            <p class="text-[11px] text-stone-300">
+            <p class="text-xs text-stone-300">
               When office consensus fractures and the clock ticks towards 12:30
             </p>
           </div>
@@ -30,7 +30,7 @@
         <span class="text-base">⚠️</span>
         <div class="flex-1">
           <strong class="font-bold">Overdue Sovereign Inspection Notice:</strong>
-          <p class="text-[11px] font-sans text-amber-900 mt-0.5">
+          <p class="text-xs font-sans text-amber-900 mt-0.5">
             <strong>Kabana</strong> (last seen Jan 2026) and <strong>Lottie’s Bakehouse</strong> (Feb 2026) have languished without executive oversight for months. Prioritising them satisfies your civic obligation.
           </p>
         </div>
@@ -52,7 +52,7 @@
               class="p-2 rounded-lg border text-center transition-colors shadow-xs"
             >
               <div class="text-xs">{{ time.label }}</div>
-              <div class="text-[10px] opacity-75 font-sans">{{ time.sub }}</div>
+              <div class="text-xs opacity-75 font-sans">{{ time.sub }}</div>
             </button>
           </div>
         </div>
@@ -71,7 +71,7 @@
               class="p-2 rounded-lg border text-center transition-colors shadow-xs font-serif-header"
             >
               <div class="text-xs font-mono font-bold">{{ b.label }}</div>
-              <div class="text-[10px] opacity-75 font-sans">{{ b.sub }}</div>
+              <div class="text-xs opacity-75 font-sans">{{ b.sub }}</div>
             </button>
           </div>
         </div>
@@ -113,7 +113,7 @@
           class="mt-4 p-4 rounded-xl border-2 border-[#c59b27] bg-[#fdfcf9] shadow-lg animate-in zoom-in-95 duration-200"
         >
           <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2 mb-2">
-            <span class="text-[10px] font-bold uppercase tracking-wider bg-[#8b1e22] text-white px-2 py-0.5 rounded font-mono">
+            <span class="text-xs font-bold uppercase tracking-wider bg-[#8b1e22] text-white px-2 py-0.5 rounded font-mono">
               The Oracle Decrees (Rank #{{ pickedVenue.rank }})
             </span>
             <span class="text-xs font-mono font-bold text-[#8b1e22]">{{ pickedVenue.cost }}</span>

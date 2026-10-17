@@ -105,7 +105,7 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
 
         <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 border-white/20 pt-3 sm:pt-0">
           <span class="text-2xl font-mono font-bold text-[#c59b27]">{venue.cost}</span>
-          <span class="text-[11px] text-stone-200 font-sans uppercase tracking-wider font-semibold">
+          <span class="text-xs text-stone-200 font-sans uppercase tracking-wider font-semibold">
             {venue.cost === '£' ? 'Under £10' : venue.cost === '££' ? 'Above £10' : 'Payday Treat'}
           </span>
         </div>
@@ -141,10 +141,10 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
             </div>
             <div class="space-y-1.5 text-center sm:text-left relative z-10">
               <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-[#c59b27] bg-[#c59b27]/20 border border-[#c59b27]/40 px-2 py-0.5 rounded">
+                <span class="text-xs font-mono font-bold uppercase tracking-widest text-[#c59b27] bg-[#c59b27]/20 border border-[#c59b27]/40 px-2 py-0.5 rounded">
                   Official Prize Plaque
                 </span>
-                <span class="bg-[#8b1e22] text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase">
+                <span class="bg-[#8b1e22] text-white text-xs font-mono font-bold px-2 py-0.5 rounded uppercase">
                   Manchester’s Lunch Star
                 </span>
               </div>
@@ -164,21 +164,21 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
         <!-- Geographic & Walking Specifications -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-[#f4efe4] p-4 rounded-xl border border-[#dcd6c8] text-center">
           <div class="p-2">
-            <span class="text-[11px] text-stone-600 uppercase tracking-wider block font-sans">Walk Duration</span>
+            <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Walk Duration</span>
             <span class="text-2xl font-bold text-[#8b1e22]">{venue.walkingTimeMin} mins</span>
-            <span class="text-[10px] text-stone-500 block font-sans">from Spinningfields Base</span>
+            <span class="text-xs text-stone-500 block font-sans">from Spinningfields Base</span>
           </div>
 
           <div class="p-2 border-t sm:border-t-0 sm:border-l border-[#dcd6c8]">
-            <span class="text-[11px] text-stone-600 uppercase tracking-wider block font-sans">Distance Vector</span>
+            <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Distance Vector</span>
             <span class="text-2xl font-bold text-stone-900">{venue.distanceMiles} miles</span>
-            <span class="text-[10px] text-stone-500 block font-sans">Centroid: {venue.lat}, {venue.lng}</span>
+            <span class="text-xs text-stone-500 block font-sans">Centroid: {venue.lat}, {venue.lng}</span>
           </div>
 
           <div class="p-2 border-t sm:border-t-0 sm:border-l border-[#dcd6c8]">
-            <span class="text-[11px] text-stone-600 uppercase tracking-wider block font-sans">Last Sovereign Audit</span>
+            <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Last Sovereign Audit</span>
             <span class="text-lg font-bold text-stone-800 font-mono mt-1 block">{venue.lastInspectionDate}</span>
-            <span class="text-[10px] text-stone-500 block font-sans">Permanent Record</span>
+            <span class="text-xs text-stone-500 block font-sans">Permanent Record</span>
           </div>
         </div>
 
@@ -191,7 +191,7 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
           <p class="text-lg italic text-stone-900 mt-2 leading-relaxed">
             “{venue.eatLikeUs}”
           </p>
-          <p class="text-[11px] text-stone-500 font-sans mt-2">
+          <p class="text-xs text-stone-500 font-sans mt-2">
             Deviation from the recommended order during official club outings requires advance written sanction from the presiding Chair.
           </p>
         </div>
@@ -228,7 +228,7 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
           </div>
 
           {venueInspections.length === 0 ? (
-            <div class="p-6 text-center bg-stone-50 rounded-xl border border-dashed border-stone-300 text-stone-500 text-xs font-sans">
+            <div class="p-6 text-center bg-stone-50 rounded-xl border border-dashed border-stone-300 text-base text-stone-500 font-sans">
               No formal inspections logged for this venue in the primary ledger. It sits in pending status awaiting member evaluation or tribunal attention.
             </div>
           ) : (
@@ -237,12 +237,12 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
                 <div class="p-4 rounded-xl bg-white border border-[#dcd6c8] shadow-xs space-y-2">
                   <div class="flex items-center justify-between border-b border-stone-100 pb-2">
                     <span class="font-mono text-xs font-bold text-stone-800">{insp.date}</span>
-                    <span class={`px-2 py-0.5 rounded text-[10px] font-bold uppercase font-mono ${insp.verdict === 'satisfactory' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'}`}>
+                    <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono ${insp.verdict === 'satisfactory' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'}`}>
                       {insp.verdict}
                     </span>
                   </div>
 
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-base">
                     <div>
                       <span class="font-bold text-stone-700">Audit Quorum:</span>{' '}
                       <span class="text-stone-900">{insp.attendees.join(', ')}</span>

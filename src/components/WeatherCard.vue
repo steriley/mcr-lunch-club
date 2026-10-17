@@ -139,7 +139,7 @@ onMounted(async () => {
 .weather-state {
   margin: auto 0;
   color: #666974;
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.4;
 }
 
@@ -187,7 +187,7 @@ onMounted(async () => {
 .weather-condition {
   overflow: hidden;
   color: var(--ledger-ink);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -196,7 +196,7 @@ onMounted(async () => {
 .weather-current-details {
   grid-column: 2;
   color: #666974;
-  font-size: 8px;
+  font-size: 12px;
   line-height: 1.4;
 }
 
@@ -212,7 +212,7 @@ onMounted(async () => {
 .weather-forecast-block h3 {
   margin: 0 0 5px;
   color: #666974;
-  font-size: 8px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -249,7 +249,7 @@ onMounted(async () => {
 .weather-hour-list time,
 .weather-day-list time {
   color: #666974;
-  font-size: 8px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -263,7 +263,7 @@ onMounted(async () => {
 .weather-hour-list strong,
 .weather-day-list strong {
   color: var(--ledger-deep);
-  font-size: 9px;
+  font-size: 14px;
 }
 
 .weather-hour-rain,
@@ -271,7 +271,7 @@ onMounted(async () => {
   overflow: hidden;
   max-width: 100%;
   color: #666974;
-  font-size: 7px;
+  font-size: 12px;
   line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;

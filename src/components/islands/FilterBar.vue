@@ -279,7 +279,7 @@ function resetAll() {
   border-radius: 4px;
   background: #F3ECDB;
   color: #757681;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .ledger-tier-filters {
@@ -306,7 +306,7 @@ function resetAll() {
   border-radius: 999px;
   background: #F7F0DF;
   color: #1e1b17;
-  font: 600 10px/1.2 "Plus Jakarta Sans", sans-serif;
+  font: 600 12px/1.2 "Plus Jakarta Sans", sans-serif;
   white-space: nowrap;
   cursor: pointer;
   transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
@@ -333,7 +333,7 @@ function resetAll() {
 }
 
 .ledger-tier-check {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1;
 }
 
@@ -365,7 +365,7 @@ function resetAll() {
 
 .ledger-filter-label {
   color: #454650;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
@@ -388,7 +388,7 @@ function resetAll() {
   border-radius: 4px;
   background: transparent;
   color: #454650;
-  font: 600 10px/1.2 "Plus Jakarta Sans", sans-serif;
+  font: 600 12px/1.2 "Plus Jakarta Sans", sans-serif;
   cursor: pointer;
 }
 
@@ -410,7 +410,7 @@ function resetAll() {
   border-radius: 5px;
   background-color: #F7F0DF;
   color: #1e1b17;
-  font: 500 10px/1.2 "Plus Jakarta Sans", sans-serif;
+  font: 500 12px/1.2 "Plus Jakarta Sans", sans-serif;
 }
 
 .cuisine-select {
@@ -435,7 +435,7 @@ function resetAll() {
   border: 0;
   background: none;
   color: #8a5100;
-  font: 700 9px/1.2 "Plus Jakarta Sans", sans-serif;
+  font: 700 12px/1.2 "Plus Jakarta Sans", sans-serif;
   text-decoration: underline;
   text-decoration-style: dotted;
   white-space: nowrap;
@@ -468,7 +468,7 @@ function resetAll() {
 
   .ledger-search-input {
     min-height: 38px;
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .ledger-tier-filters {
@@ -477,7 +477,7 @@ function resetAll() {
 
   .ledger-tier-chip {
     min-height: 28px;
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .ledger-filter-groups {
@@ -490,7 +490,7 @@ function resetAll() {
   }
 
   .ledger-filter-label {
-    font-size: 9px;
+    font-size: 12px;
   }
 
   .ledger-select {

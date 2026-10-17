@@ -13,7 +13,7 @@
           <span class="text-xl">📜</span>
           <div>
             <h2 class="text-sm font-bold font-serif-header">Petition the Chairs</h2>
-            <p class="text-[11px] text-blue-200">Submit a Venue for Entry into 'To Be Assessed'</p>
+            <p class="text-xs text-blue-200">Submit a Venue for Entry into 'To Be Assessed'</p>
           </div>
         </div>
         <button @click="closeModal" class="text-white/80 hover:text-white text-lg">✕</button>
@@ -21,7 +21,7 @@
 
       <!-- Form -->
       <form @submit.prevent="submitPetition" class="p-5 overflow-y-auto space-y-3 text-xs text-[#1a1e24]">
-        <div class="bg-blue-50 border border-blue-200 p-2.5 rounded text-[11px] text-blue-900 font-serif-header">
+        <div class="bg-blue-50 border border-blue-200 p-2.5 rounded text-xs text-blue-900 font-serif-header">
           <strong>Article 3.1:</strong> Members may petition for new venues. Submitted establishments are placed immediately into <em>To Be Assessed</em> until two independent inspections are conducted.
         </div>
 

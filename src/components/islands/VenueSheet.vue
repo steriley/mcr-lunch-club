@@ -25,7 +25,7 @@
               <span class="text-xs uppercase tracking-widest font-bold font-serif-header">
                 {{ venue.status }}
               </span>
-              <span v-if="venue.rank && venue.status === 'Approved'" class="bg-[#c59b27] text-[#1a1e24] px-1.5 py-0.2 rounded text-[10px] font-mono font-bold">
+              <span v-if="venue.rank && venue.status === 'Approved'" class="bg-[#c59b27] text-[#1a1e24] px-1.5 py-0.2 rounded text-xs font-mono font-bold">
                 Rank #{{ venue.rank }}
               </span>
             </div>
@@ -53,10 +53,10 @@
             class="w-11 h-11 object-contain drop-shadow shrink-0"
           />
           <div class="text-xs">
-            <span class="text-[10px] font-mono font-bold text-[#c59b27] uppercase tracking-wider block">
+            <span class="text-xs font-mono font-bold text-[#c59b27] uppercase tracking-wider block">
               Official Prize &bull; Manchester’s Lunch Star
             </span>
-            <span class="text-stone-200 font-serif-header">
+            <span class="text-base text-stone-200 font-serif-header">
               Awarded the official MCR Lunch Club Approved physical sticker by the Chairs.
             </span>
           </div>
@@ -77,7 +77,7 @@
             <span class="text-lg font-mono font-bold text-[#8b1e22] bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
               {{ venue.cost }}
             </span>
-            <span class="text-[11px] text-stone-500 font-serif-header mt-1">
+            <span class="text-xs text-stone-500 font-serif-header mt-1">
               {{ venue.cost === '£' ? 'Under £10' : venue.cost === '££' ? 'Above £10' : 'Payday Treat' }}
             </span>
           </div>
@@ -86,14 +86,14 @@
         <!-- Distance & Walking Time Pill Bar -->
         <div class="grid grid-cols-2 gap-2 bg-[#f4efe4] p-3 rounded-lg border border-[#dcd6c8] text-center font-serif-header">
           <div>
-            <span class="text-[11px] text-stone-600 uppercase tracking-wide block">Foot Journey</span>
+            <span class="text-xs text-stone-600 uppercase tracking-wide block">Foot Journey</span>
             <span class="text-base font-bold text-[#8b1e22]">{{ venue.walkingTimeMin }} mins</span>
-            <span class="text-[10px] text-stone-500 block font-sans">from Spinningfields Base</span>
+            <span class="text-xs text-stone-500 block font-sans">from Spinningfields Base</span>
           </div>
           <div class="border-l border-[#dcd6c8]">
-            <span class="text-[11px] text-stone-600 uppercase tracking-wide block">Displacement</span>
+            <span class="text-xs text-stone-600 uppercase tracking-wide block">Displacement</span>
             <span class="text-base font-bold text-stone-900">{{ venue.distanceMiles }} miles</span>
-            <span class="text-[10px] text-stone-500 block font-sans">within 2.5 mi limit</span>
+            <span class="text-xs text-stone-500 block font-sans">within 2.5 mi limit</span>
           </div>
         </div>
 
@@ -126,7 +126,7 @@
             <h3 class="text-sm font-bold font-serif-header text-[#1a1e24] flex items-center gap-1.5">
               <span>📋</span>
               <span>Official Inspection Ledger</span>
-              <span class="text-[11px] text-stone-500 font-normal">({{ venueInspections.length }} audits)</span>
+              <span class="text-xs text-stone-500 font-normal">({{ venueInspections.length }} audits)</span>
             </h3>
 
             <button
@@ -137,7 +137,7 @@
             </button>
           </div>
 
-          <div v-if="venueInspections.length === 0" class="text-xs text-stone-500 italic p-3 bg-stone-50 rounded text-center">
+          <div v-if="venueInspections.length === 0" class="text-base text-stone-500 italic p-3 bg-stone-50 rounded text-center">
             No formal inspections recorded in the ledger yet. Awaiting initial tribunal.
           </div>
 
@@ -147,19 +147,19 @@
               :key="insp.id"
               class="p-2.5 rounded bg-white border border-[#dcd6c8] text-xs shadow-xs"
             >
-              <div class="flex items-center justify-between text-[11px] border-b border-stone-100 pb-1 mb-1">
+              <div class="flex items-center justify-between text-xs border-b border-stone-100 pb-1 mb-1">
                 <span class="font-mono text-stone-600">{{ insp.date }}</span>
                 <span
                   :class="insp.verdict === 'satisfactory' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
-                  class="px-1.5 py-0.2 rounded font-bold uppercase text-[9px]"
+                  class="px-1.5 py-0.2 rounded font-bold uppercase text-xs"
                 >
                   {{ insp.verdict }}
                 </span>
               </div>
-              <div class="text-[11px] text-stone-800">
+              <div class="text-base text-stone-800">
                 <span class="font-bold">Inspectors:</span> {{ insp.attendees.join(', ') }}
               </div>
-              <div class="text-[11px] text-stone-700 mt-0.5">
+              <div class="text-base text-stone-700 mt-0.5">
                 <span class="font-bold">Ordered:</span> {{ insp.whatWasOrdered }}
               </div>
               <p v-if="insp.notes" class="text-stone-600 italic mt-1 font-serif-header">
@@ -175,7 +175,7 @@
             <span class="text-xs font-bold font-serif-header text-[#8b1e22] uppercase tracking-wide">
               🏛 Executive Tier Reclassification
             </span>
-            <span class="text-[10px] bg-[#c59b27] text-[#1a1e24] px-1.5 py-0.5 rounded font-bold">Chairs Only</span>
+            <span class="text-xs bg-[#c59b27] text-[#1a1e24] px-1.5 py-0.5 rounded font-bold">Chairs Only</span>
           </div>
 
           <div class="space-y-2 text-xs">

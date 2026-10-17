@@ -39,12 +39,12 @@
 
     <!-- Walking Rings Legend Toggle -->
     <div class="absolute bottom-4 left-4 z-[1000] hidden sm:block">
-      <div class="bg-[#f9f7f1]/95 backdrop-blur-sm border border-[#dcd6c8] rounded-md p-2 text-[11px] shadow-md font-serif-header">
+      <div class="bg-[#f9f7f1]/95 backdrop-blur-sm border border-[#dcd6c8] rounded-md p-2 text-xs shadow-md font-serif-header">
         <div class="font-bold text-[#1a1e24] border-b border-[#dcd6c8] pb-1 mb-1.5 flex items-center justify-between">
           <span>Walking Isochrones</span>
-          <span class="text-[10px] text-stone-500 font-sans">from Base</span>
+          <span class="text-xs text-stone-500 font-sans">from Base</span>
         </div>
-        <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-stone-700 font-sans text-[10px]">
+        <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-stone-700 font-sans text-xs">
           <div class="flex items-center gap-1.5">
             <span class="w-2.5 h-0.5 bg-emerald-600"></span> 5 min (0.25 mi)
           </div>
@@ -275,7 +275,7 @@ function renderMarkers() {
 
     const iconHtml = `
       <div class="group relative cursor-pointer transform transition-transform duration-200 hover:scale-125 hover:z-[9999]" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));">
-        <div class="flex items-center justify-center w-7 h-7 rounded-full text-[11px] font-bold shadow-md border-2"
+        <div class="flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shadow-md border-2"
              style="background-color: ${styling.pinBg}; border-color: ${styling.border}; color: ${styling.text};">
           <span>${badgeText}</span>
         </div>
@@ -297,16 +297,16 @@ function renderMarkers() {
     popupContent.className = 'p-3 font-serif-header text-[#1a1e24] max-w-[260px]';
     popupContent.innerHTML = `
       <div class="flex items-center justify-between gap-2 border-b border-stone-200 pb-1.5 mb-2">
-        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+        <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded"
               style="background-color: ${styling.bg}20; color: ${styling.bg}; border: 1px solid ${styling.bg}40;">
           ${venue.status}
         </span>
         <span class="text-xs font-mono font-bold text-amber-900">${venue.cost}</span>
       </div>
       <h3 class="font-bold text-sm text-[#1a1e24] leading-tight">${venue.name}</h3>
-      <p class="text-[11px] text-stone-600 font-sans mt-0.5">${venue.cuisine} &bull; ${venue.walkingTimeMin} min walk (${venue.distanceMiles} mi)</p>
+      <p class="text-xs text-stone-600 font-sans mt-0.5">${venue.cuisine} &bull; ${venue.walkingTimeMin} min walk (${venue.distanceMiles} mi)</p>
 
-      <div class="mt-2 p-1.5 bg-stone-100/90 rounded border border-stone-200 text-[11px] font-sans">
+      <div class="mt-2 p-1.5 bg-stone-100/90 rounded border border-stone-200 text-xs font-sans">
         <strong class="text-stone-800 font-serif-header">Eat Like Us:</strong>
         <p class="text-stone-700 italic mt-0.5 line-clamp-2">${venue.eatLikeUs}</p>
       </div>

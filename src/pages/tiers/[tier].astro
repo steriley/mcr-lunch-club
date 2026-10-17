@@ -126,7 +126,7 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
       <div class="flex flex-wrap items-center gap-3 pt-1">
         <div class="inline-flex items-center gap-2 bg-black/30 border border-white/20 px-3 py-1.5 rounded-lg text-xs font-sans text-amber-200">
           <strong>Constitutional Standard:</strong>
-          <span>{meta.rule}</span>
+          <span class="text-base">{meta.rule}</span>
         </div>
 
         {tierName === 'Approved' && (
@@ -153,7 +153,7 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
             <span class="text-xs uppercase tracking-widest text-[#c59b27] font-mono font-bold">
               The Official Prize of Excellence
             </span>
-            <span class="bg-[#8b1e22] text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase">
+            <span class="bg-[#8b1e22] text-white text-xs font-mono font-bold px-2 py-0.5 rounded uppercase">
               Manchester’s Lunch Star
             </span>
           </div>
@@ -185,22 +185,22 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
             <a href="/venues/pho-cue" class="font-bold text-white hover:text-amber-300 text-sm block">
               Pho Cue**
             </a>
-            <span class="text-[11px] text-rose-300 font-sans block mt-1">Closed during inspections</span>
+            <span class="text-base text-rose-300 font-sans block mt-1">Closed during inspections</span>
           </div>
           <div class="bg-rose-950/60 border border-rose-700/60 p-3 rounded-xl">
             <a href="/venues/sqew-shawarma-bar" class="font-bold text-white hover:text-amber-300 text-sm block">
               Sqew Shawarma Bar*
             </a>
-            <span class="text-[11px] text-rose-300 font-sans block mt-1">Unacceptable drop in consistent quality</span>
+            <span class="text-base text-rose-300 font-sans block mt-1">Unacceptable drop in consistent quality</span>
           </div>
           <div class="bg-rose-950/60 border border-rose-700/60 p-3 rounded-xl">
             <a href="/venues/street-food-kitchen-by-eastzeast" class="font-bold text-white hover:text-amber-300 text-sm block">
               Street Food Kitchen by eastZeast**
             </a>
-            <span class="text-[11px] text-rose-300 font-sans block mt-1">Closed during inspections</span>
+            <span class="text-base text-rose-300 font-sans block mt-1">Closed during inspections</span>
           </div>
         </div>
-        <div class="border-t border-white/10 pt-2 text-xs text-stone-400 space-y-0.5 font-mono italic">
+        <div class="border-t border-white/10 pt-2 text-base text-stone-400 space-y-0.5 font-mono italic">
           <div>* rejected due to an unacceptable drop in consistent quality</div>
           <div>** rejected due to being closed during inspections</div>
         </div>
@@ -245,7 +245,7 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
                       />
                     )}
                   </div>
-                  <span class="text-[11px] text-stone-500 font-sans block mt-0.5">
+                  <span class="text-xs text-stone-500 font-sans block mt-0.5">
                     {venue.cuisine}
                   </span>
                 </div>
@@ -263,14 +263,14 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
 
               <!-- Eat like us snippet -->
               <div class="text-xs text-stone-800 bg-amber-50/60 p-2.5 rounded border border-amber-200/60 mb-3">
-                <strong class="font-serif-header text-[#8b1e22] text-[11px] block">Eat Like Us:</strong>
-                <p class="italic text-[11px] text-stone-700 line-clamp-2 mt-0.5 font-serif-header">
+                <strong class="font-serif-header text-[#8b1e22] text-xs block">Eat Like Us:</strong>
+                <p class="italic text-xs text-stone-700 line-clamp-2 mt-0.5 font-serif-header">
                   “{venue.eatLikeUs}”
                 </p>
               </div>
 
               {venue.rejectionReason && (
-                <div class="text-[11px] text-rose-900 bg-rose-50 p-2 rounded border border-rose-200 mb-3">
+                <div class="text-xs text-rose-900 bg-rose-50 p-2 rounded border border-rose-200 mb-3">
                   <strong class="block">Censure Note:</strong>
                   <p class="italic line-clamp-2">{venue.rejectionReason}</p>
                 </div>

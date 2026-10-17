@@ -32,7 +32,7 @@ import incidentsData from '@/data/incidents.json';
           “The Official Registry of Bribery, Improper Benefit Attempts, and Corrupt Solicitations documented in perpetuity to preserve the impartial integrity of the Chairs.”
         </p>
 
-        <div class="bg-amber-950/60 border border-[#c59b27]/40 p-4 rounded-xl text-xs text-amber-200 font-sans leading-relaxed">
+        <div class="bg-amber-950/60 border border-[#c59b27]/40 p-4 rounded-xl text-base text-amber-200 font-sans leading-relaxed">
           <strong class="font-serif-header text-amber-100 block mb-1">Preamble to the Register:</strong>
           As decreed in the Manifesto, members must respect the impartial authority of the Lunch Club Chairs and refrain from attempting to unduly influence their verdicts. Any member or petitioner who attempts to sway decisions, rescind terminations, or curry favor through gifts or improper benefits shall have their ignominy inscribed herein. The Chairs remain incorruptible; all confiscated tenders and items are retained as material evidence.
         </div>
@@ -62,7 +62,7 @@ import incidentsData from '@/data/incidents.json';
         {incidentsData.map((inc) => (
           <div class="relative group">
             <!-- Timeline Node Wax Seal Icon -->
-            <div class="absolute -left-[35px] sm:-left-[43px] top-1.5 w-6 h-6 rounded-full bg-[#8b1e22] border-2 border-[#c59b27] text-white flex items-center justify-center text-[10px] shadow">
+            <div class="absolute -left-[35px] sm:-left-[43px] top-1.5 w-6 h-6 rounded-full bg-[#8b1e22] border-2 border-[#c59b27] text-white flex items-center justify-center text-xs shadow">
               🌹
             </div>
 
@@ -76,7 +76,7 @@ import incidentsData from '@/data/incidents.json';
                       Logged: {inc.formattedDate || inc.date}
                     </span>
                     {inc.location && (
-                      <span class="text-[11px] font-sans bg-stone-100 text-stone-700 px-2 py-0.5 rounded border border-stone-200">
+                      <span class="text-xs font-sans bg-stone-100 text-stone-700 px-2 py-0.5 rounded border border-stone-200">
                         📍 {inc.location}
                       </span>
                     )}
@@ -87,7 +87,7 @@ import incidentsData from '@/data/incidents.json';
                 </div>
 
                 <div class="text-right">
-                  <span class="text-[10px] text-stone-500 uppercase tracking-wider block font-sans">Illicit Value</span>
+                  <span class="text-xs text-stone-500 uppercase tracking-wider block font-sans">Illicit Value</span>
                   <span class="text-sm font-bold font-mono text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
                     {inc.value}
                   </span>
@@ -95,7 +95,7 @@ import incidentsData from '@/data/incidents.json';
               </div>
 
               <!-- Personnel Involved -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-[#f4efe4] p-3 rounded-xl border border-[#dcd6c8]">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-base bg-[#f4efe4] p-3 rounded-xl border border-[#dcd6c8]">
                 <div>
                   <span class="font-bold text-stone-700 font-serif-header block">People Involved:</span>
                   <span class="text-stone-900 font-mono font-semibold">{inc.peopleInvolved.join(' & ')}</span>
@@ -126,7 +126,7 @@ import incidentsData from '@/data/incidents.json';
 
               <!-- Outcome / Penalty -->
               <div class="bg-rose-50 border-l-4 border-rose-600 p-3 rounded-r-lg text-xs text-rose-950 font-serif-header">
-                <span class="font-bold text-rose-900 uppercase tracking-wide block text-[10px]">
+                <span class="font-bold text-rose-900 uppercase tracking-wide block text-xs">
                   Executive Verdict & Sanctions:
                 </span>
                 <p class="mt-0.5 italic">{inc.outcome}</p>

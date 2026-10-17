@@ -13,7 +13,7 @@
           <span class="text-xl">📋</span>
           <div>
             <h2 class="text-sm font-bold font-serif-header">Official Inspection Audit Log</h2>
-            <p class="text-[11px] text-stone-200">Enforcing the Manifesto Two-Visit Standard</p>
+            <p class="text-xs text-stone-200">Enforcing the Manifesto Two-Visit Standard</p>
           </div>
         </div>
         <button @click="closeModal" class="text-white/80 hover:text-white text-lg">✕</button>
@@ -70,7 +70,7 @@
               type="button"
               @click="toggleInspector(person)"
               :class="selectedInspectors.includes(person) ? 'bg-[#1a1e24] text-[#c59b27] border-[#c59b27]' : 'bg-stone-100 text-stone-700 border-stone-300'"
-              class="px-2 py-0.5 rounded text-[11px] border font-serif-header"
+              class="px-2 py-0.5 rounded text-xs border font-serif-header"
             >
               {{ person }}
             </button>
