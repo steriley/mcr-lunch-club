@@ -54,7 +54,8 @@ export function haversineMetres(a: LatLng, b: LatLng): number {
     sinDeltaLat * sinDeltaLat +
     Math.cos(lat1) * Math.cos(lat2) * sinDeltaLng * sinDeltaLng;
 
-  const c = 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+  const clampedH = Math.min(1, Math.max(0, h));
+  const c = 2 * Math.atan2(Math.sqrt(clampedH), Math.sqrt(1 - clampedH));
 
   return R * c;
 }
@@ -115,9 +116,9 @@ export function rankVenues({
 
   // 1. Determine active tiers (intersect requested tiers with eligible Near Me tiers)
   const allowedTierSet = new Set(NEAR_ME_ELIGIBLE_TIERS);
-  const activeTiers = tiers && tiers.length > 0
-    ? tiers.filter((t) => allowedTierSet.has(t))
-    : NEAR_ME_ELIGIBLE_TIERS;
+  const activeTiers = tiers === undefined
+    ? NEAR_ME_ELIGIBLE_TIERS
+    : tiers.filter((t) => allowedTierSet.has(t));
 
   if (activeTiers.length === 0) {
     return [];

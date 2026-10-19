@@ -14,7 +14,7 @@
     </div>
 
     <!-- Quick Map Controls (Floating bottom right) -->
-    <div class="absolute bottom-4 right-4 z-[1000] flex flex-col items-end gap-2">
+    <div class="absolute bottom-4 right-4 z-[1000]">
       <button
         id="btn-near-me"
         @click="openNearMe"
@@ -29,26 +29,6 @@
         <span>Near Me</span>
       </button>
 
-      <button
-        @click="recenterBase"
-        class="bg-[#1a1e24] hover:bg-[#8b1e22] text-[#f9f7f1] p-2.5 rounded-full shadow-lg border border-[#c59b27]/50 transition-colors flex items-center justify-center text-xs font-semibold title='Return to Spinningfields Base'"
-        title="Return to Spinningfields Base"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="m12 8-4 8 4-2 4 2z"/>
-        </svg>
-      </button>
-
-      <button
-        @click="fitAllPins"
-        class="bg-[#f9f7f1] hover:bg-[#eae3d2] text-[#1a1e24] p-2.5 rounded-full shadow-lg border border-[#dcd6c8] transition-colors flex items-center justify-center text-xs font-semibold"
-        title="Fit All Pins"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
-        </svg>
-      </button>
     </div>
 
     <!-- Walking Rings Legend Toggle -->
@@ -260,21 +240,6 @@ function renderMarkers() {
   });
 }
 
-function recenterBase() {
-  if (mapInstance) {
-    mapInstance.setView([BASE_LAT, BASE_LNG], DEFAULT_ZOOM, { animate: true });
-  }
-}
-
-function fitAllPins() {
-  if (!mapInstance || !filteredVenues.value.length || !leafletModule) return;
-  const L = leafletModule.default || leafletModule;
-  const bounds = L.latLngBounds(
-    filteredVenues.value.map((v) => [v.lat, v.lng] as [number, number])
-  );
-  bounds.extend([BASE_LAT, BASE_LNG]);
-  mapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 16, animate: true });
-}
 </script>
 
 <style>

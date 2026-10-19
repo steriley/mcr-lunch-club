@@ -102,8 +102,8 @@
             type="button"
             id="btn-near-me-recenter"
             class="near-me-control-btn"
-            :class="{ 'is-active': isFollowingUser && geo.position }"
-            :disabled="!geo.position"
+            :class="{ 'is-active': isFollowingUser && geoPosition }"
+            :disabled="!geoPosition"
             aria-label="Recentre on me"
             title="Recentre on me"
             @click="recenterOnMe"
@@ -134,7 +134,7 @@
             type="button"
             id="btn-near-me-manual"
             class="near-me-control-btn"
-            :class="{ 'is-active': isPickingLocation || geo.isManual }"
+            :class="{ 'is-active': isPickingLocation || isManualLocation }"
             aria-label="Set location manually"
             title="Set location manually on map"
             @click="togglePickLocation"
@@ -469,6 +469,8 @@ const listContainerRef = ref<HTMLElement | null>(null);
 
 // Geolocation composable
 const geo = useGeolocation();
+const geoPosition = geo.position;
+const isManualLocation = geo.isManual;
 
 // UI states
 const isFollowingUser = ref<boolean>(true);
@@ -478,7 +480,8 @@ const sheetSnapState = ref<'collapsed' | 'half' | 'full'>('half');
 const selectedVenueId = ref<string | null>(null);
 const hasFittedFirstFix = ref<boolean>(false);
 const isInteractingWithList = ref<boolean>(false);
-let interactionTimeout: any = null;
+let interactionTimeout: ReturnType<typeof setTimeout> | null = null;
+let prePermissionTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // Phase 5 state flags
 /** Show pre-permission explanation before browser prompt fires */
@@ -524,9 +527,11 @@ let userLayersGroup: any = null;
 const venueMarkersMap = new Map<string, any>();
 
 let previousActiveElement: HTMLElement | null = null;
+let previousBodyOverflow: string | null = null;
 let hasPushedHistory = false;
 let isInternalStateChange = false;
 let isProgrammaticMove = false;
+let mapInitializationId = 0;
 
 // Touch tracking for mobile sheet handle
 let touchStartY = 0;
@@ -585,7 +590,9 @@ function onListScroll() {
   isInteractingWithList.value = true;
   if (interactionTimeout) clearTimeout(interactionTimeout);
   interactionTimeout = setTimeout(() => {
+    interactionTimeout = null;
     isInteractingWithList.value = false;
+    updateRanking();
   }, 1200);
 }
 
@@ -593,7 +600,9 @@ function onListTouchStart() {
   isInteractingWithList.value = true;
   if (interactionTimeout) clearTimeout(interactionTimeout);
   interactionTimeout = setTimeout(() => {
+    interactionTimeout = null;
     isInteractingWithList.value = false;
+    updateRanking();
   }, 1200);
 }
 
@@ -979,12 +988,13 @@ function renderVenueMarkers() {
   }
 }
 
-async function initNearMeMap() {
+async function initNearMeMap(initializationId: number) {
   if (typeof window === 'undefined' || !mapContainerRef.value) return;
 
   if (!leafletModule) {
     leafletModule = await import('leaflet');
   }
+  if (initializationId !== mapInitializationId || !isOpen.value || !mapContainerRef.value) return;
   const L = leafletModule.default || leafletModule;
 
   // Clean existing instance if any
@@ -1176,10 +1186,13 @@ function onLocationChange() {
 
 watch(isOpen, async (open) => {
   if (open) {
+    const initializationId = ++mapInitializationId;
+
     if (document.activeElement instanceof HTMLElement) {
       previousActiveElement = document.activeElement;
     }
 
+    previousBodyOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     checkScreenSize();
 
@@ -1193,6 +1206,7 @@ watch(isOpen, async (open) => {
     }
 
     await nextTick();
+    if (!isOpen.value || initializationId !== mapInitializationId) return;
 
     if (closeButtonRef.value) {
       closeButtonRef.value.focus();
@@ -1200,7 +1214,8 @@ watch(isOpen, async (open) => {
       shellRef.value.focus();
     }
 
-    await initNearMeMap();
+    await initNearMeMap(initializationId);
+    if (!isOpen.value || initializationId !== mapInitializationId) return;
 
     // Request location ONLY when Near Me opens
     isFollowingUser.value = true;
@@ -1216,13 +1231,25 @@ watch(isOpen, async (open) => {
     // so the user sees the explanation panel before the OS dialog appears.
     showPrePermission.value = true;
     await nextTick();
+    if (!isOpen.value || initializationId !== mapInitializationId) return;
     // Small delay allows the UI to paint the pre-permission state before the
     // blocking OS permission dialog covers the screen.
-    setTimeout(() => {
+    prePermissionTimeout = setTimeout(() => {
+      prePermissionTimeout = null;
+      if (!isOpen.value || initializationId !== mapInitializationId) return;
       showPrePermission.value = false;
       geo.start();
     }, 1200);
   } else {
+    mapInitializationId += 1;
+    if (prePermissionTimeout !== null) {
+      clearTimeout(prePermissionTimeout);
+      prePermissionTimeout = null;
+    }
+    if (interactionTimeout !== null) {
+      clearTimeout(interactionTimeout);
+      interactionTimeout = null;
+    }
     geo.stop();
     isPickingLocation.value = false;
     selectedTiers.value = ['Approved'];
@@ -1233,7 +1260,10 @@ watch(isOpen, async (open) => {
     isUserFarFromManchester.value = false;
     isLowAccuracy.value = false;
 
-    document.body.style.overflow = '';
+    if (previousBodyOverflow !== null) {
+      document.body.style.overflow = previousBodyOverflow;
+      previousBodyOverflow = null;
+    }
     destroyMap();
 
     if (window.location.hash === '#near-me') {
@@ -1277,11 +1307,17 @@ onMounted(() => {
 onUnmounted(() => {
   if (typeof window === 'undefined') return;
 
+  mapInitializationId += 1;
+  if (prePermissionTimeout !== null) clearTimeout(prePermissionTimeout);
+  if (interactionTimeout !== null) clearTimeout(interactionTimeout);
   window.removeEventListener('resize', checkScreenSize);
   window.removeEventListener('popstate', onLocationChange);
   window.removeEventListener('hashchange', onLocationChange);
 
-  document.body.style.overflow = '';
+  if (previousBodyOverflow !== null) {
+    document.body.style.overflow = previousBodyOverflow;
+    previousBodyOverflow = null;
+  }
   geo.stop();
   destroyMap();
 });
