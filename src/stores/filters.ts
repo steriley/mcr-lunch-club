@@ -21,6 +21,7 @@ export const $isWhereTodayOpen = atom<boolean>(false);
 export const $isSuggestModalOpen = atom<boolean>(false);
 export const $isInspectionModalOpen = atom<boolean>(false);
 export const $inspectionTargetVenue = atom<Venue | null>(null);
+export const $isNearMeOpen = atom<boolean>(false);
 
 // Chairs' Mode toggle (Executive Authority vs Member Mode)
 export const $isChairsMode = atom<boolean>(false);
@@ -125,4 +126,12 @@ export function closeInspectionModal() {
 
 export function toggleChairsMode() {
   $isChairsMode.set(!$isChairsMode.get());
+}
+
+export function openNearMe() {
+  $isNearMeOpen.set(true);
+}
+
+export function closeNearMe() {
+  $isNearMeOpen.set(false);
 }

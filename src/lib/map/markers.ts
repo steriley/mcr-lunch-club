@@ -1,0 +1,122 @@
+import type { Venue } from '@/types';
+import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES } from './config';
+import { getTierMetadata } from './tiers';
+
+/**
+ * Generate the HTML string for a venue marker pin.
+ */
+export function createVenueIconHtml(venue: Venue): string {
+  const metadata = getTierMetadata(venue.status);
+  const styling = metadata.colors;
+  const isApproved = venue.status === 'Approved';
+  const badgeText = isApproved && venue.rank ? `#${venue.rank}` : venue.cost;
+
+  return `
+    <div class="group relative cursor-pointer transform transition-transform duration-200 hover:scale-125 hover:z-[9999]" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));">
+      <div class="flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shadow-md border-2"
+           style="background-color: ${styling.pinBg}; border-color: ${styling.border}; color: ${styling.text};">
+        <span>${badgeText}</span>
+      </div>
+      <div class="w-1.5 h-1.5 mx-auto bg-stone-900 rounded-full mt-[-1px]"></div>
+    </div>
+  `;
+}
+
+/**
+ * Factory for creating a Leaflet venue marker.
+ */
+export function createVenueMarker(L: any, venue: Venue): any {
+  if (venue.lat == null || venue.lng == null) return null;
+
+  const iconHtml = createVenueIconHtml(venue);
+
+  return L.marker([venue.lat, venue.lng], {
+    icon: L.divIcon({
+      html: iconHtml,
+      className: 'custom-ledger-pin',
+      iconSize: [28, 34],
+      iconAnchor: [14, 30],
+    }),
+  });
+}
+
+/**
+ * Factory for creating the Spinningfields Base quorum marker.
+ */
+export function createBaseMarker(L: any): any {
+  const baseIconHtml = `
+    <div class="relative flex items-center justify-center w-8 h-8 rounded-full bg-[#1a1e24] text-[#c59b27] border-2 border-[#c59b27] shadow-2xl">
+      <div class="w-3 h-3 rounded-full bg-[#c59b27] animate-ping opacity-75"></div>
+      <div class="absolute text-[13px] font-bold">🏛</div>
+    </div>
+  `;
+
+  const baseMarker = L.marker([BASE_LAT, BASE_LNG], {
+    icon: L.divIcon({
+      html: baseIconHtml,
+      className: 'custom-ledger-pin',
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+    }),
+    zIndexOffset: 1000,
+  });
+
+  baseMarker.bindTooltip('<b>The Chairs’ Seat</b><br/>Spinningfields Base Quorum', {
+    direction: 'top',
+    className: 'ring-label',
+  });
+
+  return baseMarker;
+}
+
+/**
+ * Factory for creating the walking time isochrone circles around Spinningfields base.
+ */
+export function createWalkingIsochrones(L: any): any[] {
+  return WALKING_ISOCHRONES.map((ring) => {
+    return L.circle([BASE_LAT, BASE_LNG], {
+      radius: ring.radius,
+      color: ring.color,
+      weight: ring.weight || 1.4,
+      dashArray: ring.dash,
+      fillColor: ring.color,
+      fillOpacity: 0.02,
+      interactive: false,
+    });
+  });
+}
+
+/**
+ * Generate popup DOM content for a venue in the Ledger View.
+ */
+export function createVenuePopupContent(venue: Venue): HTMLElement {
+  const metadata = getTierMetadata(venue.status);
+  const styling = metadata.colors;
+
+  const popupContent = document.createElement('div');
+  popupContent.className = 'p-3 font-serif-header text-[#1a1e24] max-w-[260px]';
+  popupContent.innerHTML = `
+    <div class="flex items-center justify-between gap-2 border-b border-stone-200 pb-1.5 mb-2">
+      <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded"
+            style="background-color: ${styling.bg}20; color: ${styling.bg}; border: 1px solid ${styling.bg}40;">
+        ${venue.status}
+      </span>
+      <span class="text-xs font-mono font-bold text-amber-900">${venue.cost}</span>
+    </div>
+    <h3 class="font-bold text-sm text-[#1a1e24] leading-tight">${venue.name}</h3>
+    <p class="text-xs text-stone-600 font-sans mt-0.5">${venue.cuisine} &bull; ${venue.walkingTimeMin} min walk (${venue.distanceMiles} mi)</p>
+
+    <div class="mt-2 p-1.5 bg-stone-100/90 rounded border border-stone-200 text-xs font-sans">
+      <strong class="text-stone-800 font-serif-header">Eat Like Us:</strong>
+      <p class="text-stone-700 italic mt-0.5 line-clamp-2">${venue.eatLikeUs}</p>
+    </div>
+
+    <div class="mt-3 flex items-center justify-between gap-2 font-sans text-xs">
+      <button id="btn-inspect-${venue.slug}" class="w-full bg-[#1a1e24] hover:bg-[#8b1e22] text-[#f9f7f1] py-1.5 px-3 rounded font-semibold text-center transition-colors">
+        View Ledger Dossier
+      </button>
+    </div>
+  `;
+
+  return popupContent;
+}
