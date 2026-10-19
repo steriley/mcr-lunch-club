@@ -64,6 +64,37 @@ const navigation = [
           <span>Where to today?</span>
           <span class="header-time">12:25</span>
         </a>
+
+        <details class="mobile-menu">
+          <summary class="mobile-menu-trigger" aria-label="Menu">
+            <span class="mobile-menu-bars" aria-hidden="true"><span></span><span></span><span></span></span>
+          </summary>
+          <div class="mobile-menu-panel">
+            <a href="/#where-to-today" class="header-lunch-link" data-open-where-today>
+              <span aria-hidden="true">◉</span>
+              <span>Where to today?</span>
+              <span class="header-time">12:25</span>
+            </a>
+            <nav class="site-nav" aria-label="Main navigation">
+              {navigation.map((item) => {
+                const active = item.href === '/tiers/approved'
+                  ? currentPath.startsWith('/tiers')
+                  : currentPath === item.href;
+                return (
+                  <a
+                    href={item.href}
+                    class:list={['site-nav-link', active && 'is-active']}
+                    aria-current={active ? 'page' : undefined}
+                  >
+                    <span aria-hidden="true">{item.icon}</span>
+                    <span>{item.label}</span>
+                    {item.label === 'Inspections' && <span class="nav-count">90</span>}
+                  </a>
+                );
+              })}
+            </nav>
+          </div>
+        </details>
       </div>
     </header>
 
@@ -117,5 +148,14 @@ const navigation = [
         </div>
       </div>
     </footer>
+    <script>
+      document.querySelectorAll<HTMLDetailsElement>('.mobile-menu').forEach((menu) => {
+        menu.addEventListener('click', (event) => {
+          if (event.target instanceof Element && event.target.closest('a')) {
+            menu.open = false;
+          }
+        });
+      });
+    </script>
   </body>
 </html>

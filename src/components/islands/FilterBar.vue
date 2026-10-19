@@ -7,6 +7,7 @@
           <path d="m16.5 16.5 4 4" />
         </svg>
         <input
+          ref="searchInputRef"
           id="ledger-search-input"
           v-model="searchQueryModel"
           type="search"
@@ -18,29 +19,51 @@
         <span class="ledger-search-shortcut" aria-hidden="true">⌘ K</span>
       </div>
 
-      <div class="ledger-tier-filters" role="group" aria-label="Filter by verdict">
+      <div class="ledger-tier-row">
+        <div class="ledger-tier-filters" role="group" aria-label="Filter by verdict">
+          <button
+            v-for="tier in allTiers"
+            :key="tier.name"
+            type="button"
+            :aria-pressed="filters.tiers.includes(tier.name)"
+            :class="['ledger-tier-chip', filters.tiers.includes(tier.name) && 'is-selected']"
+            :style="filters.tiers.includes(tier.name)
+              ? { backgroundColor: tier.color, borderColor: tier.color } : undefined"
+            @click="toggleTier(tier.name)"
+          >
+            <span
+              :class="['ledger-tier-dot', filters.tiers.includes(tier.name) && 'is-selected']"
+              :style="!filters.tiers.includes(tier.name) ? { backgroundColor: tier.color } : undefined"
+              aria-hidden="true"
+            ></span>
+            <span>{{ tier.name }}</span>
+            <span class="nav-count ledger-tier-count">{{ getTierCount(tier.name) }}</span>
+            <span v-if="filters.tiers.includes(tier.name)" class="ledger-tier-check" aria-hidden="true">✓</span>
+          </button>
+        </div>
+
         <button
-          v-for="tier in allTiers"
-          :key="tier.name"
           type="button"
-          :aria-pressed="filters.tiers.includes(tier.name)"
-          :class="['ledger-tier-chip', filters.tiers.includes(tier.name) && 'is-selected']"
-          :style="filters.tiers.includes(tier.name)
-            ? { backgroundColor: tier.color, borderColor: tier.color } : undefined"
-          @click="toggleTier(tier.name)"
+          class="ledger-secondary-toggle"
+          :aria-expanded="isSecondaryFiltersOpen"
+          aria-controls="ledger-secondary-filters"
+          :aria-label="`${isSecondaryFiltersOpen ? 'Hide' : 'Show'} secondary filters${activeSecondaryFilterCount ? `, ${activeSecondaryFilterCount} active` : ''}`"
+          :title="isSecondaryFiltersOpen ? 'Hide secondary filters' : 'Show secondary filters'"
+          @click="isSecondaryFiltersOpen = !isSecondaryFiltersOpen"
         >
-          <span
-            :class="['ledger-tier-dot', filters.tiers.includes(tier.name) && 'is-selected']"
-            :style="!filters.tiers.includes(tier.name) ? { backgroundColor: tier.color } : undefined"
-            aria-hidden="true"
-          ></span>
-          <span>{{ tier.name }}</span>
-          <span class="nav-count ledger-tier-count">{{ getTierCount(tier.name) }}</span>
-          <span v-if="filters.tiers.includes(tier.name)" class="ledger-tier-check" aria-hidden="true">✓</span>
+          <svg class="ledger-secondary-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 7h9m4 0h3M4 17h3m4 0h9" />
+            <circle cx="15" cy="7" r="2" />
+            <circle cx="9" cy="17" r="2" />
+          </svg>
+          <span v-if="activeSecondaryFilterCount" class="ledger-secondary-filter-count" aria-hidden="true">{{ activeSecondaryFilterCount }}</span>
+          <svg :class="['ledger-secondary-chevron', isSecondaryFiltersOpen && 'is-open']" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m3 6 5 5 5-5" />
+          </svg>
         </button>
       </div>
 
-      <div class="ledger-secondary-filters">
+      <div id="ledger-secondary-filters" v-show="isSecondaryFiltersOpen" class="ledger-secondary-filters">
         <div class="ledger-filter-groups">
           <div class="ledger-filter-group">
             <span class="ledger-filter-label">Cost:</span>
@@ -112,7 +135,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useStore } from '@nanostores/vue';
 import {
   $filters,
@@ -131,6 +154,16 @@ import type { CostTier, TierStatus } from '@/types';
 
 const filters = useStore($filters);
 const venuesList = useStore($venuesList);
+const searchInputRef = ref<HTMLInputElement | null>(null);
+const isSecondaryFiltersOpen = ref(false);
+
+const activeSecondaryFilterCount = computed(() => {
+  const current = filters.value;
+  return Number(current.cost !== 'all')
+    + Number(current.maxWalkMinutes !== 25)
+    + Number(current.inspectedDays !== 'all')
+    + Number(current.cuisine !== 'all');
+});
 
 const allTiers: { name: TierStatus; color: string }[] = [
   { name: 'Approved', color: '#1E7A4E' },
@@ -168,14 +201,25 @@ function handleWhereTodayClick(event: MouseEvent) {
   openWhereToday();
 }
 
+function handleSearchShortcut(event: KeyboardEvent) {
+  if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'k' || event.altKey || event.shiftKey) {
+    return;
+  }
+
+  event.preventDefault();
+  searchInputRef.value?.focus();
+}
+
 onMounted(() => {
   handleActionLink();
   window.addEventListener('hashchange', handleActionLink);
+  window.addEventListener('keydown', handleSearchShortcut);
   document.addEventListener('click', handleWhereTodayClick);
 });
 
 onUnmounted(() => {
   window.removeEventListener('hashchange', handleActionLink);
+  window.removeEventListener('keydown', handleSearchShortcut);
   document.removeEventListener('click', handleWhereTodayClick);
 });
 
@@ -284,11 +328,80 @@ function resetAll() {
 
 .ledger-tier-filters {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
   gap: 7px;
   overflow-x: auto;
   padding-block: 1px 3px;
   scrollbar-width: none;
+}
+
+.ledger-tier-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ledger-secondary-toggle {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 38px;
+  height: 32px;
+  padding: 0 4px;
+  border: 1px solid #D9CFB8;
+  border-radius: 7px;
+  background: #F7F0DF;
+  color: #454650;
+  cursor: pointer;
+}
+
+.ledger-secondary-toggle:hover,
+.ledger-secondary-toggle[aria-expanded="true"] {
+  border-color: #1B2F6B;
+  background: #fff8f3;
+  color: #1B2F6B;
+}
+
+.ledger-secondary-toggle:focus-visible {
+  outline: 2px solid #1B2F6B;
+  outline-offset: 2px;
+}
+
+.ledger-secondary-toggle-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.ledger-secondary-chevron {
+  width: 11px;
+  height: 11px;
+  transition: transform 140ms ease;
+}
+
+.ledger-secondary-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.ledger-secondary-filter-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  min-width: 15px;
+  height: 15px;
+  place-items: center;
+  padding-inline: 3px;
+  border-radius: 999px;
+  background: #1B2F6B;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .ledger-tier-filters::-webkit-scrollbar {
@@ -420,6 +533,7 @@ function resetAll() {
 .ledger-select:focus-visible,
 .ledger-cost-button:focus-visible,
 .ledger-tier-chip:focus-visible,
+.ledger-secondary-toggle:focus-visible,
 .ledger-reset-button:focus-visible {
   outline: 2px solid #1B2F6B;
   outline-offset: 2px;

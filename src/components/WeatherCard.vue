@@ -417,12 +417,6 @@ onMounted(async () => {
   border-radius: 16px;
   background: #f7f3e8;
   box-shadow: 0 1px 3px rgb(0 0 0 / 4%), 0 1px 2px rgb(0 0 0 / 2%);
-  transition: transform 150ms ease, box-shadow 150ms ease;
-}
-
-.weather-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px -2px rgb(12 35 64 / 8%);
 }
 
 .weather-card.theme-sunny {
@@ -632,10 +626,6 @@ onMounted(async () => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .weather-card {
-    transition: none;
-  }
-
   .weather-condition-icon.is-loading {
     animation-duration: 3s;
   }
