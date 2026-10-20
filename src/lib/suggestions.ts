@@ -42,19 +42,16 @@ async function uniqueSlug(db: Database, name: string): Promise<string> {
   return `${base.slice(0, 100)}-${Date.now()}`;
 }
 
-/** Creates an unpublished To Be Assessed venue from a suggestion and marks the suggestion accepted. */
+/** Creates a hidden venue (no approved tier) from a suggestion and marks the suggestion accepted. */
 export async function createDraftVenueFromSuggestion(db: Database, suggestion: SuggestionRow, userId: string) {
-  const credit = suggestion.submitterName ? `Suggested by ${suggestion.submitterName}` : 'Suggested by a member';
   const input = venueInputSchema.parse({
     name: suggestion.name,
     slug: await uniqueSlug(db, suggestion.name),
-    tier: 'to_be_assessed',
+    tier: null,
     address: suggestion.address,
     cost: suggestion.cost ?? '££',
     cuisine: suggestion.cuisine,
     lunchSpecial: suggestion.recommendedOrder,
-    summary: `${credit}: ${suggestion.rationale}`.slice(0, 2000),
-    published: false,
   });
 
   const [venue] = await db.insert(venues).values(venueValues(input, userId)).returning();

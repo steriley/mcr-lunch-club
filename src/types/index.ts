@@ -13,7 +13,6 @@ export interface Venue {
   name: string;
   slug: string;
   status: TierStatus;
-  rank?: number | null;
   lat: number | null;
   lng: number | null;
   distanceMiles: number;
@@ -22,11 +21,8 @@ export interface Venue {
   cuisine: string;
   eatLikeUs: string;
   lastInspectionDate: string;
-  rejectionReason?: string | null;
   address: string;
-  evidenceUrl?: string;
   mapSearchLink: string;
-  notes?: string;
 }
 
 export interface Inspection {

@@ -1,5 +1,9 @@
 # MCR Lunch Club — Admin Area & Authentication Build Spec
 
+> **Historical spec.** The venue model has since changed: rank, display order,
+> summary, verdict, rejection reason and the `published` toggle were removed and
+> visibility is derived (see issue #8 and `src/lib/visibility.ts`).
+
 **Audience:** GitHub Copilot (Agent mode) working in this repository.
 **Goal:** Add authentication (Better Auth) and a protected admin area so the Chairs can create, edit and publish venue content, backed by a Neon Postgres database, deployed on Vercel's free (Hobby) tier.
 

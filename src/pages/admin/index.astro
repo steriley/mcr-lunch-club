@@ -1,33 +1,42 @@
 ---
-import { count, desc, eq, sql } from 'drizzle-orm';
+import { count, desc, eq, not, sql } from 'drizzle-orm';
 import TierBadge from '@/components/islands/TierBadge.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import { user } from '@/db/auth-schema';
 import { briberyRecords, venueSuggestions, venues } from '@/db/schema';
 import { db } from '@/lib/db';
 import { TIERS } from '@/lib/tiers';
+import { isPubliclyVisible, publicVenueCondition } from '@/lib/visibility';
 
 export const prerender = false;
 
 const currentUser = Astro.locals.user;
 
-const [tierCounts, drafts, recent, [bribery], [chairs], [suggestions]] = await Promise.all([
+const [tierCounts, hiddenVenues, recent, [bribery], [chairs], [suggestions]] = await Promise.all([
   db
     .select({
       tier: venues.tier,
-      published: sql<number>`count(*) filter (where ${venues.published})`.mapWith(Number),
-      drafts: sql<number>`count(*) filter (where not ${venues.published})`.mapWith(Number),
+      visible: sql<number>`count(*) filter (where ${publicVenueCondition()})`.mapWith(Number),
+      hidden: sql<number>`count(*) filter (where not (${publicVenueCondition()}))`.mapWith(Number),
     })
     .from(venues)
     .groupBy(venues.tier),
   db
     .select({ id: venues.id, name: venues.name, tier: venues.tier, updatedAt: venues.updatedAt })
     .from(venues)
-    .where(eq(venues.published, false))
+    .where(not(publicVenueCondition()))
     .orderBy(desc(venues.updatedAt))
     .limit(10),
   db
-    .select({ id: venues.id, name: venues.name, tier: venues.tier, published: venues.published, updatedAt: venues.updatedAt, editor: user.name })
+    .select({
+      id: venues.id,
+      name: venues.name,
+      tier: venues.tier,
+      latitude: venues.latitude,
+      longitude: venues.longitude,
+      updatedAt: venues.updatedAt,
+      editor: user.name,
+    })
     .from(venues)
     .leftJoin(user, eq(user.id, venues.updatedBy))
     .orderBy(desc(venues.updatedAt))
@@ -40,18 +49,18 @@ const [tierCounts, drafts, recent, [bribery], [chairs], [suggestions]] = await P
 const countsByTier = new Map(tierCounts.map((row) => [row.tier, row]));
 const tiers = TIERS.map((tier) => ({
   ...tier,
-  published: countsByTier.get(tier.value)?.published ?? 0,
-  drafts: countsByTier.get(tier.value)?.drafts ?? 0,
+  visible: countsByTier.get(tier.value)?.visible ?? 0,
+  hidden: countsByTier.get(tier.value)?.hidden ?? 0,
 }));
-const totalPublished = tiers.reduce((sum, tier) => sum + tier.published, 0);
-const totalDrafts = tiers.reduce((sum, tier) => sum + tier.drafts, 0);
+const totalVisible = tierCounts.reduce((sum, row) => sum + row.visible, 0);
+const totalHidden = tierCounts.reduce((sum, row) => sum + row.hidden, 0);
 
 const formatWhen = (value: Date) =>
   value.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' });
 
 const stats = [
-  { label: 'Published venues', value: totalPublished, href: '/admin/venues?status=published', tone: 'bg-[#E8F5EE] text-[#1E7A4E]' },
-  { label: 'Drafts', value: totalDrafts, href: '/admin/venues?status=draft', tone: 'bg-[#fff4df] text-[#C27803]' },
+  { label: 'Public venues', value: totalVisible, href: '/admin/venues?status=public', tone: 'bg-[#E8F5EE] text-[#1E7A4E]' },
+  { label: 'Hidden venues', value: totalHidden, href: '/admin/venues?status=hidden', tone: 'bg-[#fff4df] text-[#C27803]' },
   { label: 'New suggestions', value: suggestions.total, href: '/admin/suggestions', tone: 'bg-[#f1e8f3] text-[#7C3A82]' },
   { label: 'Bribery records', value: bribery.total, href: '/admin/bribery', tone: 'bg-[#FDECEC] text-[#B92B27]' },
   { label: 'Chairs', value: chairs.total, href: '/admin/users', tone: 'bg-[#edf3ff] text-[#1B2F6B]' },
@@ -81,16 +90,16 @@ const stats = [
           <thead class="text-[#535353]">
             <tr>
               <th scope="col" class="py-2 pr-4 font-semibold">Tier</th>
-              <th scope="col" class="py-2 pr-4 text-right font-semibold">Published</th>
-              <th scope="col" class="py-2 text-right font-semibold">Drafts</th>
+              <th scope="col" class="py-2 pr-4 text-right font-semibold">Public</th>
+              <th scope="col" class="py-2 text-right font-semibold">Hidden</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#eadfca]">
             {tiers.map((tier) => (
               <tr>
                 <td class="py-2 pr-4"><a href={`/admin/venues?tier=${tier.value}`} class="hover:underline"><TierBadge tier={tier.value} /></a></td>
-                <td class="py-2 pr-4 text-right font-semibold">{tier.published}</td>
-                <td class="py-2 text-right">{tier.drafts}</td>
+                <td class="py-2 pr-4 text-right font-semibold">{tier.visible}</td>
+                <td class="py-2 text-right">{tier.hidden}</td>
               </tr>
             ))}
           </tbody>
@@ -100,12 +109,13 @@ const stats = [
 
     <div class="grid gap-6 lg:grid-cols-2">
       <section class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm" aria-labelledby="drafts-heading">
-        <h2 id="drafts-heading" class="text-xl font-bold text-[#1a1e24]">Drafts awaiting publication</h2>
-        {drafts.length === 0 ? (
-          <p class="mt-4 text-sm text-[#3d3d3d]">No drafts. Everything is published.</p>
+        <h2 id="drafts-heading" class="text-xl font-bold text-[#1a1e24]">Hidden from the public site</h2>
+        <p class="mt-1 text-xs text-[#535353]">Venues without an approved tier or a location.</p>
+        {hiddenVenues.length === 0 ? (
+          <p class="mt-4 text-sm text-[#3d3d3d]">Nothing hidden. Every venue is on the public site.</p>
         ) : (
           <ul class="mt-4 divide-y divide-[#eadfca] text-sm">
-            {drafts.map((venue) => (
+            {hiddenVenues.map((venue) => (
               <li class="flex items-center justify-between gap-3 py-2">
                 <a href={`/admin/venues/${venue.id}`} class="font-semibold text-[#1a1e24] hover:underline">{venue.name}</a>
                 <TierBadge tier={venue.tier} />
@@ -122,7 +132,7 @@ const stats = [
             <li class="py-2">
               <div class="flex items-center justify-between gap-3">
                 <a href={`/admin/venues/${venue.id}`} class="font-semibold text-[#1a1e24] hover:underline">{venue.name}</a>
-                {!venue.published && <span class="text-xs font-semibold uppercase tracking-[0.12em] text-stone-600">Draft</span>}
+                {!isPubliclyVisible(venue) && <span class="text-xs font-semibold uppercase tracking-[0.12em] text-stone-600">Hidden</span>}
               </div>
               <p class="text-xs text-[#535353]">{formatWhen(venue.updatedAt)}{venue.editor ? ` by ${venue.editor}` : ''}</p>
             </li>

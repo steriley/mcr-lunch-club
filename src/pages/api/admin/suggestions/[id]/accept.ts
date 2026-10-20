@@ -7,7 +7,7 @@ import { createDraftVenueFromSuggestion } from '@/lib/suggestions';
 
 export const prerender = false;
 
-/** Turns a suggestion into an unpublished To Be Assessed venue for the Chairs to finish. */
+/** Turns a suggestion into a hidden venue (no approved tier yet) for the Chairs to finish. */
 export const POST: APIRoute = async ({ request, params }) => {
   const session = await requireAdmin(request);
   if (session instanceof Response) return session;

@@ -8,8 +8,7 @@ import { getTierMetadata } from './tiers';
 export function createVenueIconHtml(venue: Venue): string {
   const metadata = getTierMetadata(venue.status);
   const styling = metadata.colors;
-  const isApproved = venue.status === 'Approved';
-  const badgeText = isApproved && venue.rank ? `#${venue.rank}` : venue.cost;
+  const badgeText = venue.cost;
 
   return `
     <div class="group relative cursor-pointer transform transition-transform duration-200 hover:scale-125 hover:z-[9999]" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));">

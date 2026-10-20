@@ -7,7 +7,7 @@
  *   pnpm db:import --update   also overwrite existing venues with the file contents
  *
  * Venues match on slug; bribery records match on title + incident date.
- * Everything is imported as published, because all of it is public today.
+ * Venues are imported with their tier, so they are public as soon as they have coordinates.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -27,7 +27,7 @@ function readJson<T>(relativePath: string): T {
   return JSON.parse(fs.readFileSync(path.resolve(relativePath), 'utf8')) as T;
 }
 
-function toVenueInput(venue: Venue, index: number): VenueInput {
+function toVenueInput(venue: Venue): VenueInput {
   const tier = parseTier(venue.status);
   if (!tier) throw new Error(`${venue.slug}: unknown tier "${venue.status}"`);
 
@@ -38,23 +38,16 @@ function toVenueInput(venue: Venue, index: number): VenueInput {
     address: venue.address,
     latitude: venue.lat,
     longitude: venue.lng,
-    summary: venue.notes,
-    verdict: null,
     pullQuote: null,
     lunchSpecial: venue.eatLikeUs,
-    websiteUrl: venue.evidenceUrl,
+    websiteUrl: null,
     imageUrl: null,
     cost: venue.cost,
     cuisine: venue.cuisine,
-    rank: venue.rank ?? null,
     distanceMiles: venue.distanceMiles,
     walkingTimeMin: venue.walkingTimeMin,
     lastInspectionDate: /^\d{4}-\d{2}-\d{2}$/.test(venue.lastInspectionDate) ? venue.lastInspectionDate : null,
-    rejectionReason: venue.rejectionReason ?? null,
     mapSearchLink: venue.mapSearchLink,
-    // Preserve the file's order within each tier on the public site.
-    sortOrder: index + 1,
-    published: true,
   });
 
   if (!parsed.success) {
@@ -68,7 +61,7 @@ const sourceVenues = readJson<Venue[]>('src/data/venues.json');
 const sourceIncidents = readJson<Incident[]>('src/data/incidents.json');
 
 // Validate everything before touching the database.
-const venueInputs = sourceVenues.map((venue, index) => toVenueInput(venue, index));
+const venueInputs = sourceVenues.map(toVenueInput);
 
 const existingVenues = new Map(
   (await db.select({ id: venues.id, slug: venues.slug }).from(venues)).map((row) => [row.slug, row.id])

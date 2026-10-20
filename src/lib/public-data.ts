@@ -1,15 +1,17 @@
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { briberyRecords, venues, type BriberyRow, type VenueRow } from '@/db/schema';
 import { db } from '@/lib/db';
-import { tierLabel } from '@/lib/tiers';
+import { parseTier, tierLabel, type TierValue } from '@/lib/tiers';
 import type { CostBand } from '@/lib/venue-schema';
+import { sortForPublic } from '@/lib/venue-order';
 import { distanceFromBaseMiles, estimateWalkingMinutes } from '@/lib/venues';
+import { isPubliclyVisible, publicVenueCondition } from '@/lib/visibility';
 import type { Incident, Venue } from '@/types';
 
 /**
- * Read-only queries for the public site. Only published rows are ever
- * returned, and rows are mapped to the same shapes the static JSON used,
- * so existing pages and islands render unchanged.
+ * Read-only queries for the public site. Venues are filtered with the shared
+ * visibility rule (src/lib/visibility.ts) and mapped to the same shapes the
+ * static JSON used, so existing pages and islands render unchanged.
  */
 
 /** CDN caching for public pages: fresh for 60s, then served stale while revalidating. */
@@ -23,15 +25,15 @@ function coordinateLink(latitude: number, longitude: number): string {
   return `https://www.google.com/maps/search/?api=1&query=${latitude.toFixed(6)}%2C${longitude.toFixed(6)}`;
 }
 
-/** A published venue; optional fields of `Venue` are always present here. */
-export type PublishedVenue = Venue & {
-  notes: string;
-  evidenceUrl: string;
-  rejectionReason: string | null;
+/** A venue as shown on the public site. */
+export type PublicVenue = Venue & {
   imageUrl: string | null;
 };
 
-export function toPublicVenue(row: VenueRow): PublishedVenue {
+/** A row that passed the visibility rule, so it has an approved tier. */
+type PublicRow = VenueRow & { tier: TierValue };
+
+export function toPublicVenue(row: PublicRow): PublicVenue {
   const lat = row.latitude === null ? null : Number(row.latitude);
   const lng = row.longitude === null ? null : Number(row.longitude);
   const hasCoordinates = lat !== null && lng !== null;
@@ -43,7 +45,6 @@ export function toPublicVenue(row: VenueRow): PublishedVenue {
     name: row.name,
     slug: row.slug,
     status: tierLabel(row.tier),
-    rank: row.rank,
     lat,
     lng,
     distanceMiles,
@@ -52,41 +53,39 @@ export function toPublicVenue(row: VenueRow): PublishedVenue {
     cuisine: row.cuisine ?? '',
     eatLikeUs: row.lunchSpecial ?? '',
     lastInspectionDate: row.lastInspectionDate ?? 'Awaiting Assessment',
-    rejectionReason: row.rejectionReason,
     address: row.address ?? '',
-    evidenceUrl: row.websiteUrl ?? '',
     mapSearchLink:
       row.mapSearchLink ??
       (hasCoordinates
         ? coordinateLink(lat, lng)
         : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${row.name} Manchester`)}`),
-    notes: row.summary ?? '',
     imageUrl: row.imageUrl,
   };
 }
 
 /** Public venue page extras that the list views don't need. */
-export interface PublicVenueDetail extends PublishedVenue {
+export interface PublicVenueDetail extends PublicVenue {
   pullQuote: string | null;
-  verdict: string | null;
 }
 
-// Same order as the original content: tier, Approved rank, then display order.
-const publicOrder = [asc(venues.tier), sql`${venues.rank} asc nulls last`, asc(venues.sortOrder), asc(venues.name)];
-
-export async function getPublishedVenues(): Promise<PublishedVenue[]> {
-  const rows = await db.select().from(venues).where(eq(venues.published, true)).orderBy(...publicOrder);
-  return rows.map(toPublicVenue);
+function isPublicRow(row: VenueRow): row is PublicRow {
+  return isPubliclyVisible(row);
 }
 
-export async function getPublishedVenue(slug: string): Promise<PublicVenueDetail | null> {
+/** Every public venue, grouped by tier and in each tier's public order (src/lib/venue-order.ts). */
+export async function getPublicVenues(): Promise<PublicVenue[]> {
+  const rows = await db.select().from(venues).where(publicVenueCondition()).orderBy(asc(venues.name));
+  return sortForPublic(rows.filter(isPublicRow).map(toPublicVenue), (venue) => parseTier(venue.status)!);
+}
+
+export async function getPublicVenue(slug: string): Promise<PublicVenueDetail | null> {
   const [row] = await db
     .select()
     .from(venues)
-    .where(and(eq(venues.slug, slug), eq(venues.published, true)))
+    .where(and(eq(venues.slug, slug), publicVenueCondition()))
     .limit(1);
-  if (!row) return null;
-  return { ...toPublicVenue(row), pullQuote: row.pullQuote, verdict: row.verdict };
+  if (!row || !isPublicRow(row)) return null;
+  return { ...toPublicVenue(row), pullQuote: row.pullQuote };
 }
 
 function ordinal(day: number): string {

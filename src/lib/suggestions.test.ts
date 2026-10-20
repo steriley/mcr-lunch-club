@@ -71,7 +71,7 @@ describe('isSuggestionRateLimited', () => {
 });
 
 describe('createDraftVenueFromSuggestion', () => {
-  it('creates an unpublished To Be Assessed venue with a free slug and marks the suggestion accepted', async () => {
+  it('creates a hidden venue with no approved tier and a free slug, and marks the suggestion accepted', async () => {
     // First slug candidate is taken, the second is free.
     stubDbSequence('select', [[{ id: 'taken' }], []]);
     const inserts = stubDb('insert', [{ id: 'new-venue', slug: 'pasty-palace-2', createdAt, updatedAt: createdAt, latitude: null, longitude: null, distanceMiles: null }]);
@@ -82,11 +82,9 @@ describe('createDraftVenueFromSuggestion', () => {
 
     const venueValues = inserts.find((call) => call.method === 'values')!.args[0] as any;
     assert.equal(venueValues.slug, 'pasty-palace-2');
-    assert.equal(venueValues.tier, 'to_be_assessed');
-    assert.equal(venueValues.published, false);
+    assert.equal(venueValues.tier, null);
     assert.equal(venueValues.cost, '£');
     assert.equal(venueValues.lunchSpecial, 'Steak pasty');
-    assert.equal(venueValues.summary, 'Suggested by Delegate R: Fast, cheap and excellent.');
     assert.equal(venueValues.updatedBy, ADMIN.id);
 
     const set = updates.find((call) => call.method === 'set')!.args[0] as any;
@@ -95,14 +93,13 @@ describe('createDraftVenueFromSuggestion', () => {
     assert.equal(set.reviewedBy, ADMIN.id);
   });
 
-  it('defaults the cost band and credits anonymous members', async () => {
+  it('defaults the cost band', async () => {
     stubDb('select', []);
     const inserts = stubDb('insert', [{ id: 'v', createdAt, updatedAt: createdAt, latitude: null, longitude: null, distanceMiles: null }]);
     stubDb('update', []);
     await createDraftVenueFromSuggestion(db, { ...suggestion, cost: null, submitterName: null }, ADMIN.id);
     const venueValues = inserts.find((call) => call.method === 'values')!.args[0] as any;
     assert.equal(venueValues.cost, '££');
-    assert.match(venueValues.summary, /^Suggested by a member: /);
   });
 });
 

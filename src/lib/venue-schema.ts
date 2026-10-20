@@ -50,7 +50,8 @@ export const venueInputSchema = z.object({
     .min(2, 'Slug is required.')
     .max(120, 'Slug must be 120 characters or fewer.')
     .regex(SLUG_PATTERN, 'Use lowercase letters, numbers and single hyphens only.'),
-  tier: z.enum(TIER_VALUES, { error: 'Choose a tier.' }),
+  // Null means no approved tier yet: the venue stays hidden from the public site.
+  tier: z.preprocess(emptyToNull, z.enum(TIER_VALUES, { error: 'Choose a tier.' }).nullable()),
   address: optionalText(255, 'Address'),
   latitude: optionalNumber(
     z.number({ error: 'Latitude must be a number.' }).min(-90, 'Latitude must be between -90 and 90.').max(90, 'Latitude must be between -90 and 90.')
@@ -58,22 +59,16 @@ export const venueInputSchema = z.object({
   longitude: optionalNumber(
     z.number({ error: 'Longitude must be a number.' }).min(-180, 'Longitude must be between -180 and 180.').max(180, 'Longitude must be between -180 and 180.')
   ),
-  summary: optionalText(2000, 'Summary'),
-  verdict: optionalText(20000, 'Verdict'),
   pullQuote: optionalText(400, 'Pull quote'),
   lunchSpecial: optionalText(1000, 'Lunch special'),
   websiteUrl: optionalUrl('Website URL'),
   imageUrl: optionalUrl('Image URL'),
   cost: z.enum(COST_BANDS, { error: 'Choose a cost band.' }),
   cuisine: optionalText(120, 'Cuisine'),
-  rank: optionalNumber(z.number().int('Rank must be a whole number.').min(1, 'Rank must be 1 or more.').max(999)),
   distanceMiles: optionalNumber(z.number().min(0, 'Distance cannot be negative.').max(999)),
   walkingTimeMin: optionalNumber(z.number().int('Walking time must be whole minutes.').min(0).max(999)),
   lastInspectionDate: z.preprocess(emptyToNull, z.iso.date({ error: 'Use a valid date.' }).nullable()),
-  rejectionReason: optionalText(1000, 'Rejection reason'),
   mapSearchLink: optionalUrl('Map link'),
-  sortOrder: optionalNumber(z.number().int().min(-9999).max(9999)).transform((value) => value ?? 0),
-  published: z.boolean().default(false),
 });
 
 export type VenueInput = z.output<typeof venueInputSchema>;
