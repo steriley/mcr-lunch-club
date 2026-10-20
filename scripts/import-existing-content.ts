@@ -45,7 +45,6 @@ function toVenueInput(venue: Venue): VenueInput {
     imageUrl: null,
     cost: venue.cost,
     cuisine: mapLegacyCuisine(venue.cuisine),
-    lastInspectionDate: /^\d{4}-\d{2}-\d{2}$/.test(venue.lastInspectionDate) ? venue.lastInspectionDate : null,
     mapSearchLink: venue.mapSearchLink,
   });
 

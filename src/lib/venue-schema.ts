@@ -66,7 +66,6 @@ export const venueInputSchema = z.object({
   imageUrl: optionalUrl('Image URL'),
   cost: z.enum(COST_BANDS, { error: 'Choose a cost band.' }),
   cuisine: z.enum(CUISINE_VALUES, { error: 'Choose a cuisine from the list.' }).default(DEFAULT_CUISINE),
-  lastInspectionDate: z.preprocess(emptyToNull, z.iso.date({ error: 'Use a valid date.' }).nullable()),
   mapSearchLink: optionalUrl('Map link'),
 }).superRefine((venue, context) => {
   // Coordinates come from an ORS search pick, or manual entry when search finds nothing.
