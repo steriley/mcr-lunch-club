@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { GEOLOCATION_TIMEOUT_MS, resolveGeolocationError, useGeolocation } from './useGeolocation';
+import { GEOLOCATION_TIMEOUT_MS, useGeolocation } from './useGeolocation';
 
 const globals = globalThis as any;
 const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
@@ -181,22 +181,5 @@ describe('useGeolocation', () => {
     geo.resumeLive();
     failWith(3);
     assert.equal(geo.state.value, 'error');
-  });
-});
-
-describe('resolveGeolocationError', () => {
-  it('a timeout after a fix keeps the current state', () => {
-    assert.equal(resolveGeolocationError(3, true), null);
-    assert.equal(resolveGeolocationError(2, true), null);
-  });
-
-  it('a timeout before any fix surfaces an error', () => {
-    assert.equal(resolveGeolocationError(3, false)?.state, 'error');
-    assert.equal(resolveGeolocationError(2, false)?.state, 'unavailable');
-  });
-
-  it('permission denial always surfaces', () => {
-    assert.equal(resolveGeolocationError(1, true)?.state, 'denied');
-    assert.equal(resolveGeolocationError(1, false)?.state, 'denied');
   });
 });

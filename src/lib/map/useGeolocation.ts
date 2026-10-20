@@ -20,7 +20,7 @@ const TIMEOUT = 3;
  * How a geolocation error changes the state. Returns null when the error is
  * transient and a position is already held, so the UI keeps using the last fix.
  */
-export function resolveGeolocationError(
+function resolveGeolocationError(
   code: number,
   hasPosition: boolean,
   message?: string

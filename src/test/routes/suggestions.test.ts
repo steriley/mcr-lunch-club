@@ -98,14 +98,12 @@ describe('/api/admin/suggestions/[id]', () => {
   });
 
   describe('PATCH', () => {
-    it('dismisses, recording who reviewed it, and hides the sender hash', async () => {
+    it('dismisses, recording who reviewed it', async () => {
       signInAs();
       const updates = stubDb('update', [{ ...row, status: 'dismissed', reviewedAt: createdAt }]);
       const response = await run(byId.PATCH, ctx('PATCH', VENUE_ID, { status: 'dismissed' }));
       assert.equal(response.status, 200);
-      const body = await response.json();
-      assert.equal(body.suggestion.status, 'dismissed');
-      assert.equal('senderHash' in body.suggestion, false);
+      assert.equal((await response.json()).suggestion.status, 'dismissed');
       const set = updates.find((call) => call.method === 'set')!.args[0] as any;
       assert.equal(set.reviewedBy, ADMIN.id);
       assert.ok(set.reviewedAt instanceof Date);

@@ -58,6 +58,12 @@ describe('createVenueIconHtml', () => {
   it('uses the tier colour for the pin', () => {
     assert.ok(createVenueIconHtml(venue({ status: 'Rejected' })).includes('#B92B27'));
   });
+
+  it('escapes the badge text', () => {
+    const html = createVenueIconHtml(venue({ status: 'To Be Assessed', cost: '<b>£</b>' as Venue['cost'] }));
+    assert.ok(html.includes('&lt;b&gt;£&lt;/b&gt;'));
+    assert.ok(!html.includes('<b>'));
+  });
 });
 
 describe('createVenueMarker', () => {
@@ -137,13 +143,5 @@ describe('escapeHtml', () => {
   it('renders null and undefined as empty text', () => {
     assert.equal(escapeHtml(null), '');
     assert.equal(escapeHtml(undefined), '');
-  });
-});
-
-describe('createVenueIconHtml escaping', () => {
-  it('escapes the badge text', () => {
-    const html = createVenueIconHtml(venue({ status: 'To Be Assessed', cost: '<b>£</b>' as Venue['cost'] }));
-    assert.ok(html.includes('&lt;b&gt;£&lt;/b&gt;'));
-    assert.ok(!html.includes('<b>'));
   });
 });
