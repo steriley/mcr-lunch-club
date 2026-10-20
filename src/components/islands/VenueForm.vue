@@ -85,7 +85,7 @@ const coordinateWarning = computed(() => {
 });
 const lastUpdatedText = computed(() => {
   if (!updatedAt.value) return '';
-  const when = new Date(updatedAt.value).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' });
+  const when = new Date(updatedAt.value).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' });
   return props.updatedByName ? `Last updated ${when} by ${props.updatedByName}` : `Last updated ${when}`;
 });
 

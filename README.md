@@ -30,19 +30,20 @@ Built on **Astro 7** (server output on Vercel) with targeted **Vue 3 islands** h
   - `/manifesto` — The Constitutional Articles of Governance
   - `/inspections` — The Complete Chronological Audit Log (still read from `src/data/inspections.json`)
   - `/api/venues.json` — Published venues as JSON
+  - `/api/suggestions` — Public "Suggest a Venue" endpoint (same-origin only, rate limited)
   - `/admin/*` — The Chairs' Area (sign-in required; see below)
 - **Vue 3 Islands (`src/components/islands/`)**:
   - `LunchMap.vue` (`client:load`) — Leaflet map with custom tier pins, rank badges, walking isochrones, and the 2.5-mile boundary.
   - `FilterBar.vue` (`client:load`) — Search, tier badges, cost (`£`/`££`/`£££`), walking time slider, and recency filter.
   - `VenueSheet.vue` (`client:load`) — Slide-up dossier sheet with official manifesto wording and "Eat Like Us" prescribed orders.
+  - `NearMeMap.vue` (`client:only`) — Full-screen "Near Me" mode ranking venues by distance from the user.
   - `WhereToday.vue` (`client:idle`) — The 12:25 decision oracle and stalemate resolver.
-  - `InspectionModal.vue` (`client:idle`) — Chairs' quick-audit log for mobile/desktop.
-  - `SuggestModal.vue` (`client:idle`) — Member petition form placing candidates into *To Be Assessed*.
+  - `SuggestModal.vue` (`client:idle`) — Member petition form; suggestions go to the Chairs' Area inbox (`/admin/suggestions`), never straight onto the site.
 - **State Management**:
   - `nanostores` with `@nanostores/vue` for cross-island reactive filtering and modal state.
-  - `src/stores/ledger.ts` starts from the published venues the server embeds in the page, with local storage persistence for live tier promotions/demotions and inspection audits (discarded automatically when the published list changes).
+  - `src/stores/ledger.ts` holds the published venues the server embeds in the page (`LedgerCanon.astro`) and the inspection log.
 - **Data Validation**:
-  - Zod schemas in `src/lib/venue-schema.ts`, `src/lib/bribery-schema.ts` and `src/lib/user-schema.ts`, shared by the admin API and the admin forms.
+  - Zod schemas in `src/lib/venue-schema.ts`, `src/lib/bribery-schema.ts`, `src/lib/suggestion-schema.ts` and `src/lib/user-schema.ts`, shared by the APIs and the forms.
 
 ---
 
@@ -134,6 +135,11 @@ Use a Neon **branch** so local work never touches production data:
   passwords from `/admin/users`. Deactivating signs the user out everywhere.
   There is no email sending, so share initial/temporary passwords securely.
   Chairs change their own password and sign out other devices at `/admin/account`.
+- **Suggestions**: the public "Suggest a Venue" form stores petitions in the
+  database for review at `/admin/suggestions`. "Create draft venue" turns one
+  into an unpublished *To Be Assessed* venue to finish and publish. The form is
+  limited to 3 per sender per hour and 50 a day overall; senders' IPs are only
+  kept as a keyed hash for that limit.
 - **Publishing**: venues are drafts until published; drafts and hidden Hall of
   Shame records never appear publicly. Every venue save, publish and unpublish
   stores a snapshot, viewable from the venue's **History** page.
@@ -152,38 +158,29 @@ Use a Neon **branch** so local work never touches production data:
 mcr-lunch-club/
 ├── src/
 │   ├── components/
-│   │   └── islands/           # Vue 3 interactive islands
-│   │       ├── FilterBar.vue
-│   │       ├── InspectionModal.vue
-│   │       ├── LunchMap.vue
-│   │       ├── SuggestModal.vue
-│   │       ├── VenueSheet.vue
-│   │       └── WhereToday.vue
-│   ├── content/               # Original per-file content (superseded by the database)
+│   │   ├── islands/           # Vue 3 interactive islands (public site and Chairs' Area)
+│   │   ├── LedgerCanon.astro  # Embeds the published venues for the islands
+│   │   └── WeatherCard.vue
 │   ├── data/                  # Original datasets: import source; inspections still read from here
 │   ├── db/                    # Drizzle schema (app + Better Auth)
-│   ├── lib/                   # Auth, database, validation, public data and admin helpers
-│   ├── layouts/
-│   │   └── Layout.astro       # Authoritative header, seal, and archival footer
+│   ├── lib/                   # Auth, database, validation, public data, map and admin helpers
+│   ├── layouts/               # Public and admin page shells
 │   ├── pages/
 │   │   ├── index.astro        # Sovereign Map view
 │   │   ├── hall-of-shame.astro
 │   │   ├── inspections.astro
 │   │   ├── manifesto.astro
-│   │   ├── api/venues.json.ts # JSON API endpoint
-│   │   ├── tiers/[tier].astro # Dynamic tier pages
-│   │   └── venues/[slug].astro# Static dossiers for all venues
-│   ├── stores/
-│   │   ├── filters.ts         # Nanostores filters & modal states
-│   │   └── ledger.ts          # Reactive mutations & local storage
-│   ├── styles/
-│   │   └── global.css         # Tailwind CSS & Leaflet custom rules
-│   ├── types/
-│   │   └── index.ts           # TypeScript interfaces
-│   └── content.config.ts      # Content Collections schemas for the original files
+│   │   ├── 404.astro
+│   │   ├── admin/             # Chairs' Area
+│   │   ├── api/               # Public, admin and weather endpoints
+│   │   ├── tiers/[tier].astro # Tier pages
+│   │   └── venues/[slug].astro# Venue dossiers
+│   ├── stores/                # Nanostores: filters, modal state and the venue ledger
+│   ├── styles/global.css      # Tailwind CSS & Leaflet custom rules
+│   └── types/index.ts         # Shared TypeScript interfaces
 ├── drizzle/                   # Committed SQL migrations
+├── docs/                      # Build specs
 ├── scripts/
-│   ├── seed-data.mjs          # CSV parsing & data generation script
 │   ├── migrate.ts             # pnpm db:migrate
 │   ├── seed-chair.ts          # pnpm db:seed
 │   ├── import-existing-content.ts  # pnpm db:import

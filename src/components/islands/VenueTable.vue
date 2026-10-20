@@ -71,7 +71,7 @@ function sortIndicator(key: SortKey) {
 }
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+  return new Date(value).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Europe/London' });
 }
 
 async function togglePublished(venue: VenueRow) {
