@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { briberyRecords, venues, type BriberyRow, type VenueRow } from '@/db/schema';
+import { cuisineLabel } from '@/lib/cuisines';
 import { db } from '@/lib/db';
 import { parseTier, tierLabel, type TierValue } from '@/lib/tiers';
 import type { CostBand } from '@/lib/venue-schema';
@@ -50,7 +51,7 @@ export function toPublicVenue(row: PublicRow): PublicVenue {
     distanceMiles,
     walkingTimeMin: row.walkingTimeMin ?? estimateWalkingMinutes(distanceMiles),
     cost: row.cost as CostBand,
-    cuisine: row.cuisine ?? '',
+    cuisine: cuisineLabel(row.cuisine),
     eatLikeUs: row.lunchSpecial ?? '',
     lastInspectionDate: row.lastInspectionDate ?? 'Awaiting Assessment',
     address: row.address ?? '',

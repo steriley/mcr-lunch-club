@@ -150,6 +150,7 @@ import {
   openSuggestModal,
 } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
+import { CUISINES } from '@/lib/cuisines';
 import type { CostTier, TierStatus } from '@/types';
 
 const filters = useStore($filters);
@@ -223,12 +224,10 @@ onUnmounted(() => {
   document.removeEventListener('click', handleWhereTodayClick);
 });
 
+// Categories in their fixed order (Other last), limited to those in use.
 const availableCuisines = computed(() => {
-  const cuisines = new Set<string>();
-  venuesList.value.forEach((venue) => {
-    if (venue.cuisine) cuisines.add(venue.cuisine);
-  });
-  return Array.from(cuisines).sort();
+  const inUse = new Set(venuesList.value.map((venue) => venue.cuisine));
+  return CUISINES.map((cuisine) => cuisine.label).filter((label) => inUse.has(label));
 });
 
 function getTierCount(tier: TierStatus) {

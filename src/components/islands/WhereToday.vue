@@ -175,6 +175,7 @@ import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $isWhereTodayOpen, closeWhereToday, selectVenue } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
+import { cuisineLabel, type CuisineValue } from '@/lib/cuisines';
 import type { Venue } from '@/types';
 
 const isOpen = useStore($isWhereTodayOpen);
@@ -240,10 +241,19 @@ const moodOptions = [
   { val: 'any', label: 'Any Sovereign Dish', icon: '✨' },
   { val: 'rice', label: 'Curry / Rice \'n\' Three', icon: '🍛' },
   { val: 'pizza', label: 'Pizza & Pan Slices', icon: '🍕' },
-  { val: 'fried', label: 'Fried Chicken / Wings', icon: '🍗' },
-  { val: 'sub', label: 'Gourmet Subs & Toasties', icon: '🥪' },
-  { val: 'asian', label: 'Ramen / Cantonese BBQ', icon: '🍜' },
+  { val: 'fried', label: 'Fried Chicken, Wings & Burgers', icon: '🍗' },
+  { val: 'sub', label: 'Subs, Sandwiches & Bakes', icon: '🥪' },
+  { val: 'asian', label: 'Ramen, Noodles & Asian', icon: '🍜' },
 ];
+
+// Cuisine categories (src/lib/cuisines.ts) that satisfy each craving.
+const MOOD_CUISINES: Record<string, CuisineValue[]> = {
+  rice: ['indian'],
+  pizza: ['pizza'],
+  fried: ['fast_food'],
+  sub: ['sandwiches_subs', 'bakery_cafe'],
+  asian: ['asian'],
+};
 
 function closeModal() {
   closeWhereToday();
@@ -270,16 +280,9 @@ function consultOracle() {
       pool = pool.filter((v) => v.cost === '£££');
     }
 
-    if (selectedMood.value === 'rice') {
-      pool = pool.filter((v) => v.cuisine.toLowerCase().includes('rice') || v.cuisine.toLowerCase().includes('curry'));
-    } else if (selectedMood.value === 'pizza') {
-      pool = pool.filter((v) => v.cuisine.toLowerCase().includes('pizza'));
-    } else if (selectedMood.value === 'fried') {
-      pool = pool.filter((v) => v.cuisine.toLowerCase().includes('chicken') || v.cuisine.toLowerCase().includes('wing'));
-    } else if (selectedMood.value === 'sub') {
-      pool = pool.filter((v) => v.cuisine.toLowerCase().includes('sub') || v.cuisine.toLowerCase().includes('cheese') || v.cuisine.toLowerCase().includes('deli'));
-    } else if (selectedMood.value === 'asian') {
-      pool = pool.filter((v) => v.cuisine.toLowerCase().includes('ramen') || v.cuisine.toLowerCase().includes('cantonese') || v.cuisine.toLowerCase().includes('noodles'));
+    const moodLabels: string[] = (MOOD_CUISINES[selectedMood.value] ?? []).map(cuisineLabel);
+    if (moodLabels.length) {
+      pool = pool.filter((v) => moodLabels.includes(v.cuisine));
     }
 
     if (pool.length === 0) {

@@ -85,6 +85,7 @@ describe('createDraftVenueFromSuggestion', () => {
     assert.equal(venueValues.tier, null);
     assert.equal(venueValues.cost, '£');
     assert.equal(venueValues.lunchSpecial, 'Steak pasty');
+    assert.equal(venueValues.cuisine, 'other');
     assert.equal(venueValues.updatedBy, ADMIN.id);
 
     const set = updates.find((call) => call.method === 'set')!.args[0] as any;

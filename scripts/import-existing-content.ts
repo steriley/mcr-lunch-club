@@ -14,6 +14,7 @@ import path from 'node:path';
 import { and, eq, isNull } from 'drizzle-orm';
 import { briberyRecords, venues } from '@/db/schema';
 import { closeDatabase, db } from '@/lib/db-script';
+import { mapLegacyCuisine } from '@/lib/cuisines';
 import { parseTier } from '@/lib/tiers';
 import { venueInputSchema, type VenueInput } from '@/lib/venue-schema';
 import { recordVenueRevision, venueValues } from '@/lib/venues';
@@ -43,7 +44,7 @@ function toVenueInput(venue: Venue): VenueInput {
     websiteUrl: null,
     imageUrl: null,
     cost: venue.cost,
-    cuisine: venue.cuisine,
+    cuisine: mapLegacyCuisine(venue.cuisine),
     distanceMiles: venue.distanceMiles,
     walkingTimeMin: venue.walkingTimeMin,
     lastInspectionDate: /^\d{4}-\d{2}-\d{2}$/.test(venue.lastInspectionDate) ? venue.lastInspectionDate : null,
