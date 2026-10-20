@@ -185,5 +185,6 @@ mcr-lunch-club/
 │   ├── seed-chair.ts          # pnpm db:seed
 │   ├── import-existing-content.ts  # pnpm db:import
 │   └── check-admin-security.ts     # pnpm check:security
+├── manchester_lunch_venues.csv     # The club's original list of lunch spots (reference only)
 └── astro.config.mjs
 ```
