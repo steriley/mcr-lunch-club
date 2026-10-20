@@ -5,7 +5,11 @@ import {
   formatDistance,
   hasOriginMovedSignificantly,
   rankVenues,
+  estimateWalkMinutes,
+  resolveRankingOrigin,
+  FAR_FROM_BASE_METRES,
 } from './ranking';
+import { BASE_COORDINATES } from './config';
 import type { Venue } from '@/types';
 
 // Mock helper to create venue fixtures
@@ -279,5 +283,35 @@ describe('rankVenues', () => {
     assert.equal(results.length, 1);
     assert.equal(results[0].venue.id, 'outer');
     assert.equal(results[0].isFarAway, true);
+  });
+});
+
+describe('estimateWalkMinutes', () => {
+  test('uses about 80 metres per minute', () => {
+    assert.equal(estimateWalkMinutes(800), 10);
+    assert.equal(estimateWalkMinutes(1200), 15);
+  });
+
+  test('never returns less than one minute', () => {
+    assert.equal(estimateWalkMinutes(0), 1);
+    assert.equal(estimateWalkMinutes(20), 1);
+    assert.equal(estimateWalkMinutes(-50), 1);
+  });
+});
+
+describe('resolveRankingOrigin', () => {
+  test('ranks from Spinningfields when there is no position', () => {
+    assert.deepEqual(resolveRankingOrigin(null), { origin: { ...BASE_COORDINATES }, fromBase: true });
+  });
+
+  test('ranks from the user when they are in Manchester', () => {
+    const position = { lat: 53.4794, lng: -2.2453 };
+    assert.deepEqual(resolveRankingOrigin(position), { origin: position, fromBase: false });
+  });
+
+  test('falls back to Spinningfields when the user is far away', () => {
+    const london = { lat: 51.5072, lng: -0.1276 };
+    assert.ok(haversineMetres(london, BASE_COORDINATES) > FAR_FROM_BASE_METRES);
+    assert.deepEqual(resolveRankingOrigin(london), { origin: { ...BASE_COORDINATES }, fromBase: true });
   });
 });

@@ -326,6 +326,17 @@ function resetAll() {
   font-size: 12px;
 }
 
+/* No keyboard shortcut to advertise on touch screens. */
+@media (hover: none) {
+  .ledger-search-shortcut {
+    display: none;
+  }
+
+  .ledger-search-input {
+    padding-right: 12px;
+  }
+}
+
 .ledger-tier-filters {
   display: flex;
   flex: 1 1 auto;
@@ -580,9 +591,10 @@ function resetAll() {
     gap: 7px;
   }
 
+  /* 16px stops iOS Safari zooming the page when a field is focused. */
   .ledger-search-input {
     min-height: 38px;
-    font-size: 12px;
+    font-size: 16px;
   }
 
   .ledger-tier-filters {
@@ -608,6 +620,7 @@ function resetAll() {
   }
 
   .ledger-select {
+    font-size: 16px;
     max-width: min(58vw, 225px);
   }
 

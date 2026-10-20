@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { useGeolocation } from './useGeolocation';
+import { GEOLOCATION_TIMEOUT_MS, useGeolocation } from './useGeolocation';
 
 const globals = globalThis as any;
 const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
@@ -54,7 +54,7 @@ describe('useGeolocation', () => {
     const geo = useGeolocation();
     geo.start();
     assert.equal(geo.state.value, 'requesting');
-    assert.deepEqual(watchOptions, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+    assert.deepEqual(watchOptions, { enableHighAccuracy: true, timeout: GEOLOCATION_TIMEOUT_MS, maximumAge: 0 });
 
     success({ coords: { latitude: 53.48, longitude: -2.25, accuracy: 20 } });
     assert.equal(geo.state.value, 'active');
@@ -158,5 +158,28 @@ describe('useGeolocation', () => {
     geo.resumeLive();
     assert.equal(geo.isManual.value, false);
     assert.equal(geo.state.value, 'requesting');
+  });
+
+  it('keeps the last fix when a transient error follows it', () => {
+    const geo = useGeolocation();
+    geo.start();
+    success({ coords: { latitude: 53.48, longitude: -2.25, accuracy: 20 } });
+
+    failWith(3);
+    failWith(2);
+    assert.equal(geo.state.value, 'active');
+    assert.equal(geo.errorMessage.value, null);
+    assert.deepEqual(geo.position.value, { lat: 53.48, lng: -2.25, accuracy: 20 });
+
+    failWith(1);
+    assert.equal(geo.state.value, 'denied');
+  });
+
+  it('surfaces a timeout after resuming from a manual position', () => {
+    const geo = useGeolocation();
+    geo.setManualPosition({ lat: 1, lng: 2 });
+    geo.resumeLive();
+    failWith(3);
+    assert.equal(geo.state.value, 'error');
   });
 });

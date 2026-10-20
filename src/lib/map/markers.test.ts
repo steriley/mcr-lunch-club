@@ -6,6 +6,7 @@ import {
   createVenueMarker,
   createVenuePopupContent,
   createWalkingIsochrones,
+  escapeHtml,
 } from './markers';
 import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES } from './config';
 import type { Venue } from '@/types';
@@ -57,6 +58,12 @@ describe('createVenueIconHtml', () => {
   it('uses the tier colour for the pin', () => {
     assert.ok(createVenueIconHtml(venue({ status: 'Rejected' })).includes('#B92B27'));
   });
+
+  it('escapes the badge text', () => {
+    const html = createVenueIconHtml(venue({ status: 'To Be Assessed', cost: '<b>£</b>' as Venue['cost'] }));
+    assert.ok(html.includes('&lt;b&gt;£&lt;/b&gt;'));
+    assert.ok(!html.includes('<b>'));
+  });
 });
 
 describe('createVenueMarker', () => {
@@ -102,7 +109,39 @@ describe('createVenuePopupContent', () => {
     const result = createVenuePopupContent(venue());
     assert.equal(result, element);
     assert.ok(element.innerHTML.includes('Chip Shop'));
-    assert.ok(element.innerHTML.includes('6 min walk (0.3 mi)'));
-    assert.ok(element.innerHTML.includes('id="btn-inspect-chip-shop"'));
+    assert.ok(element.innerHTML.includes('6 min walk from Base (0.30 mi)'));
+    assert.ok(element.innerHTML.includes('data-view-dossier'));
+  });
+
+  it('escapes venue fields so admin-entered markup renders as text', () => {
+    const element: any = {};
+    (globalThis as any).document = { createElement: () => element };
+    createVenuePopupContent(venue({ name: '<img src=x onerror="alert(1)">', eatLikeUs: '<script>x</script>' }));
+    assert.ok(!element.innerHTML.includes('<img'));
+    assert.ok(!element.innerHTML.includes('<script>'));
+    assert.ok(element.innerHTML.includes('&lt;img src=x onerror=&quot;alert(1)&quot;&gt;'));
+  });
+
+  it('binds the dossier button to the callback', () => {
+    let clicked = 0;
+    const button = { addEventListener: (type: string, handler: () => void) => type === 'click' && handler() };
+    const element: any = { querySelector: (selector: string) => (selector === '[data-view-dossier]' ? button : null) };
+    (globalThis as any).document = { createElement: () => element };
+    createVenuePopupContent(venue(), () => { clicked += 1; });
+    assert.equal(clicked, 1);
+  });
+});
+
+describe('escapeHtml', () => {
+  it('neutralises markup and quotes', () => {
+    assert.equal(
+      escapeHtml(`<img src=x onerror="alert('hi')">&`),
+      '&lt;img src=x onerror=&quot;alert(&#39;hi&#39;)&quot;&gt;&amp;'
+    );
+  });
+
+  it('renders null and undefined as empty text', () => {
+    assert.equal(escapeHtml(null), '');
+    assert.equal(escapeHtml(undefined), '');
   });
 });

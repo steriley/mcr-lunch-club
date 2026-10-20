@@ -3,18 +3,13 @@ import assert from 'node:assert/strict';
 import {
   $activeVenue,
   $filters,
-  $inspectionTargetVenue,
-  $isChairsMode,
-  $isInspectionModalOpen,
   $isNearMeOpen,
   $isSuggestModalOpen,
   $isWhereTodayOpen,
-  closeInspectionModal,
   closeNearMe,
   closeSuggestModal,
   closeWhereToday,
   initialFilterState,
-  openInspectionModal,
   openNearMe,
   openSuggestModal,
   openWhereToday,
@@ -27,7 +22,6 @@ import {
   setSearchQuery,
   setTiers,
   toggleAllTiers,
-  toggleChairsMode,
   toggleTier,
 } from './filters';
 import type { Venue } from '@/types';
@@ -121,25 +115,5 @@ describe('UI state', () => {
     assert.equal($isNearMeOpen.get(), true);
     closeNearMe();
     assert.equal($isNearMeOpen.get(), false);
-  });
-
-  it('remembers the inspection target until the modal closes', () => {
-    openInspectionModal(venue);
-    assert.equal($isInspectionModalOpen.get(), true);
-    assert.equal($inspectionTargetVenue.get(), venue);
-    closeInspectionModal();
-    assert.equal($isInspectionModalOpen.get(), false);
-    assert.equal($inspectionTargetVenue.get(), null);
-
-    openInspectionModal();
-    assert.equal($inspectionTargetVenue.get(), null);
-    closeInspectionModal();
-  });
-
-  it('toggles Chairs mode', () => {
-    toggleChairsMode();
-    assert.equal($isChairsMode.get(), true);
-    toggleChairsMode();
-    assert.equal($isChairsMode.get(), false);
   });
 });

@@ -19,12 +19,7 @@ export const $activeVenue = atom<Venue | null>(null);
 // Modal states
 export const $isWhereTodayOpen = atom<boolean>(false);
 export const $isSuggestModalOpen = atom<boolean>(false);
-export const $isInspectionModalOpen = atom<boolean>(false);
-export const $inspectionTargetVenue = atom<Venue | null>(null);
 export const $isNearMeOpen = atom<boolean>(false);
-
-// Chairs' Mode toggle (Executive Authority vs Member Mode)
-export const $isChairsMode = atom<boolean>(false);
 
 // Filter Actions
 export function setTiers(tiers: TierStatus[]) {
@@ -112,20 +107,6 @@ export function openSuggestModal() {
 
 export function closeSuggestModal() {
   $isSuggestModalOpen.set(false);
-}
-
-export function openInspectionModal(venue: Venue | null = null) {
-  $inspectionTargetVenue.set(venue);
-  $isInspectionModalOpen.set(true);
-}
-
-export function closeInspectionModal() {
-  $isInspectionModalOpen.set(false);
-  $inspectionTargetVenue.set(null);
-}
-
-export function toggleChairsMode() {
-  $isChairsMode.set(!$isChairsMode.get());
 }
 
 export function openNearMe() {

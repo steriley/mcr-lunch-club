@@ -872,6 +872,13 @@
   transition: transform 300ms ease;
 }
 
+/* Venues without a photo show the crest instead. */
+.docket-list-image.is-placeholder {
+  padding: 18px;
+  background: var(--ledger-card);
+  object-fit: contain;
+}
+
 .docket-list-item:hover,
 .docket-list-item:focus-visible {
   border-color: rgb(17 30 71 / 45%);
@@ -1427,7 +1434,15 @@
   }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 480px) {
+  /* Keeps the map status pill clear of the zoom control. */
+  .map-status-count > span {
+    display: none;
+  }
+
+  .docket-sort br {
+    display: none;
+  }
 }
 
 /* Markdown verdicts on venue pages (see src/lib/markdown.ts). */

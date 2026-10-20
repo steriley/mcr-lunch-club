@@ -15,7 +15,7 @@ export function createVenueIconHtml(venue: Venue): string {
     <div class="group relative cursor-pointer transform transition-transform duration-200 hover:scale-125 hover:z-[9999]" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));">
       <div class="flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shadow-md border-2"
            style="background-color: ${styling.pinBg}; border-color: ${styling.border}; color: ${styling.text};">
-        <span>${badgeText}</span>
+        <span>${escapeHtml(badgeText)}</span>
       </div>
       <div class="w-1.5 h-1.5 mx-auto bg-stone-900 rounded-full mt-[-1px]"></div>
     </div>
@@ -86,10 +86,21 @@ export function createWalkingIsochrones(L: any): any[] {
   });
 }
 
+/** Escapes text for interpolation into HTML; venue fields are editable in the admin area. */
+export function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 /**
- * Generate popup DOM content for a venue in the Ledger View.
+ * Generate popup DOM content for a venue. `onViewDossier` runs when the
+ * popup's dossier button is pressed.
  */
-export function createVenuePopupContent(venue: Venue): HTMLElement {
+export function createVenuePopupContent(venue: Venue, onViewDossier?: () => void): HTMLElement {
   const metadata = getTierMetadata(venue.status);
   const styling = metadata.colors;
 
@@ -99,24 +110,28 @@ export function createVenuePopupContent(venue: Venue): HTMLElement {
     <div class="flex items-center justify-between gap-2 border-b border-stone-200 pb-1.5 mb-2">
       <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded"
             style="background-color: ${styling.bg}20; color: ${styling.bg}; border: 1px solid ${styling.bg}40;">
-        ${venue.status}
+        ${escapeHtml(venue.status)}
       </span>
-      <span class="text-xs font-mono font-bold text-amber-900">${venue.cost}</span>
+      <span class="text-xs font-mono font-bold text-amber-900">${escapeHtml(venue.cost)}</span>
     </div>
-    <h3 class="font-bold text-sm text-[#1a1e24] leading-tight">${venue.name}</h3>
-    <p class="text-xs text-stone-600 font-sans mt-0.5">${venue.cuisine} &bull; ${venue.walkingTimeMin} min walk (${venue.distanceMiles} mi)</p>
+    <h3 class="font-bold text-sm text-[#1a1e24] leading-tight">${escapeHtml(venue.name)}</h3>
+    <p class="text-xs text-stone-600 font-sans mt-0.5">${escapeHtml(venue.cuisine)} &bull; ${escapeHtml(venue.walkingTimeMin)} min walk from Base (${escapeHtml(venue.distanceMiles.toFixed(2))} mi)</p>
 
     <div class="mt-2 p-1.5 bg-stone-100/90 rounded border border-stone-200 text-xs font-sans">
       <strong class="text-stone-800 font-serif-header">Eat Like Us:</strong>
-      <p class="text-stone-700 italic mt-0.5 line-clamp-2">${venue.eatLikeUs}</p>
+      <p class="text-stone-700 italic mt-0.5 line-clamp-2">${escapeHtml(venue.eatLikeUs)}</p>
     </div>
 
     <div class="mt-3 flex items-center justify-between gap-2 font-sans text-xs">
-      <button id="btn-inspect-${venue.slug}" class="w-full bg-[#1a1e24] hover:bg-[#8b1e22] text-[#f9f7f1] py-1.5 px-3 rounded font-semibold text-center transition-colors">
+      <button type="button" data-view-dossier class="w-full bg-[#1a1e24] hover:bg-[#8b1e22] text-[#f9f7f1] py-1.5 px-3 rounded font-semibold text-center transition-colors">
         View Ledger Dossier
       </button>
     </div>
   `;
+
+  if (onViewDossier) {
+    popupContent.querySelector('[data-view-dossier]')?.addEventListener('click', onViewDossier);
+  }
 
   return popupContent;
 }

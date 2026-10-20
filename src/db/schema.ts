@@ -63,11 +63,35 @@ export const venueRevisions = pgTable('venue_revisions', {
   snapshot: jsonb('snapshot').notNull()
 });
 
+export const suggestionStatusEnum = pgEnum('suggestion_status', ['new', 'accepted', 'dismissed']);
+
+/** Venue suggestions sent in by members from the public "Suggest a Venue" form. */
+export const venueSuggestions = pgTable('venue_suggestions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  address: text('address').notNull(),
+  cuisine: text('cuisine'),
+  cost: text('cost'),
+  recommendedOrder: text('recommended_order'),
+  rationale: text('rationale').notNull(),
+  submitterName: text('submitter_name'),
+  status: suggestionStatusEnum('status').notNull().default('new'),
+  // Draft venue created from this suggestion, if any.
+  venueId: uuid('venue_id').references(() => venues.id, { onDelete: 'set null' }),
+  // Keyed hash of the sender's IP, used only for rate limiting.
+  senderHash: text('sender_hash'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+  reviewedBy: text('reviewed_by').references(() => user.id, { onDelete: 'set null' })
+});
+
 export type VenueRow = typeof venues.$inferSelect;
 export type BriberyRow = typeof briberyRecords.$inferSelect;
+export type SuggestionRow = typeof venueSuggestions.$inferSelect;
 
 export const schema = {
   venues,
   briberyRecords,
-  venueRevisions
+  venueRevisions,
+  venueSuggestions
 };

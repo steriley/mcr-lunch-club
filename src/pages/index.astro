@@ -6,7 +6,6 @@ import NearMeMap from '@/components/islands/NearMeMap.vue';
 import VenueSheet from '@/components/islands/VenueSheet.vue';
 import WhereToday from '@/components/islands/WhereToday.vue';
 import WeatherCard from '@/components/WeatherCard.vue';
-import InspectionModal from '@/components/islands/InspectionModal.vue';
 import SuggestModal from '@/components/islands/SuggestModal.vue';
 import LedgerCanon from '@/components/LedgerCanon.astro';
 import { getPublicMapApiKey } from '@/lib/env';
@@ -84,7 +83,6 @@ const fieldShortcuts = [
           <NearMeMap client:only="vue" mapApiKey={publicMapApiKey} />
           <VenueSheet client:load />
           <WhereToday client:idle />
-          <InspectionModal client:idle />
           <SuggestModal client:idle />
         </section>
 
@@ -170,7 +168,7 @@ const fieldShortcuts = [
 
             <div class="docket-photo">
               <img
-                src="/venues/crazy-pedros-promo.jpg"
+                src={featuredVenue.imageUrl ?? '/venues/crazy-pedros-promo.jpg'}
                 alt="Crazy Pedro’s pizzas outside the Manchester venue"
                 class="docket-photo-image"
               />
@@ -247,12 +245,13 @@ const fieldShortcuts = [
               <span class="docket-list-image-wrap">
                 <img
                   class="docket-list-image"
-                  src={`/venues/${venue.slug}.jpg`}
+                  src={venue.imageUrl ?? `/venues/${venue.slug}.jpg`}
                   alt=""
                   width="96"
                   height="96"
                   loading="lazy"
                   decoding="async"
+                  onerror="this.onerror=null;this.src='/brand/logo.png';this.classList.add('is-placeholder')"
                 />
                 <span class="docket-rank">#{String(venue.rank).padStart(2, '0')}</span>
               </span>

@@ -15,7 +15,8 @@ const allTiers: { slug: string; name: TierStatus }[] = TAB_ORDER.map((value) => 
 
 const tier = allTiers.find((entry) => entry.slug === Astro.params.tier);
 if (!tier) {
-  return new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+  // An empty 404 makes Astro render src/pages/404.astro.
+  return new Response(null, { status: 404, statusText: 'Not found' });
 }
 
 const tierName = tier.name;
@@ -283,10 +284,12 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
               <a
                 href={venue.mapSearchLink}
                 target="_blank"
+                rel="noopener noreferrer"
                 class="p-1.5 text-stone-600 hover:text-stone-900 bg-white border border-[#dcd6c8] rounded text-center"
                 title="Directions in Google Maps"
+                aria-label={`Directions to ${venue.name} in Google Maps`}
               >
-                🧭
+                <span aria-hidden="true">🧭</span>
               </a>
             </div>
           </div>

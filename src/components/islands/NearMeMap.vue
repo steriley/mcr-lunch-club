@@ -291,7 +291,7 @@
                     <span>•</span>
                     <span class="font-mono font-bold">{{ nearestVenue.venue.cost }}</span>
                     <span>•</span>
-                    <span>{{ nearestVenue.venue.walkingTimeMin }} min walk</span>
+                    <span>{{ walkLabel(nearestVenue.distanceMetres) }}</span>
                   </div>
 
                   <div class="near-me-hero-buttons">
@@ -379,7 +379,7 @@
                       <span>•</span>
                       <span class="font-mono font-bold">{{ rv.venue.cost }}</span>
                       <span>•</span>
-                      <span>{{ rv.venue.walkingTimeMin }} min walk</span>
+                      <span>{{ walkLabel(rv.distanceMetres) }}</span>
                     </div>
 
                     <div class="near-me-card-actions">
@@ -436,7 +436,6 @@ import type { TierStatus, Venue } from '@/types';
 import {
   BASE_LAT,
   BASE_LNG,
-  BASE_COORDINATES,
   DEFAULT_ZOOM,
   NEAR_ME_ELIGIBLE_TIERS,
   TIER_METADATA,
@@ -449,6 +448,10 @@ import {
   rankVenues,
   hasOriginMovedSignificantly,
   haversineMetres,
+  estimateWalkMinutes,
+  resolveRankingOrigin,
+  FAR_FROM_BASE_METRES,
+  ORIGIN_MOVE_THRESHOLD_METRES,
   getWalkingDirectionsUrl,
   type RankedVenue,
   type LatLng,
@@ -507,6 +510,8 @@ const nearMeTiersList = computed(() =>
 // Ranking state
 const lastRankedOrigin = ref<LatLng | null>(null);
 const rankedVenues = ref<RankedVenue[]>([]);
+// True while distances are measured from Spinningfields rather than the user.
+const isRankedFromBase = ref(true);
 
 const nearestVenue = computed(() =>
   rankedVenues.value.length > 0 ? rankedVenues.value[0] : null
@@ -612,6 +617,10 @@ function checkScreenSize() {
   }
 }
 
+function walkLabel(distanceMetres: number): string {
+  return `${estimateWalkMinutes(distanceMetres)} min walk${isRankedFromBase.value ? ' from Base' : ''}`;
+}
+
 function toggleTierFilter(status: TierStatus) {
   if (selectedTiers.value.includes(status)) {
     if (selectedTiers.value.length > 1) {
@@ -628,17 +637,16 @@ function updateRanking(force = false) {
     return;
   }
 
-  const currentOrigin: LatLng = geo.position.value
-    ? { lat: geo.position.value.lat, lng: geo.position.value.lng }
-    : BASE_COORDINATES;
+  const { origin: currentOrigin, fromBase } = resolveRankingOrigin(geo.position.value);
 
-  if (force || hasOriginMovedSignificantly(lastRankedOrigin.value, currentOrigin, 18)) {
+  if (force || fromBase !== isRankedFromBase.value || hasOriginMovedSignificantly(lastRankedOrigin.value, currentOrigin, ORIGIN_MOVE_THRESHOLD_METRES)) {
     rankedVenues.value = rankVenues({
       origin: currentOrigin,
       venues: venuesList.value,
       tiers: selectedTiers.value,
     });
     lastRankedOrigin.value = currentOrigin;
+    isRankedFromBase.value = fromBase;
   }
 }
 
@@ -958,20 +966,11 @@ function renderVenueMarkers() {
 
     venueMarkersMap.set(venue.id, marker);
 
-    const popupContent = createVenuePopupContent(venue);
+    const popupContent = createVenuePopupContent(venue, () => selectVenue(venue));
     marker.bindPopup(popupContent, { maxWidth: 280, className: 'ledger-popup' });
 
     marker.on('click', () => {
       selectVenueItem(venue, true);
-    });
-
-    marker.on('popupopen', () => {
-      const btn = document.getElementById(`btn-inspect-${venue.slug}`);
-      if (btn) {
-        btn.onclick = () => {
-          selectVenue(venue);
-        };
-      }
     });
 
     venueMarkersLayer.addLayer(marker);
@@ -1092,7 +1091,7 @@ function updateUserMarkerOnMap() {
       { lat: BASE_LAT, lng: BASE_LNG }
     );
     const wasFarAway = isUserFarFromManchester.value;
-    isUserFarFromManchester.value = distFromBase > 30_000;
+    isUserFarFromManchester.value = distFromBase > FAR_FROM_BASE_METRES;
 
     // If far away, keep map at Spinningfields — don't follow to a useless view
     if (isUserFarFromManchester.value) {
@@ -1353,7 +1352,7 @@ onUnmounted(() => {
 
   position: fixed;
   inset: 0;
-  width: 100vw;
+  width: 100%;
   height: 100dvh;
   isolation: isolate;
   z-index: 9999;
@@ -2534,6 +2533,17 @@ onUnmounted(() => {
 .near-me-btn-dossier:hover {
   background-color: rgb(251 246 234 / 12%);
   color: #ffffff;
+}
+
+/* List rows sit on light cards, so the dossier link needs dark ink there. */
+.near-me-venue-card .near-me-btn-dossier {
+  border-color: var(--ledger-border);
+  color: var(--ledger-deep);
+}
+
+.near-me-venue-card .near-me-btn-dossier:hover {
+  background-color: #ffffff;
+  color: var(--ledger-deep);
 }
 
 .near-me-list-title {

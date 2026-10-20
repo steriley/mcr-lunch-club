@@ -11,6 +11,8 @@ interface CachedForecast {
 }
 
 const cacheDurationMs = 30 * 60 * 1000;
+// Lets Vercel's CDN share a forecast across visitors instead of every page view invoking the function.
+const forecastCacheControl = 'public, max-age=0, s-maxage=900, stale-while-revalidate=1800';
 const cache = new Map<ForecastStep, CachedForecast>();
 const apiBase = 'https://data.hub.api.metoffice.gov.uk/sitespecific/v0/point';
 
@@ -59,7 +61,7 @@ export const GET: APIRoute = async ({ params }) => {
     return new Response(JSON.stringify(cached.data), {
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-store',
+        'Cache-Control': forecastCacheControl,
         'X-Weather-Cache': 'hit',
       },
     });
@@ -98,7 +100,7 @@ export const GET: APIRoute = async ({ params }) => {
     return new Response(JSON.stringify(data), {
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-store',
+        'Cache-Control': forecastCacheControl,
         'X-Weather-Cache': 'miss',
       },
     });
