@@ -7,26 +7,35 @@ const valid = { name: 'Chip Shop', slug: 'chip-shop', tier: 'approved', cost: '�
 describe('venueInputSchema', () => {
   it('accepts a minimal venue and applies defaults', () => {
     const result = venueInputSchema.parse(valid);
-    assert.equal(result.published, false);
-    assert.equal(result.sortOrder, 0);
     assert.equal(result.address, null);
     assert.equal(result.latitude, null);
     assert.equal(result.lastInspectionDate, null);
   });
 
   it('turns blank optional strings into null and trims text', () => {
-    const result = venueInputSchema.parse({ ...valid, name: '  Chip Shop ', summary: '   ', cuisine: ' British ' });
+    const result = venueInputSchema.parse({ ...valid, name: '  Chip Shop ', pullQuote: '   ', cuisine: ' British ' });
     assert.equal(result.name, 'Chip Shop');
-    assert.equal(result.summary, null);
+    assert.equal(result.pullQuote, null);
     assert.equal(result.cuisine, 'British');
   });
 
   it('coerces numeric strings from form fields', () => {
-    const result = venueInputSchema.parse({ ...valid, latitude: '53.48', longitude: '-2.25', rank: '4', sortOrder: '7' });
+    const result = venueInputSchema.parse({ ...valid, latitude: '53.48', longitude: '-2.25' });
     assert.equal(result.latitude, 53.48);
     assert.equal(result.longitude, -2.25);
-    assert.equal(result.rank, 4);
-    assert.equal(result.sortOrder, 7);
+  });
+
+  it('allows no approved tier, which keeps the venue hidden', () => {
+    assert.equal(venueInputSchema.parse({ ...valid, tier: '' }).tier, null);
+    assert.equal(venueInputSchema.parse({ ...valid, tier: null }).tier, null);
+    assert.equal(venueInputSchema.parse({ name: 'Chip Shop', slug: 'chip-shop', cost: '££' }).tier, null);
+  });
+
+  it('drops removed fields instead of storing them', () => {
+    const result = venueInputSchema.parse({ ...valid, rank: 4, sortOrder: 7, summary: 'x', verdict: 'y', rejectionReason: 'z', published: true });
+    for (const field of ['rank', 'sortOrder', 'summary', 'verdict', 'rejectionReason', 'published']) {
+      assert.ok(!(field in result), field);
+    }
   });
 
   it('rejects invalid slugs, tiers and cost bands', () => {
@@ -36,7 +45,7 @@ describe('venueInputSchema', () => {
     assert.equal(venueInputSchema.safeParse({ ...valid, cost: '$' }).success, false);
   });
 
-  it('rejects out-of-range coordinates and ranks', () => {
+  it('rejects out-of-range coordinates and distances', () => {
     for (const [field, limit] of [['latitude', 90], ['longitude', 180]] as const) {
       assert.equal(venueInputSchema.safeParse({ ...valid, [field]: limit }).success, true);
       assert.equal(venueInputSchema.safeParse({ ...valid, [field]: -limit }).success, true);
@@ -44,8 +53,6 @@ describe('venueInputSchema', () => {
       assert.equal(venueInputSchema.safeParse({ ...valid, [field]: -limit - 0.1 }).success, false);
     }
     assert.equal(venueInputSchema.safeParse({ ...valid, latitude: 'abc' }).success, false);
-    assert.equal(venueInputSchema.safeParse({ ...valid, rank: 0 }).success, false);
-    assert.equal(venueInputSchema.safeParse({ ...valid, rank: 1.5 }).success, false);
     assert.equal(venueInputSchema.safeParse({ ...valid, distanceMiles: -1 }).success, false);
   });
 

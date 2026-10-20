@@ -2,7 +2,7 @@ import { atom } from 'nanostores';
 import type { Venue, Inspection } from '@/types';
 import inspectionsData from '@/data/inspections.json';
 
-/** Id of the <script type="application/json"> tag holding the published venues. */
+/** Id of the <script type="application/json"> tag holding the public venues. */
 export const LEDGER_CANON_ELEMENT_ID = 'ledger-canon';
 
 // Keys from the retired in-browser editing features; cleared so stale local edits never linger.
@@ -15,7 +15,7 @@ function readCanonFromPage(): Venue[] {
   try {
     return JSON.parse(element.textContent) as Venue[];
   } catch (e) {
-    console.warn('Failed to parse the published venue list', e);
+    console.warn('Failed to parse the public venue list', e);
     return [];
   }
 }
@@ -40,7 +40,7 @@ export const $venuesList = atom<Venue[]>(getInitialVenues());
 export const $inspectionsList = atom<Inspection[]>(inspectionsData as Inspection[]);
 
 /**
- * Server-side only: provide the published venues before rendering islands so
+ * Server-side only: provide the public venues before rendering islands so
  * their server-rendered HTML matches what hydrates in the browser.
  */
 export function seedLedgerVenues(venues: Venue[]) {

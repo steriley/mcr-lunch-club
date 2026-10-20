@@ -4,7 +4,7 @@ import { isTierValue, tierLabel } from '@/lib/tiers';
 
 const props = defineProps<{ tier?: string | null }>();
 
-const label = computed(() => (isTierValue(props.tier) ? tierLabel(props.tier) : 'Unknown'));
+const label = computed(() => (isTierValue(props.tier) ? tierLabel(props.tier) : props.tier == null ? 'No approved tier' : 'Unknown'));
 
 const tone = computed(() => {
   switch (props.tier) {

@@ -4,7 +4,6 @@
     "name": "Crazy Pedro’s",
     "slug": "crazy-pedros",
     "status": "Approved",
-    "rank": 1,
     "lat": 53.48127,
     "lng": -2.24983,
     "distanceMiles": 0.11,
@@ -13,18 +12,14 @@
     "cuisine": "Pizza & Slices",
     "eatLikeUs": "The Chippy Tea slice with curry sauce dip, washed down with a can of Ting. Do not hesitate.",
     "lastInspectionDate": "2026-09-18",
-    "rejectionReason": null,
     "address": "55–57 Bridge Street, M3 3BQ",
-    "evidenceUrl": "https://mapcarta.com/N4302638089",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481270%2C-2.249830",
-    "notes": "Late-night slice joint that functions as an emergency lunchtime oasis. Fast, greasy, righteous."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481270%2C-2.249830"
   },
   {
     "id": "fazenda-fogo-de-chao",
     "name": "Fazenda “Fogo de Chão“",
     "slug": "fazenda-fogo-de-chao",
     "status": "Approved",
-    "rank": 2,
     "lat": 53.48033,
     "lng": -2.25074,
     "distanceMiles": 0.04,
@@ -33,18 +28,14 @@
     "cuisine": "Brazilian Rodizio",
     "eatLikeUs": "Picanha medium-rare straight off the skewer. Skip the salad bar filler; preserve maximum abdominal capacity for continuous skewers.",
     "lastInspectionDate": "2026-09-04",
-    "rejectionReason": null,
     "address": "The Avenue, Spinningfields, M3 3AP",
-    "evidenceUrl": "https://aroundus.com/p/171791486-fazenda",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480330%2C-2.250740",
-    "notes": "Official Payday summit venue. Green card must remain displayed until breathing becomes noticeably labored."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480330%2C-2.250740"
   },
   {
     "id": "flat-iron",
     "name": "Flat Iron",
     "slug": "flat-iron",
     "status": "Approved",
-    "rank": 3,
     "lat": 53.47845,
     "lng": -2.24969,
     "distanceMiles": 0.11,
@@ -53,18 +44,14 @@
     "cuisine": "Steakhouse",
     "eatLikeUs": "The signature flat iron steak, medium-rare, beef dripping chips, béarnaise, and the ceremonial salted caramel soft serve cone on exit.",
     "lastInspectionDate": "2026-08-28",
-    "rejectionReason": null,
     "address": "200 Deansgate, M3 3NN",
-    "evidenceUrl": "https://mapcarta.com/N324691503",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478450%2C-2.249690",
-    "notes": "Sublime meat execution. The tiny cleaver serves as a reminder of solemn lunchtime duty."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478450%2C-2.249690"
   },
   {
     "id": "street-guys-street-star",
     "name": "Street Guys (Street Star)",
     "slug": "street-guys-street-star",
     "status": "Approved",
-    "rank": 4,
     "lat": 53.48143,
     "lng": -2.24946,
     "distanceMiles": 0.13,
@@ -73,18 +60,14 @@
     "cuisine": "Burgers & Loaded Fries",
     "eatLikeUs": "Double beef smash burger with grilled jalapeños, signature sauce, and cajun seasoned fries.",
     "lastInspectionDate": "2026-08-15",
-    "rejectionReason": null,
     "address": "6–7 Butter Lane, M3 2PD",
-    "evidenceUrl": "https://mapcarta.com/N10844573071",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481430%2C-2.249460",
-    "notes": "Hidden gem off Bridge Street. Punchy seasoning and swift turnaround."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481430%2C-2.249460"
   },
   {
     "id": "wok-to-walk",
     "name": "Wok to Walk",
     "slug": "wok-to-walk",
     "status": "Approved",
-    "rank": 5,
     "lat": 53.482225,
     "lng": -2.246756,
     "distanceMiles": 0.24,
@@ -93,18 +76,14 @@
     "cuisine": "Wok Noodles",
     "eatLikeUs": "Egg noodles, sweet & sour sauce, chicken breast, broccoli florets, and crispy fried garlic on top.",
     "lastInspectionDate": "2026-07-22",
-    "rejectionReason": null,
     "address": "61 Deansgate, M3 2BW",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%202BW",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482225%2C-2.246756",
-    "notes": "The pragmatic option when tribunal deliberations run over and time is scarce."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482225%2C-2.246756"
   },
   {
     "id": "wrights-fish-chips",
     "name": "Wright's Fish & Chips",
     "slug": "wrights-fish-chips",
     "status": "Approved",
-    "rank": 6,
     "lat": 53.48041,
     "lng": -2.24522,
     "distanceMiles": 0.24,
@@ -113,18 +92,14 @@
     "cuisine": "Traditional Chippy",
     "eatLikeUs": "Fresh haddock, proper beef dripping chips, marrowfat mushy peas, Irish curry sauce, and a floured barm cake for assembly.",
     "lastInspectionDate": "2026-09-11",
-    "rejectionReason": null,
     "address": "86 Cross Street, M2 4LA",
-    "evidenceUrl": "https://mapcarta.com/N9608497683",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480410%2C-2.245220",
-    "notes": "Cross Street heritage institution. The aroma alone commands immediate obedience."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480410%2C-2.245220"
   },
   {
     "id": "lakeland-grocers-in-the-city",
     "name": "Lakeland Grocers in the City",
     "slug": "lakeland-grocers-in-the-city",
     "status": "Approved",
-    "rank": 7,
     "lat": 53.47423,
     "lng": -2.25145,
     "distanceMiles": 0.39,
@@ -133,18 +108,14 @@
     "cuisine": "Deli & Bakery",
     "eatLikeUs": "Cumbrian shortcrust pasty, thick Cumberland sausage roll, and a slice of gingerbread.",
     "lastInspectionDate": "2026-06-30",
-    "rejectionReason": null,
     "address": "345 Deansgate, M3 4LG",
-    "evidenceUrl": "https://mapcarta.com/N1898424429",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.474230%2C-2.251450",
-    "notes": "Hearty northern fuel. Generous pastry density."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.474230%2C-2.251450"
   },
   {
     "id": "mick-hucknalls-rustik-bites",
     "name": "Mick Hucknall’s Rustik Bites",
     "slug": "mick-hucknalls-rustik-bites",
     "status": "Approved",
-    "rank": 8,
     "lat": 53.473839,
     "lng": -2.251288,
     "distanceMiles": 0.42,
@@ -153,18 +124,14 @@
     "cuisine": "Cafe & Bakes",
     "eatLikeUs": "The Deansgate sausage bap with brown sauce, followed by an unapologetic square of flapjack.",
     "lastInspectionDate": "2026-07-09",
-    "rejectionReason": null,
     "address": "343 Deansgate, M3 4LG",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%204LG",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.473839%2C-2.251288",
-    "notes": "Holds curious local folklore appeal. Reliable grab-and-go fuel."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.473839%2C-2.251288"
   },
   {
     "id": "new-wave-ramen",
     "name": "New Wave Ramen",
     "slug": "new-wave-ramen",
     "status": "Approved",
-    "rank": 9,
     "lat": 53.48043,
     "lng": -2.24434,
     "distanceMiles": 0.28,
@@ -173,18 +140,14 @@
     "cuisine": "Ramen",
     "eatLikeUs": "Shoyu paitan ramen, double chashu pork, ajitsuke tamago, nori, and a side of chili rayu. Slurp with dignity.",
     "lastInspectionDate": "2026-08-19",
-    "rejectionReason": null,
     "address": "16 Tib Lane, M2 4JB",
-    "evidenceUrl": "https://mapcarta.com/N9604296155",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480430%2C-2.244340",
-    "notes": "Precision broth chemistry on Tib Lane. Deep contemplation guaranteed."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480430%2C-2.244340"
   },
   {
     "id": "double-zero",
     "name": "Double Zero",
     "slug": "double-zero",
     "status": "Approved",
-    "rank": 10,
     "lat": 53.480187,
     "lng": -2.241139,
     "distanceMiles": 0.41,
@@ -193,18 +156,14 @@
     "cuisine": "Neapolitan Pizza",
     "eatLikeUs": "Diavola with nduja and hot honey drizzle. Crust blistering is exemplary.",
     "lastInspectionDate": "2026-09-02",
-    "rejectionReason": null,
     "address": "55 Spring Gardens, M2 2BY",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M2%202BY",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480187%2C-2.241139",
-    "notes": "Spring Gardens outpost delivers blistered perfection. Fast 90-second bake."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480187%2C-2.241139"
   },
   {
     "id": "fat-pats",
     "name": "Fat Pat’s",
     "slug": "fat-pats",
     "status": "Approved",
-    "rank": 11,
     "lat": 53.47782,
     "lng": -2.24016,
     "distanceMiles": 0.47,
@@ -213,18 +172,14 @@
     "cuisine": "Gourmet Subs",
     "eatLikeUs": "Hot Honey Fried Chicken 8-inch milk bread sub with pimento cheese and pickles. Grab four napkins immediately.",
     "lastInspectionDate": "2026-09-25",
-    "rejectionReason": null,
     "address": "88 Portland Street, M1 4GX",
-    "evidenceUrl": "https://findit.city/en/uk/manchester/places/restaurants/fat-pats-11114941944",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.477820%2C-2.240160",
-    "notes": "Alleyway takeout of colossal proportion. Requires both hands and an unwavering spine."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.477820%2C-2.240160"
   },
   {
     "id": "happy-seasons",
     "name": "Happy Seasons",
     "slug": "happy-seasons",
     "status": "Approved",
-    "rank": 12,
     "lat": 53.47806,
     "lng": -2.24013,
     "distanceMiles": 0.47,
@@ -233,18 +188,14 @@
     "cuisine": "Cantonese BBQ",
     "eatLikeUs": "Three-roast meat platter (Crispy Pork Belly, Roast Duck, Char Siu) on boiled rice with supreme ginger-scallion sauce.",
     "lastInspectionDate": "2026-09-14",
-    "rejectionReason": null,
     "address": "59 Faulkner Street, M1 4FF",
-    "evidenceUrl": "https://mapcarta.com/N2692887693",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478060%2C-2.240130",
-    "notes": "Chinatown royalty. Queue strictly commences at 11:50; tardiness results in forfeit."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478060%2C-2.240130"
   },
   {
     "id": "listos-burrito",
     "name": "Listos Burrito",
     "slug": "listos-burrito",
     "status": "Approved",
-    "rank": 13,
     "lat": 53.475279,
     "lng": -2.241443,
     "distanceMiles": 0.51,
@@ -253,18 +204,14 @@
     "cuisine": "Mexican / Burritos",
     "eatLikeUs": "Slow-braised pork carnitas burrito, black beans, lime rice, charred habanero salsa, and Monterey Jack.",
     "lastInspectionDate": "2026-08-04",
-    "rejectionReason": null,
     "address": "91–93 Oxford Street, M1 6ET",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%206ET",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.475279%2C-2.241443",
-    "notes": "Oxford Street stronghold. Structural foil wrap ensures zero casualty rate on the pavement."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.475279%2C-2.241443"
   },
   {
     "id": "lotties-bakehouse",
     "name": "Lottie’s Bakehouse",
     "slug": "lotties-bakehouse",
     "status": "Approved",
-    "rank": 14,
     "lat": 53.479326,
     "lng": -2.2402,
     "distanceMiles": 0.45,
@@ -273,18 +220,14 @@
     "cuisine": "Bakery & Toasties",
     "eatLikeUs": "Artisanal grilled cheese on seeded sourdough, followed by the pistachio cardamom custard bun.",
     "lastInspectionDate": "2026-02-14",
-    "rejectionReason": null,
     "address": "Basement, 10 Charlotte House, Charlotte Street, Manchester M1 4FL",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%204FL",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.479326%2C-2.240200",
-    "notes": "Basement Charlotte Street sanctuary. Overdue for re-audit per Article 4.2."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.479326%2C-2.240200"
   },
   {
     "id": "that-ziki",
     "name": "That Ziki",
     "slug": "that-ziki",
     "status": "Approved",
-    "rank": 15,
     "lat": 53.475279,
     "lng": -2.241443,
     "distanceMiles": 0.51,
@@ -293,18 +236,14 @@
     "cuisine": "Greek Street Food",
     "eatLikeUs": "Pork belly gyros wrap loaded with oregano fries, pickled onions, and house tzatziki.",
     "lastInspectionDate": "2026-08-11",
-    "rejectionReason": null,
     "address": "95 Oxford Street, M1 6ET",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%206ET",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.475279%2C-2.241443",
-    "notes": "Generous pita wrap loaded with explosive Mediterranean vigor."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.475279%2C-2.241443"
   },
   {
     "id": "bunny-jacksons",
     "name": "Bunny Jacksons",
     "slug": "bunny-jacksons",
     "status": "Approved",
-    "rank": 16,
     "lat": 53.473193,
     "lng": -2.245996,
     "distanceMiles": 0.5,
@@ -313,18 +252,14 @@
     "cuisine": "Wings & Dive Bar",
     "eatLikeUs": "A tower of 20p wings (Buffalo and Nashville Hot), loaded tater tots, and an ice-cold root beer.",
     "lastInspectionDate": "2026-07-17",
-    "rejectionReason": null,
     "address": "1 Jack Rosenthal Street, M15 4RA",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M15%204RA",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.473193%2C-2.245996",
-    "notes": "Chaotic energy, impossible prices. Ideal for low-protocol Fridays."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.473193%2C-2.245996"
   },
   {
     "id": "bird-of-prey",
     "name": "Bird of Prey",
     "slug": "bird-of-prey",
     "status": "Approved",
-    "rank": 17,
     "lat": 53.47348,
     "lng": -2.23912,
     "distanceMiles": 0.66,
@@ -333,18 +268,14 @@
     "cuisine": "Fried Chicken",
     "eatLikeUs": "The Messy Bird burger with spicy fried thigh, slaw, house pickles, and seasoned crinkle fries.",
     "lastInspectionDate": "2026-07-28",
-    "rejectionReason": null,
     "address": "49A Charles Street, M1 7DF",
-    "evidenceUrl": "https://mapcarta.com/N9764825294",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.473480%2C-2.239120",
-    "notes": "Buttermilk mastery on Charles Street. High crunch-to-meat ratio."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.473480%2C-2.239120"
   },
   {
     "id": "burgerism",
     "name": "Burgerism",
     "slug": "burgerism",
     "status": "Approved",
-    "rank": 18,
     "lat": 53.48033,
     "lng": -2.23671,
     "distanceMiles": 0.59,
@@ -353,18 +284,14 @@
     "cuisine": "Smash Burgers",
     "eatLikeUs": "The Cheesed burger (double smash patty, American cheese, house sauce), seasoned skin-on fries, and chicken bites.",
     "lastInspectionDate": "2026-08-31",
-    "rejectionReason": null,
     "address": "1 Piccadilly Gardens, M1 1RN",
-    "evidenceUrl": "https://mapcarta.com/N6404969129",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480330%2C-2.236710",
-    "notes": "The benchmark Manchester smash burger. Quick collection at Piccadilly Gardens."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480330%2C-2.236710"
   },
   {
     "id": "daves-hot-chicken",
     "name": "Dave’s Hot Chicken",
     "slug": "daves-hot-chicken",
     "status": "Approved",
-    "rank": 19,
     "lat": 53.485185,
     "lng": -2.240775,
     "distanceMiles": 0.56,
@@ -373,18 +300,14 @@
     "cuisine": "Nashville Hot Chicken",
     "eatLikeUs": "Two tender slider combo at 'Hot' spice tier with crinkle fries and Dave's sauce. (Do not order Reaper before tribunal sessions).",
     "lastInspectionDate": "2026-08-20",
-    "rejectionReason": null,
     "address": "27 Withy Grove, M4 2BS",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%202BS",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.485185%2C-2.240775",
-    "notes": "Withy Grove arrival with serious heat profile and buttery buns."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.485185%2C-2.240775"
   },
   {
     "id": "detroit-slims",
     "name": "Detroit Slims",
     "slug": "detroit-slims",
     "status": "Approved",
-    "rank": 20,
     "lat": 53.47272,
     "lng": -2.23913,
     "distanceMiles": 0.69,
@@ -393,18 +316,14 @@
     "cuisine": "Detroit Pan Pizza",
     "eatLikeUs": "Pepperoni square pan slice with caramelized frico cheese crust and spicy marinara dip.",
     "lastInspectionDate": "2026-09-08",
-    "rejectionReason": null,
     "address": "Circle Square, Oxford Road, M1 7FS",
-    "evidenceUrl": "https://mapcarta.com/N13186274248",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.472720%2C-2.239130",
-    "notes": "Crisp pan edges at Circle Square. Substantial lunch in a neat rectangular format."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.472720%2C-2.239130"
   },
   {
     "id": "wing-stop",
     "name": "Wing Stop",
     "slug": "wing-stop",
     "status": "Approved",
-    "rank": 21,
     "lat": 53.481829,
     "lng": -2.237803,
     "distanceMiles": 0.56,
@@ -413,18 +332,14 @@
     "cuisine": "Wings",
     "eatLikeUs": "8 boneless wings tossed in Garlic Parmesan and Mango Habanero, plus seasoned voodoo fries.",
     "lastInspectionDate": "2026-07-15",
-    "rejectionReason": null,
     "address": "Wingstop Piccadilly, 11-13 Piccadilly, Manchester M1 1LZ",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%201LZ",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481829%2C-2.237803",
-    "notes": "Piccadilly branch approved after thorough sauce consistency inspection."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481829%2C-2.237803"
   },
   {
     "id": "northern-soul",
     "name": "Northern Soul",
     "slug": "northern-soul",
     "status": "Approved",
-    "rank": 22,
     "lat": 53.482876,
     "lng": -2.235669,
     "distanceMiles": 0.67,
@@ -433,18 +348,14 @@
     "cuisine": "Grilled Cheese",
     "eatLikeUs": "The Soul Classic (secret three-cheese blend on sourdough) with caramelized onion chutney and a pot of tomato soup dip.",
     "lastInspectionDate": "2026-08-25",
-    "rejectionReason": null,
     "address": "44 Tib Street, M4 1LA",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201LA",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482876%2C-2.235669",
-    "notes": "Tib Street staple. The definitive gold standard of Manchester melted cheese."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482876%2C-2.235669"
   },
   {
     "id": "popeyes",
     "name": "Popeyes",
     "slug": "popeyes",
     "status": "Approved",
-    "rank": 23,
     "lat": 53.48084,
     "lng": -2.23602,
     "distanceMiles": 0.62,
@@ -453,18 +364,14 @@
     "cuisine": "Louisiana Fried Chicken",
     "eatLikeUs": "Spicy Chicken Sandwich, cajun fries, and a buttermilk biscuit with honey.",
     "lastInspectionDate": "2026-06-18",
-    "rejectionReason": null,
     "address": "Popeyes, 1 Piccadilly Gardens, Manchester M1 1RG",
-    "evidenceUrl": "https://mapcarta.com/N3625030281",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480840%2C-2.236020",
-    "notes": "Mass-market fried chicken elevated by remarkable batter shatter."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480840%2C-2.236020"
   },
   {
     "id": "salt-pepper",
     "name": "Salt & Pepper",
     "slug": "salt-pepper",
     "status": "Approved",
-    "rank": 24,
     "lat": 53.483842,
     "lng": -2.238327,
     "distanceMiles": 0.59,
@@ -473,18 +380,14 @@
     "cuisine": "Chinese Street Food",
     "eatLikeUs": "The Half-and-Half (salt & pepper crispy chicken over chips and egg fried rice) with sweet curry sauce and extra fresh chilies.",
     "lastInspectionDate": "2026-09-17",
-    "rejectionReason": null,
     "address": "60–62 High Street, M4 1EA",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201EA",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483842%2C-2.238327",
-    "notes": "Northern Quarter institution. The quintessential Manchester comfort tray."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483842%2C-2.238327"
   },
   {
     "id": "this-that",
     "name": "This & That",
     "slug": "this-that",
     "status": "Approved",
-    "rank": 25,
     "lat": 53.484561,
     "lng": -2.238195,
     "distanceMiles": 0.62,
@@ -493,18 +396,14 @@
     "cuisine": "Rice 'n' Three",
     "eatLikeUs": "Rice 'n' Three: Lamb Nihari, Chicken Tikka Masala, and Chana Dal, accompanied by a fresh tandoori roti.",
     "lastInspectionDate": "2026-09-22",
-    "rejectionReason": null,
     "address": "3 Soap Street, M4 1EW",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201EW",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484561%2C-2.238195",
-    "notes": "The foundational temple of Manchester lunchtime culture on Soap Street since 1984."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484561%2C-2.238195"
   },
   {
     "id": "zaytoni",
     "name": "Zaytoni",
     "slug": "zaytoni",
     "status": "Approved",
-    "rank": 26,
     "lat": 53.470479,
     "lng": -2.237062,
     "distanceMiles": 0.87,
@@ -513,18 +412,14 @@
     "cuisine": "Levantine / Shawarma",
     "eatLikeUs": "Chicken and lamb mixed shawarma wrap toasted on the saj with extra garlic toum and pickled gherkins.",
     "lastInspectionDate": "2026-06-25",
-    "rejectionReason": null,
     "address": "127A Oxford Road, M1 7DY",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%207DY",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.470479%2C-2.237062",
-    "notes": "Oxford Road haven of authentic Levantine spices and fragrant spit-roasted meats."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.470479%2C-2.237062"
   },
   {
     "id": "kabana",
     "name": "Kabana",
     "slug": "kabana",
     "status": "Approved",
-    "rank": 27,
     "lat": 53.483791,
     "lng": -2.23694,
     "distanceMiles": 0.64,
@@ -533,18 +428,14 @@
     "cuisine": "Rice 'n' Three",
     "eatLikeUs": "Karahi Gosht and Daal over saffron basmati rice with freshly slapped roti.",
     "lastInspectionDate": "2026-01-20",
-    "rejectionReason": null,
     "address": "52 Back Turner Street, M4 1FR",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201FR",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483791%2C-2.236940",
-    "notes": "Northern Quarter backstreet legend. OVERDUE FOR RE-INSPECTION (Article 7 warning issued)."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483791%2C-2.236940"
   },
   {
     "id": "nells-pizza",
     "name": "Nell’s Pizza",
     "slug": "nells-pizza",
     "status": "Approved",
-    "rank": 28,
     "lat": 53.484305,
     "lng": -2.236084,
     "distanceMiles": 0.69,
@@ -553,18 +444,14 @@
     "cuisine": "NYC Style Pizza",
     "eatLikeUs": "14-inch Original Sausage slice or cheese slice folded in half, dipped in hot honey.",
     "lastInspectionDate": "2026-08-05",
-    "rejectionReason": null,
     "address": "Nell’s at Common, 39-41 Edge Street, Manchester M4 1HW",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201HW",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484305%2C-2.236084",
-    "notes": "Enormous NYC-style slices with crisp undercarriage. High conviviality index."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484305%2C-2.236084"
   },
   {
     "id": "bada-bing",
     "name": "Bada Bing",
     "slug": "bada-bing",
     "status": "Approved",
-    "rank": 29,
     "lat": 53.484328,
     "lng": -2.233537,
     "distanceMiles": 0.78,
@@ -573,18 +460,14 @@
     "cuisine": "Italian-American Subs",
     "eatLikeUs": "The Carmela sub: fennel salami, spicy mortadella, aged provolone, shredded iceberg, and house vinaigrette on focaccia.",
     "lastInspectionDate": "2026-09-26",
-    "rejectionReason": null,
     "address": "125 Oldham Street, Manchester M4 1LN",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201LN",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484328%2C-2.233537",
-    "notes": "Oldham Street colossus. Two-fisted Italian-American heavyweight."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484328%2C-2.233537"
   },
   {
     "id": "pizza-pilgrims",
     "name": "Pizza Pilgrims",
     "slug": "pizza-pilgrims",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.48101,
     "lng": -2.247578,
     "distanceMiles": 0.16,
@@ -593,18 +476,14 @@
     "cuisine": "Pizza",
     "eatLikeUs": "The committee signature recommendation for Pizza Pilgrims: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "105–107 Deansgate, M3 2BQ",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%202BQ",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481010%2C-2.247578",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481010%2C-2.247578"
   },
   {
     "id": "sandys-smoke-shed",
     "name": "Sandy’s Smoke Shed",
     "slug": "sandys-smoke-shed",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.476692,
     "lng": -2.2581,
     "distanceMiles": 0.36,
@@ -613,18 +492,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Sandy’s Smoke Shed: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "Arch 121 Woollam Place, M3 4JJ",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%204JJ",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.476692%2C-2.258100",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.476692%2C-2.258100"
   },
   {
     "id": "forbici-pizza",
     "name": "Forbici Pizza",
     "slug": "forbici-pizza",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.480412,
     "lng": -2.245284,
     "distanceMiles": 0.24,
@@ -633,18 +508,14 @@
     "cuisine": "Pizza",
     "eatLikeUs": "The committee signature recommendation for Forbici Pizza: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "86 Cross Street, M2 4LA",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M2%204LA",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480412%2C-2.245284",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480412%2C-2.245284"
   },
   {
     "id": "ohannes-burger",
     "name": "Ohannes Burger",
     "slug": "ohannes-burger",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.484806,
     "lng": -2.250327,
     "distanceMiles": 0.34,
@@ -653,18 +524,14 @@
     "cuisine": "Burgers",
     "eatLikeUs": "The committee signature recommendation for Ohannes Burger: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "104 Chapel Street, Salford M3 5DW",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%205DW",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484806%2C-2.250327",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484806%2C-2.250327"
   },
   {
     "id": "viet-deli",
     "name": "Viet Deli",
     "slug": "viet-deli",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.484216,
     "lng": -2.248697,
     "distanceMiles": 0.32,
@@ -673,18 +540,14 @@
     "cuisine": "Deli & Sandwiches",
     "eatLikeUs": "The committee signature recommendation for Viet Deli: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "22 Blackfriars Street, M3 5BQ",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%205BQ",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484216%2C-2.248697",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484216%2C-2.248697"
   },
   {
     "id": "china-buffet",
     "name": "China Buffet",
     "slug": "china-buffet",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.478346,
     "lng": -2.240225,
     "distanceMiles": 0.46,
@@ -693,18 +556,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for China Buffet: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "16 Nicholas Street, M1 4EJ",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%204EJ",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478346%2C-2.240225",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478346%2C-2.240225"
   },
   {
     "id": "oppa-chicken",
     "name": "Oppa Chicken",
     "slug": "oppa-chicken",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.478174,
     "lng": -2.240992,
     "distanceMiles": 0.43,
@@ -713,18 +572,14 @@
     "cuisine": "Fried Chicken",
     "eatLikeUs": "The committee signature recommendation for Oppa Chicken: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "43 George Street, M1 4AB",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%204AB",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478174%2C-2.240992",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478174%2C-2.240992"
   },
   {
     "id": "happy-lemon",
     "name": "Happy Lemon",
     "slug": "happy-lemon",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.477771,
     "lng": -2.240131,
     "distanceMiles": 0.47,
@@ -733,18 +588,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Happy Lemon: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "84 Portland Street, M1 4GX",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%204GX",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.477771%2C-2.240131",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.477771%2C-2.240131"
   },
   {
     "id": "soup-co",
     "name": "Soup Co",
     "slug": "soup-co",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.48051,
     "lng": -2.23931,
     "distanceMiles": 0.48,
@@ -753,18 +604,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Soup Co: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "City Tower, Mosley Street, M1 4BT",
-    "evidenceUrl": "https://mapcarta.com/N6535193711",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480510%2C-2.239310",
-    "notes": "Mapped Soup Co at Piccadilly Plaza (B4, M1 4AH); previously listed City Tower M1 4BT; check storefront address."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480510%2C-2.239310"
   },
   {
     "id": "house-of-social",
     "name": "House of Social",
     "slug": "house-of-social",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.472098,
     "lng": -2.245402,
     "distanceMiles": 0.58,
@@ -773,18 +620,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for House of Social: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "10 Sir Howard Bernstein Approach, M15 4ND",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M15%204ND",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.472098%2C-2.245402",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.472098%2C-2.245402"
   },
   {
     "id": "vietshack",
     "name": "VietShack",
     "slug": "vietshack",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.483524,
     "lng": -2.230926,
     "distanceMiles": 0.87,
@@ -793,18 +636,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for VietShack: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "63–65 Great Ancoats Street, M4 5AB",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%205AB",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483524%2C-2.230926",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483524%2C-2.230926"
   },
   {
     "id": "ad-maiora",
     "name": "Ad Maiora",
     "slug": "ad-maiora",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.483741,
     "lng": -2.234619,
     "distanceMiles": 0.73,
@@ -813,18 +652,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Ad Maiora: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "84 Tib Street, M4 1LG",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201LG",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483741%2C-2.234619",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483741%2C-2.234619"
   },
   {
     "id": "buttys-booth",
     "name": "Butty’s Booth",
     "slug": "buttys-booth",
     "status": "Under Consideration",
-    "rank": null,
     "lat": 53.456911,
     "lng": -2.264984,
     "distanceMiles": 1.69,
@@ -833,18 +668,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Butty’s Booth: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-09-10",
-    "rejectionReason": null,
     "address": "18 Powell Street, Old Trafford, Manchester M16 7QR",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M16%207QR",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.456911%2C-2.264984",
-    "notes": "Address verified via a business location listing at 18 Powell Street. Food Standards Agency lists a private registered address (M16). Postcode centroid, not exact stall / entrance."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.456911%2C-2.264984"
   },
   {
     "id": "eggslut",
     "name": "Eggslut",
     "slug": "eggslut",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.479804,
     "lng": -2.248053,
     "distanceMiles": 0.12,
@@ -853,18 +684,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Eggslut: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "129 Deansgate, M3 3WR",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%203WR",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.479804%2C-2.248053",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.479804%2C-2.248053"
   },
   {
     "id": "armenian-taverna",
     "name": "Armenian Taverna",
     "slug": "armenian-taverna",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.48011,
     "lng": -2.24479,
     "distanceMiles": 0.26,
@@ -873,18 +700,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Armenian Taverna: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "1–7 Princess Street, M2 4DF",
-    "evidenceUrl": "https://mapcarta.com/N258871622",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480110%2C-2.244790",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480110%2C-2.244790"
   },
   {
     "id": "rajdoot-tandoori",
     "name": "Rajdoot Tandoori",
     "slug": "rajdoot-tandoori",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.478866,
     "lng": -2.245652,
     "distanceMiles": 0.23,
@@ -893,18 +716,14 @@
     "cuisine": "Indian",
     "eatLikeUs": "The committee signature recommendation for Rajdoot Tandoori: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "Carlton House, Albert Square, M2 5PE",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M2%205PE",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478866%2C-2.245652",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478866%2C-2.245652"
   },
   {
     "id": "only-pho-u",
     "name": "Only Pho U",
     "slug": "only-pho-u",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.484806,
     "lng": -2.250327,
     "distanceMiles": 0.34,
@@ -913,18 +732,14 @@
     "cuisine": "Asian Noodles & Soups",
     "eatLikeUs": "The committee signature recommendation for Only Pho U: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "102 Chapel Street, Salford M3 5DW",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%205DW",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484806%2C-2.250327",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484806%2C-2.250327"
   },
   {
     "id": "thai-kitchen-no-6",
     "name": "Thai Kitchen No. 6",
     "slug": "thai-kitchen-no-6",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.48171,
     "lng": -2.243498,
     "distanceMiles": 0.34,
@@ -933,18 +748,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Thai Kitchen No. 6: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "Chapel Walks, M2 1HN",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M2%201HN",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481710%2C-2.243498",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481710%2C-2.243498"
   },
   {
     "id": "the-mews",
     "name": "The Mews",
     "slug": "the-mews",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.477374,
     "lng": -2.249832,
     "distanceMiles": 0.18,
@@ -953,18 +764,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for The Mews: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "Unit K, L, M, Deansgate Mews, 253 Deansgate, Manchester M3 4EN",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%204EN",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.477374%2C-2.249832",
-    "notes": "Verified as The Mews Bar & Charcuterie at Unit K/L/M, Deansgate Mews; venue official website confirms address. Coordinates refer to the wider building postcode, not the unit."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.477374%2C-2.249832"
   },
   {
     "id": "little-brewski",
     "name": "Little Brewski",
     "slug": "little-brewski",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.479386,
     "lng": -2.241541,
     "distanceMiles": 0.39,
@@ -973,18 +780,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Little Brewski: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "39 Booth Street, Manchester M2 4AA",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M2%204AA",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.479386%2C-2.241541",
-    "notes": "Former/associated Little Brewski address; site may have changed trading name to Foldies."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.479386%2C-2.241541"
   },
   {
     "id": "wakuwaku",
     "name": "WakuWaku",
     "slug": "wakuwaku",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.478357,
     "lng": -2.23914,
     "distanceMiles": 0.5,
@@ -993,18 +796,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for WakuWaku: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "54 Portland Street, Manchester M1 4QU",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%204QU",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478357%2C-2.239140",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478357%2C-2.239140"
   },
   {
     "id": "bullgogi",
     "name": "Bullgogi",
     "slug": "bullgogi",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.480497,
     "lng": -2.239107,
     "distanceMiles": 0.49,
@@ -1013,18 +812,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Bullgogi: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "6A Piccadilly Plaza, Manchester M1 4AH",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%204AH",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480497%2C-2.239107",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480497%2C-2.239107"
   },
   {
     "id": "meatworks",
     "name": "MEATWORKS",
     "slug": "meatworks",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.472875,
     "lng": -2.238959,
     "distanceMiles": 0.69,
@@ -1033,18 +828,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for MEATWORKS: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "Circle Square, Oxford Road, Manchester M1 7FS",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%207FS",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.472875%2C-2.238959",
-    "notes": "Large development postcode; exact unit point unverified."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.472875%2C-2.238959"
   },
   {
     "id": "the-palace-cantina",
     "name": "The Palace Cantina",
     "slug": "the-palace-cantina",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.482534,
     "lng": -2.236195,
     "distanceMiles": 0.64,
@@ -1053,18 +844,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for The Palace Cantina: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "Third floor, Afflecks Palace, 52 Church Street, Manchester M4 1PW",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201PW",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482534%2C-2.236195",
-    "notes": "Building-level postcode; unit is inside multi-level Afflecks."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482534%2C-2.236195"
   },
   {
     "id": "rustica",
     "name": "Rustica",
     "slug": "rustica",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.483327,
     "lng": -2.235039,
     "distanceMiles": 0.7,
@@ -1073,18 +860,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Rustica: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "Hilton House, 1 Hilton Street, Manchester M4 1LP",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201LP",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483327%2C-2.235039",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483327%2C-2.235039"
   },
   {
     "id": "kool-runnings",
     "name": "Kool Runnings",
     "slug": "kool-runnings",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.462588,
     "lng": -2.258558,
     "distanceMiles": 1.23,
@@ -1093,18 +876,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Kool Runnings: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "118 Chorlton Road, Old Trafford, Manchester M15 4AN",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M15%204AN",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.462588%2C-2.258558",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.462588%2C-2.258558"
   },
   {
     "id": "rusholme-chippy",
     "name": "Rusholme Chippy",
     "slug": "rusholme-chippy",
     "status": "To Be Assessed",
-    "rank": null,
     "lat": 53.45453,
     "lng": -2.225077,
     "distanceMiles": 2.05,
@@ -1113,18 +892,14 @@
     "cuisine": "Fish & Chips",
     "eatLikeUs": "The committee signature recommendation for Rusholme Chippy: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "62 Wilmslow Road, Rusholme, Manchester M14 5AL",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M14%205AL",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.454530%2C-2.225077",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.454530%2C-2.225077"
   },
   {
     "id": "arndale-shawarma",
     "name": "Arndale Shawarma",
     "slug": "arndale-shawarma",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.48395,
     "lng": -2.23848,
     "distanceMiles": 0.59,
@@ -1133,18 +908,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Arndale Shawarma: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity.",
     "address": "68 High Street, Manchester M4 1EA",
-    "evidenceUrl": "https://mapcarta.com/N9876945729",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483950%2C-2.238480",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483950%2C-2.238480"
   },
   {
     "id": "cafe-istanbul",
     "name": "Cafe Istanbul",
     "slug": "cafe-istanbul",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.48115,
     "lng": -2.249101,
     "distanceMiles": 0.12,
@@ -1153,18 +924,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Cafe Istanbul: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity.",
     "address": "79-81 Bridge Street, Manchester M3 2RH",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%202RH",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481150%2C-2.249101",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481150%2C-2.249101"
   },
   {
     "id": "caribbean-flavas",
     "name": "Caribbean Flavas",
     "slug": "caribbean-flavas",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.48331,
     "lng": -2.2551,
     "distanceMiles": 0.29,
@@ -1173,18 +940,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Caribbean Flavas: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Historic map record; operation/current venue not confirmed.",
     "address": "Salford, city centre (historic OSM POI)",
-    "evidenceUrl": "https://mapcarta.com/N10174719256",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483310%2C-2.255100",
-    "notes": "Historic map record; operation/current venue not confirmed."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483310%2C-2.255100"
   },
   {
     "id": "great-british-doner",
     "name": "Great British Doner",
     "slug": "great-british-doner",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.482225,
     "lng": -2.246756,
     "distanceMiles": 0.24,
@@ -1193,18 +956,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Great British Doner: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Selected Deansgate branch; Great British Doner also operates other Manchester branches.",
     "address": "GBD, 61 Deansgate, Manchester M3 2BW",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%202BW",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482225%2C-2.246756",
-    "notes": "Selected Deansgate branch; Great British Doner also operates other Manchester branches."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482225%2C-2.246756"
   },
   {
     "id": "hop-vietnamese",
     "name": "Hop Vietnamese",
     "slug": "hop-vietnamese",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.482512,
     "lng": -2.242388,
     "distanceMiles": 0.4,
@@ -1213,18 +972,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Hop Vietnamese: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity.",
     "address": "26 Market Street, Manchester M1 1PW",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%201PW",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482512%2C-2.242388",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482512%2C-2.242388"
   },
   {
     "id": "itsu",
     "name": "Itsu",
     "slug": "itsu",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.480116,
     "lng": -2.249547,
     "distanceMiles": 0.06,
@@ -1233,18 +988,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Itsu: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Selected Spinningfields branch; multiple Manchester branches possible.",
     "address": "Unit A4, Spinningfields Square, Manchester M3 3AP",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%203AP",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480116%2C-2.249547",
-    "notes": "Selected Spinningfields branch; multiple Manchester branches possible."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480116%2C-2.249547"
   },
   {
     "id": "katsouris-deli",
     "name": "Katsouris Deli",
     "slug": "katsouris-deli",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.48101,
     "lng": -2.247578,
     "distanceMiles": 0.16,
@@ -1253,18 +1004,14 @@
     "cuisine": "Deli & Sandwiches",
     "eatLikeUs": "The committee signature recommendation for Katsouris Deli: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity.",
     "address": "113 Deansgate, Manchester M3 2BQ",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%202BQ",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481010%2C-2.247578",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481010%2C-2.247578"
   },
   {
     "id": "koreana",
     "name": "Koreana",
     "slug": "koreana",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.48143,
     "lng": -2.248846,
     "distanceMiles": 0.14,
@@ -1273,18 +1020,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Koreana: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity.",
     "address": "40A King Street West, Manchester M3 2WY",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%202WY",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481430%2C-2.248846",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481430%2C-2.248846"
   },
   {
     "id": "panchos-burritos",
     "name": "Panchos Burritos",
     "slug": "panchos-burritos",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.483741,
     "lng": -2.239155,
     "distanceMiles": 0.56,
@@ -1293,18 +1036,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Panchos Burritos: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Market stall; postcode centroid represents whole market, not FC1 stall.",
     "address": "Unit FC1, Arndale Market, 49 High Street, Manchester M4 3AH",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%203AH",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483741%2C-2.239155",
-    "notes": "Market stall; postcode centroid represents whole market, not FC1 stall."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483741%2C-2.239155"
   },
   {
     "id": "pret-a-manger",
     "name": "Pret A Manger",
     "slug": "pret-a-manger",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.479607,
     "lng": -2.252211,
     "distanceMiles": 0.05,
@@ -1313,18 +1052,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Pret A Manger: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "PROVISIONAL BRANCH: 4 Hardman Square, Spinningfields, chosen as a plausible central location; the Lunch Club did not specify which Pret. This is the M3 3EB postcode centroid, not a verified shop doorway; please confirm branch.",
     "address": "Pret A Manger, Unit R2, 4 Hardman Square, Spinningfields, Manchester M3 3EB",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%203EB",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.479607%2C-2.252211",
-    "notes": "PROVISIONAL BRANCH: 4 Hardman Square, Spinningfields, chosen as a plausible central location; the Lunch Club did not specify which Pret. This is the M3 3EB postcode centroid, not a verified shop doorway; please confirm branch."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.479607%2C-2.252211"
   },
   {
     "id": "salvis",
     "name": "Salvi’s",
     "slug": "salvis",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.485046,
     "lng": -2.243005,
     "distanceMiles": 0.49,
@@ -1333,18 +1068,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Salvi’s: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Provisional choice: Corn Exchange. Multiple Salvi’s branches, and some have closed; confirm visited branch.",
     "address": "Salvi’s Mozzarella Bar, Corn Exchange, Manchester M4 3TR",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%203TR",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.485046%2C-2.243005",
-    "notes": "Provisional choice: Corn Exchange. Multiple Salvi’s branches, and some have closed; confirm visited branch."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.485046%2C-2.243005"
   },
   {
     "id": "smoke-pepper",
     "name": "Smoke & Pepper",
     "slug": "smoke-pepper",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.482658,
     "lng": -2.237039,
     "distanceMiles": 0.61,
@@ -1353,18 +1084,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Smoke & Pepper: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity.",
     "address": "Transmission House, 11 Tib Street, Manchester M4 1AF",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201AF",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482658%2C-2.237039",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482658%2C-2.237039"
   },
   {
     "id": "tangerine",
     "name": "Tangerine",
     "slug": "tangerine",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.48266,
     "lng": -2.253721,
     "distanceMiles": 0.22,
@@ -1373,18 +1100,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Tangerine: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity.",
     "address": "Arch 60-61, 13-17 New Bailey Street, Salford M3 5FS",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%205FS",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482660%2C-2.253721",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482660%2C-2.253721"
   },
   {
     "id": "wagamama",
     "name": "Wagamama",
     "slug": "wagamama",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.478432,
     "lng": -2.242365,
     "distanceMiles": 0.37,
@@ -1393,18 +1116,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Wagamama: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Provisional choice: St Peter’s Square; multiple branches including Printworks. Postcode is recorded as terminated on doogal; use as approximate only.",
     "address": "2 St Peters Square, Manchester M2 3LQ",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M2%203LQ",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478432%2C-2.242365",
-    "notes": "Provisional choice: St Peter’s Square; multiple branches including Printworks. Postcode is recorded as terminated on doogal; use as approximate only."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478432%2C-2.242365"
   },
   {
     "id": "pho-cue",
     "name": "Pho Cue",
     "slug": "pho-cue",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.47809,
     "lng": -2.24037,
     "distanceMiles": 0.46,
@@ -1413,18 +1132,14 @@
     "cuisine": "Asian Noodles & Soups",
     "eatLikeUs": "The committee signature recommendation for Pho Cue: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Rejected due to being closed during inspections (**)",
     "address": "52A Faulkner Street, Manchester M1 4FH",
-    "evidenceUrl": "https://findit.city/en/uk/manchester/places/restaurants/pho-cue-2692887698",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478090%2C-2.240370",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478090%2C-2.240370"
   },
   {
     "id": "dunkin-burgers",
     "name": "Dunkin' Burgers",
     "slug": "dunkin-burgers",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.483741,
     "lng": -2.239155,
     "distanceMiles": 0.56,
@@ -1433,18 +1148,14 @@
     "cuisine": "Burgers",
     "eatLikeUs": "The committee signature recommendation for Dunkin' Burgers: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Verified FSA listing identifies Unit F8 in Manchester Arndale Market. Postcode coordinates locate the market, not an individual market stall.",
     "address": "Unit F8, Manchester Arndale Market, 49 High Street, Manchester M4 3AH",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%203AH",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483741%2C-2.239155",
-    "notes": "Verified FSA listing identifies Unit F8 in Manchester Arndale Market. Postcode coordinates locate the market, not an individual market stall."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483741%2C-2.239155"
   },
   {
     "id": "maki-ramen",
     "name": "Maki & Ramen",
     "slug": "maki-ramen",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.484221,
     "lng": -2.237515,
     "distanceMiles": 0.63,
@@ -1453,18 +1164,14 @@
     "cuisine": "Asian Noodles & Soups",
     "eatLikeUs": "The committee signature recommendation for Maki & Ramen: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Provisional choice: Northern Quarter; alternative 11 York Street (M2 2AW).",
     "address": "Northern Quarter, The Landmark, 78-88 High Street, Manchester M4 1ES",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M4%201ES",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484221%2C-2.237515",
-    "notes": "Provisional choice: Northern Quarter; alternative 11 York Street (M2 2AW)."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484221%2C-2.237515"
   },
   {
     "id": "ancoats-deli",
     "name": "Ancoats Deli",
     "slug": "ancoats-deli",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.48392,
     "lng": -2.22759,
     "distanceMiles": 1,
@@ -1473,18 +1180,14 @@
     "cuisine": "Deli & Sandwiches",
     "eatLikeUs": "The committee signature recommendation for Ancoats Deli: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Condemned by solemn decree of the Chairs. Unacceptable variance in standards, protracted queueing, or severe compromise of lunchtime dignity.",
     "address": "6 Murray Street, Ancoats, Manchester M4 6HS",
-    "evidenceUrl": "https://mapcarta.com/N12529880942",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483920%2C-2.227590",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.483920%2C-2.227590"
   },
   {
     "id": "sqew-shawarma-bar",
     "name": "Sqew Shawarma Bar",
     "slug": "sqew-shawarma-bar",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.482225,
     "lng": -2.246756,
     "distanceMiles": 0.24,
@@ -1493,18 +1196,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Sqew Shawarma Bar: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Rejected due to an unacceptable drop in consistent quality (*)",
     "address": "75 Deansgate, Manchester M3 2BW",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%202BW",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482225%2C-2.246756",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.482225%2C-2.246756"
   },
   {
     "id": "street-food-kitchen-by-eastzeast",
     "name": "Street Food Kitchen by eastZeast",
     "slug": "street-food-kitchen-by-eastzeast",
     "status": "Rejected",
-    "rank": null,
     "lat": 53.484216,
     "lng": -2.248697,
     "distanceMiles": 0.32,
@@ -1513,18 +1212,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Street Food Kitchen by eastZeast: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2025-11-20",
-    "rejectionReason": "Rejected due to being closed during inspections (**)",
     "address": "30 Blackfriars Street, Salford M3 5BQ",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%205BQ",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484216%2C-2.248697",
-    "notes": "Historical street food operation adjacent to eastZeast restaurant; postcode is approximate."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484216%2C-2.248697"
   },
   {
     "id": "blues-kitchen",
     "name": "Blues Kitchen",
     "slug": "blues-kitchen",
     "status": "If We Must",
-    "rank": null,
     "lat": 53.478271,
     "lng": -2.250832,
     "distanceMiles": 0.11,
@@ -1533,18 +1228,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Blues Kitchen: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
     "address": "13 Quay Street, Manchester M3 3HN",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%203HN",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478271%2C-2.250832",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478271%2C-2.250832"
   },
   {
     "id": "bundobust",
     "name": "Bundobust",
     "slug": "bundobust",
     "status": "If We Must",
-    "rank": null,
     "lat": 53.47543,
     "lng": -2.2416,
     "distanceMiles": 0.49,
@@ -1553,18 +1244,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Bundobust: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
     "address": "St James Building, 61–69 Oxford Street, M1 6EQ",
-    "evidenceUrl": "https://findit.city/en/uk/manchester/places/restaurants/bundobust-9895946394",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.475430%2C-2.241600",
-    "notes": "PROVISIONAL BRANCH: Oxford Street brewery; Bundobust also operates a Piccadilly site. Confirm which branch the Lunch Club visited."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.475430%2C-2.241600"
   },
   {
     "id": "mr-sus-noodles",
     "name": "Mr Su’s Noodles",
     "slug": "mr-sus-noodles",
     "status": "If We Must",
-    "rank": null,
     "lat": 53.473111,
     "lng": -2.237905,
     "distanceMiles": 0.71,
@@ -1573,18 +1260,14 @@
     "cuisine": "Asian Noodles & Soups",
     "eatLikeUs": "The committee signature recommendation for Mr Su’s Noodles: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
     "address": "Vita Circle Square, 7 Nobel Way, Manchester M1 7FU",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%207FU",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.473111%2C-2.237905",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.473111%2C-2.237905"
   },
   {
     "id": "rudys",
     "name": "Rudy’s",
     "slug": "rudys",
     "status": "If We Must",
-    "rank": null,
     "lat": 53.4842,
     "lng": -2.2294,
     "distanceMiles": 0.94,
@@ -1593,18 +1276,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Rudy’s: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
     "address": "9 Cotton Street, Ancoats, M4 5BF",
-    "evidenceUrl": "https://aroundus.com/p/172172814-rudy-s-pizza",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484200%2C-2.229400",
-    "notes": "PROVISIONAL BRANCH: Ancoats (9 Cotton Street); Rudy’s has other Manchester locations. Confirm the particular venue visited."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.484200%2C-2.229400"
   },
   {
     "id": "suki-suki-street-food",
     "name": "Suki Suki Street Food",
     "slug": "suki-suki-street-food",
     "status": "If We Must",
-    "rank": null,
     "lat": 53.477374,
     "lng": -2.249832,
     "distanceMiles": 0.18,
@@ -1613,18 +1292,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Suki Suki Street Food: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
     "address": "227 Deansgate, Manchester M3 4EN",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%204EN",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.477374%2C-2.249832",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.477374%2C-2.249832"
   },
   {
     "id": "oast-house",
     "name": "Oast House",
     "slug": "oast-house",
     "status": "If We Must",
-    "rank": null,
     "lat": 53.48068,
     "lng": -2.25112,
     "distanceMiles": 0.06,
@@ -1633,18 +1308,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Oast House: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
     "address": "The Oast House, Crown Square, Spinningfields, M3 3AY",
-    "evidenceUrl": "https://ma.to/event/oast-house-live-25-apr-2026",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480680%2C-2.251120",
-    "notes": "Spinningfields venue location."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.480680%2C-2.251120"
   },
   {
     "id": "roadies",
     "name": "Roadies",
     "slug": "roadies",
     "status": "If We Must",
-    "rank": null,
     "lat": 53.476948,
     "lng": -2.238062,
     "distanceMiles": 0.57,
@@ -1653,18 +1324,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Roadies: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
     "address": "Roadie's, 41 Bloom Street, Manchester M1 3LY",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%203LY",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.476948%2C-2.238062",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.476948%2C-2.238062"
   },
   {
     "id": "trading-route",
     "name": "Trading Route",
     "slug": "trading-route",
     "status": "If We Must",
-    "rank": null,
     "lat": 53.478835,
     "lng": -2.255989,
     "distanceMiles": 0.21,
@@ -1673,18 +1340,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Trading Route: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
     "address": "1 Goods Yard Street, Manchester M3 3BG",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%203BG",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478835%2C-2.255989",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.478835%2C-2.255989"
   },
   {
     "id": "zaap-thai-street-food",
     "name": "Zaap Thai Street Food",
     "slug": "zaap-thai-street-food",
     "status": "If We Must",
-    "rank": null,
     "lat": 53.479995,
     "lng": -2.24703,
     "distanceMiles": 0.17,
@@ -1693,18 +1356,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Zaap Thai Street Food: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
     "address": "Unit 3, The Lincoln, 9 Brazennose Street, Manchester M2 5AD",
-    "evidenceUrl": "https://zaapthai.co.uk/locations/manchester/",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.479995%2C-2.247030",
-    "notes": ""
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.479995%2C-2.247030"
   },
   {
     "id": "doux-chaton",
     "name": "Doux Chaton",
     "slug": "doux-chaton",
     "status": "If We Must",
-    "rank": null,
     "lat": 53.476357,
     "lng": -2.250474,
     "distanceMiles": 0.24,
@@ -1713,18 +1372,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Doux Chaton: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": "Tolerated only during torrential rain, catastrophic client delays, or unanimous committee lethargy.",
     "address": "265-267 Deansgate, Manchester M3 4EW",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M3%204EW",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.476357%2C-2.250474",
-    "notes": "The Great Northern website reports the Manchester site is now closed."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.476357%2C-2.250474"
   },
   {
     "id": "almost-famous",
     "name": "Almost Famous",
     "slug": "almost-famous",
     "status": "Gone But Not Forgotten",
-    "rank": null,
     "lat": 53.47755,
     "lng": -2.24881,
     "distanceMiles": 0.18,
@@ -1733,18 +1388,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Almost Famous: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "Former Deansgate/Great Northern site, 235 Deansgate, Manchester M3 4FN",
-    "evidenceUrl": "https://mapcarta.com/N2775492848",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.477550%2C-2.248810",
-    "notes": "Mapped historical Great Northern branch. Northern Quarter branch at 49-51 Edge Street M4 1HW is operating again in 2026. | Historical Deansgate/Great Northern POI"
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.477550%2C-2.248810"
   },
   {
     "id": "the-tattooed-goat",
     "name": "The Tattooed Goat",
     "slug": "the-tattooed-goat",
     "status": "Gone But Not Forgotten",
-    "rank": null,
     "lat": 53.48316,
     "lng": -2.23796,
     "distanceMiles": 0.62,
@@ -1753,18 +1404,14 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for The Tattooed Goat: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "",
-    "evidenceUrl": "",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=The%20Tattooed%20Goat%20Manchester",
-    "notes": "No traceable business location or postcode could be matched to the exact name in Manchester. It would be misleading to assign a coordinate. A former address or approximate area is needed."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=The%20Tattooed%20Goat%20Manchester"
   },
   {
     "id": "dougs-burgers",
     "name": "Doug’s Burger’s",
     "slug": "dougs-burgers",
     "status": "Gone But Not Forgotten",
-    "rank": null,
     "lat": 53.472875,
     "lng": -2.238959,
     "distanceMiles": 0.69,
@@ -1773,18 +1420,14 @@
     "cuisine": "Burgers",
     "eatLikeUs": "The committee signature recommendation for Doug’s Burger’s: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "Former Doug's Hamburgers, No.1 Circle Square, 3 Symphony Park, Manchester M1 7FS",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%207FS",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.472875%2C-2.238959",
-    "notes": "Name as supplied; historical location unconfirmed. | Former unit subsequently occupied by Gooey; coordinates are Circle Square postcode area."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.472875%2C-2.238959"
   },
   {
     "id": "bearded-feeder",
     "name": "Bearded Feeder",
     "slug": "bearded-feeder",
     "status": "Gone But Not Forgotten",
-    "rank": null,
     "lat": 53.481821,
     "lng": -2.237291,
     "distanceMiles": 0.58,
@@ -1793,10 +1436,7 @@
     "cuisine": "Casual Dining",
     "eatLikeUs": "The committee signature recommendation for Bearded Feeder: order the daily house specialty with extra pickles, tap water, and prompt departure before 13:10.",
     "lastInspectionDate": "2026-01-10",
-    "rejectionReason": null,
     "address": "Former Piccadilly Gardens Food Markets, Manchester M1 1LY",
-    "evidenceUrl": "https://www.doogal.co.uk/ShowMap?postcode=M1%201LY",
-    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481821%2C-2.237291",
-    "notes": "Former outdoor street-food stall; postcode centroid, not permanent stall position."
+    "mapSearchLink": "https://www.google.com/maps/search/?api=1&query=53.481821%2C-2.237291"
   }
 ]

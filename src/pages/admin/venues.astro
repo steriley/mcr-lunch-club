@@ -4,14 +4,27 @@ import AdminLayout from '@/layouts/AdminLayout.astro';
 import VenueTable from '@/components/islands/VenueTable.vue';
 import { venues } from '@/db/schema';
 import { db } from '@/lib/db';
+import { hiddenReason } from '@/lib/visibility';
 
 export const prerender = false;
 
 const rows = await db
-  .select({ id: venues.id, name: venues.name, slug: venues.slug, tier: venues.tier, published: venues.published, updatedAt: venues.updatedAt })
+  .select({
+    id: venues.id,
+    name: venues.name,
+    slug: venues.slug,
+    tier: venues.tier,
+    latitude: venues.latitude,
+    longitude: venues.longitude,
+    updatedAt: venues.updatedAt,
+  })
   .from(venues)
   .orderBy(asc(venues.name));
-const tableRows = rows.map((venue) => ({ ...venue, updatedAt: venue.updatedAt.toISOString() }));
+const tableRows = rows.map(({ latitude, longitude, ...venue }) => ({
+  ...venue,
+  hiddenReason: hiddenReason({ tier: venue.tier, latitude, longitude }),
+  updatedAt: venue.updatedAt.toISOString(),
+}));
 ---
 
 <AdminLayout title="Venues">

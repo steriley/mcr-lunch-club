@@ -29,6 +29,13 @@
       "when": 1792500346748,
       "tag": "0003_venue_suggestions",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792524705090,
+      "tag": "0004_venue_cleanup",
+      "breakpoints": true
     }
   ]
 }

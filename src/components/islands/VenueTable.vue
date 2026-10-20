@@ -8,19 +8,25 @@ interface VenueRow {
   id: string;
   name: string;
   slug: string;
-  tier: string;
-  published: boolean;
+  tier: string | null;
+  /** From hiddenReason() in src/lib/visibility.ts; null when the venue is public. */
+  hiddenReason: 'no_tier' | 'needs_location' | null;
   updatedAt: string;
 }
 
-type SortKey = 'name' | 'tier' | 'published' | 'updatedAt';
+type SortKey = 'name' | 'tier' | 'status' | 'updatedAt';
+
+const HIDDEN_LABELS: Record<NonNullable<VenueRow['hiddenReason']>, string> = {
+  no_tier: 'Hidden: no approved tier',
+  needs_location: 'Hidden: needs location',
+};
 
 const props = defineProps<{ venues: VenueRow[] }>();
 
 const rows = ref<VenueRow[]>(props.venues.map((venue) => ({ ...venue })));
 const query = ref('');
 const tierFilter = ref('');
-const statusFilter = ref<'' | 'published' | 'draft'>('');
+const statusFilter = ref<'' | 'public' | 'hidden'>('');
 const sortKey = ref<SortKey>('name');
 const sortAscending = ref(true);
 const busy = ref<Record<string, boolean>>({});
@@ -35,8 +41,8 @@ const visibleRows = computed(() => {
   const filtered = rows.value.filter((venue) => {
     if (needle && !`${venue.name} ${venue.slug}`.toLowerCase().includes(needle)) return false;
     if (tierFilter.value && venue.tier !== tierFilter.value) return false;
-    if (statusFilter.value === 'published' && !venue.published) return false;
-    if (statusFilter.value === 'draft' && venue.published) return false;
+    if (statusFilter.value === 'public' && venue.hiddenReason) return false;
+    if (statusFilter.value === 'hidden' && !venue.hiddenReason) return false;
     return true;
   });
 
@@ -44,8 +50,8 @@ const visibleRows = computed(() => {
   return filtered.sort((a, b) => {
     let result = 0;
     if (sortKey.value === 'name') result = a.name.localeCompare(b.name, 'en-GB');
-    if (sortKey.value === 'tier') result = (tierOrder.get(a.tier) ?? 99) - (tierOrder.get(b.tier) ?? 99);
-    if (sortKey.value === 'published') result = Number(b.published) - Number(a.published);
+    if (sortKey.value === 'tier') result = (tierOrder.get(a.tier ?? '') ?? 99) - (tierOrder.get(b.tier ?? '') ?? 99);
+    if (sortKey.value === 'status') result = (a.hiddenReason ?? '').localeCompare(b.hiddenReason ?? '');
     if (sortKey.value === 'updatedAt') result = a.updatedAt.localeCompare(b.updatedAt);
     return (result || a.name.localeCompare(b.name, 'en-GB')) * direction;
   });
@@ -72,27 +78,6 @@ function sortIndicator(key: SortKey) {
 
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Europe/London' });
-}
-
-async function togglePublished(venue: VenueRow) {
-  message.value = '';
-  errorMessage.value = '';
-  busy.value[venue.id] = true;
-  try {
-    const response = await fetch(`/api/admin/venues/${venue.id}/${venue.published ? 'unpublish' : 'publish'}`, { method: 'POST' });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      errorMessage.value = result.error ?? 'Could not update the publish state.';
-      return;
-    }
-    venue.published = result.venue.published;
-    venue.updatedAt = result.venue.updatedAt;
-    message.value = `${venue.name} is now ${venue.published ? 'published' : 'a draft'}.`;
-  } catch {
-    errorMessage.value = 'Could not update the publish state.';
-  } finally {
-    busy.value[venue.id] = false;
-  }
 }
 
 async function performDelete() {
@@ -125,7 +110,7 @@ onMounted(() => {
   query.value = params.get('query') ?? '';
   tierFilter.value = isTierValue(params.get('tier')) ? params.get('tier')! : '';
   const status = params.get('status');
-  statusFilter.value = status === 'published' || status === 'draft' ? status : '';
+  statusFilter.value = status === 'public' || status === 'hidden' ? status : '';
   if (params.get('deleted') === '1') message.value = 'Venue deleted.';
 });
 
@@ -159,8 +144,8 @@ const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2
         <span class="mb-2 block">Status</span>
         <select v-model="statusFilter" :class="inputClass">
           <option value="">All</option>
-          <option value="published">Published</option>
-          <option value="draft">Drafts</option>
+          <option value="public">Public</option>
+          <option value="hidden">Hidden</option>
         </select>
       </label>
     </div>
@@ -177,7 +162,7 @@ const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2
         <table class="min-w-full divide-y divide-[#d9cfb8] text-left text-sm text-[#2d2d2d]">
           <thead class="bg-[#f3ecdb] text-[#1a1e24]">
             <tr>
-              <th v-for="column in ([['name', 'Venue'], ['tier', 'Tier'], ['published', 'Status'], ['updatedAt', 'Updated']] as const)" :key="column[0]" scope="col" class="px-4 py-3 font-semibold" :aria-sort="ariaSort(column[0])">
+              <th v-for="column in ([['name', 'Venue'], ['tier', 'Tier'], ['status', 'Status'], ['updatedAt', 'Updated']] as const)" :key="column[0]" scope="col" class="px-4 py-3 font-semibold" :aria-sort="ariaSort(column[0])">
                 <button type="button" class="inline-flex items-center gap-1 rounded hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2F6B]" @click="sortBy(column[0])">
                   {{ column[1] }} <span aria-hidden="true" class="text-xs text-[#8a5100]">{{ sortIndicator(column[0]) }}</span>
                 </button>
@@ -196,17 +181,14 @@ const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2
               </td>
               <td class="px-4 py-3"><TierBadge :tier="venue.tier" /></td>
               <td class="px-4 py-3">
-                <span :class="['inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]', venue.published ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-200 text-stone-700']">
-                  {{ venue.published ? 'Published' : 'Draft' }}
+                <span :class="['inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]', venue.hiddenReason ? 'bg-stone-200 text-stone-700' : 'bg-emerald-100 text-emerald-800']">
+                  {{ venue.hiddenReason ? HIDDEN_LABELS[venue.hiddenReason] : 'Public' }}
                 </span>
               </td>
               <td class="whitespace-nowrap px-4 py-3 text-[#3d3d3d]">{{ formatDate(venue.updatedAt) }}</td>
               <td class="px-4 py-3">
                 <div class="flex justify-end gap-2">
                   <a :href="`/admin/venues/${venue.id}`" class="rounded-lg border border-[#d9cfb8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">Edit</a>
-                  <button type="button" class="whitespace-nowrap rounded-lg border border-[#d9cfb8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5] disabled:opacity-60" :disabled="busy[venue.id]" @click="togglePublished(venue)">
-                    {{ venue.published ? 'Unpublish' : 'Publish' }}
-                  </button>
                   <button type="button" class="rounded-lg bg-[#B92B27] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60" :disabled="busy[venue.id]" @click="pendingDelete = venue">
                     Delete
                   </button>

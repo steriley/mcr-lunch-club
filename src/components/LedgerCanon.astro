@@ -7,7 +7,7 @@ interface Props {
   venues: Venue[];
 }
 
-// Published venues for the ledger store; must come before any island that reads it.
+// Public venues for the ledger store; must come before any island that reads it.
 const { venues } = Astro.props;
 ---
 

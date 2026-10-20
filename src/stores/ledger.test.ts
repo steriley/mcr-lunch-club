@@ -10,7 +10,6 @@ function venue(overrides: Partial<Venue> = {}): Venue {
     name: 'Chip Shop',
     slug: 'chip-shop',
     status: 'Under Consideration',
-    rank: null,
     lat: 53.48,
     lng: -2.25,
     distanceMiles: 0.3,

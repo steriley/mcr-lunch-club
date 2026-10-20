@@ -178,13 +178,7 @@ export function rankVenues({
     if (Math.abs(diff) > 0.01) {
       return diff;
     }
-    // Tie-break 1: rank (lower rank number first)
-    const rankA = a.venue.rank ?? Number.MAX_SAFE_INTEGER;
-    const rankB = b.venue.rank ?? Number.MAX_SAFE_INTEGER;
-    if (rankA !== rankB) {
-      return rankA - rankB;
-    }
-    // Tie-break 2: name alphabetical
+    // Tie-break: name alphabetical
     return a.venue.name.localeCompare(b.venue.name);
   });
 

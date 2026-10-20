@@ -3,9 +3,9 @@ import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   PUBLIC_CACHE_CONTROL,
+  getPublicVenue,
+  getPublicVenues,
   getPublishedIncidents,
-  getPublishedVenue,
-  getPublishedVenues,
   formatIncidentDate,
   serializeForScript,
   setPublicCacheHeaders,
@@ -13,11 +13,12 @@ import {
   toPublicVenue,
 } from './public-data';
 import type { BriberyRow, VenueRow } from '@/db/schema';
-import { restoreStubs, stubDb } from '../test/route-helpers';
+import { publicVenueCondition } from './visibility';
+import { renderSql, restoreStubs, stubDb } from '../test/route-helpers';
 
 afterEach(restoreStubs);
 
-function venueRow(overrides: Partial<VenueRow> = {}): VenueRow {
+function venueRow(overrides: Partial<VenueRow> = {}): VenueRow & { tier: NonNullable<VenueRow['tier']> } {
   return {
     id: 'uuid',
     slug: 'chip-shop',
@@ -26,27 +27,21 @@ function venueRow(overrides: Partial<VenueRow> = {}): VenueRow {
     address: '1 High St',
     latitude: '53.480000',
     longitude: '-2.250000',
-    summary: 'Lovely',
-    verdict: null,
     pullQuote: null,
     lunchSpecial: 'Chips',
     websiteUrl: 'https://chips.example',
     imageUrl: null,
-    rank: 2,
     cost: '££',
     cuisine: 'British',
     distanceMiles: '0.40',
     walkingTimeMin: 9,
     lastInspectionDate: '2026-09-01',
-    rejectionReason: null,
     mapSearchLink: 'https://maps.example/chips',
-    published: true,
-    sortOrder: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
     updatedBy: null,
     ...overrides,
-  } as VenueRow;
+  } as VenueRow & { tier: NonNullable<VenueRow['tier']> };
 }
 
 function briberyRow(overrides: Partial<BriberyRow> = {}): BriberyRow {
@@ -80,9 +75,10 @@ describe('toPublicVenue', () => {
     assert.equal(venue.distanceMiles, 0.4);
     assert.equal(venue.walkingTimeMin, 9);
     assert.equal(venue.eatLikeUs, 'Chips');
-    assert.equal(venue.evidenceUrl, 'https://chips.example');
     assert.equal(venue.mapSearchLink, 'https://maps.example/chips');
-    assert.equal(venue.notes, 'Lovely');
+    for (const removed of ['rank', 'notes', 'evidenceUrl', 'rejectionReason', 'verdict']) {
+      assert.ok(!(removed in venue), removed);
+    }
   });
 
   it('fills defaults for sparse rows without coordinates', () => {
@@ -97,7 +93,6 @@ describe('toPublicVenue', () => {
         lunchSpecial: null,
         address: null,
         websiteUrl: null,
-        summary: null,
         lastInspectionDate: null,
         tier: 'under_consideration',
       })
@@ -193,24 +188,36 @@ describe('setPublicCacheHeaders', () => {
   });
 });
 
-describe('published queries', () => {
-  it('getPublishedVenues maps every returned row', async () => {
-    stubDb('select', [venueRow(), venueRow({ slug: 'other', name: 'Other', tier: 'rejected' })]);
-    const venues = await getPublishedVenues();
-    assert.deepEqual(venues.map((venue) => venue.slug), ['chip-shop', 'other']);
-    assert.equal(venues[1].status, 'Rejected');
+describe('public venue queries', () => {
+  it('getPublicVenues filters with the shared visibility rule', async () => {
+    const calls = stubDb('select', []);
+    await getPublicVenues();
+    const { sql } = renderSql(calls.find((call) => call.method === 'where')!.args[0]);
+    assert.equal(sql, renderSql(publicVenueCondition()).sql);
   });
 
-  it('getPublishedVenue returns the detail fields, or null when unpublished or missing', async () => {
-    stubDb('select', [venueRow({ pullQuote: 'Gold', verdict: 'Fine', imageUrl: 'https://img.example/a.jpg' })]);
-    const venue = await getPublishedVenue('chip-shop');
+  it('getPublicVenues groups by tier and applies each tier\'s order', async () => {
+    stubDb('select', [
+      venueRow({ slug: 'z-reject', name: 'Zed', tier: 'rejected', walkingTimeMin: 1 }),
+      venueRow({ slug: 'far', name: 'Far', walkingTimeMin: 20 }),
+      venueRow({ slug: 'a-reject', name: 'Abel', tier: 'rejected', walkingTimeMin: 30 }),
+      venueRow({ slug: 'near', name: 'Near', walkingTimeMin: 5 }),
+    ]);
+    const venues = await getPublicVenues();
+    assert.deepEqual(venues.map((venue) => venue.slug), ['near', 'far', 'a-reject', 'z-reject']);
+    assert.equal(venues[2].status, 'Rejected');
+  });
+
+  it('getPublicVenue checks visibility and returns the detail fields, or null when hidden or missing', async () => {
+    const calls = stubDb('select', [venueRow({ pullQuote: 'Gold', imageUrl: 'https://img.example/a.jpg' })]);
+    const venue = await getPublicVenue('chip-shop');
+    assert.match(renderSql(calls.find((call) => call.method === 'where')!.args[0]).sql, /"tier" is not null/);
     assert.equal(venue?.pullQuote, 'Gold');
-    assert.equal(venue?.verdict, 'Fine');
     assert.equal(venue?.imageUrl, 'https://img.example/a.jpg');
     assert.equal(venue?.slug, 'chip-shop');
 
     stubDb('select', []);
-    assert.equal(await getPublishedVenue('missing'), null);
+    assert.equal(await getPublicVenue('missing'), null);
   });
 
   it('getPublishedIncidents maps every returned record', async () => {

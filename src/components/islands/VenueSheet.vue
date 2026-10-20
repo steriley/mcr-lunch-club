@@ -30,9 +30,6 @@
               <span class="text-xs uppercase tracking-widest font-bold font-serif-header">
                 {{ venue.status }}
               </span>
-              <span v-if="venue.rank && venue.status === 'Approved'" class="bg-[#c59b27] text-[#1a1e24] px-1.5 py-0.2 rounded text-xs font-mono font-bold">
-                Rank #{{ venue.rank }}
-              </span>
             </div>
             <p class="text-xs text-stone-200 italic font-serif-header">
               “{{ statusBannerStyle.quote }}”
@@ -113,18 +110,6 @@
           <p class="text-sm text-stone-900 font-serif-header italic mt-1.5 leading-relaxed">
             “{{ venue.eatLikeUs }}”
           </p>
-        </div>
-
-        <!-- Rejection / Caution Note if applicable -->
-        <div v-if="venue.rejectionReason" class="bg-rose-50 border border-rose-200 p-3 rounded-lg text-xs text-rose-900">
-          <strong class="font-serif-header block text-rose-950">⚠️ Decreed Deficiency / Caution:</strong>
-          <p class="mt-0.5 italic">{{ venue.rejectionReason }}</p>
-        </div>
-
-        <!-- Notes / Field Observations -->
-        <div v-if="venue.notes" class="text-xs text-stone-700 bg-stone-50 p-3 rounded-md border border-stone-200">
-          <strong class="font-serif-header text-stone-900">Chairs’ Field Observations:</strong>
-          <p class="mt-1 leading-normal">{{ venue.notes }}</p>
         </div>
 
         <!-- Inspection History (Log) -->

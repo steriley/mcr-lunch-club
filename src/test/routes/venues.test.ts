@@ -3,8 +3,6 @@ import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { GET, POST } from '@/pages/api/admin/venues';
 import * as byId from '@/pages/api/admin/venues/[id]';
-import { POST as publish } from '@/pages/api/admin/venues/[id]/publish';
-import { POST as unpublish } from '@/pages/api/admin/venues/[id]/unpublish';
 import {
   ADMIN,
   VENUE_ID,
@@ -45,7 +43,7 @@ describe('GET /api/admin/venues', () => {
   it('lists serialised venues and applies filters', async () => {
     signInAs();
     const calls = stubDb('select', [row]);
-    const url = new URL('https://x.test/?query=100%25_chips&tier=Approved&status=published');
+    const url = new URL('https://x.test/?query=100%25_chips&tier=Approved&status=public');
     const response = await run(GET, { request: adminRequest('GET'), url });
     assert.equal(response.status, 200);
     const body = await response.json();
@@ -55,15 +53,15 @@ describe('GET /api/admin/venues', () => {
     const { sql, params } = renderSql(calls.find((call) => call.method === 'where')!.args[0]);
     assert.match(sql, /ilike/i);
     assert.match(sql, /"tier" = /);
-    assert.match(sql, /"published" = /);
-    assert.deepEqual(params, ['%100\\%\\_chips%', '%100\\%\\_chips%', 'approved', true]);
+    assert.match(sql, /"tier" is not null and "venues"\."latitude" is not null and "venues"\."longitude" is not null/);
+    assert.deepEqual(params, ['%100\\%\\_chips%', '%100\\%\\_chips%', 'approved']);
   });
 
-  it('supports the draft filter and no filters at all', async () => {
+  it('supports the hidden filter and no filters at all', async () => {
     signInAs();
     let calls = stubDb('select', []);
-    await run(GET, { request: adminRequest('GET'), url: new URL('https://x.test/?status=draft') });
-    assert.deepEqual(renderSql(calls.find((call) => call.method === 'where')!.args[0]).params, [false]);
+    await run(GET, { request: adminRequest('GET'), url: new URL('https://x.test/?status=hidden') });
+    assert.match(renderSql(calls.find((call) => call.method === 'where')!.args[0]).sql, /^not \(/);
 
     calls = stubDb('select', []);
     await run(GET, { request: adminRequest('GET'), url: new URL('https://x.test/') });
@@ -141,8 +139,6 @@ describe('/api/admin/venues/[id]', () => {
     assert.equal((await run(byId.GET, ctx('GET', 'nope'))).status, 404);
     assert.equal((await run(byId.PUT, ctx('PUT', 'nope', input))).status, 404);
     assert.equal((await run(byId.DELETE, ctx('DELETE', 'nope'))).status, 404);
-    assert.equal((await run(publish, ctx('POST', 'nope'))).status, 404);
-    assert.equal((await run(unpublish, ctx('POST', 'nope'))).status, 404);
   });
 
   it('requires an admin', async () => {
@@ -150,7 +146,6 @@ describe('/api/admin/venues/[id]', () => {
     assert.equal((await run(byId.GET, ctx('GET', VENUE_ID))).status, 401);
     assert.equal((await run(byId.PUT, ctx('PUT', VENUE_ID, input))).status, 401);
     assert.equal((await run(byId.DELETE, ctx('DELETE', VENUE_ID))).status, 401);
-    assert.equal((await run(publish, ctx('POST', VENUE_ID))).status, 401);
   });
 
   describe('GET', () => {
@@ -233,32 +228,6 @@ describe('/api/admin/venues/[id]', () => {
 
       stubDb('delete', new Error('db down'));
       assert.equal((await quietly(() => run(byId.DELETE, ctx('DELETE', VENUE_ID)))).status, 500);
-    });
-  });
-
-  describe('publish and unpublish', () => {
-    it('set the published flag and record a revision', async () => {
-      signInAs();
-      for (const [handler, flag] of [[publish, true], [unpublish, false]] as const) {
-        const updates = stubDb('update', [{ ...row, published: flag }]);
-        const inserts = stubDb('insert', []);
-        const response = await run(handler, ctx('POST', VENUE_ID));
-        assert.equal(response.status, 200);
-        const set = updates.find((call) => call.method === 'set')!.args[0] as any;
-        assert.equal(set.published, flag);
-        assert.equal(set.updatedBy, ADMIN.id);
-        assert.ok(inserts.some((call) => call.method === 'values'));
-      }
-    });
-
-    it('404 when the venue is missing and 500 on database errors', async () => {
-      signInAs();
-      stubDb('update', []);
-      assert.equal((await run(publish, ctx('POST', VENUE_ID))).status, 404);
-
-      stubDb('update', new Error('db down'));
-      assert.equal((await quietly(() => run(publish, ctx('POST', VENUE_ID)))).status, 500);
-      assert.equal((await quietly(() => run(unpublish, ctx('POST', VENUE_ID)))).status, 500);
     });
   });
 });

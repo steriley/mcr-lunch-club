@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
-import { getPublishedVenues, PUBLIC_CACHE_CONTROL } from '@/lib/public-data';
+import { getPublicVenues, PUBLIC_CACHE_CONTROL } from '@/lib/public-data';
 
 export const prerender = false;
 
 export const GET: APIRoute = async () => {
-  const venues = await getPublishedVenues();
+  const venues = await getPublicVenues();
   return new Response(JSON.stringify(venues, null, 2), {
     status: 200,
     headers: {

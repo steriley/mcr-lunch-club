@@ -1,11 +1,12 @@
 import type { APIRoute } from 'astro';
-import { and, asc, eq, ilike, or, type SQL } from 'drizzle-orm';
+import { and, asc, eq, ilike, not, or, type SQL } from 'drizzle-orm';
 import { venues } from '@/db/schema';
 import { isUniqueViolation, jsonError, jsonResponse, readJson, requireAdmin, serverError, validationError } from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { parseTier } from '@/lib/tiers';
 import { venueInputSchema } from '@/lib/venue-schema';
 import { isSlugTaken, recordVenueRevision, serializeVenue, venueValues } from '@/lib/venues';
+import { publicVenueCondition } from '@/lib/visibility';
 
 export const prerender = false;
 
@@ -24,8 +25,8 @@ export const GET: APIRoute = async ({ request, url }) => {
       conditions.push(or(ilike(venues.name, pattern), ilike(venues.slug, pattern))!);
     }
     if (tier) conditions.push(eq(venues.tier, tier));
-    if (status === 'published') conditions.push(eq(venues.published, true));
-    if (status === 'draft') conditions.push(eq(venues.published, false));
+    if (status === 'public') conditions.push(publicVenueCondition());
+    if (status === 'hidden') conditions.push(not(publicVenueCondition()));
 
     const rows = await db
       .select()

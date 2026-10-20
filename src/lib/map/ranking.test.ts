@@ -117,7 +117,6 @@ describe('rankVenues', () => {
     id: 'close',
     name: 'Close Venue',
     status: 'Approved',
-    rank: 2,
     lat: 53.4802,
     lng: -2.2510, // ~40m away
   });
@@ -126,7 +125,6 @@ describe('rankVenues', () => {
     id: 'medium',
     name: 'Medium Venue',
     status: 'Approved',
-    rank: 1,
     lat: 53.4830,
     lng: -2.2480, // ~400m away
   });
@@ -228,25 +226,22 @@ describe('rankVenues', () => {
     assert.equal(results[1].venue.id, 'medium');
   });
 
-  test('tie breaking: breaks identical distance ties by rank, then alphabetical name', () => {
+  test('tie breaking: breaks identical distance ties by alphabetical name', () => {
     const tie1 = createMockVenue({
       id: 'tie-1',
       name: 'Beta Diner',
-      rank: 5,
       lat: 53.4800,
       lng: -2.2500,
     });
     const tie2 = createMockVenue({
       id: 'tie-2',
       name: 'Alpha Diner',
-      rank: 2, // better rank
       lat: 53.4800,
       lng: -2.2500,
     });
     const tie3 = createMockVenue({
       id: 'tie-3',
       name: 'Gamma Diner',
-      rank: 5, // same rank as Beta, but 'Beta' < 'Gamma'
       lat: 53.4800,
       lng: -2.2500,
     });
@@ -256,9 +251,9 @@ describe('rankVenues', () => {
       venues: [tie3, tie1, tie2],
     });
 
-    assert.equal(results[0].venue.id, 'tie-2'); // lowest rank #2
-    assert.equal(results[1].venue.id, 'tie-1'); // rank #5, 'Beta Diner'
-    assert.equal(results[2].venue.id, 'tie-3'); // rank #5, 'Gamma Diner'
+    assert.equal(results[0].venue.id, 'tie-2'); // 'Alpha Diner'
+    assert.equal(results[1].venue.id, 'tie-1'); // 'Beta Diner'
+    assert.equal(results[2].venue.id, 'tie-3'); // 'Gamma Diner'
   });
 
   test('empty results: returns [] when input list has no valid matching venues', () => {

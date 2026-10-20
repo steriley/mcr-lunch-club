@@ -9,20 +9,21 @@ import WeatherCard from '@/components/WeatherCard.vue';
 import SuggestModal from '@/components/islands/SuggestModal.vue';
 import LedgerCanon from '@/components/LedgerCanon.astro';
 import { getPublicMapApiKey } from '@/lib/env';
-import { getPublishedVenues, setPublicCacheHeaders } from '@/lib/public-data';
+import { getPublicVenues, setPublicCacheHeaders } from '@/lib/public-data';
 import { seedLedgerVenues } from '@/stores/ledger';
 import inspectionsData from '@/data/inspections.json';
 
 export const prerender = false;
 
-const venuesData = await getPublishedVenues();
+const venuesData = await getPublicVenues();
 seedLedgerVenues(venuesData);
 setPublicCacheHeaders(Astro.response.headers);
 
 const publicMapApiKey = getPublicMapApiKey();
-const approvedVenues = venuesData
-  .filter((venue) => venue.status === 'Approved')
-  .sort((a, b) => (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER));
+// Already in public order: nearest first.
+const approvedVenues = venuesData.filter((venue) => venue.status === 'Approved');
+// Position by proximity, shown as the docket number.
+const proximityRank = (slug: string) => approvedVenues.findIndex((venue) => venue.slug === slug) + 1;
 const featuredVenue = approvedVenues.find((venue) => venue.slug === 'crazy-pedros');
 const docketVenues = approvedVenues
   .filter((venue) => venue.slug !== featuredVenue?.slug)
@@ -34,12 +35,12 @@ const satisfactoryAudits = featuredInspections.filter((inspection) => inspection
 const latestAudit = featuredInspections
   .slice()
   .sort((a, b) => b.date.localeCompare(a.date))[0];
-const featuredReview = latestAudit?.notes ?? featuredVenue?.notes ?? '';
+const featuredReview = latestAudit?.notes ?? '';
 const featuredAddress = featuredVenue?.address.split(',')[0] ?? '';
 const valueShortcut = approvedVenues
   .filter((venue) => venue.cost === '£')
   .sort((a, b) => a.walkingTimeMin - b.walkingTimeMin)[0];
-const swiftShortcut = approvedVenues.find((venue) => venue.notes.toLowerCase().includes('fast'));
+const swiftShortcut = approvedVenues.find((venue) => venue !== valueShortcut);
 const scrutinyShortcut = venuesData
   .filter((venue) => venue.status === 'Under Consideration')
   .sort((a, b) => a.walkingTimeMin - b.walkingTimeMin)[0];
@@ -59,7 +60,7 @@ const fieldShortcuts = [
   {
     label: 'Swift exit',
     venue: swiftShortcut,
-    detail: swiftShortcut?.notes ?? '',
+    detail: swiftShortcut ? `${swiftShortcut.cuisine} · ${swiftShortcut.walkingTimeMin} min walk` : '',
     variant: 'is-approved',
   },
   {
@@ -159,7 +160,7 @@ const fieldShortcuts = [
           <article class="docket-panel docket-feature">
             <div class="docket-feature-ribbon">
               <div class="docket-register">
-                <span>Ledger ref: #{String(featuredVenue.rank).padStart(2, '0')}-{featuredAddress.split(' ')[1]?.toUpperCase()}</span>
+                <span>Ledger ref: #{String(proximityRank(featuredVenue.slug)).padStart(2, '0')}-{featuredAddress.split(' ')[1]?.toUpperCase()}</span>
                 <span class="docket-ribbon-divider">/</span>
                 <span>Inspection confirmed</span>
               </div>
@@ -253,7 +254,7 @@ const fieldShortcuts = [
                   decoding="async"
                   onerror="this.onerror=null;this.src='/brand/logo.png';this.classList.add('is-placeholder')"
                 />
-                <span class="docket-rank">#{String(venue.rank).padStart(2, '0')}</span>
+                <span class="docket-rank">#{String(proximityRank(venue.slug)).padStart(2, '0')}</span>
               </span>
               <span class="docket-list-content">
                 <span class="docket-list-header">

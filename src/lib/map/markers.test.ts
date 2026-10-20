@@ -17,7 +17,6 @@ function venue(overrides: Partial<Venue> = {}): Venue {
     name: 'Chip Shop',
     slug: 'chip-shop',
     status: 'Approved',
-    rank: 3,
     lat: 53.48,
     lng: -2.25,
     distanceMiles: 0.3,
@@ -46,12 +45,8 @@ const L = {
 };
 
 describe('createVenueIconHtml', () => {
-  it('shows the rank for approved venues', () => {
-    assert.ok(createVenueIconHtml(venue()).includes('<span>#3</span>'));
-  });
-
-  it('falls back to the cost band when unranked or not approved', () => {
-    assert.ok(createVenueIconHtml(venue({ rank: null })).includes('<span>££</span>'));
+  it('shows the cost band on every pin', () => {
+    assert.ok(createVenueIconHtml(venue()).includes('<span>££</span>'));
     assert.ok(createVenueIconHtml(venue({ status: 'Rejected' })).includes('<span>££</span>'));
   });
 

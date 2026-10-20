@@ -1,22 +1,18 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import inspectionsData from '@/data/inspections.json';
-import { renderMarkdown } from '@/lib/markdown';
-import { getPublishedVenue, setPublicCacheHeaders } from '@/lib/public-data';
+import { getPublicVenue, setPublicCacheHeaders } from '@/lib/public-data';
 import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
 import { tierPathSegment, parseTier } from '@/lib/tiers';
 
 export const prerender = false;
 
-const venue = Astro.params.slug ? await getPublishedVenue(Astro.params.slug) : null;
+const venue = Astro.params.slug ? await getPublicVenue(Astro.params.slug) : null;
 if (!venue) {
   // An empty 404 makes Astro render src/pages/404.astro.
   return new Response(null, { status: 404, statusText: 'Not found' });
 }
 setPublicCacheHeaders(Astro.response.headers);
-
-// renderMarkdown escapes all HTML before formatting, so its output is safe for set:html.
-const verdictHtml = renderMarkdown(venue.verdict);
 
 // Filter inspections for this venue
 const venueInspections = inspectionsData.filter(
@@ -55,11 +51,6 @@ const statusInfo = TIER_BANNERS[venue.status];
               <span class="text-xs sm:text-sm font-bold uppercase tracking-widest text-[#f9f7f1]">
                 {venue.status}
               </span>
-              {venue.rank && venue.status === 'Approved' && (
-                <span class="bg-[#c59b27] text-[#1a1e24] px-2 py-0.5 rounded text-xs font-mono font-bold">
-                  Rank #{venue.rank} by Proximity
-                </span>
-              )}
             </div>
             <p class="text-xs sm:text-sm text-stone-200 italic mt-1 font-serif-header">
               “{statusInfo.quote}”
@@ -178,32 +169,6 @@ const statusInfo = TIER_BANNERS[venue.status];
             Deviation from the recommended order during official club outings requires advance written sanction from the presiding Chair.
           </p>
         </div>
-        )}
-
-        {verdictHtml && (
-          <section class="space-y-2">
-            <h2 class="text-xl font-bold text-[#1a1e24]">The Chairs’ Verdict</h2>
-            <div class="venue-verdict font-sans text-sm leading-relaxed text-stone-800" set:html={verdictHtml} />
-          </section>
-        )}
-
-        <!-- Rejection / Deficiency Rationale if applicable -->
-        {venue.rejectionReason && (
-          <div class="bg-rose-50 border-2 border-rose-300 p-5 rounded-xl text-xs text-rose-950 space-y-1">
-            <strong class="text-sm font-bold block text-rose-950 flex items-center gap-1.5">
-              <span>⚠️</span>
-              <span>Official Executive Decreed Censure:</span>
-            </strong>
-            <p class="italic font-sans text-sm mt-1">{venue.rejectionReason}</p>
-          </div>
-        )}
-
-        <!-- Field Observations & Archival Notes -->
-        {venue.notes && (
-          <div class="bg-stone-50 p-5 rounded-xl border border-stone-200 text-xs text-stone-800 space-y-1 font-sans">
-            <strong class="text-sm font-serif-header block text-[#1a1e24]">Archival Field Observations:</strong>
-            <p class="leading-relaxed text-stone-700">{venue.notes}</p>
-          </div>
         )}
 
         <!-- Formal Inspection History Ledger -->

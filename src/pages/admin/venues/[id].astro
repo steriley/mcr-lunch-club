@@ -8,6 +8,7 @@ import { uuidParam } from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { getBlobToken } from '@/lib/env';
 import { serializeVenue } from '@/lib/venues';
+import { hiddenReason } from '@/lib/visibility';
 
 export const prerender = false;
 
@@ -21,6 +22,11 @@ const [editor] = row.updatedBy
   ? await db.select({ name: user.name, email: user.email }).from(user).where(eq(user.id, row.updatedBy)).limit(1)
   : [];
 const venue = serializeVenue(row);
+const hidden = hiddenReason(row);
+const HIDDEN_TEXT = {
+  no_tier: 'Hidden from the public site: no approved tier yet.',
+  needs_location: 'Hidden from the public site: needs a location.',
+};
 ---
 
 <AdminLayout title={`Edit ${row.name}`}>
@@ -31,12 +37,16 @@ const venue = serializeVenue(row);
         <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">{row.name}</h1>
       </div>
       <div class="flex gap-2">
-        {row.published && (
+        {!hidden && (
           <a href={`/venues/${row.slug}`} class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">View public page</a>
         )}
         <a href={`/admin/venues/${row.id}/history`} class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">History</a>
       </div>
     </div>
+
+    {hidden && (
+      <p role="status" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{HIDDEN_TEXT[hidden]}</p>
+    )}
 
     <VenueForm
       client:load

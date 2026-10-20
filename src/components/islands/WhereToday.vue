@@ -122,7 +122,7 @@
         >
           <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2 mb-2">
             <span class="text-xs font-bold uppercase tracking-wider bg-[#8b1e22] text-white px-2 py-0.5 rounded font-mono">
-              The Oracle Decrees (Rank #{{ pickedVenue.rank }})
+              The Oracle Decrees
             </span>
             <span class="text-xs font-mono font-bold text-[#8b1e22]">{{ pickedVenue.cost }}</span>
           </div>

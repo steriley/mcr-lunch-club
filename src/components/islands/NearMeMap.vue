@@ -279,10 +279,10 @@
                 </div>
 
                 <p
-                  v-if="nearestVenue.venue.eatLikeUs || nearestVenue.venue.notes"
+                  v-if="nearestVenue.venue.eatLikeUs"
                   class="near-me-hero-verdict"
                 >
-                  “{{ nearestVenue.venue.eatLikeUs || nearestVenue.venue.notes }}”
+                  “{{ nearestVenue.venue.eatLikeUs }}”
                 </p>
 
                 <div class="near-me-hero-actions-row">
@@ -369,8 +369,8 @@
                     </div>
                   </div>
 
-                  <p v-if="rv.venue.eatLikeUs || rv.venue.notes" class="near-me-card-verdict">
-                    “{{ rv.venue.eatLikeUs || rv.venue.notes }}”
+                  <p v-if="rv.venue.eatLikeUs" class="near-me-card-verdict">
+                    “{{ rv.venue.eatLikeUs }}”
                   </p>
 
                   <div class="near-me-card-footer">

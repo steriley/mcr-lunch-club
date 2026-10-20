@@ -27,10 +27,10 @@ const editorNames = new Map(editors.map((editor) => [editor.id, editor.name || e
 const IGNORED = new Set(['id', 'createdAt', 'updatedAt', 'updatedBy']);
 const LABELS: Record<string, string> = {
   name: 'Name', slug: 'Slug', tier: 'Tier', address: 'Address', latitude: 'Latitude', longitude: 'Longitude',
-  summary: 'Summary', verdict: 'Verdict', pullQuote: 'Pull quote', lunchSpecial: 'Lunch special',
-  websiteUrl: 'Website', imageUrl: 'Image', cost: 'Cost', cuisine: 'Cuisine', rank: 'Rank',
+  pullQuote: 'Pull quote', lunchSpecial: 'Lunch special',
+  websiteUrl: 'Website', imageUrl: 'Image', cost: 'Cost', cuisine: 'Cuisine',
   distanceMiles: 'Distance', walkingTimeMin: 'Walking time', lastInspectionDate: 'Last inspection',
-  rejectionReason: 'Rejection reason', mapSearchLink: 'Map link', published: 'Published', sortOrder: 'Sort order',
+  mapSearchLink: 'Map link',
 };
 
 const format = (value: unknown) => {
@@ -64,7 +64,7 @@ const entries = revisions.map((revision, index) => {
       <div>
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Audit trail</p>
         <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">{venue.name}: history</h1>
-        <p class="mt-2 text-sm text-[#535353]">A snapshot is stored every time the venue is saved, published or unpublished (latest 100 shown).</p>
+        <p class="mt-2 text-sm text-[#535353]">A snapshot is stored every time the venue is saved (latest 100 shown).</p>
       </div>
       <a href={`/admin/venues/${venue.id}`} class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">Back to venue</a>
     </div>

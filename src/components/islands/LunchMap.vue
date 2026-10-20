@@ -134,10 +134,9 @@ const filteredVenues = computed(() => {
       const q = currentFilters.searchQuery.toLowerCase();
       const matchName = venue.name.toLowerCase().includes(q);
       const matchCuisine = venue.cuisine.toLowerCase().includes(q);
-      const matchNotes = (venue.notes || '').toLowerCase().includes(q);
       const matchOrder = (venue.eatLikeUs || '').toLowerCase().includes(q);
       const matchAddress = (venue.address || '').toLowerCase().includes(q);
-      if (!matchName && !matchCuisine && !matchNotes && !matchOrder && !matchAddress) return false;
+      if (!matchName && !matchCuisine && !matchOrder && !matchAddress) return false;
     }
 
     return true;
