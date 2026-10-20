@@ -3,13 +3,15 @@ import { eq } from 'drizzle-orm';
 import VenueClosure from '@/components/islands/VenueClosure.vue';
 import VenueForm from '@/components/islands/VenueForm.vue';
 import VisitedToday from '@/components/islands/VisitedToday.vue';
+import TierProposalPanel from '@/components/islands/TierProposalPanel.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import { user } from '@/db/auth-schema';
 import { venues } from '@/db/schema';
 import { uuidParam } from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { getBlobToken } from '@/lib/env';
-import { describeInspection, formatIsoDate, getVisitStatus, listConfirmedInspections } from '@/lib/inspections';
+import { describeInspection, formatIsoDate, getVisitStatus, latestVerifiedInspection, listConfirmedInspections } from '@/lib/inspections';
+import { countActiveAdmins, pendingProposalForVenue, serializeProposal } from '@/lib/tier-proposals';
 import { formatEventDate } from '@/lib/venue-events';
 import { serializeVenue } from '@/lib/venues';
 import { hiddenReason } from '@/lib/visibility';
@@ -32,10 +34,17 @@ const HIDDEN_TEXT = {
   needs_location: 'Hidden from the public site: needs a location.',
   closed: 'Hidden from the public site: permanently closed. Only Gone But Not Forgotten venues stay listed once closed.',
 };
-const [visitStatus, inspectionHistory] = await Promise.all([
-  getVisitStatus(db, row.id, Astro.locals.user!.id),
+const currentUserId = Astro.locals.user!.id;
+const [visitStatus, inspectionHistory, pendingProposal, verifiedInspection, activeAdmins] = await Promise.all([
+  getVisitStatus(db, row.id, currentUserId),
   listConfirmedInspections(db, row.id),
+  pendingProposalForVenue(db, row.id),
+  latestVerifiedInspection(db, row.id),
+  countActiveAdmins(db),
 ]);
+const verifiedInspectionText = verifiedInspection
+  ? `${formatIsoDate(verifiedInspection.inspectionDate)}, ${describeInspection(verifiedInspection).toLowerCase()}`
+  : null;
 const [closer] = row.closedBy
   ? await db.select({ name: user.name, email: user.email }).from(user).where(eq(user.id, row.closedBy)).limit(1)
   : [];
@@ -69,6 +78,16 @@ const [closer] = row.closedBy
     )}
 
     <VenueClosure client:load venueId={row.id} venueName={row.name} closed={Boolean(row.closedAt)} isGoneButNotForgotten={row.tier === 'gone_but_not_forgotten'} />
+
+    <TierProposalPanel
+      client:load
+      venueId={row.id}
+      currentTier={row.tier}
+      pending={pendingProposal ? serializeProposal(pendingProposal) : null}
+      currentUserId={currentUserId}
+      latestVerifiedInspection={verifiedInspectionText}
+      activeAdmins={activeAdmins}
+    />
 
     <VisitedToday client:load venueId={row.id} initialStatus={visitStatus} />
 

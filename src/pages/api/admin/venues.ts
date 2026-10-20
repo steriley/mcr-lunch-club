@@ -4,9 +4,11 @@ import { venues } from '@/db/schema';
 import { isUniqueViolation, jsonError, jsonResponse, readJson, requireAdmin, serverError, validationError } from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { parseTier } from '@/lib/tiers';
-import { venueInputSchema } from '@/lib/venue-schema';
+import { PROPOSAL_ERROR_MESSAGES, PROPOSAL_ERROR_STATUS } from '@/lib/tier-proposals';
+import { createVenueWithProposal, ProposalFailed } from '@/lib/venue-create';
+import { venueCreateSchema } from '@/lib/venue-schema';
 import { resolveRoute, routeWarning } from '@/lib/venue-route';
-import { isSlugTaken, recordVenueRevision, serializeVenue, venueValues } from '@/lib/venues';
+import { isSlugTaken, serializeVenue } from '@/lib/venues';
 import { publicVenueCondition } from '@/lib/visibility';
 
 export const prerender = false;
@@ -45,7 +47,7 @@ export const POST: APIRoute = async ({ request }) => {
   const session = await requireAdmin(request);
   if (session instanceof Response) return session;
 
-  const parsed = venueInputSchema.safeParse(await readJson(request));
+  const parsed = venueCreateSchema.safeParse(await readJson(request));
   if (!parsed.success) return validationError(parsed.error);
 
   try {
@@ -53,12 +55,17 @@ export const POST: APIRoute = async ({ request }) => {
       return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });
     }
 
-    // ORS failures never block the save; the route stays pending instead.
+    // ORS failures never block the save; the route stays pending instead. Looked up before the transaction.
     const route = await resolveRoute(parsed.data, null);
-    const [row] = await db.insert(venues).values(venueValues(parsed.data, session.user.id, route)).returning();
-    await recordVenueRevision(db, row, session.user.id);
-    return jsonResponse({ venue: serializeVenue(row), routeWarning: routeWarning(route) }, 201);
+    // The venue starts hidden (no approved tier); its tier is a proposal for a different admin to approve.
+    const { proposedTier, ...input } = parsed.data;
+    const actor = { id: session.user.id, name: session.user.name, email: session.user.email };
+    const { venue, proposal } = await createVenueWithProposal(db, input, proposedTier, actor, route);
+    return jsonResponse({ venue: serializeVenue(venue), proposalId: proposal?.id ?? null, routeWarning: routeWarning(route) }, 201);
   } catch (error) {
+    if (error instanceof ProposalFailed) {
+      return jsonError(PROPOSAL_ERROR_STATUS[error.error], PROPOSAL_ERROR_MESSAGES[error.error], { proposedTier: PROPOSAL_ERROR_MESSAGES[error.error] });
+    }
     if (isUniqueViolation(error)) {
       return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });
     }

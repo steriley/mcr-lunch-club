@@ -6,7 +6,7 @@ import PlaceSearch, { type PlaceCandidate } from './PlaceSearch.vue';
 import { CUISINES } from '@/lib/cuisines';
 import { ROUTE_STATUS_LABELS, routeStatus } from '@/lib/route-status';
 import { TIERS } from '@/lib/tiers';
-import { COST_BANDS, COST_BAND_LABELS, isOutsideUk, slugify, venueInputSchema } from '@/lib/venue-schema';
+import { COST_BANDS, COST_BAND_LABELS, isOutsideUk, slugify, venueCreateSchema, venueInputSchema } from '@/lib/venue-schema';
 
 interface VenueData {
   id: string;
@@ -36,7 +36,7 @@ const props = defineProps<{
 }>();
 
 const textFields = [
-  'name', 'slug', 'tier', 'address', 'latitude', 'longitude', 'pullQuote', 'lunchSpecial',
+  'name', 'slug', 'address', 'latitude', 'longitude', 'pullQuote', 'lunchSpecial',
   'websiteUrl', 'imageUrl', 'cost', 'cuisine',
   'mapSearchLink',
 ] as const;
@@ -49,7 +49,6 @@ function toFormState(venue?: VenueData | null): Record<FormField, string> {
     state[field] = value === null || value === undefined ? '' : String(value);
   }
   if (!venue) {
-    state.tier = 'to_be_assessed';
     state.cost = '££';
     state.cuisine = 'other';
   }
@@ -125,6 +124,10 @@ async function retryRoute() {
   }
 }
 
+// New venues only: the tier to propose. It takes effect once a different admin approves it.
+const proposedTier = ref(props.mode === 'create' ? 'to_be_assessed' : '');
+const proposableTiers = TIERS.filter((tier) => tier.value !== 'approved');
+
 const isDirty = computed(() => JSON.stringify(form) !== savedSnapshot.value);
 const coordinateWarning = computed(() => {
   const lat = form.latitude === '' ? null : Number(form.latitude);
@@ -158,8 +161,8 @@ async function save() {
   clearErrors();
   successMessage.value = '';
 
-  const body = { ...form };
-  const checked = venueInputSchema.safeParse(body);
+  const body = props.mode === 'create' ? { ...form, proposedTier: proposedTier.value } : { ...form };
+  const checked = (props.mode === 'create' ? venueCreateSchema : venueInputSchema).safeParse(body);
   if (!checked.success) {
     for (const issue of checked.error.issues) {
       const field = String(issue.path[0] ?? 'form');
@@ -266,14 +269,14 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
         <span v-if="errors.slug" :class="errorClass">{{ errors.slug }}</span>
       </label>
 
-      <label :class="labelClass">
-        <span class="mb-2 block">Tier</span>
-        <select v-model="form.tier" :class="inputClass" :aria-invalid="Boolean(errors.tier)">
-          <option value="">No approved tier (hidden)</option>
-          <option v-for="tier in TIERS" :key="tier.value" :value="tier.value">{{ tier.label }}</option>
+      <label v-if="mode === 'create'" :class="labelClass">
+        <span class="mb-2 block">Proposed tier</span>
+        <select v-model="proposedTier" :class="inputClass" :aria-invalid="Boolean(errors.proposedTier)">
+          <option value="">Don't propose a tier yet</option>
+          <option v-for="tier in proposableTiers" :key="tier.value" :value="tier.value">{{ tier.label }}</option>
         </select>
-        <span :class="hintClass">The venue is public once it has a tier and a location.</span>
-        <span v-if="errors.tier" :class="errorClass">{{ errors.tier }}</span>
+        <span :class="hintClass">The venue stays hidden until a different admin approves this. Approved needs a verified inspection first.</span>
+        <span v-if="errors.proposedTier" :class="errorClass">{{ errors.proposedTier }}</span>
       </label>
 
       <label :class="labelClass">

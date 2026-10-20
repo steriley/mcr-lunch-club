@@ -4,6 +4,7 @@ export const ADMIN_AREA_NAME = "Chairs' Area";
 export const ADMIN_NAV = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/venues', label: 'Venues' },
+  { href: '/admin/pending', label: 'Pending' },
   { href: '/admin/suggestions', label: 'Suggestions' },
   { href: '/admin/bribery', label: 'Bribery Record' },
   { href: '/admin/users', label: 'Users' },

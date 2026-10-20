@@ -14,6 +14,7 @@ import {
   signInAs,
   stubDb,
   stubDbSequence,
+  stubTransactions,
 } from '../route-helpers';
 
 const now = new Date('2026-01-01T00:00:00.000Z');
@@ -101,20 +102,50 @@ describe('POST /api/admin/venues', () => {
     assert.ok((await response.json()).fields.slug);
   });
 
-  it('creates the venue and records a revision', async () => {
+  it('creates a hidden venue (no tier) and records a revision, in a transaction', async () => {
     signInAs();
+    const transactions = stubTransactions();
     stubDb('select', []);
     const inserts = stubDbSequence('insert', [[row], []]);
-    const response = await post(input);
+    const response = await post({ ...input, tier: 'approved' });
     assert.equal(response.status, 201);
-    assert.equal((await response.json()).venue.slug, 'chip-shop');
+    const body = await response.json();
+    assert.equal(body.venue.slug, 'chip-shop');
+    assert.equal(body.proposalId, null);
+    assert.equal(transactions.count, 1);
     const values = inserts.filter((call) => call.method === 'values').map((call) => call.args[0] as any);
     assert.equal(values[0].updatedBy, ADMIN.id);
+    assert.ok(!('tier' in values[0]), 'a client-sent tier is ignored');
     assert.equal(values[1].venueId, VENUE_ID);
+  });
+
+  it('turns the chosen tier into a pending proposal by the creator', async () => {
+    signInAs({ ...ADMIN, name: 'Sam' });
+    stubTransactions();
+    // slug check, then the proposal's venue lock and pending lookup
+    stubDbSequence('select', [[], [{ ...row, tier: null }], []]);
+    const proposal = { id: 'p1', venueId: VENUE_ID, proposedTier: 'to_be_assessed', status: 'pending' };
+    const inserts = stubDbSequence('insert', [[row], [], [proposal]]);
+    const response = await post({ ...input, proposedTier: 'to_be_assessed' });
+    assert.equal(response.status, 201);
+    assert.equal((await response.json()).proposalId, 'p1');
+    const proposalValues = inserts.filter((call) => call.method === 'values').map((call) => call.args[0] as any)[2];
+    assert.deepEqual(
+      { tier: proposalValues.proposedTier, from: proposalValues.fromTier, by: proposalValues.proposedBy, name: proposalValues.proposedByName, status: proposalValues.status },
+      { tier: 'to_be_assessed', from: null, by: ADMIN.id, name: 'Sam', status: 'pending' }
+    );
+  });
+
+  it('refuses to propose a new venue straight into Approved', async () => {
+    signInAs();
+    const response = await post({ ...input, proposedTier: 'approved' });
+    assert.equal(response.status, 400);
+    assert.ok((await response.json()).fields.proposedTier);
   });
 
   it('maps a unique violation race to a 409', async () => {
     signInAs();
+    stubTransactions();
     stubDb('select', []);
     stubDb('insert', Object.assign(new Error('dup'), { code: '23505' }));
     assert.equal((await post(input)).status, 409);
@@ -122,6 +153,7 @@ describe('POST /api/admin/venues', () => {
 
   it('returns 500 on other database errors', async () => {
     signInAs();
+    stubTransactions();
     stubDb('select', []);
     stubDb('insert', new Error('db down'));
     assert.equal((await quietly(() => post(input))).status, 500);

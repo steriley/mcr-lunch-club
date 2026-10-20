@@ -12,7 +12,6 @@ export function venueValues(input: VenueInput, userId: string | null, route: Rou
   return {
     name: input.name,
     slug: input.slug,
-    tier: input.tier,
     address: input.address,
     latitude: input.latitude === null ? null : input.latitude.toFixed(6),
     longitude: input.longitude === null ? null : input.longitude.toFixed(6),
@@ -38,7 +37,7 @@ export async function isSlugTaken(db: Database, slug: string, excludeId?: string
 }
 
 /** Audit trail: store a full snapshot of the venue as saved. */
-export async function recordVenueRevision(db: Database, venue: VenueRow, changedBy: string | null): Promise<void> {
+export async function recordVenueRevision(db: Pick<Database, 'insert'>, venue: VenueRow, changedBy: string | null): Promise<void> {
   await db.insert(venueRevisions).values({
     venueId: venue.id,
     changedBy,

@@ -12,6 +12,7 @@ export const venues = pgTable('venues', {
   slug: text('slug').notNull().unique(),
   name: text('name').notNull(),
   // The last approved tier. NULL means no approved tier yet, so the venue is hidden.
+  // Only ever changed by approving a tier proposal (src/lib/tier-proposals.ts).
   tier: tierEnum('tier'),
   address: text('address'),
   latitude: decimal('latitude', { precision: 9, scale: 6 }),
@@ -125,6 +126,40 @@ export const inspections = pgTable(
   ]
 );
 
+export const tierProposalStatusEnum = pgEnum('tier_proposal_status', ['pending', 'approved', 'declined', 'withdrawn', 'superseded']);
+
+/**
+ * Tier changes are proposals that a different admin must approve before
+ * venues.tier changes. Decline reasons are internal and never public. Names
+ * are snapshots so history survives account deletion.
+ */
+export const tierProposals = pgTable(
+  'tier_proposals',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    venueId: uuid('venue_id').notNull().references(() => venues.id, { onDelete: 'cascade' }),
+    fromTier: tierEnum('from_tier'),
+    proposedTier: tierEnum('proposed_tier').notNull(),
+    proposedBy: text('proposed_by').references(() => user.id, { onDelete: 'set null' }),
+    proposedByName: text('proposed_by_name'),
+    proposedAt: timestamp('proposed_at', { withTimezone: true }).notNull().defaultNow(),
+    status: tierProposalStatusEnum('status').notNull().default('pending'),
+    decidedBy: text('decided_by').references(() => user.id, { onDelete: 'set null' }),
+    decidedByName: text('decided_by_name'),
+    decidedAt: timestamp('decided_at', { withTimezone: true }),
+    declineReason: text('decline_reason'),
+    // The verified inspection that allowed a move into Approved.
+    inspectionId: uuid('inspection_id').references(() => inspections.id, { onDelete: 'set null' }),
+  },
+  (table) => [
+    uniqueIndex('tier_proposals_one_pending_per_venue').on(table.venueId).where(sql`${table.status} = 'pending'`),
+    index('tier_proposals_venue_idx').on(table.venueId, table.proposedAt),
+    index('tier_proposals_status_idx').on(table.status, table.decidedAt),
+    check('tier_proposals_decline_reason', sql`${table.status} <> 'declined' or length(trim(${table.declineReason})) > 0`),
+    check('tier_proposals_decider_not_proposer', sql`${table.proposedBy} is null or ${table.decidedBy} is null or ${table.status} not in ('approved', 'declined') or ${table.proposedBy} <> ${table.decidedBy}`),
+  ]
+);
+
 export const suggestionStatusEnum = pgEnum('suggestion_status', ['new', 'accepted', 'dismissed']);
 
 /** Venue suggestions sent in by members from the public "Suggest a Venue" form. */
@@ -152,6 +187,7 @@ export type BriberyRow = typeof briberyRecords.$inferSelect;
 export type SuggestionRow = typeof venueSuggestions.$inferSelect;
 export type VenueEventRow = typeof venueEvents.$inferSelect;
 export type InspectionRow = typeof inspections.$inferSelect;
+export type TierProposalRow = typeof tierProposals.$inferSelect;
 
 export const schema = {
   venues,
@@ -159,5 +195,6 @@ export const schema = {
   venueRevisions,
   venueEvents,
   inspections,
+  tierProposals,
   venueSuggestions
 };
