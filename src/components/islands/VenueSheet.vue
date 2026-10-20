@@ -91,12 +91,12 @@
         <div class="grid grid-cols-2 gap-2 bg-[#f4efe4] p-3 rounded-lg border border-[#dcd6c8] text-center font-serif-header">
           <div>
             <span class="text-xs text-stone-600 uppercase tracking-wide block">Foot Journey</span>
-            <span class="text-base font-bold text-[#8b1e22]">{{ venue.walkingTimeMin }} mins</span>
+            <span class="text-base font-bold text-[#8b1e22]">{{ walkText(venue.walkingTimeMin, 'mins') }}</span>
             <span class="text-xs text-stone-500 block font-sans">from Spinningfields Base</span>
           </div>
           <div class="border-l border-[#dcd6c8]">
             <span class="text-xs text-stone-600 uppercase tracking-wide block">Displacement</span>
-            <span class="text-base font-bold text-stone-900">{{ venue.distanceMiles.toFixed(2) }} miles</span>
+            <span class="text-base font-bold text-stone-900">{{ milesText(venue.distanceMiles) }}</span>
             <span class="text-xs text-stone-500 block font-sans">within 2.5 mi limit</span>
           </div>
         </div>
@@ -194,6 +194,7 @@ import { useStore } from '@nanostores/vue';
 import { $activeVenue, selectVenue } from '@/stores/filters';
 import { $inspectionsList } from '@/stores/ledger';
 import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
+import { milesText, walkText } from '@/lib/route-display';
 
 const venue = useStore($activeVenue);
 const inspectionsList = useStore($inspectionsList);

@@ -11,6 +11,8 @@ interface VenueRow {
   tier: string | null;
   /** From hiddenReason() in src/lib/visibility.ts; null when the venue is public. */
   hiddenReason: 'no_tier' | 'needs_location' | null;
+  /** Has coordinates but no ORS walking route yet (see src/lib/route-status.ts). */
+  routePending: boolean;
   updatedAt: string;
 }
 
@@ -183,6 +185,9 @@ const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2
               <td class="px-4 py-3">
                 <span :class="['inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]', venue.hiddenReason ? 'bg-stone-200 text-stone-700' : 'bg-emerald-100 text-emerald-800']">
                   {{ venue.hiddenReason ? HIDDEN_LABELS[venue.hiddenReason] : 'Public' }}
+                </span>
+                <span v-if="venue.routePending" class="ml-1 inline-flex whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-800">
+                  Route pending
                 </span>
               </td>
               <td class="whitespace-nowrap px-4 py-3 text-[#3d3d3d]">{{ formatDate(venue.updatedAt) }}</td>

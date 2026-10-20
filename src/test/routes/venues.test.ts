@@ -187,9 +187,11 @@ describe('/api/admin/venues/[id]', () => {
       assert.deepEqual(params, ['chip-shop', VENUE_ID]);
     });
 
+    const stored = { latitude: '53.480000', longitude: '-2.250000', distanceMiles: '0.40', walkingTimeMin: 9 };
+
     it('updates the venue and records a revision', async () => {
       signInAs();
-      stubDb('select', []);
+      stubDbSequence('select', [[], [stored]]);
       stubDb('update', [row]);
       const inserts = stubDb('insert', []);
       const response = await run(byId.PUT, ctx('PUT', VENUE_ID, input));
@@ -207,12 +209,87 @@ describe('/api/admin/venues/[id]', () => {
 
     it('maps unique violations to 409 and other errors to 500', async () => {
       signInAs();
-      stubDb('select', []);
+      stubDbSequence('select', [[], [stored]]);
       stubDb('update', Object.assign(new Error('dup'), { code: '23505' }));
       assert.equal((await run(byId.PUT, ctx('PUT', VENUE_ID, input))).status, 409);
 
+      stubDbSequence('select', [[], [stored]]);
       stubDb('update', new Error('db down'));
       assert.equal((await quietly(() => run(byId.PUT, ctx('PUT', VENUE_ID, input)))).status, 500);
+    });
+
+    describe('walking route', () => {
+      const located = { ...input, latitude: 53.481, longitude: -2.249 };
+      let restoreFetch: () => void = () => {};
+      afterEach(() => restoreFetch());
+
+      function stubFetch(handler: () => Response | Promise<Response>) {
+        const original = globalThis.fetch;
+        const calls: string[] = [];
+        process.env.ORS_API_KEY = 'test-ors-key';
+        globalThis.fetch = (async (url: string | URL) => {
+          calls.push(String(url));
+          return handler();
+        }) as typeof fetch;
+        restoreFetch = () => {
+          globalThis.fetch = original;
+          delete process.env.ORS_API_KEY;
+        };
+        return calls;
+      }
+
+      const setValues = (updates: ReturnType<typeof stubDb>) => updates.find((call) => call.method === 'set')!.args[0] as any;
+
+      it('computes distance and walking time from ORS when the coordinates change', async () => {
+        signInAs();
+        const fetches = stubFetch(() => Response.json({ routes: [{ summary: { distance: 1609.344, duration: 1170 } }] }));
+        stubDbSequence('select', [[], [stored]]);
+        const updates = stubDb('update', [row]);
+        stubDb('insert', []);
+        const response = await run(byId.PUT, ctx('PUT', VENUE_ID, located));
+        assert.equal(response.status, 200);
+        assert.equal((await response.json()).routeWarning, null);
+        assert.equal(fetches.length, 1);
+        assert.match(fetches[0], /\/v2\/directions\/foot-walking$/);
+        assert.equal(setValues(updates).distanceMiles, '1.00');
+        assert.equal(setValues(updates).walkingTimeMin, 20);
+      });
+
+      it('keeps the stored route without calling ORS when the coordinates are unchanged', async () => {
+        signInAs();
+        const fetches = stubFetch(() => Response.json({}));
+        stubDbSequence('select', [[], [stored]]);
+        const updates = stubDb('update', [row]);
+        stubDb('insert', []);
+        await run(byId.PUT, ctx('PUT', VENUE_ID, { ...input, latitude: 53.48, longitude: -2.25 }));
+        assert.equal(fetches.length, 0);
+        assert.equal(setValues(updates).distanceMiles, '0.40');
+        assert.equal(setValues(updates).walkingTimeMin, 9);
+      });
+
+      it('still saves, with the route pending, when ORS is rate limited', async () => {
+        signInAs();
+        stubFetch(() => new Response('{}', { status: 429 }));
+        stubDbSequence('select', [[], [stored]]);
+        const updates = stubDb('update', [row]);
+        stubDb('insert', []);
+        const response = await run(byId.PUT, ctx('PUT', VENUE_ID, located));
+        assert.equal(response.status, 200);
+        assert.match((await response.json()).routeWarning, /rate limited/);
+        assert.equal(setValues(updates).distanceMiles, null);
+        assert.equal(setValues(updates).walkingTimeMin, null);
+        assert.equal(setValues(updates).latitude, '53.481000');
+      });
+
+      it('ignores distance and walking time sent by the client', async () => {
+        signInAs();
+        stubDbSequence('select', [[], [{ ...stored, latitude: null, longitude: null, distanceMiles: null, walkingTimeMin: null }]]);
+        const updates = stubDb('update', [row]);
+        stubDb('insert', []);
+        await run(byId.PUT, ctx('PUT', VENUE_ID, { ...input, distanceMiles: 3, walkingTimeMin: 4 }));
+        assert.equal(setValues(updates).distanceMiles, null);
+        assert.equal(setValues(updates).walkingTimeMin, null);
+      });
     });
   });
 

@@ -45,8 +45,6 @@ function toVenueInput(venue: Venue): VenueInput {
     imageUrl: null,
     cost: venue.cost,
     cuisine: mapLegacyCuisine(venue.cuisine),
-    distanceMiles: venue.distanceMiles,
-    walkingTimeMin: venue.walkingTimeMin,
     lastInspectionDate: /^\d{4}-\d{2}-\d{2}$/.test(venue.lastInspectionDate) ? venue.lastInspectionDate : null,
     mapSearchLink: venue.mapSearchLink,
   });
@@ -83,8 +81,8 @@ for (const input of venueInputs) {
     continue;
   }
 
-  // The import is not attributed to a Chair.
-  const values = venueValues(input, null);
+  // The import is not attributed to a Chair. Routes start pending; `pnpm routes:backfill` fills them from ORS.
+  const values = venueValues(input, null, { distanceMiles: null, walkingTimeMin: null });
   const [row] = existingId
     ? await db.update(venues).set(values).where(eq(venues.id, existingId)).returning()
     : await db.insert(venues).values(values).returning();

@@ -53,15 +53,28 @@ describe('venueInputSchema', () => {
     assert.equal(venueInputSchema.safeParse({ ...valid, cost: '$' }).success, false);
   });
 
-  it('rejects out-of-range coordinates and distances', () => {
+  it('rejects out-of-range and non-numeric coordinates', () => {
     for (const [field, limit] of [['latitude', 90], ['longitude', 180]] as const) {
-      assert.equal(venueInputSchema.safeParse({ ...valid, [field]: limit }).success, true);
-      assert.equal(venueInputSchema.safeParse({ ...valid, [field]: -limit }).success, true);
-      assert.equal(venueInputSchema.safeParse({ ...valid, [field]: limit + 0.1 }).success, false);
-      assert.equal(venueInputSchema.safeParse({ ...valid, [field]: -limit - 0.1 }).success, false);
+      assert.equal(venueInputSchema.safeParse({ ...valid, latitude: 53.48, longitude: -2.25, [field]: limit + 0.1 }).success, false);
+      assert.equal(venueInputSchema.safeParse({ ...valid, latitude: 53.48, longitude: -2.25, [field]: -limit - 0.1 }).success, false);
     }
-    assert.equal(venueInputSchema.safeParse({ ...valid, latitude: 'abc' }).success, false);
-    assert.equal(venueInputSchema.safeParse({ ...valid, distanceMiles: -1 }).success, false);
+    assert.equal(venueInputSchema.safeParse({ ...valid, latitude: 'abc', longitude: -2.25 }).success, false);
+  });
+
+  it('only accepts coordinates inside the UK, given as a pair', () => {
+    assert.equal(venueInputSchema.safeParse({ ...valid, latitude: 53.48, longitude: -2.25 }).success, true);
+    const outside = venueInputSchema.safeParse({ ...valid, latitude: 40.7, longitude: -74 });
+    assert.equal(outside.success, false);
+    assert.deepEqual(outside.error?.issues[0].path, ['latitude']);
+    const half = venueInputSchema.safeParse({ ...valid, latitude: 53.48 });
+    assert.equal(half.success, false);
+    assert.deepEqual(half.error?.issues[0].path, ['longitude']);
+  });
+
+  it('never accepts distance or walking time from the client', () => {
+    const result = venueInputSchema.parse({ ...valid, distanceMiles: 2, walkingTimeMin: 5 });
+    assert.ok(!('distanceMiles' in result));
+    assert.ok(!('walkingTimeMin' in result));
   });
 
   it('only allows http(s) links', () => {

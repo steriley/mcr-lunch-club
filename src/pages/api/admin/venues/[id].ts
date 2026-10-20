@@ -4,6 +4,7 @@ import { venues } from '@/db/schema';
 import { isUniqueViolation, jsonError, jsonResponse, readJson, requireAdmin, serverError, uuidParam, validationError } from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { venueInputSchema } from '@/lib/venue-schema';
+import { resolveRoute, routeWarning } from '@/lib/venue-route';
 import { isSlugTaken, recordVenueRevision, serializeVenue, venueValues } from '@/lib/venues';
 
 export const prerender = false;
@@ -39,15 +40,29 @@ export const PUT: APIRoute = async ({ request, params }) => {
       return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });
     }
 
+    const [existing] = await db
+      .select({
+        latitude: venues.latitude,
+        longitude: venues.longitude,
+        distanceMiles: venues.distanceMiles,
+        walkingTimeMin: venues.walkingTimeMin,
+      })
+      .from(venues)
+      .where(eq(venues.id, id.data))
+      .limit(1);
+    if (!existing) return jsonError(404, 'Venue not found.');
+
+    // Only calls ORS when the coordinates changed or the route is missing; failures leave it pending.
+    const route = await resolveRoute(parsed.data, existing);
     const [row] = await db
       .update(venues)
-      .set(venueValues(parsed.data, session.user.id))
+      .set(venueValues(parsed.data, session.user.id, route))
       .where(eq(venues.id, id.data))
       .returning();
     if (!row) return jsonError(404, 'Venue not found.');
 
     await recordVenueRevision(db, row, session.user.id);
-    return jsonResponse({ venue: serializeVenue(row) });
+    return jsonResponse({ venue: serializeVenue(row), routeWarning: routeWarning(route) });
   } catch (error) {
     if (isUniqueViolation(error)) {
       return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });

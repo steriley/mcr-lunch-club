@@ -1,29 +1,14 @@
 import { and, desc, eq, ne } from 'drizzle-orm';
 import { venueRevisions, venues, type VenueRow } from '@/db/schema';
 import type { Database } from '@/lib/db-client';
-import { BASE_COORDINATES } from '@/lib/map/config';
-import { haversineMetres } from '@/lib/map/ranking';
 import type { VenueInput } from '@/lib/venue-schema';
+import type { RouteValues } from '@/lib/venue-route';
 
-const METRES_PER_MILE = 1609.344;
-
-export function distanceFromBaseMiles(latitude: number, longitude: number): number {
-  return Math.round((haversineMetres(BASE_COORDINATES, { lat: latitude, lng: longitude }) / METRES_PER_MILE) * 100) / 100;
-}
-
-/** Walking estimate on the city grid; same formula as scripts/seed-data.mjs. */
-export function estimateWalkingMinutes(miles: number): number {
-  if (miles <= 0) return 1;
-  return Math.max(1, Math.round(miles * 19.5 + (miles > 0.5 ? 2 : 1)));
-}
-
-/** Database values for an insert or update; fills distance/walk time from coordinates when left blank. */
-export function venueValues(input: VenueInput, userId: string | null) {
-  const hasCoordinates = input.latitude !== null && input.longitude !== null;
-  const distanceMiles =
-    input.distanceMiles ?? (hasCoordinates ? distanceFromBaseMiles(input.latitude!, input.longitude!) : null);
-  const walkingTimeMin = input.walkingTimeMin ?? (distanceMiles !== null ? estimateWalkingMinutes(distanceMiles) : null);
-
+/**
+ * Database values for an insert or update. Distance and walking time come
+ * from resolveRoute() (src/lib/venue-route.ts), never from the form.
+ */
+export function venueValues(input: VenueInput, userId: string | null, route: RouteValues) {
   return {
     name: input.name,
     slug: input.slug,
@@ -37,8 +22,9 @@ export function venueValues(input: VenueInput, userId: string | null) {
     imageUrl: input.imageUrl,
     cost: input.cost,
     cuisine: input.cuisine,
-    distanceMiles: distanceMiles === null ? null : distanceMiles.toFixed(2),
-    walkingTimeMin,
+    distanceMiles: route.distanceMiles === null ? null : route.distanceMiles.toFixed(2),
+    walkingTimeMin: route.walkingTimeMin,
+    ...(route.routeUpdatedAt === undefined ? {} : { routeUpdatedAt: route.routeUpdatedAt }),
     lastInspectionDate: input.lastInspectionDate,
     mapSearchLink: input.mapSearchLink,
     updatedBy: userId,

@@ -55,7 +55,7 @@ export async function createDraftVenueFromSuggestion(db: Database, suggestion: S
     lunchSpecial: suggestion.recommendedOrder,
   });
 
-  const [venue] = await db.insert(venues).values(venueValues(input, userId)).returning();
+  const [venue] = await db.insert(venues).values(venueValues(input, userId, { distanceMiles: null, walkingTimeMin: null })).returning();
   await recordVenueRevision(db, venue, userId);
   await db
     .update(venueSuggestions)

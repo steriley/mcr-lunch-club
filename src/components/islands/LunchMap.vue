@@ -108,7 +108,7 @@ const filteredVenues = computed(() => {
     if (currentFilters.cost !== 'all' && venue.cost !== currentFilters.cost) return false;
 
     // Max walking time
-    if (currentFilters.maxWalkMinutes && venue.walkingTimeMin > currentFilters.maxWalkMinutes) {
+    if (currentFilters.maxWalkMinutes && venue.walkingTimeMin !== null && venue.walkingTimeMin > currentFilters.maxWalkMinutes) {
       return false;
     }
 

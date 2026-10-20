@@ -66,16 +66,22 @@ export const venueInputSchema = z.object({
   imageUrl: optionalUrl('Image URL'),
   cost: z.enum(COST_BANDS, { error: 'Choose a cost band.' }),
   cuisine: z.enum(CUISINE_VALUES, { error: 'Choose a cuisine from the list.' }).default(DEFAULT_CUISINE),
-  distanceMiles: optionalNumber(z.number().min(0, 'Distance cannot be negative.').max(999)),
-  walkingTimeMin: optionalNumber(z.number().int('Walking time must be whole minutes.').min(0).max(999)),
   lastInspectionDate: z.preprocess(emptyToNull, z.iso.date({ error: 'Use a valid date.' }).nullable()),
   mapSearchLink: optionalUrl('Map link'),
+}).superRefine((venue, context) => {
+  // Coordinates come from an ORS search pick, or manual entry when search finds nothing.
+  if ((venue.latitude === null) !== (venue.longitude === null)) {
+    const field = venue.latitude === null ? 'latitude' : 'longitude';
+    context.addIssue({ code: 'custom', path: [field], message: 'Enter both latitude and longitude, or neither.' });
+  } else if (isOutsideUk(venue.latitude, venue.longitude)) {
+    context.addIssue({ code: 'custom', path: ['latitude'], message: 'These coordinates are outside the UK. Check them, or search for the venue instead.' });
+  }
 });
 
 export type VenueInput = z.output<typeof venueInputSchema>;
 export type VenueFormValues = z.input<typeof venueInputSchema>;
 
-/** Rough UK bounding box; outside it the form warns but still saves. */
+/** Rough UK bounding box; venues outside it are rejected. */
 export function isOutsideUk(latitude: number | null, longitude: number | null): boolean {
   if (latitude === null || longitude === null) return false;
   return latitude < 49.8 || latitude > 60.9 || longitude < -8.7 || longitude > 1.8;

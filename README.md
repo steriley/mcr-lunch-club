@@ -81,6 +81,7 @@ Environment Variables**. Never commit real values.
 | `BETTER_AUTH_URL` | Site origin: `http://localhost:4321` locally, the production URL (e.g. `https://mcrlunchclub.com`) on Vercel. Also the only trusted origin in production. |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob token for venue image uploads. Created when you connect a Blob store to the project; without it the form accepts image URLs only. |
 | `SEED_CHAIR_EMAIL` / `SEED_CHAIR_NAME` / `SEED_CHAIR_PASSWORD` | Only for `pnpm db:seed`. Remove them from your machine afterwards. |
+| `ORS_API_KEY` | [OpenRouteService](https://openrouteservice.org) key, **server-only** (never prefix it with `PUBLIC_`). Powers the admin venue location search and the walking distance and time from HQ. Without it venues still save, but the location must be entered manually and routes stay "pending". |
 | `METOFFICE_API_KEY`, `PUBLIC_MAP_API_KEY` | Optional weather and map tile keys. |
 
 ### Local development with a Neon branch
@@ -104,6 +105,8 @@ Use a Neon **branch** so local work never touches production data:
 | `pnpm db:seed` | Create (or re-promote) the first Chair from `SEED_CHAIR_*`. Idempotent; refuses to run with `NODE_ENV=production` unless `--force` is passed. `--reset-password` resets an existing Chair's password. Prints the email only. |
 | `pnpm db:import` | Import `src/data/venues.json` and `src/data/incidents.json`. Idempotent (venues match on slug, records on title + date); existing rows are left alone. `--dry-run` reports without writing; `--update` overwrites existing venues from the files. |
 | `pnpm auth:generate` | Regenerate `src/db/auth-schema.ts` with the Better Auth CLI matching the installed version. Follow with `pnpm db:generate`. |
+| `pnpm routes:backfill` | Replace distance and walking time with ORS walking routes for venues that have coordinates but no ORS route yet. Throttled (`--delay-ms=2000`), resumable, stops cleanly on a rate limit. `--dry-run` lists venues without calling ORS; `--all` recomputes every venue. Needs `ORS_API_KEY`. |
+| `pnpm check:bundle` | After `pnpm build`: fail if the browser bundle contains `ORS_API_KEY` (name or value) or calls ORS directly. |
 | `pnpm check:security [url]` | Check that every `/admin` page and `/api/admin` route refuses anonymous and cross-origin requests, and that sign-up is disabled. Defaults to `http://localhost:4321`; pass the production URL after a deploy. |
 
 ### Deploying to Vercel (runbook)
@@ -145,6 +148,14 @@ Use a Neon **branch** so local work never touches production data:
   hidden venues with the reason. Hidden Hall of Shame records never appear
   publicly. Every venue save stores a snapshot, viewable from the venue's
   **History** page.
+- **Location**: the venue form searches OpenRouteService (up to five results
+  around Greater Manchester) and fills the address and coordinates from the
+  pick; "Enter manually" is there for when search finds nothing (UK
+  coordinates only). Distance and walking time are always worked out on the
+  server from an ORS foot-walking route from HQ, never typed in. If ORS is
+  down or rate limited the venue still saves: without coordinates it is
+  hidden ("Needs location"); with coordinates but no route it shows, listed
+  last, with a "Route pending" badge and a **Retry** button.
 - **Public ordering**: within a tier, venues are listed by walking time (unknown
   times last), then name; Rejected and Gone But Not Forgotten are alphabetical
   (`src/lib/venue-order.ts`).

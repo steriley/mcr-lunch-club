@@ -116,3 +116,8 @@ export function getPublicMapApiKey(): string | undefined {
 export function getBlobToken(): string | undefined {
   return optional('BLOB_READ_WRITE_TOKEN');
 }
+
+/** OpenRouteService key for geocoding and walking routes. Server-only: never expose it to islands. */
+export function getOrsApiKey(): string | undefined {
+  return optional('ORS_API_KEY');
+}

@@ -1,6 +1,7 @@
 import type { Venue } from '@/types';
 import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES } from './config';
 import { getTierMetadata } from './tiers';
+import { milesText, walkText } from '@/lib/route-display';
 
 /**
  * Generate the HTML string for a venue marker pin.
@@ -114,7 +115,7 @@ export function createVenuePopupContent(venue: Venue, onViewDossier?: () => void
       <span class="text-xs font-mono font-bold text-amber-900">${escapeHtml(venue.cost)}</span>
     </div>
     <h3 class="font-bold text-sm text-[#1a1e24] leading-tight">${escapeHtml(venue.name)}</h3>
-    <p class="text-xs text-stone-600 font-sans mt-0.5">${escapeHtml(venue.cuisine)} &bull; ${escapeHtml(venue.walkingTimeMin)} min walk from Base (${escapeHtml(venue.distanceMiles.toFixed(2))} mi)</p>
+    <p class="text-xs text-stone-600 font-sans mt-0.5">${escapeHtml(venue.cuisine)} &bull; ${escapeHtml(walkText(venue.walkingTimeMin, 'min walk from Base'))} (${escapeHtml(milesText(venue.distanceMiles, 'mi'))})</p>
 
     <div class="mt-2 p-1.5 bg-stone-100/90 rounded border border-stone-200 text-xs font-sans">
       <strong class="text-stone-800 font-serif-header">Eat Like Us:</strong>

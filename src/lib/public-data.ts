@@ -5,7 +5,6 @@ import { db } from '@/lib/db';
 import { parseTier, tierLabel, type TierValue } from '@/lib/tiers';
 import type { CostBand } from '@/lib/venue-schema';
 import { sortForPublic } from '@/lib/venue-order';
-import { distanceFromBaseMiles, estimateWalkingMinutes } from '@/lib/venues';
 import { isPubliclyVisible, publicVenueCondition } from '@/lib/visibility';
 import type { Incident, Venue } from '@/types';
 
@@ -38,8 +37,6 @@ export function toPublicVenue(row: PublicRow): PublicVenue {
   const lat = row.latitude === null ? null : Number(row.latitude);
   const lng = row.longitude === null ? null : Number(row.longitude);
   const hasCoordinates = lat !== null && lng !== null;
-  const distanceMiles =
-    row.distanceMiles !== null ? Number(row.distanceMiles) : hasCoordinates ? distanceFromBaseMiles(lat, lng) : 0;
 
   return {
     id: row.slug,
@@ -48,8 +45,8 @@ export function toPublicVenue(row: PublicRow): PublicVenue {
     status: tierLabel(row.tier),
     lat,
     lng,
-    distanceMiles,
-    walkingTimeMin: row.walkingTimeMin ?? estimateWalkingMinutes(distanceMiles),
+    distanceMiles: row.distanceMiles === null ? null : Number(row.distanceMiles),
+    walkingTimeMin: row.walkingTimeMin,
     cost: row.cost as CostBand,
     cuisine: cuisineLabel(row.cuisine),
     eatLikeUs: row.lunchSpecial ?? '',

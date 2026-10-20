@@ -2,7 +2,9 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import ImageUpload from './ImageUpload.vue';
+import PlaceSearch, { type PlaceCandidate } from './PlaceSearch.vue';
 import { CUISINES } from '@/lib/cuisines';
+import { ROUTE_STATUS_LABELS, routeStatus } from '@/lib/route-status';
 import { TIERS } from '@/lib/tiers';
 import { COST_BANDS, COST_BAND_LABELS, isOutsideUk, slugify, venueInputSchema } from '@/lib/venue-schema';
 
@@ -36,7 +38,7 @@ const props = defineProps<{
 
 const textFields = [
   'name', 'slug', 'tier', 'address', 'latitude', 'longitude', 'pullQuote', 'lunchSpecial',
-  'websiteUrl', 'imageUrl', 'cost', 'cuisine', 'distanceMiles', 'walkingTimeMin', 'lastInspectionDate',
+  'websiteUrl', 'imageUrl', 'cost', 'cuisine', 'lastInspectionDate',
   'mapSearchLink',
 ] as const;
 type FormField = (typeof textFields)[number];
@@ -67,12 +69,69 @@ const isSubmitting = ref(false);
 const showDeleteDialog = ref(false);
 const slugEdited = ref(props.mode === 'edit');
 
+// Distance and walking time are worked out by the server from an ORS walking route; shown read-only.
+const route = reactive({ distanceMiles: props.venue?.distanceMiles ?? null, walkingTimeMin: props.venue?.walkingTimeMin ?? null });
+const savedLocation = ref({ latitude: props.venue?.latitude ?? null, longitude: props.venue?.longitude ?? null });
+const savedRouteStatus = computed(() => routeStatus({ ...savedLocation.value, ...route }));
+const hasLocation = computed(() => form.latitude !== '' && form.longitude !== '');
+const locationChanged = computed(
+  () => String(savedLocation.value.latitude ?? '') !== form.latitude || String(savedLocation.value.longitude ?? '') !== form.longitude
+);
+const manualEntry = ref(false);
+const changingLocation = ref(!hasLocation.value);
+const isRetrying = ref(false);
+const routeMessage = ref('');
+
+function pickPlace(candidate: PlaceCandidate) {
+  form.address = candidate.address;
+  form.latitude = candidate.lat.toFixed(6);
+  form.longitude = candidate.lng.toFixed(6);
+  changingLocation.value = false;
+  manualEntry.value = false;
+}
+
+function clearLocation() {
+  form.address = '';
+  form.latitude = '';
+  form.longitude = '';
+  changingLocation.value = true;
+}
+
+function applySavedVenue(venue: VenueData) {
+  route.distanceMiles = venue.distanceMiles;
+  route.walkingTimeMin = venue.walkingTimeMin;
+  savedLocation.value = { latitude: venue.latitude, longitude: venue.longitude };
+  form.latitude = venue.latitude === null ? '' : String(venue.latitude);
+  form.longitude = venue.longitude === null ? '' : String(venue.longitude);
+}
+
+async function retryRoute() {
+  routeMessage.value = '';
+  isRetrying.value = true;
+  try {
+    const response = await fetch(`/api/admin/venues/${venueId.value}/recompute-route`, { method: 'POST' });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      routeMessage.value = result.error ?? 'Could not work out the walking route. Try again later.';
+      return;
+    }
+    route.distanceMiles = result.venue.distanceMiles;
+    route.walkingTimeMin = result.venue.walkingTimeMin;
+    updatedAt.value = result.venue.updatedAt;
+    routeMessage.value = 'Walking route updated.';
+  } catch {
+    routeMessage.value = 'Could not work out the walking route. Try again later.';
+  } finally {
+    isRetrying.value = false;
+  }
+}
+
 const isDirty = computed(() => JSON.stringify(form) !== savedSnapshot.value);
 const coordinateWarning = computed(() => {
   const lat = form.latitude === '' ? null : Number(form.latitude);
   const lng = form.longitude === '' ? null : Number(form.longitude);
   if (lat === null || lng === null || Number.isNaN(lat) || Number.isNaN(lng)) return '';
-  return isOutsideUk(lat, lng) ? 'These coordinates are outside the UK. Double-check them before saving.' : '';
+  return isOutsideUk(lat, lng) ? 'These coordinates are outside the UK and will not be accepted.' : '';
 });
 const lastUpdatedText = computed(() => {
   if (!updatedAt.value) return '';
@@ -127,13 +186,14 @@ async function save() {
     }
 
     updatedAt.value = result.venue.updatedAt;
+    applySavedVenue(result.venue);
     savedSnapshot.value = JSON.stringify(form);
 
     if (props.mode === 'create') {
       window.location.assign(`/admin/venues/${result.venue.id}?saved=1`);
       return;
     }
-    successMessage.value = 'Saved.';
+    successMessage.value = result.routeWarning ?? 'Saved.';
   } catch (error) {
     console.error('Venue save failed', error);
     formError.value = 'Unable to save this venue right now.';
@@ -243,39 +303,78 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
     <fieldset class="grid gap-5 border-t border-[#d9cfb8] pt-5 md:grid-cols-2">
       <legend class="mb-3 pt-5 text-lg font-bold text-[#1a1e24]">Location</legend>
 
-      <label :class="[labelClass, 'md:col-span-2']">
-        <span class="mb-2 block">Address</span>
-        <input v-model="form.address" type="text" autocomplete="off" :class="inputClass" />
-        <span v-if="errors.address" :class="errorClass">{{ errors.address }}</span>
-      </label>
+      <div class="md:col-span-2 space-y-3">
+        <div v-if="hasLocation && !changingLocation" class="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5">
+          <div class="text-sm">
+            <span class="block font-semibold text-[#1a1e24]">{{ form.address || 'No address recorded' }}</span>
+            <span class="block text-xs text-[#535353]">{{ Number(form.latitude).toFixed(5) }}, {{ Number(form.longitude).toFixed(5) }}</span>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" class="rounded-lg border border-[#d9cfb8] bg-[#f9f7f1] px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5]" @click="changingLocation = true">Change location</button>
+            <button type="button" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" @click="clearLocation">Remove</button>
+          </div>
+        </div>
 
-      <label :class="labelClass">
-        <span class="mb-2 block">Latitude</span>
-        <input v-model="form.latitude" type="number" step="0.000001" inputmode="decimal" :class="inputClass" :aria-invalid="Boolean(errors.latitude)" />
-        <span v-if="errors.latitude" :class="errorClass">{{ errors.latitude }}</span>
-      </label>
+        <PlaceSearch v-if="changingLocation && !manualEntry" :initial-query="form.address || form.name" @pick="pickPlace" />
 
-      <label :class="labelClass">
-        <span class="mb-2 block">Longitude</span>
-        <input v-model="form.longitude" type="number" step="0.000001" inputmode="decimal" :class="inputClass" :aria-invalid="Boolean(errors.longitude)" />
-        <span v-if="errors.longitude" :class="errorClass">{{ errors.longitude }}</span>
-      </label>
+        <label class="inline-flex items-center gap-2 text-sm font-semibold text-[#1a1e24]">
+          <input v-model="manualEntry" type="checkbox" class="h-4 w-4 rounded border-[#d9cfb8]" @change="manualEntry && (changingLocation = true)" />
+          Enter manually (when search finds nothing)
+        </label>
+        <p v-if="!hasLocation" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Without a location the venue is saved but stays hidden from the public site (“Needs location”).
+        </p>
+      </div>
+
+      <template v-if="manualEntry">
+        <label :class="[labelClass, 'md:col-span-2']">
+          <span class="mb-2 block">Address</span>
+          <input v-model="form.address" type="text" autocomplete="off" :class="inputClass" />
+          <span v-if="errors.address" :class="errorClass">{{ errors.address }}</span>
+        </label>
+
+        <label :class="labelClass">
+          <span class="mb-2 block">Latitude</span>
+          <input v-model="form.latitude" type="number" step="0.000001" inputmode="decimal" :class="inputClass" :aria-invalid="Boolean(errors.latitude)" placeholder="53.479850" />
+          <span v-if="errors.latitude" :class="errorClass">{{ errors.latitude }}</span>
+        </label>
+
+        <label :class="labelClass">
+          <span class="mb-2 block">Longitude</span>
+          <input v-model="form.longitude" type="number" step="0.000001" inputmode="decimal" :class="inputClass" :aria-invalid="Boolean(errors.longitude)" placeholder="-2.251050" />
+          <span v-if="errors.longitude" :class="errorClass">{{ errors.longitude }}</span>
+        </label>
+      </template>
+      <template v-else>
+        <span v-if="errors.address" :class="[errorClass, 'md:col-span-2']">{{ errors.address }}</span>
+        <span v-if="errors.latitude || errors.longitude" :class="[errorClass, 'md:col-span-2']">{{ errors.latitude || errors.longitude }}</span>
+      </template>
 
       <p v-if="coordinateWarning" class="md:col-span-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{{ coordinateWarning }}</p>
 
-      <label :class="labelClass">
-        <span class="mb-2 block">Distance from Spinningfields (miles)</span>
-        <input v-model="form.distanceMiles" type="number" min="0" step="0.01" inputmode="decimal" :class="inputClass" />
-        <span :class="hintClass">Leave blank to calculate from the coordinates.</span>
-        <span v-if="errors.distanceMiles" :class="errorClass">{{ errors.distanceMiles }}</span>
-      </label>
-
-      <label :class="labelClass">
-        <span class="mb-2 block">Walking time (minutes)</span>
-        <input v-model="form.walkingTimeMin" type="number" min="0" step="1" inputmode="numeric" :class="inputClass" />
-        <span :class="hintClass">Leave blank to estimate from the distance.</span>
-        <span v-if="errors.walkingTimeMin" :class="errorClass">{{ errors.walkingTimeMin }}</span>
-      </label>
+      <div class="md:col-span-2 rounded-lg border border-dashed border-[#d9cfb8] bg-white px-3 py-2.5 text-sm">
+        <p class="font-semibold text-[#1a1e24]">Walk from Spinningfields</p>
+        <p v-if="locationChanged && hasLocation" class="text-[#535353]">Worked out from a walking route when you save.</p>
+        <template v-else-if="savedRouteStatus === 'ok'">
+          <p class="text-[#1a1e24]">{{ route.walkingTimeMin }} min walk · {{ route.distanceMiles?.toFixed(2) }} miles</p>
+          <p class="text-xs text-[#535353]">From an OpenRouteService walking route. Not editable.</p>
+        </template>
+        <div v-else class="flex flex-wrap items-center gap-3">
+          <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-800">{{ ROUTE_STATUS_LABELS[savedRouteStatus] }}</span>
+          <span v-if="savedRouteStatus === 'route_pending'" class="text-[#535353]">The walking route could not be fetched yet. The venue still shows, listed last.</span>
+          <span v-else class="text-[#535353]">Add a location to work out the walk.</span>
+          <button
+            v-if="savedRouteStatus === 'route_pending' && mode === 'edit'"
+            type="button"
+            :disabled="isRetrying"
+            class="rounded-lg border border-[#1B2F6B] bg-white px-3 py-1.5 text-xs font-semibold text-[#1B2F6B] hover:bg-[#edf3ff] disabled:opacity-60"
+            @click="retryRoute"
+          >
+            {{ isRetrying ? 'Retrying…' : 'Retry' }}
+          </button>
+        </div>
+        <p v-if="routeMessage" role="status" class="mt-1 text-xs text-[#535353]">{{ routeMessage }}</p>
+      </div>
 
       <label :class="[labelClass, 'md:col-span-2']">
         <span class="mb-2 block">Map link</span>

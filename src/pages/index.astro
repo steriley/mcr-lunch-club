@@ -10,6 +10,7 @@ import SuggestModal from '@/components/islands/SuggestModal.vue';
 import LedgerCanon from '@/components/LedgerCanon.astro';
 import { getPublicMapApiKey } from '@/lib/env';
 import { getPublicVenues, setPublicCacheHeaders } from '@/lib/public-data';
+import { milesText, walkText } from '@/lib/route-display';
 import { seedLedgerVenues } from '@/stores/ledger';
 import inspectionsData from '@/data/inspections.json';
 
@@ -37,13 +38,10 @@ const latestAudit = featuredInspections
   .sort((a, b) => b.date.localeCompare(a.date))[0];
 const featuredReview = latestAudit?.notes ?? '';
 const featuredAddress = featuredVenue?.address.split(',')[0] ?? '';
-const valueShortcut = approvedVenues
-  .filter((venue) => venue.cost === '£')
-  .sort((a, b) => a.walkingTimeMin - b.walkingTimeMin)[0];
+// Lists are already nearest first, unknown walking times last.
+const valueShortcut = approvedVenues.find((venue) => venue.cost === '£');
 const swiftShortcut = approvedVenues.find((venue) => venue !== valueShortcut);
-const scrutinyShortcut = venuesData
-  .filter((venue) => venue.status === 'Under Consideration')
-  .sort((a, b) => a.walkingTimeMin - b.walkingTimeMin)[0];
+const scrutinyShortcut = venuesData.find((venue) => venue.status === 'Under Consideration');
 const latestLedgerEntry = inspectionsData
   .slice()
   .sort((a, b) => b.date.localeCompare(a.date))[0];
@@ -54,19 +52,19 @@ const fieldShortcuts = [
   {
     label: 'High value',
     venue: valueShortcut,
-    detail: valueShortcut ? `${valueShortcut.cost} · ${valueShortcut.cuisine} · ${valueShortcut.walkingTimeMin} min walk` : '',
+    detail: valueShortcut ? `${valueShortcut.cost} · ${valueShortcut.cuisine} · ${walkText(valueShortcut.walkingTimeMin)}` : '',
     variant: 'is-approved',
   },
   {
     label: 'Swift exit',
     venue: swiftShortcut,
-    detail: swiftShortcut ? `${swiftShortcut.cuisine} · ${swiftShortcut.walkingTimeMin} min walk` : '',
+    detail: swiftShortcut ? `${swiftShortcut.cuisine} · ${walkText(swiftShortcut.walkingTimeMin)}` : '',
     variant: 'is-approved',
   },
   {
     label: 'Under scrutiny',
     venue: scrutinyShortcut,
-    detail: `${scrutinyAuditCount} satisfactory ${scrutinyAuditCount === 1 ? 'visit' : 'visits'} filed · ${scrutinyShortcut?.walkingTimeMin ?? 0} min walk`,
+    detail: `${scrutinyAuditCount} satisfactory ${scrutinyAuditCount === 1 ? 'visit' : 'visits'} filed · ${walkText(scrutinyShortcut?.walkingTimeMin ?? null)}`,
     variant: 'is-consideration',
   },
 ].filter((shortcut) => shortcut.venue);
@@ -199,11 +197,11 @@ const fieldShortcuts = [
               <div class="docket-stat-grid">
                 <div>
                   <span>From base</span>
-                  <strong>{featuredVenue.walkingTimeMin} min walk</strong>
+                  <strong>{walkText(featuredVenue.walkingTimeMin)}</strong>
                 </div>
                 <div>
                   <span>Distance</span>
-                  <strong>{featuredVenue.distanceMiles.toFixed(2)} miles</strong>
+                  <strong>{milesText(featuredVenue.distanceMiles)}</strong>
                 </div>
                 <div>
                   <span>Audits filed</span>
@@ -233,7 +231,7 @@ const fieldShortcuts = [
                 </a>
                 <a class="docket-action is-secondary" href={featuredVenue.mapSearchLink} target="_blank" rel="noopener noreferrer">
                   <span aria-hidden="true">♙</span>
-                  Route ({featuredVenue.walkingTimeMin}m)
+                  Route{featuredVenue.walkingTimeMin !== null && ` (${featuredVenue.walkingTimeMin}m)`}
                 </a>
               </div>
             </div>
@@ -266,7 +264,7 @@ const fieldShortcuts = [
                 </span>
                 <span class="docket-list-description">{venue.eatLikeUs}</span>
                 <span class="docket-list-footer">
-                  <span class="docket-list-walk">{venue.walkingTimeMin} min walk · {venue.distanceMiles.toFixed(2)} mi</span>
+                  <span class="docket-list-walk">{walkText(venue.walkingTimeMin)} · {milesText(venue.distanceMiles, 'mi')}</span>
                   <span class="docket-list-tier">Approved tier</span>
                 </span>
               </span>
