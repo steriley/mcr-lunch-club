@@ -35,7 +35,8 @@ function fingerprint(venues: Venue[]): string {
   return `${venues.length}:${hash >>> 0}`;
 }
 
-function getInitialVenues(): Venue[] {
+/** Exported so tests can re-run the browser start-up path; the stores below call it once at import. */
+export function getInitialVenues(): Venue[] {
   if (typeof window === 'undefined') return canonVenues;
 
   canonVenues = readCanonFromPage();
@@ -55,7 +56,7 @@ function getInitialVenues(): Venue[] {
   return canonVenues;
 }
 
-function getInitialInspections(): Inspection[] {
+export function getInitialInspections(): Inspection[] {
   if (typeof window !== 'undefined') {
     try {
       const stored = localStorage.getItem(INSPECTIONS_STORAGE_KEY);
