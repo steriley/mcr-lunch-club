@@ -4,7 +4,8 @@ import { OrsError } from './ors';
 import { computeRoute, resolveRoute, routeWarning, sameCoordinates } from './venue-route';
 import { routeStatus } from './route-status';
 
-const stored = { latitude: '53.480000', longitude: '-2.250000', distanceMiles: '0.40', walkingTimeMin: 9 };
+const ROUTED_AT = new Date('2026-10-01T00:00:00Z');
+const stored = { latitude: '53.480000', longitude: '-2.250000', distanceMiles: '0.40', walkingTimeMin: 9, routeUpdatedAt: ROUTED_AT as Date | null };
 
 function lookup(result: { distanceMetres: number; durationSeconds: number } | Error) {
   const calls: unknown[] = [];
@@ -55,6 +56,19 @@ describe('resolveRoute', () => {
     }
   });
 
+  it('upgrades an old estimate at unchanged coordinates, and keeps it when ORS fails', async () => {
+    const estimate = { ...stored, routeUpdatedAt: null };
+    const ok = lookup({ distanceMetres: 1609.344, durationSeconds: 1200 });
+    const upgraded = await resolveRoute({ latitude: 53.48, longitude: -2.25 }, estimate, ok.fn);
+    assert.equal(ok.calls.length, 1);
+    assert.deepEqual({ miles: upgraded.distanceMiles, minutes: upgraded.walkingTimeMin }, { miles: 1, minutes: 20 });
+    assert.ok(upgraded.routeUpdatedAt instanceof Date);
+
+    const failed = await resolveRoute({ latitude: 53.48, longitude: -2.25 }, estimate, lookup(new OrsError('unavailable', 'down')).fn);
+    assert.deepEqual({ miles: failed.distanceMiles, minutes: failed.walkingTimeMin, at: failed.routeUpdatedAt }, { miles: 0.4, minutes: 9, at: undefined });
+    assert.match(routeWarning(failed)!, /still a straight-line estimate/);
+  });
+
   it('turns failures into a pending route with the error attached', async () => {
     const route = await resolveRoute({ latitude: 53.49, longitude: -2.25 }, stored, lookup(new OrsError('rate_limited', 'slow down')).fn);
     assert.equal(route.distanceMiles, null);
@@ -86,11 +100,13 @@ describe('routeWarning', () => {
 });
 
 describe('routeStatus', () => {
-  it('distinguishes needs location, route pending and ok', () => {
-    assert.equal(routeStatus({ latitude: null, longitude: null, distanceMiles: null, walkingTimeMin: null }), 'needs_location');
-    assert.equal(routeStatus({ latitude: '53.48', longitude: null, distanceMiles: null, walkingTimeMin: null }), 'needs_location');
+  it('distinguishes needs location, route pending, estimated and routed', () => {
+    const none = { latitude: null, longitude: null, distanceMiles: null, walkingTimeMin: null, routeUpdatedAt: null };
+    assert.equal(routeStatus(none), 'needs_location');
+    assert.equal(routeStatus({ ...none, latitude: '53.48' }), 'needs_location');
     assert.equal(routeStatus({ ...stored, distanceMiles: null }), 'route_pending');
     assert.equal(routeStatus({ ...stored, walkingTimeMin: null }), 'route_pending');
-    assert.equal(routeStatus(stored), 'ok');
+    assert.equal(routeStatus({ ...stored, routeUpdatedAt: null }), 'estimated');
+    assert.equal(routeStatus(stored), 'routed');
   });
 });

@@ -13,6 +13,8 @@ import { BASE_COORDINATES } from '@/lib/map/config';
  *        -> GeoJSON FeatureCollection; coordinates are [lon, lat]
  *   POST /v2/directions/foot-walking  { coordinates: [[lon, lat], [lon, lat]] }
  *        -> { routes: [{ summary: { distance (m), duration (s) } }] }
+ *   POST /v2/matrix/foot-walking  { locations, sources: [0], destinations, metrics, units: 'm' }
+ *        -> { distances: [[m, ...]], durations: [[s, ...]] } (null where there is no route)
  * Free-plan quotas are per endpoint and per minute/day; a 429 means the
  * quota is spent, so callers stop rather than retry in a loop.
  */
@@ -169,6 +171,42 @@ export async function walkingRoute(from: LatLng, to: LatLng, options: OrsOptions
   if (!summary) throw new OrsError('no_result', 'OpenRouteService found no walking route.');
   // A zero-length route (venue at HQ) comes back without distance/duration.
   return { distanceMetres: summary.distance ?? 0, durationSeconds: summary.duration ?? 0 };
+}
+
+/** Destinations per Matrix request; well inside the public API's per-request limits. */
+export const MATRIX_BATCH_SIZE = 25;
+
+/**
+ * Walking routes from HQ to many venues in one ORS Matrix request (used by
+ * the backfill). Entries are null where ORS found no route. Matrix has its
+ * own, lower daily quota than Directions.
+ */
+export async function walkingMatrixFromBase(destinations: LatLng[], options: OrsOptions = {}): Promise<(WalkingRoute | null)[]> {
+  if (!destinations.length) return [];
+  if (destinations.length > MATRIX_BATCH_SIZE) throw new Error(`At most ${MATRIX_BATCH_SIZE} destinations per Matrix request.`);
+
+  const body = await orsRequest(
+    '/v2/matrix/foot-walking',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        locations: [[BASE_COORDINATES.lng, BASE_COORDINATES.lat], ...destinations.map((point) => [point.lng, point.lat])],
+        sources: [0],
+        destinations: destinations.map((_, index) => index + 1),
+        metrics: ['distance', 'duration'],
+        units: 'm',
+      }),
+    },
+    options
+  );
+
+  const { distances, durations } = (body ?? {}) as { distances?: (number | null)[][]; durations?: (number | null)[][] };
+  return destinations.map((_, index) => {
+    const distance = distances?.[0]?.[index];
+    const duration = durations?.[0]?.[index];
+    return typeof distance === 'number' && typeof duration === 'number' ? { distanceMetres: distance, durationSeconds: duration } : null;
+  });
 }
 
 /** Walking route from HQ (Spinningfields) to a venue. */

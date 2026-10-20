@@ -82,7 +82,7 @@ Environment Variables**. Never commit real values.
 | `BETTER_AUTH_URL` | Site origin: `http://localhost:4321` locally, the production URL (e.g. `https://mcrlunchclub.com`) on Vercel. Also the only trusted origin in production. |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob token for venue image uploads. Created when you connect a Blob store to the project; without it the form accepts image URLs only. |
 | `SEED_CHAIR_EMAIL` / `SEED_CHAIR_NAME` / `SEED_CHAIR_PASSWORD` | Only for `pnpm db:seed`. Remove them from your machine afterwards. |
-| `ORS_API_KEY` | [OpenRouteService](https://openrouteservice.org) key, **server-only** (never prefix it with `PUBLIC_`). Powers the admin venue location search and the walking distance and time from HQ. Without it venues still save, but the location must be entered manually and routes stay "pending". |
+| `ORS_API_KEY` | [OpenRouteService](https://openrouteservice.org) key, **server-only** (never prefix it with `PUBLIC_`). Powers the admin venue location search and the walking distance and time from HQ. Without it venues still save, but the location must be entered manually and routes stay "pending". `OPENROUTESERVICE_API_KEY` is accepted as an alternative name. Free Standard plan: 2,000 directions a day (40 a minute); Matrix has its own lower daily quota. Visitors never trigger requests, only admin saves and the backfill. |
 | `METOFFICE_API_KEY`, `PUBLIC_MAP_API_KEY` | Optional weather and map tile keys. |
 
 ### Local development with a Neon branch
@@ -106,7 +106,7 @@ Use a Neon **branch** so local work never touches production data:
 | `pnpm db:seed` | Create (or re-promote) the first Chair from `SEED_CHAIR_*`. Idempotent; refuses to run with `NODE_ENV=production` unless `--force` is passed. `--reset-password` resets an existing Chair's password. Prints the email only. |
 | `pnpm db:import` | Import `src/data/venues.json` and `src/data/incidents.json`. Idempotent (venues match on slug, records on title + date); existing rows are left alone. `--dry-run` reports without writing; `--update` overwrites existing venues from the files. |
 | `pnpm auth:generate` | Regenerate `src/db/auth-schema.ts` with the Better Auth CLI matching the installed version. Follow with `pnpm db:generate`. |
-| `pnpm routes:backfill` | Replace distance and walking time with ORS walking routes for venues that have coordinates but no ORS route yet. Throttled (`--delay-ms=2000`), resumable, stops cleanly on a rate limit. `--dry-run` lists venues without calling ORS; `--all` recomputes every venue. Needs `ORS_API_KEY`. |
+| `pnpm routes:backfill` | Replace distance and walking time with ORS walking routes for venues that have coordinates but no ORS route yet (the old straight-line estimates). Uses ORS Matrix, 25 venues per request, falling back to one Directions request per venue; throttled (`--delay-ms=2000`), resumable, stops cleanly on a rate limit. `--dry-run` lists venues without calling ORS; `--all` recomputes every venue; `--no-matrix` skips Matrix. Needs `ORS_API_KEY`. |
 | `pnpm inspections:import-legacy` | One-off: import the corrected inspection dates in `drizzle/data/legacy-inspections.json` as legacy inspections and rebuild every venue's "last inspected" date. Venues not on the list lose their old date unless `--keep-unlisted` is passed. Aborts if any name cannot be matched; idempotent; `--dry-run` shows the changes first. |
 | `pnpm test:db` | Integration tests for the transactional rules (inspections, proposals) against `TEST_DATABASE_URL`, a throwaway **local** database whose name contains `test` (tables are truncated). |
 | `pnpm check:bundle` | After `pnpm build`: fail if the browser bundle contains `ORS_API_KEY` (name or value) or calls ORS directly. |
@@ -163,7 +163,13 @@ Use a Neon **branch** so local work never touches production data:
   server from an ORS foot-walking route from HQ, never typed in. If ORS is
   down or rate limited the venue still saves: without coordinates it is
   hidden ("Needs location"); with coordinates but no route it shows, listed
-  last, with a "Route pending" badge and a **Retry** button.
+  last, with a "Route pending" badge and a **Retry** button. Values from
+  before ORS routing are labelled "Estimated, not routed" until the backfill
+  or **Re-route** replaces them; saving such a venue also tries to route it,
+  keeping the estimate if ORS is unavailable. Routed times are credited to
+  openrouteservice.org and OpenStreetMap in the site footer. Near Me and the
+  map's walking rings stay straight-line at one shared pace, 80 m a minute
+  (`WALKING_METRES_PER_MINUTE` in `src/lib/map/config.ts`).
 - **Tier changes need two Chairs**: a venue's tier is never edited directly.
   Any Chair proposes a change from the venue page (a new venue's form takes a
   "Proposed tier"); a **different** Chair approves or declines it from the

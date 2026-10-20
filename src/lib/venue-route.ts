@@ -24,6 +24,8 @@ export interface StoredLocation {
   longitude: string | null;
   distanceMiles: string | null;
   walkingTimeMin: number | null;
+  /** Null for an old straight-line estimate that has not been routed yet. */
+  routeUpdatedAt: Date | null;
 }
 
 type RouteLookup = (to: LatLng) => Promise<WalkingRoute>;
@@ -57,6 +59,8 @@ export async function computeRoute(to: LatLng, lookup: RouteLookup = walkingRout
 /**
  * Route values for a save. Recomputes when the coordinates are new or
  * changed, or the stored route is missing; otherwise keeps what is stored.
+ * An old straight-line estimate at unchanged coordinates is upgraded to a
+ * route when ORS answers, and kept as it is when ORS does not.
  */
 export async function resolveRoute(
   input: { latitude: number | null; longitude: number | null },
@@ -66,7 +70,10 @@ export async function resolveRoute(
   if (input.latitude === null || input.longitude === null) return { ...NO_ROUTE, error: null };
 
   if (existing && sameCoordinates(input, existing) && existing.distanceMiles !== null && existing.walkingTimeMin !== null) {
-    return { distanceMiles: Number(existing.distanceMiles), walkingTimeMin: existing.walkingTimeMin, error: null };
+    const kept: ResolvedRoute = { distanceMiles: Number(existing.distanceMiles), walkingTimeMin: existing.walkingTimeMin, error: null };
+    if (existing.routeUpdatedAt !== null) return kept;
+    const upgraded = await computeRoute({ lat: input.latitude, lng: input.longitude }, lookup);
+    return upgraded.error ? { ...kept, error: upgraded.error } : upgraded;
   }
   return computeRoute({ lat: input.latitude, lng: input.longitude }, lookup);
 }
@@ -82,5 +89,6 @@ export function routeWarning(route: ResolvedRoute): string | null {
         : route.error.kind === 'no_result'
           ? 'no walking route was found'
           : 'the route service is unavailable';
+  if (route.distanceMiles !== null) return `Saved. The walk is still a straight-line estimate because ${reason}. Use Re-route later.`;
   return `Saved, but the walking route is pending because ${reason}. Use Retry later.`;
 }

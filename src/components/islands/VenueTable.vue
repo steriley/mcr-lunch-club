@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import TierBadge from './TierBadge.vue';
+import { ROUTE_STATUS_LABELS, type RouteStatus } from '@/lib/route-status';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
 
 interface VenueRow {
@@ -13,8 +14,8 @@ interface VenueRow {
   hiddenReason: 'no_tier' | 'needs_location' | 'closed' | null;
   closed: boolean;
   lastInspectionDate: string | null;
-  /** Has coordinates but no ORS walking route yet (see src/lib/route-status.ts). */
-  routePending: boolean;
+  /** See src/lib/route-status.ts; needs_location already shows as the hidden reason. */
+  routeStatus: RouteStatus;
   updatedAt: string;
 }
 
@@ -193,8 +194,11 @@ const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2
                 <span v-if="venue.closed" class="ml-1 inline-flex whitespace-nowrap rounded-full bg-stone-700 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white">
                   Closed
                 </span>
-                <span v-if="venue.routePending" class="ml-1 inline-flex whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-800">
-                  Route pending
+                <span
+                  v-if="venue.routeStatus === 'route_pending' || venue.routeStatus === 'estimated'"
+                  class="ml-1 inline-flex whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-800"
+                >
+                  {{ ROUTE_STATUS_LABELS[venue.routeStatus] }}
                 </span>
               </td>
               <td class="whitespace-nowrap px-4 py-3 text-[#3d3d3d]">{{ formatDate(venue.updatedAt) }}</td>

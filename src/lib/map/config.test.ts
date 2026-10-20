@@ -5,6 +5,7 @@ import {
   BASE_LAT_LNG,
   CARTO_VOYAGER_TILE_CONFIG,
   WALKING_ISOCHRONES,
+  WALKING_METRES_PER_MINUTE,
   createTileLayer,
 } from './config';
 
@@ -16,6 +17,17 @@ describe('map config', () => {
   it('orders isochrone rings by increasing radius', () => {
     const radii = WALKING_ISOCHRONES.map((ring) => ring.radius);
     assert.deepEqual(radii, [...radii].sort((a, b) => a - b));
+  });
+
+  it('derives the walking rings from the shared 80 m/min pace', () => {
+    assert.equal(WALKING_METRES_PER_MINUTE, 80);
+    for (const ring of WALKING_ISOCHRONES.filter((entry) => entry.label.endsWith('min walk'))) {
+      assert.equal(ring.radius, Number.parseInt(ring.label, 10) * WALKING_METRES_PER_MINUTE, ring.label);
+    }
+    assert.deepEqual(
+      WALKING_ISOCHRONES.map((ring) => ring.radius),
+      [400, 800, 1200, 1600, 2000, 4023]
+    );
   });
 
   it('builds tile URLs with and without an API key', () => {

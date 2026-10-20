@@ -41,12 +41,25 @@ export interface IsochroneRing {
   weight?: number;
 }
 
+/**
+ * The one walking pace for straight-line estimates (4.8 km/h): Near Me and the
+ * map's walking rings. Stored venue walking times come from ORS routes instead.
+ */
+export const WALKING_METRES_PER_MINUTE = 80;
+
+const walkRing = (minutes: number, color: string, dash: string): IsochroneRing => ({
+  radius: minutes * WALKING_METRES_PER_MINUTE,
+  color,
+  label: `${minutes} min walk`,
+  dash,
+});
+
 export const WALKING_ISOCHRONES: IsochroneRing[] = [
-  { radius: 402, color: '#059669', label: '5 min walk', dash: '3, 4' },
-  { radius: 805, color: '#d97706', label: '10 min walk', dash: '3, 5' },
-  { radius: 1207, color: '#2563eb', label: '15 min walk', dash: '4, 6' },
-  { radius: 1609, color: '#7c3aed', label: '20 min walk', dash: '4, 6' },
-  { radius: 2012, color: '#e11d48', label: '25 min walk', dash: '5, 7' },
+  walkRing(5, '#059669', '3, 4'),
+  walkRing(10, '#d97706', '3, 5'),
+  walkRing(15, '#2563eb', '4, 6'),
+  walkRing(20, '#7c3aed', '4, 6'),
+  walkRing(25, '#e11d48', '5, 7'),
   { radius: 4023, color: '#991b1b', label: '2.5-Mile Central Boundary', dash: '8, 8', weight: 2.5 },
 ];
 

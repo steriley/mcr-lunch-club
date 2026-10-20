@@ -117,7 +117,11 @@ export function getBlobToken(): string | undefined {
   return optional('BLOB_READ_WRITE_TOKEN');
 }
 
-/** OpenRouteService key for geocoding and walking routes. Server-only: never expose it to islands. */
+/**
+ * OpenRouteService key for geocoding and walking routes. Server-only: never
+ * expose it to islands. OPENROUTESERVICE_API_KEY (the name used in issue #5)
+ * is accepted as a fallback.
+ */
 export function getOrsApiKey(): string | undefined {
-  return optional('ORS_API_KEY');
+  return optional('ORS_API_KEY') ?? optional('OPENROUTESERVICE_API_KEY');
 }
