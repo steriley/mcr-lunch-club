@@ -78,6 +78,7 @@ describe('GET /api/weather/[step]', () => {
     const first = await call('hourly');
     assert.equal(first.status, 200);
     assert.equal(first.headers.get('X-Weather-Cache'), 'miss');
+    assert.match(first.headers.get('Cache-Control')!, /^public, .*s-maxage=900/);
     assert.deepEqual(await first.json(), forecast);
 
     assert.equal(fetchCalls.length, 1);
@@ -88,6 +89,7 @@ describe('GET /api/weather/[step]', () => {
 
     const second = await call('hourly');
     assert.equal(second.headers.get('X-Weather-Cache'), 'hit');
+    assert.match(second.headers.get('Cache-Control')!, /s-maxage=900/);
     assert.equal(fetchCalls.length, 1);
   });
 
@@ -104,6 +106,8 @@ describe('GET /api/weather/[step]', () => {
       const response = await call('hourly');
       assert.equal(response.status, 200);
       assert.equal(response.headers.get('X-Weather-Cache'), 'stale');
+      // Stale data must not be cached at the CDN, or it would outlive the outage.
+      assert.equal(response.headers.get('Cache-Control'), 'no-store');
       assert.match(response.headers.get('Warning')!, /upstream status 500/);
       assert.deepEqual(await response.json(), forecast);
 

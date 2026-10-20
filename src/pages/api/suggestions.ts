@@ -7,16 +7,18 @@ import { isSuggestionRateLimited, senderHash } from '@/lib/suggestions';
 
 export const prerender = false;
 
-function clientIp(request: Request, clientAddress: () => string): string | null {
+/** Astro's clientAddress getter throws where the host can't supply it, so it's read lazily here. */
+function clientIp(request: Request, readClientAddress: () => string): string | null {
   try {
-    return clientAddress();
+    return readClientAddress();
   } catch {
     return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
   }
 }
 
 /** Public "Suggest a Venue" endpoint. Suggestions land in the Chairs' Area inbox, never on the site. */
-export const POST: APIRoute = async ({ request, clientAddress }) => {
+export const POST: APIRoute = async (context) => {
+  const { request } = context;
   if (!hasTrustedOrigin(request)) return jsonError(403, 'Forbidden');
 
   const parsed = suggestionInputSchema.safeParse(await readJson(request));
@@ -26,7 +28,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   if (parsed.data.website?.trim()) return jsonResponse({ ok: true }, 201);
 
   try {
-    const hash = senderHash(clientIp(request, () => clientAddress));
+    const hash = senderHash(clientIp(request, () => context.clientAddress));
     if (await isSuggestionRateLimited(db, hash)) {
       return jsonError(429, 'The Chairs have received a lot of petitions recently. Please try again later.');
     }
