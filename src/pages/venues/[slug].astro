@@ -1,22 +1,22 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import { getCollection } from 'astro:content';
-import venuesData from '@/data/venues.json';
 import inspectionsData from '@/data/inspections.json';
+import { renderMarkdown } from '@/lib/markdown';
+import { getPublishedVenue, setPublicCacheHeaders } from '@/lib/public-data';
 
-export const prerender = true;
+export const prerender = false;
 
-export async function getStaticPaths() {
-  return venuesData.map((venue) => ({
-    params: { slug: venue.slug },
-    props: { venue },
-  }));
+const venue = Astro.params.slug ? await getPublishedVenue(Astro.params.slug) : null;
+if (!venue) {
+  return new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 }
+setPublicCacheHeaders(Astro.response.headers);
 
-const { venue } = Astro.props;
+// renderMarkdown escapes all HTML before formatting, so its output is safe for set:html.
+const verdictHtml = renderMarkdown(venue.verdict);
 
 // Filter inspections for this venue
-const venueInspections = (inspectionsData as any[]).filter(
+const venueInspections = inspectionsData.filter(
   (insp) => insp.venueSlug === venue.slug
 );
 
@@ -129,6 +129,22 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
           </p>
         </div>
 
+        {venue.imageUrl && (
+          <img
+            src={venue.imageUrl}
+            alt={venue.name}
+            loading="lazy"
+            class="w-full max-h-96 object-cover rounded-xl border border-[#dcd6c8]"
+          />
+        )}
+
+        {venue.pullQuote && (
+          <blockquote class="border-l-4 border-[#c59b27] pl-5 py-1">
+            <p class="text-2xl sm:text-3xl italic leading-snug text-[#1a1e24]">“{venue.pullQuote}”</p>
+            <footer class="mt-2 text-xs font-sans uppercase tracking-widest text-stone-500">— The Chairs</footer>
+          </blockquote>
+        )}
+
         <!-- Official Approved Sticker Award Plaque (Manchester Michelin Star) -->
         {venue.status === 'Approved' && (
           <div class="bg-gradient-to-r from-[#1a1e24] via-[#242b35] to-[#1a1e24] text-[#f9f7f1] border-2 border-[#c59b27] p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-5 font-serif-header relative overflow-hidden">
@@ -183,6 +199,7 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
         </div>
 
         <!-- Eat Like Us Box (Wax Seal Styling) -->
+        {venue.eatLikeUs && (
         <div class="relative bg-amber-50/90 border-2 border-[#c59b27] p-6 rounded-xl shadow-md">
           <div class="flex items-center gap-2 text-xs font-bold text-[#8b1e22] uppercase tracking-wider">
             <span>🛡</span>
@@ -195,6 +212,14 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
             Deviation from the recommended order during official club outings requires advance written sanction from the presiding Chair.
           </p>
         </div>
+        )}
+
+        {verdictHtml && (
+          <section class="space-y-2">
+            <h2 class="text-xl font-bold text-[#1a1e24]">The Chairs’ Verdict</h2>
+            <div class="venue-verdict font-sans text-sm leading-relaxed text-stone-800" set:html={verdictHtml} />
+          </section>
+        )}
 
         <!-- Rejection / Deficiency Rationale if applicable -->
         {venue.rejectionReason && (

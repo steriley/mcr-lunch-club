@@ -1,102 +1,73 @@
+import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
+import { venues } from '@/db/schema';
+import { isUniqueViolation, jsonError, jsonResponse, readJson, requireAdmin, serverError, uuidParam, validationError } from '@/lib/admin-api';
+import { db } from '@/lib/db';
+import { venueInputSchema } from '@/lib/venue-schema';
+import { isSlugTaken, recordVenueRevision, serializeVenue, venueValues } from '@/lib/venues';
+
 export const prerender = false;
 
-import { eq } from 'drizzle-orm';
-import { db, schema } from '@/lib/db';
-import { adminGuard, venueErrorResponse, venueInputSchema } from '@/lib/venue-validation';
+export const GET: APIRoute = async ({ request, params }) => {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
 
-const { venues } = schema;
+  const id = uuidParam.safeParse(params.id);
+  if (!id.success) return jsonError(404, 'Venue not found.');
 
-export async function GET({ params, request }: { params: Record<string, string | undefined>; request: Request }) {
-  const session = await adminGuard(request);
-  if (!session) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  try {
+    const [row] = await db.select().from(venues).where(eq(venues.id, id.data)).limit(1);
+    if (!row) return jsonError(404, 'Venue not found.');
+    return jsonResponse({ venue: serializeVenue(row) });
+  } catch (error) {
+    return serverError('Load venue', error);
   }
+};
 
-  const id = params.id;
-  if (!id) {
-    return Response.json({ error: 'Venue id is required.' }, { status: 400 });
+export const PUT: APIRoute = async ({ request, params }) => {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
+
+  const id = uuidParam.safeParse(params.id);
+  if (!id.success) return jsonError(404, 'Venue not found.');
+
+  const parsed = venueInputSchema.safeParse(await readJson(request));
+  if (!parsed.success) return validationError(parsed.error);
+
+  try {
+    if (await isSlugTaken(db, parsed.data.slug, id.data)) {
+      return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });
+    }
+
+    const [row] = await db
+      .update(venues)
+      .set(venueValues(parsed.data, session.user.id))
+      .where(eq(venues.id, id.data))
+      .returning();
+    if (!row) return jsonError(404, 'Venue not found.');
+
+    await recordVenueRevision(db, row, session.user.id);
+    return jsonResponse({ venue: serializeVenue(row) });
+  } catch (error) {
+    if (isUniqueViolation(error)) {
+      return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });
+    }
+    return serverError('Update venue', error);
   }
+};
 
-  const venue = await db.query.venues.findFirst({ where: eq(venues.id, id) });
-  if (!venue) {
-    return Response.json({ error: 'Venue not found.' }, { status: 404 });
+export const DELETE: APIRoute = async ({ request, params }) => {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
+
+  const id = uuidParam.safeParse(params.id);
+  if (!id.success) return jsonError(404, 'Venue not found.');
+
+  try {
+    const [row] = await db.delete(venues).where(eq(venues.id, id.data)).returning({ id: venues.id });
+    if (!row) return jsonError(404, 'Venue not found.');
+    return jsonResponse({ ok: true });
+  } catch (error) {
+    return serverError('Delete venue', error);
   }
-
-  return Response.json({ venue });
-}
-
-export async function PUT({ params, request }: { params: Record<string, string | undefined>; request: Request }) {
-  const session = await adminGuard(request);
-  if (!session) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const id = params.id;
-  if (!id) {
-    return Response.json({ error: 'Venue id is required.' }, { status: 400 });
-  }
-
-  const current = await db.query.venues.findFirst({ where: eq(venues.id, id) });
-  if (!current) {
-    return Response.json({ error: 'Venue not found.' }, { status: 404 });
-  }
-
-  const body = await request.json().catch(() => null);
-  if (!body) {
-    return Response.json({ error: 'Request body is required.' }, { status: 400 });
-  }
-
-  const parsed = venueInputSchema.safeParse(body);
-  if (!parsed.success) {
-    return venueErrorResponse(parsed.error);
-  }
-
-  const data = parsed.data;
-  const duplicate = await db.query.venues.findFirst({ where: eq(venues.slug, data.slug) });
-  if (duplicate && duplicate.id !== id) {
-    return Response.json({ error: 'Slug already exists. Choose a unique slug.', fields: { slug: 'Slug already exists.' } }, { status: 409 });
-  }
-
-  const [row] = await (db.update(venues as any)
-    .set({
-      name: data.name,
-      slug: data.slug,
-      tier: data.tier,
-      address: data.address || null,
-      latitude: (data.latitude ?? null) as any,
-      longitude: (data.longitude ?? null) as any,
-      summary: data.summary || null,
-      verdict: data.verdict || null,
-      pullQuote: data.pullQuote || null,
-      lunchSpecial: data.lunchSpecial || null,
-      websiteUrl: data.websiteUrl || null,
-      imageUrl: data.imageUrl || null,
-      published: data.published,
-      updatedBy: session.user.id,
-      updatedAt: new Date(),
-    })
-    .where(eq(venues.id, id)) as any)
-    .returning();
-
-  return Response.json({ venue: row });
-}
-
-export async function DELETE({ params, request }: { params: Record<string, string | undefined>; request: Request }) {
-  const session = await adminGuard(request);
-  if (!session) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const id = params.id;
-  if (!id) {
-    return Response.json({ error: 'Venue id is required.' }, { status: 400 });
-  }
-
-  const current = await db.query.venues.findFirst({ where: eq(venues.id, id) });
-  if (!current) {
-    return Response.json({ error: 'Venue not found.' }, { status: 404 });
-  }
-
-  await db.delete(venues).where(eq(venues.id, id));
-  return Response.json({ ok: true });
-}
+};

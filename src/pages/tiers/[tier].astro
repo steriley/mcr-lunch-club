@@ -1,30 +1,26 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import venuesData from '@/data/venues.json';
+import { getPublishedVenues, setPublicCacheHeaders } from '@/lib/public-data';
+import { TIERS, tierPathSegment } from '@/lib/tiers';
 import type { TierStatus } from '@/types';
 
-export const prerender = true;
+export const prerender = false;
 
-export async function getStaticPaths() {
-  const tiers: { slug: string; name: TierStatus }[] = [
-    { slug: 'approved', name: 'Approved' },
-    { slug: 'under-consideration', name: 'Under Consideration' },
-    { slug: 'to-be-assessed', name: 'To Be Assessed' },
-    { slug: 'if-we-must', name: 'If We Must' },
-    { slug: 'rejected', name: 'Rejected' },
-    { slug: 'gone-but-not-forgotten', name: 'Gone But Not Forgotten' },
-  ];
+// Order of the tier tabs on this page.
+const TAB_ORDER = ['approved', 'under_consideration', 'to_be_assessed', 'if_we_must', 'rejected', 'gone_but_not_forgotten'] as const;
+const allTiers: { slug: string; name: TierStatus }[] = TAB_ORDER.map((value) => ({
+  slug: tierPathSegment(value),
+  name: TIERS.find((tier) => tier.value === value)!.label,
+}));
 
-  return tiers.map((t) => {
-    const list = venuesData.filter((v) => v.status === t.name);
-    return {
-      params: { tier: t.slug },
-      props: { tierName: t.name, venues: list, allTiers: tiers },
-    };
-  });
+const tier = allTiers.find((entry) => entry.slug === Astro.params.tier);
+if (!tier) {
+  return new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 }
 
-const { tierName, venues, allTiers } = Astro.props;
+const tierName = tier.name;
+const venues = (await getPublishedVenues()).filter((venue) => venue.status === tierName);
+setPublicCacheHeaders(Astro.response.headers);
 const currentTierSlug = Astro.params.tier;
 
 const TIER_METADATA: Record<string, { bannerBg: string; quote: string; description: string; rule: string; icon: string }> = {

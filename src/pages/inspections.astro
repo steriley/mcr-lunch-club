@@ -1,11 +1,21 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import inspectionsData from '@/data/inspections.json';
-import venuesData from '@/data/venues.json';
 import InspectionModal from '@/components/islands/InspectionModal.vue';
+import LedgerCanon from '@/components/LedgerCanon.astro';
+import { getPublishedVenues, setPublicCacheHeaders } from '@/lib/public-data';
+import { seedLedgerVenues } from '@/stores/ledger';
+
+export const prerender = false;
+
+// The inspection modal picks from the published venues.
+const venuesData = await getPublishedVenues();
+seedLedgerVenues(venuesData);
+setPublicCacheHeaders(Astro.response.headers);
 ---
 
 <Layout title="The Inspection Audits — Chronological Ledger | MCR Lunch Club">
+  <LedgerCanon venues={venuesData} />
   <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
     <!-- Breadcrumb -->
     <div class="text-xs">

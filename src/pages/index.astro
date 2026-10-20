@@ -8,9 +8,17 @@ import WhereToday from '@/components/islands/WhereToday.vue';
 import WeatherCard from '@/components/WeatherCard.vue';
 import InspectionModal from '@/components/islands/InspectionModal.vue';
 import SuggestModal from '@/components/islands/SuggestModal.vue';
+import LedgerCanon from '@/components/LedgerCanon.astro';
 import { getPublicMapApiKey } from '@/lib/env';
-import venuesData from '@/data/venues.json';
+import { getPublishedVenues, setPublicCacheHeaders } from '@/lib/public-data';
+import { seedLedgerVenues } from '@/stores/ledger';
 import inspectionsData from '@/data/inspections.json';
+
+export const prerender = false;
+
+const venuesData = await getPublishedVenues();
+seedLedgerVenues(venuesData);
+setPublicCacheHeaders(Astro.response.headers);
 
 const publicMapApiKey = getPublicMapApiKey();
 const approvedVenues = venuesData
@@ -65,6 +73,7 @@ const fieldShortcuts = [
 ---
 
 <Layout title="MCR Lunch Club — The Official Manchester Lunch Ledger">
+  <LedgerCanon venues={venuesData} />
   <FilterBar client:load />
 
   <div class="home-workspace">

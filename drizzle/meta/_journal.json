@@ -8,6 +8,20 @@
       "when": 1792271462277,
       "tag": "0000_zippy_prodigy",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792488985065,
+      "tag": "0001_flashy_stone_men",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792489853749,
+      "tag": "0002_thankful_naoko",
+      "breakpoints": true
     }
   ]
 }

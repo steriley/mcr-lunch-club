@@ -20,16 +20,17 @@ Welcome to the official repository of the **Manchester Lunch Club Map App**.
 
 ## 🛠️ Architecture
 
-Built on **Astro 5** (static by default) with targeted **Vue 3 islands** hydrated only where interactive client state is required:
+Built on **Astro 7** (server output on Vercel) with targeted **Vue 3 islands** hydrated only where interactive client state is required. Venue and Hall of Shame content lives in **Neon Postgres** and is edited by the Chairs in the admin area (`/admin`); public pages only ever show published rows and are cached at Vercel's CDN (`s-maxage=60, stale-while-revalidate=300`), so a published change appears within about a minute.
 
-- **Static Pages (`.astro`)**:
+- **Pages (`.astro`)**:
   - `/` — The interactive Leaflet Ledger Map
-  - `/venues/[slug]` — Statically generated dossiers for all 90 enrolled establishments
+  - `/venues/[slug]` — Dossiers for every published establishment
   - `/tiers/[tier]` — Registry classifications (`approved`, `under-consideration`, `to-be-assessed`, `if-we-must`, `rejected`, `gone-but-not-forgotten`)
   - `/hall-of-shame` — The Bribery & Improper Benefit Attempt Record
   - `/manifesto` — The Constitutional Articles of Governance
-  - `/inspections` — The Complete Chronological Audit Log
-  - `/api/venues.json` — Static JSON endpoint
+  - `/inspections` — The Complete Chronological Audit Log (still read from `src/data/inspections.json`)
+  - `/api/venues.json` — Published venues as JSON
+  - `/admin/*` — The Chairs' Area (sign-in required; see below)
 - **Vue 3 Islands (`src/components/islands/`)**:
   - `LunchMap.vue` (`client:load`) — Leaflet map with custom tier pins, rank badges, walking isochrones, and the 2.5-mile boundary.
   - `FilterBar.vue` (`client:load`) — Search, tier badges, cost (`£`/`££`/`£££`), walking time slider, and recency filter.
@@ -39,54 +40,111 @@ Built on **Astro 5** (static by default) with targeted **Vue 3 islands** hydrate
   - `SuggestModal.vue` (`client:idle`) — Member petition form placing candidates into *To Be Assessed*.
 - **State Management**:
   - `nanostores` with `@nanostores/vue` for cross-island reactive filtering and modal state.
-  - `src/stores/ledger.ts` providing local storage persistence for live tier promotions/demotions and inspection audits.
+  - `src/stores/ledger.ts` starts from the published venues the server embeds in the page, with local storage persistence for live tier promotions/demotions and inspection audits (discarded automatically when the published list changes).
 - **Data Validation**:
-  - Zod schemas in `src/content.config.ts` enforcing strict typing across `venues`, `inspections`, and `incidents`.
+  - Zod schemas in `src/lib/venue-schema.ts`, `src/lib/bribery-schema.ts` and `src/lib/user-schema.ts`, shared by the admin API and the admin forms.
 
 ---
 
 ## 🚀 Getting Started
 
 ```bash
-# Navigate to project directory
-cd /Users/steriley/.gemini/antigravity/scratch/mcr-lunch-club
-
-# Start development server
-npm run dev
-
-# Build production static site
-npm run build
-
-# Preview production build locally
-npm run preview
+pnpm install
+cp .env.example .env.local   # then fill it in; see "Admin setup"
+pnpm dev                     # http://localhost:4321
+pnpm build                   # production build (Vercel output)
+pnpm test                    # unit tests
 ```
 
 ---
 
 ## Admin setup
 
-Copy `.env.example` to `.env.local` for local development and set the required
-values. In Vercel, keep the Neon integration's variable names unchanged and add
-the Better Auth variables in project settings.
+The Chairs' Area lives at `/admin`. Authentication is Better Auth (email and
+password, **no public sign-up**), data is Neon Postgres through Drizzle ORM, and
+images go to Vercel Blob. The section name ("Chairs' Area") is set once in
+`src/lib/admin-config.ts`.
+
+### Environment variables
+
+Copy `.env.example` to `.env.local` locally. On Vercel, keep the Neon
+integration's variable names and add the rest in **Project → Settings →
+Environment Variables**. Never commit real values.
 
 | Variable | Used for |
 | --- | --- |
-| `DATABASE_URL` | Pooled Neon connection used by the running application. |
-| `DATABASE_URL_UNPOOLED` | Direct Neon connection used by Drizzle Kit, migrations, and database scripts; falls back to `DATABASE_URL` if unset. |
-| `BETTER_AUTH_SECRET` | Better Auth signing/encryption secret; must be at least 32 characters. |
-| `BETTER_AUTH_URL` | Application origin used by Better Auth (for example, `http://localhost:4321` locally or the production site URL). |
-| `SEED_CHAIR_EMAIL` | Email for the first Chair created by `pnpm db:seed`. |
-| `SEED_CHAIR_PASSWORD` | Initial password for that Chair; use at least 12 characters. |
-| `SEED_CHAIR_NAME` | Optional name for the seeded Chair; defaults to `Chair`. |
+| `DATABASE_URL` | Pooled Neon connection (host contains `-pooler`) used by the running site. Set by the Vercel–Neon integration. |
+| `DATABASE_URL_UNPOOLED` | Direct Neon connection for migrations and scripts; falls back to `DATABASE_URL`. |
+| `DATABASE_DRIVER` | `pg` (default, node-postgres over TCP, supports transactions). Set `neon-http` only where outbound Postgres connections (port 5432) are blocked, e.g. a sandboxed cloud dev environment; it sends queries over HTTPS and has no transactions. |
+| `BETTER_AUTH_SECRET` | Signing/encryption secret, at least 32 characters (`openssl rand -base64 32`). Different per environment. |
+| `BETTER_AUTH_URL` | Site origin: `http://localhost:4321` locally, the production URL (e.g. `https://mcrlunchclub.com`) on Vercel. Also the only trusted origin in production. |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob token for venue image uploads. Created when you connect a Blob store to the project; without it the form accepts image URLs only. |
+| `SEED_CHAIR_EMAIL` / `SEED_CHAIR_NAME` / `SEED_CHAIR_PASSWORD` | Only for `pnpm db:seed`. Remove them from your machine afterwards. |
+| `METOFFICE_API_KEY`, `PUBLIC_MAP_API_KEY` | Optional weather and map tile keys. |
 
-Run `pnpm db:generate` when schema changes need a migration, then
-`pnpm db:migrate` to apply migrations. Run `pnpm db:seed` to create or promote
-the configured first Chair; use `--force` only when intentionally seeding in
-production. The application uses only the pooled connection at runtime.
+### Local development with a Neon branch
 
-Optional integrations use `METOFFICE_API_KEY` (or `WEATHER_API_KEY`) for server
-weather requests and `PUBLIC_MAP_API_KEY` for the public CARTO map tile key.
-`BLOB_READ_WRITE_TOKEN` is reserved for the later image-upload phase.
+Use a Neon **branch** so local work never touches production data:
+
+1. In the Neon console open the project, go to **Branches → New branch**,
+   branch from `main` (or "schema only" for an empty copy) and name it e.g. `dev`.
+2. Copy the branch's pooled and direct connection strings into `.env.local`
+   as `DATABASE_URL` and `DATABASE_URL_UNPOOLED`.
+3. Run `pnpm db:migrate`, then `pnpm db:seed` to create your Chair, then
+   `pnpm db:import` if the branch has no content yet.
+
+### Scripts
+
+| Command | What it does |
+| --- | --- |
+| `pnpm db:generate` | Generate a migration in `drizzle/` after changing `src/db/schema.ts`. Commit it. |
+| `pnpm db:migrate` | Apply committed migrations (uses `DATABASE_URL_UNPOOLED`). |
+| `pnpm db:studio` | Open Drizzle Studio. |
+| `pnpm db:seed` | Create (or re-promote) the first Chair from `SEED_CHAIR_*`. Idempotent; refuses to run with `NODE_ENV=production` unless `--force` is passed. `--reset-password` resets an existing Chair's password. Prints the email only. |
+| `pnpm db:import` | Import `src/data/venues.json` and `src/data/incidents.json`. Idempotent (venues match on slug, records on title + date); existing rows are left alone. `--dry-run` reports without writing; `--update` overwrites existing venues from the files. |
+| `pnpm auth:generate` | Regenerate `src/db/auth-schema.ts` with the Better Auth CLI matching the installed version. Follow with `pnpm db:generate`. |
+| `pnpm check:security [url]` | Check that every `/admin` page and `/api/admin` route refuses anonymous and cross-origin requests, and that sign-up is disabled. Defaults to `http://localhost:4321`; pass the production URL after a deploy. |
+
+### Deploying to Vercel (runbook)
+
+1. **Database**: add Neon from the Vercel Marketplace to the project so
+   `DATABASE_URL` / `DATABASE_URL_UNPOOLED` are provisioned.
+2. **Env vars**: set `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` (the production
+   domain) for Production, and separate values for Preview if you use it.
+3. **Blob (optional)**: create a Blob store under **Storage** and connect it to
+   the project, which adds `BLOB_READ_WRITE_TOKEN`.
+4. **Migrations are a manual, explicit step**; they do not run on build. From a
+   trusted machine with the production direct URL in the environment:
+   ```bash
+   DATABASE_URL_UNPOOLED='<production direct url>' pnpm db:migrate
+   ```
+   Run this before deploying code that needs the new schema.
+5. **First Chair** (once): with production env vars set locally,
+   ```bash
+   NODE_ENV=production SEED_CHAIR_EMAIL=… SEED_CHAIR_NAME=… SEED_CHAIR_PASSWORD=… pnpm db:seed --force
+   ```
+   then delete the `SEED_CHAIR_*` values from that machine. Add further Chairs
+   from **Chairs' Area → Users**.
+6. **Content** (once, if the database is empty): `pnpm db:import`.
+7. **Verify**: `pnpm check:security https://<your-domain>`.
+
+### Operating notes
+
+- **Chairs**: create accounts, deactivate (ban) them and set temporary
+  passwords from `/admin/users`. Deactivating signs the user out everywhere.
+  There is no email sending, so share initial/temporary passwords securely.
+  Chairs change their own password and sign out other devices at `/admin/account`.
+- **Publishing**: venues are drafts until published; drafts and hidden Hall of
+  Shame records never appear publicly. Every venue save, publish and unpublish
+  stores a snapshot, viewable from the venue's **History** page.
+- **Security**: sessions last 7 days with daily sliding refresh (`SESSION_SETTINGS`
+  in `src/lib/auth-config.ts`). Sign-in is limited to 5 attempts per minute per
+  IP, stored in the database so it holds across serverless invocations. Admin
+  pages send `Cache-Control: no-store` and `noindex`; admin API writes must come
+  from the site's own origin. Image uploads accept JPEG, PNG, WebP, AVIF and GIF
+  up to 4 MB.
+- **Hosting plan**: Vercel's Hobby plan is for personal, non-commercial use. If
+  the site ever takes payments, sponsorship or ads, move to a Pro plan.
 
 ## 📁 Project Structure
 
@@ -101,11 +159,10 @@ mcr-lunch-club/
 │   │       ├── SuggestModal.vue
 │   │       ├── VenueSheet.vue
 │   │       └── WhereToday.vue
-│   ├── content/
-│   │   ├── venues/            # 90 individual JSON files validated by Zod
-│   │   ├── inspections/       # Audit inspection logs
-│   │   └── incidents/         # Bribery and impropriety records
-│   ├── data/                  # Consolidated datasets for fast client load
+│   ├── content/               # Original per-file content (superseded by the database)
+│   ├── data/                  # Original datasets: import source; inspections still read from here
+│   ├── db/                    # Drizzle schema (app + Better Auth)
+│   ├── lib/                   # Auth, database, validation, public data and admin helpers
 │   ├── layouts/
 │   │   └── Layout.astro       # Authoritative header, seal, and archival footer
 │   ├── pages/
@@ -123,8 +180,13 @@ mcr-lunch-club/
 │   │   └── global.css         # Tailwind CSS & Leaflet custom rules
 │   ├── types/
 │   │   └── index.ts           # TypeScript interfaces
-│   └── content.config.ts      # Astro 5 Content Collections Zod schemas
+│   └── content.config.ts      # Content Collections schemas for the original files
+├── drizzle/                   # Committed SQL migrations
 ├── scripts/
-│   └── seed-data.mjs          # CSV parsing & data generation script
+│   ├── seed-data.mjs          # CSV parsing & data generation script
+│   ├── migrate.ts             # pnpm db:migrate
+│   ├── seed-chair.ts          # pnpm db:seed
+│   ├── import-existing-content.ts  # pnpm db:import
+│   └── check-admin-security.ts     # pnpm check:security
 └── astro.config.mjs
 ```

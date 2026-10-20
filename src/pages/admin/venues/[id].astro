@@ -2,33 +2,48 @@
 import { eq } from 'drizzle-orm';
 import VenueForm from '@/components/islands/VenueForm.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
-import { db, schema } from '@/lib/db';
+import { user } from '@/db/auth-schema';
+import { venues } from '@/db/schema';
+import { uuidParam } from '@/lib/admin-api';
+import { db } from '@/lib/db';
+import { getBlobToken } from '@/lib/env';
+import { serializeVenue } from '@/lib/venues';
 
-const user = Astro.locals.user;
-const { venues } = schema;
+export const prerender = false;
 
-if (!user || user.role !== 'admin') {
-  return Astro.redirect(`/admin/login?next=${encodeURIComponent(Astro.url.pathname)}`);
+const id = uuidParam.safeParse(Astro.params.id);
+const [row] = id.success ? await db.select().from(venues).where(eq(venues.id, id.data)).limit(1) : [];
+if (!row) {
+  return new Response('Venue not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
 }
 
-const venue = await db.query.venues.findFirst({ where: eq(venues.id, Astro.params.id ?? '') });
-if (!venue) {
-  throw new Error('Venue not found');
-}
+const [editor] = row.updatedBy
+  ? await db.select({ name: user.name, email: user.email }).from(user).where(eq(user.id, row.updatedBy)).limit(1)
+  : [];
+const venue = serializeVenue(row);
 ---
 
-<AdminLayout title="Edit venue — Chairs' Area" userName={user?.name ?? 'Chair'}>
+<AdminLayout title={`Edit ${row.name}`}>
   <div class="space-y-6">
-    <div class="flex items-center justify-between gap-4">
+    <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Venue management</p>
-        <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Edit venue</h1>
+        <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">{row.name}</h1>
       </div>
-      <a href="/admin/venues" class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">
-        Back to list
-      </a>
+      <div class="flex gap-2">
+        {row.published && (
+          <a href={`/venues/${row.slug}`} class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">View public page</a>
+        )}
+        <a href={`/admin/venues/${row.id}/history`} class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">History</a>
+      </div>
     </div>
 
-    <VenueForm client:load mode="edit" :venue={JSON.stringify(venue)} />
+    <VenueForm
+      client:load
+      mode="edit"
+      venue={venue}
+      updatedByName={editor?.name || editor?.email || null}
+      uploadsEnabled={Boolean(getBlobToken())}
+    />
   </div>
 </AdminLayout>

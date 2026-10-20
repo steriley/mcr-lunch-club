@@ -1,21 +1,17 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
 import { schema } from '@/db/drizzle-schema';
-import { getRuntimeDatabaseUrl, isDevelopment, isProduction } from '@/lib/env';
+import { createDatabase } from '@/lib/db-client';
+import { getDatabaseDriver, getRuntimeDatabaseUrl, isDevelopment } from '@/lib/env';
 
-const databaseUrl = getRuntimeDatabaseUrl();
-
-export const pool = new Pool({
-  connectionString: databaseUrl,
-  max: 5,
-  ssl: isProduction() ? { rejectUnauthorized: false } : undefined
+// Runtime connection: Neon's pooled URL with a small pool per serverless instance.
+const client = createDatabase({
+  url: getRuntimeDatabaseUrl(),
+  driver: getDatabaseDriver(),
+  maxConnections: 5,
+  logger: isDevelopment() && process.env.DATABASE_LOG === 'true',
 });
 
 export { schema };
 
-export const db = drizzle(pool, {
-  schema,
-  logger: isDevelopment()
-});
+export const db = client.db;
 
 export default db;

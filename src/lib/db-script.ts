@@ -1,13 +1,15 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
-import { schema } from '@/db/drizzle-schema';
-import { getMigrationDatabaseUrl } from '@/lib/env';
+import { createDatabase } from '@/lib/db-client';
+import { getDatabaseDriver, getMigrationDatabaseUrl } from '@/lib/env';
 
-export const pool = new Pool({
-  connectionString: getMigrationDatabaseUrl(),
-  max: 1,
+// Scripts use the direct (unpooled) connection.
+const client = createDatabase({
+  url: getMigrationDatabaseUrl(),
+  driver: getDatabaseDriver(),
+  maxConnections: 1,
 });
 
-export const db = drizzle(pool, { schema });
+export const db = client.db;
+export const driver = client.driver;
+export const closeDatabase = client.close;
 
 export default db;

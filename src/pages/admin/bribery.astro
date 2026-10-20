@@ -2,38 +2,36 @@
 import { desc } from 'drizzle-orm';
 import BriberyTable from '@/components/islands/BriberyTable.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
-import { db, schema } from '@/lib/db';
+import { briberyRecords } from '@/db/schema';
+import { db } from '@/lib/db';
 
-const user = Astro.locals.user;
-if (!user || user.role !== 'admin') {
-  return Astro.redirect(`/admin/login?next=${encodeURIComponent(Astro.url.pathname)}`);
-}
+export const prerender = false;
 
-const { briberyRecords } = schema;
-const records = await db.select().from(briberyRecords).orderBy(desc(briberyRecords.updatedAt));
+const records = await db
+  .select({
+    id: briberyRecords.id,
+    title: briberyRecords.title,
+    venueNameText: briberyRecords.venueNameText,
+    incidentDate: briberyRecords.incidentDate,
+    description: briberyRecords.description,
+    published: briberyRecords.published,
+  })
+  .from(briberyRecords)
+  .orderBy(desc(briberyRecords.incidentDate), desc(briberyRecords.createdAt));
 ---
 
-<AdminLayout title="Bribery Records — Chairs' Area" userName={user?.name ?? 'Chair'}>
+<AdminLayout title="Bribery Record">
   <div class="space-y-6">
     <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
-        <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Bribery review</p>
-        <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Bribery and impropriety records</h1>
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Hall of Shame</p>
+        <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Bribery / Improper Benefit Attempt Record</h1>
       </div>
       <a href="/admin/bribery/new" class="inline-flex items-center justify-center rounded-lg bg-[#1B2F6B] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#111E47]">
         New record
       </a>
     </div>
 
-    <BriberyTable client:load records={records.map((record) => ({
-      id: record.id,
-      venueId: record.venueId ?? null,
-      venueNameText: record.venueNameText ?? null,
-      incidentDate: record.incidentDate ? record.incidentDate.toISOString() : null,
-      description: record.description,
-      outcome: record.outcome ?? null,
-      published: record.published,
-      updatedAt: record.updatedAt ? record.updatedAt.toISOString() : null,
-    }))} />
+    <BriberyTable client:load records={records} />
   </div>
 </AdminLayout>

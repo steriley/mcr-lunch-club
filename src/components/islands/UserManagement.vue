@@ -1,208 +1,191 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
+import { MIN_PASSWORD_LENGTH } from '@/lib/password-policy';
+import { USER_ROLES, createUserSchema, resetPasswordSchema } from '@/lib/user-schema';
 
-const props = defineProps<{
-  users: Array<{
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-    banned: boolean;
-    createdAt: string | null;
-  }>;
-}>();
-
-const form = reactive({
-  email: '',
-  name: '',
-  password: '',
-  role: 'admin',
-});
-
-const fieldErrors = reactive<Record<string, string>>({});
-const pendingUserId = ref<string | null>(null);
-const pendingAction = ref<'ban' | 'unban' | null>(null);
-const busyUserId = ref<string | null>(null);
-
-function clearErrors() {
-  Object.keys(fieldErrors).forEach((key) => {
-    delete fieldErrors[key];
-  });
+interface UserRow {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  banned: boolean;
+  createdAt: string | null;
 }
 
-async function createChair() {
-  clearErrors();
+const props = defineProps<{ users: UserRow[]; currentUserId: string }>();
 
+const rows = ref<UserRow[]>(props.users.map((user) => ({ ...user })));
+const form = reactive({ name: '', email: '', password: '', role: 'admin' });
+const errors = reactive<Record<string, string>>({});
+const formError = ref('');
+const message = ref('');
+const errorMessage = ref('');
+const isCreating = ref(false);
+const busy = ref<Record<string, boolean>>({});
+const pending = ref<{ user: UserRow; action: 'ban' | 'unban' } | null>(null);
+
+const resetTarget = ref<UserRow | null>(null);
+const resetPassword = ref('');
+const resetError = ref('');
+
+function clearErrors() {
+  for (const key of Object.keys(errors)) delete errors[key];
+  formError.value = '';
+}
+
+function roleLabel(role: string) {
+  return USER_ROLES.find((option) => option.value === role)?.label ?? role;
+}
+
+async function createUser() {
+  clearErrors();
+  message.value = '';
+  const checked = createUserSchema.safeParse({ ...form });
+  if (!checked.success) {
+    for (const issue of checked.error.issues) errors[String(issue.path[0] ?? 'form')] ??= issue.message;
+    return;
+  }
+
+  isCreating.value = true;
   try {
     const response = await fetch('/api/admin/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify(checked.data),
     });
-
-    const data = await response.json().catch(() => ({}));
+    const result = await response.json().catch(() => ({}));
     if (!response.ok) {
-      if (data.fields) {
-        Object.entries(data.fields).forEach(([key, value]) => {
-          fieldErrors[key] = String(value);
-        });
-      }
-      if (data.error && !Object.keys(data.fields ?? {}).length) {
-        fieldErrors.form = data.error;
-      }
+      Object.assign(errors, result.fields ?? {});
+      formError.value = result.error ?? 'Unable to create this account.';
       return;
     }
-
-    window.location.reload();
-  } catch (error) {
-    fieldErrors.form = 'Something went wrong while creating this chair account.';
+    rows.value.unshift({
+      id: result.user.id,
+      email: result.user.email,
+      name: result.user.name,
+      role: result.user.role ?? checked.data.role,
+      banned: false,
+      createdAt: result.user.createdAt ?? null,
+    });
+    message.value = `Account created for ${result.user.email}. Share the password with them securely; they can change it under Account.`;
+    Object.assign(form, { name: '', email: '', password: '', role: 'admin' });
+  } catch {
+    formError.value = 'Unable to create this account.';
+  } finally {
+    isCreating.value = false;
   }
-}
-
-function confirmAction(userId: string, action: 'ban' | 'unban') {
-  pendingUserId.value = userId;
-  pendingAction.value = action;
 }
 
 async function performAction() {
-  const userId = pendingUserId.value;
-  const action = pendingAction.value;
-  if (!userId || !action) return;
+  const target = pending.value;
+  pending.value = null;
+  if (!target) return;
 
-  busyUserId.value = userId;
-  pendingUserId.value = null;
-  pendingAction.value = null;
-
+  message.value = '';
+  errorMessage.value = '';
+  busy.value[target.user.id] = true;
   try {
-    const endpoint = action === 'ban' ? `/api/admin/users/${userId}/ban` : `/api/admin/users/${userId}/unban`;
-    const response = await fetch(endpoint, { method: 'POST' });
+    const response = await fetch(`/api/admin/users/${encodeURIComponent(target.user.id)}/${target.action}`, { method: 'POST' });
+    const result = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error('Unable to update this chair account');
+      errorMessage.value = result.error ?? 'Unable to update this account.';
+      return;
     }
-    window.location.reload();
+    target.user.banned = target.action === 'ban';
+    message.value = `${target.user.email} has been ${target.action === 'ban' ? 'deactivated and signed out' : 'reactivated'}.`;
+  } catch {
+    errorMessage.value = 'Unable to update this account.';
   } finally {
-    busyUserId.value = null;
+    busy.value[target.user.id] = false;
   }
 }
 
-async function resetPassword(userId: string) {
-  const password = window.prompt('Set a new password for this chair (minimum 12 characters):', '');
-  if (!password) return;
+function openReset(user: UserRow) {
+  resetTarget.value = user;
+  resetPassword.value = '';
+  resetError.value = '';
+}
 
-  const response = await fetch(`/api/admin/users/${userId}/reset-password`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ password }),
-  });
-
-  const data = await response.json().catch(() => ({ error: 'Unable to reset this password.' }));
-  if (!response.ok) {
-    window.alert(data.error ?? 'Unable to reset this password.');
+async function submitReset() {
+  const user = resetTarget.value;
+  if (!user) return;
+  resetError.value = '';
+  const checked = resetPasswordSchema.safeParse({ password: resetPassword.value });
+  if (!checked.success) {
+    resetError.value = checked.error.issues[0]?.message ?? 'Invalid password.';
     return;
   }
 
-  window.alert('Password updated successfully.');
+  busy.value[user.id] = true;
+  try {
+    const response = await fetch(`/api/admin/users/${encodeURIComponent(user.id)}/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(checked.data),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      resetError.value = result.fields?.password ?? result.error ?? 'Unable to reset this password.';
+      return;
+    }
+    resetTarget.value = null;
+    message.value = `Temporary password set for ${user.email}. They have been signed out everywhere.`;
+  } catch {
+    resetError.value = 'Unable to reset this password.';
+  } finally {
+    busy.value[user.id] = false;
+  }
 }
+
+const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2F6B]/30';
+const errorClass = 'mt-1 block text-xs font-medium text-red-700';
 </script>
 
 <template>
   <div class="space-y-6">
-    <div class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm">
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Chair access</p>
-      <h2 class="mt-2 text-2xl font-bold text-[#1a1e24]">Create a new chair</h2>
-
-      <form class="mt-5 grid gap-4 md:grid-cols-2" @submit.prevent="createChair">
-        <label class="block text-sm font-semibold text-[#1a1e24]">
-          <span class="mb-2 block">Name</span>
-          <input v-model="form.name" class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none" placeholder="Chair name" />
-        </label>
-
-        <label class="block text-sm font-semibold text-[#1a1e24]">
-          <span class="mb-2 block">Role</span>
-          <select v-model="form.role" class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none">
-            <option value="admin">Admin</option>
-            <option value="user">User</option>
-          </select>
-        </label>
-
-        <label class="block text-sm font-semibold text-[#1a1e24] md:col-span-2">
-          <span class="mb-2 block">Email</span>
-          <input v-model="form.email" type="email" class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none" placeholder="chair@example.com" />
-        </label>
-
-        <label class="block text-sm font-semibold text-[#1a1e24] md:col-span-2">
-          <span class="mb-2 block">Password</span>
-          <input v-model="form.password" type="password" class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none" placeholder="Minimum 12 characters" />
-        </label>
-
-        <div v-if="fieldErrors.form" class="md:col-span-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {{ fieldErrors.form }}
-        </div>
-
-        <div class="md:col-span-2 flex justify-end">
-          <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-[#1B2F6B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#111E47]">
-            Create chair
-          </button>
-        </div>
-      </form>
-    </div>
+    <p v-if="message" role="status" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{{ message }}</p>
+    <p v-if="errorMessage" role="alert" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
 
     <div class="overflow-hidden rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] shadow-sm">
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-[#d9cfb8] text-left text-sm text-[#2d2d2d]">
           <thead class="bg-[#f3ecdb] text-[#1a1e24]">
             <tr>
-              <th class="px-4 py-3 font-semibold">Chair</th>
-              <th class="px-4 py-3 font-semibold">Role</th>
-              <th class="px-4 py-3 font-semibold">Status</th>
-              <th class="px-4 py-3 font-semibold text-right">Actions</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Name</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Access</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Status</th>
+              <th scope="col" class="px-4 py-3 text-right font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#eadfca]">
-            <tr v-if="!users.length">
-              <td colspan="4" class="px-4 py-10 text-center text-[#3d3d3d]">No chairs have been created yet.</td>
-            </tr>
-            <tr v-for="user in users" :key="user.id">
+            <tr v-for="user in rows" :key="user.id">
               <td class="px-4 py-3">
-                <div class="font-semibold text-[#1a1e24]">{{ user.name || user.email }}</div>
+                <div class="font-semibold text-[#1a1e24]">
+                  {{ user.name || user.email }}
+                  <span v-if="user.id === currentUserId" class="ml-1 text-xs font-normal text-[#535353]">(you)</span>
+                </div>
                 <div class="text-xs text-[#535353]">{{ user.email }}</div>
               </td>
-              <td class="px-4 py-3">
-                <span class="rounded-full bg-[#f3ecdb] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#1a1e24]">{{ user.role }}</span>
-              </td>
+              <td class="px-4 py-3 text-xs">{{ roleLabel(user.role) }}</td>
               <td class="px-4 py-3">
                 <span :class="['inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]', user.banned ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800']">
-                  {{ user.banned ? 'Banned' : 'Active' }}
+                  {{ user.banned ? 'Deactivated' : 'Active' }}
                 </span>
               </td>
               <td class="px-4 py-3">
                 <div class="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    class="rounded-lg border border-[#d9cfb8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5]"
-                    @click="resetPassword(user.id)"
-                  >
+                  <button type="button" class="whitespace-nowrap rounded-lg border border-[#d9cfb8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5] disabled:opacity-60" :disabled="busy[user.id]" @click="openReset(user)">
                     Reset password
                   </button>
-                  <button
-                    v-if="!user.banned"
-                    type="button"
-                    class="rounded-lg bg-[#B92B27] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d]"
-                    @click="confirmAction(user.id, 'ban')"
-                    :disabled="busyUserId === user.id"
-                  >
-                    Ban
-                  </button>
-                  <button
-                    v-else
-                    type="button"
-                    class="rounded-lg border border-[#d9cfb8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5]"
-                    @click="confirmAction(user.id, 'unban')"
-                    :disabled="busyUserId === user.id"
-                  >
-                    Unban
-                  </button>
+                  <template v-if="user.id !== currentUserId">
+                    <button v-if="!user.banned" type="button" class="rounded-lg bg-[#B92B27] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'ban' }">
+                      Deactivate
+                    </button>
+                    <button v-else type="button" class="rounded-lg border border-[#d9cfb8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5] disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'unban' }">
+                      Reactivate
+                    </button>
+                  </template>
                 </div>
               </td>
             </tr>
@@ -210,14 +193,68 @@ async function resetPassword(userId: string) {
         </table>
       </div>
     </div>
-  </div>
 
-  <ConfirmDialog
-    :open="Boolean(pendingUserId)"
-    :title="pendingAction === 'ban' ? 'Ban chair' : 'Unban chair'"
-    :message="pendingAction === 'ban' ? 'This will block sign-ins for this chair until they are explicitly unbanned.' : 'This will allow this chair to sign in again.'"
-    :confirm-label="pendingAction === 'ban' ? 'Ban chair' : 'Unban chair'"
-    @cancel="pendingUserId = null; pendingAction = null"
-    @confirm="performAction"
-  />
+    <form class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm" novalidate @submit.prevent="createUser">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Add a Chair</p>
+      <h2 class="mt-2 text-2xl font-bold text-[#1a1e24]">Create an account</h2>
+      <p class="mt-2 text-sm text-[#3d3d3d]">There is no public sign-up. Choose an initial password and share it with them securely.</p>
+
+      <div v-if="formError" role="alert" class="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ formError }}</div>
+
+      <div class="mt-5 grid gap-4 md:grid-cols-2">
+        <label class="block text-sm font-semibold text-[#1a1e24]">
+          <span class="mb-2 block">Name</span>
+          <input v-model="form.name" autocomplete="off" :class="inputClass" />
+          <span v-if="errors.name" :class="errorClass">{{ errors.name }}</span>
+        </label>
+        <label class="block text-sm font-semibold text-[#1a1e24]">
+          <span class="mb-2 block">Access</span>
+          <select v-model="form.role" :class="inputClass">
+            <option v-for="role in USER_ROLES" :key="role.value" :value="role.value">{{ role.label }}</option>
+          </select>
+        </label>
+        <label class="block text-sm font-semibold text-[#1a1e24]">
+          <span class="mb-2 block">Email</span>
+          <input v-model="form.email" type="email" autocomplete="off" :class="inputClass" />
+          <span v-if="errors.email" :class="errorClass">{{ errors.email }}</span>
+        </label>
+        <label class="block text-sm font-semibold text-[#1a1e24]">
+          <span class="mb-2 block">Initial password</span>
+          <input v-model="form.password" type="password" autocomplete="new-password" :class="inputClass" :placeholder="`At least ${MIN_PASSWORD_LENGTH} characters`" />
+          <span v-if="errors.password" :class="errorClass">{{ errors.password }}</span>
+        </label>
+      </div>
+      <div class="mt-5 flex justify-end">
+        <button type="submit" :disabled="isCreating" class="inline-flex items-center justify-center rounded-lg bg-[#1B2F6B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#111E47] disabled:opacity-70">
+          {{ isCreating ? 'Creating…' : 'Create account' }}
+        </button>
+      </div>
+    </form>
+
+    <ConfirmDialog
+      :open="Boolean(pending)"
+      :title="pending?.action === 'ban' ? 'Deactivate account' : 'Reactivate account'"
+      :message="pending?.action === 'ban' ? `${pending?.user.email} will be signed out and unable to sign in until reactivated.` : `${pending?.user.email} will be able to sign in again.`"
+      :confirm-label="pending?.action === 'ban' ? 'Deactivate' : 'Reactivate'"
+      @cancel="pending = null"
+      @confirm="performAction"
+    />
+
+    <div v-if="resetTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-[#1a1e24]/40 px-4" @click.self="resetTarget = null" @keydown.esc="resetTarget = null">
+      <form role="dialog" aria-modal="true" aria-labelledby="reset-title" class="w-full max-w-md rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-xl" novalidate @submit.prevent="submitReset">
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Reset password</p>
+        <h3 id="reset-title" class="mt-2 text-xl font-bold text-[#1a1e24]">{{ resetTarget.email }}</h3>
+        <p class="mt-2 text-sm text-[#3d3d3d]">Set a temporary password. They will be signed out everywhere and should change it after signing in.</p>
+        <label class="mt-4 block text-sm font-semibold text-[#1a1e24]">
+          <span class="mb-2 block">Temporary password</span>
+          <input v-model="resetPassword" type="password" autocomplete="new-password" autofocus :class="inputClass" />
+          <span v-if="resetError" role="alert" :class="errorClass">{{ resetError }}</span>
+        </label>
+        <div class="mt-6 flex justify-end gap-3">
+          <button type="button" class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]" @click="resetTarget = null">Cancel</button>
+          <button type="submit" :disabled="busy[resetTarget.id]" class="rounded-lg bg-[#1B2F6B] px-4 py-2 text-sm font-semibold text-white hover:bg-[#111E47] disabled:opacity-70">Set password</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </template>

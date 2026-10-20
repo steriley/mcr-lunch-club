@@ -1,28 +1,20 @@
 ---
-import { desc } from 'drizzle-orm';
+import { asc } from 'drizzle-orm';
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import VenueTable from '@/components/islands/VenueTable.vue';
-import { db, schema } from '@/lib/db';
+import { venues } from '@/db/schema';
+import { db } from '@/lib/db';
 
-const user = Astro.locals.user;
-if (!user || user.role !== 'admin') {
-  return Astro.redirect(`/admin/login?next=${encodeURIComponent(Astro.url.pathname)}`);
-}
+export const prerender = false;
 
-const { venues } = schema;
-const url = Astro.url;
-const tier = url.searchParams.get('tier');
-const query = (url.searchParams.get('query') ?? '').trim();
-const rows = await db.select().from(venues).orderBy(desc(venues.updatedAt));
-const filtered = rows.filter((venue) => {
-  const tierMatch = !tier || venue.tier === tier;
-  const haystack = `${venue.name} ${venue.slug} ${venue.address ?? ''}`.toLowerCase();
-  const queryMatch = !query || haystack.includes(query.toLowerCase());
-  return tierMatch && queryMatch;
-});
+const rows = await db
+  .select({ id: venues.id, name: venues.name, slug: venues.slug, tier: venues.tier, published: venues.published, updatedAt: venues.updatedAt })
+  .from(venues)
+  .orderBy(asc(venues.name));
+const tableRows = rows.map((venue) => ({ ...venue, updatedAt: venue.updatedAt.toISOString() }));
 ---
 
-<AdminLayout title="Venues — Chairs' Area" userName={user?.name ?? 'Chair'}>
+<AdminLayout title="Venues">
   <div class="space-y-6">
     <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
@@ -34,50 +26,6 @@ const filtered = rows.filter((venue) => {
       </a>
     </div>
 
-    <div class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-5 shadow-sm">
-      <form class="grid gap-3 md:grid-cols-[1fr_220px_auto]" method="GET">
-        <label class="block text-sm font-semibold text-[#1a1e24]">
-          <span class="mb-2 block">Search</span>
-          <input
-            name="query"
-            value={query}
-            placeholder="Search by name or slug"
-            class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] outline-none focus:border-[#1B2F6B]"
-          />
-        </label>
-
-        <label class="block text-sm font-semibold text-[#1a1e24]">
-          <span class="mb-2 block">Tier</span>
-          <select name="tier" class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] outline-none focus:border-[#1B2F6B]">
-            <option value="">All tiers</option>
-            <option value="approved" selected={tier === 'approved'}>Approved</option>
-            <option value="under_consideration" selected={tier === 'under_consideration'}>Under Consideration</option>
-            <option value="to_be_assessed" selected={tier === 'to_be_assessed'}>To Be Assessed</option>
-            <option value="rejected" selected={tier === 'rejected'}>Rejected</option>
-            <option value="if_we_must" selected={tier === 'if_we_must'}>If We Must</option>
-            <option value="gone_but_not_forgotten" selected={tier === 'gone_but_not_forgotten'}>Gone But Not Forgotten</option>
-          </select>
-        </label>
-
-        <div class="flex items-end gap-2">
-          <button type="submit" class="inline-flex h-[46px] items-center justify-center rounded-lg bg-[#1B2F6B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#111E47]">
-            Apply
-          </button>
-          <a href="/admin/venues" class="inline-flex h-[46px] items-center justify-center rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">
-            Clear
-          </a>
-        </div>
-      </form>
-    </div>
-
-    <VenueTable client:load venues={filtered.map((venue) => ({
-      id: venue.id,
-      name: venue.name,
-      slug: venue.slug,
-      tier: venue.tier,
-      published: venue.published,
-      address: venue.address,
-      updatedAt: venue.updatedAt?.toISOString?.() ?? null,
-    }))} />
+    <VenueTable client:load venues={tableRows} />
   </div>
 </AdminLayout>

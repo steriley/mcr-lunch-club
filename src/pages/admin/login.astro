@@ -1,11 +1,14 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import LoginForm from '@/components/islands/LoginForm.vue';
+import { safeAdminRedirect } from '@/lib/safe-redirect';
 
-const next = Astro.url.searchParams.get('next') ?? '/admin';
+export const prerender = false;
+
+const next = safeAdminRedirect(Astro.url.searchParams.get('next'));
 ---
 
-<Layout title="Sign in — Chairs' Area" description="Sign in to the MCR Lunch Club Chairs' Area.">
+<Layout title="Sign in — Chairs' Area" description="Sign in to the MCR Lunch Club Chairs' Area." noindex>
   <section class="mx-auto flex w-full max-w-5xl flex-1 items-center justify-center px-4 py-12">
     <LoginForm client:load next={next} />
   </section>

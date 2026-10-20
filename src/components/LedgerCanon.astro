@@ -1,0 +1,14 @@
+---
+import { serializeForScript } from '@/lib/public-data';
+import { LEDGER_CANON_ELEMENT_ID } from '@/stores/ledger';
+import type { Venue } from '@/types';
+
+interface Props {
+  venues: Venue[];
+}
+
+// Published venues for the ledger store; must come before any island that reads it.
+const { venues } = Astro.props;
+---
+
+<script is:inline type="application/json" id={LEDGER_CANON_ELEMENT_ID} set:html={serializeForScript(venues)} />

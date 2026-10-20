@@ -4,11 +4,13 @@ import '@/styles/global.css';
 interface Props {
   title?: string;
   description?: string;
+  noindex?: boolean;
 }
 
 const {
   title = "MCR Lunch Club — We Return Only Where Deserved",
-  description = "A map of Manchester where every pin is a verdict. Formal, a bit pompous, and actually useful at 12:25."
+  description = "A map of Manchester where every pin is a verdict. Formal, a bit pompous, and actually useful at 12:25.",
+  noindex = false
 } = Astro.props;
 
 const currentPath = Astro.url.pathname;
@@ -28,6 +30,7 @@ const navigation = [
     <link rel="icon" type="image/png" href="/brand/logo.png" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
   </head>
   <body class="min-h-screen flex flex-col text-[#1e1b17] bg-[#FBF6EA] antialiased selection:bg-[#1B2F6B] selection:text-white">
     <header class="site-header sticky top-0 z-50">
