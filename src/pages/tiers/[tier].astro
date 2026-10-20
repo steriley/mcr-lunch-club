@@ -1,6 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { getPublicVenues, setPublicCacheHeaders } from '@/lib/public-data';
+import { milesText, walkText } from '@/lib/route-display';
 import { TIERS, tierPathSegment } from '@/lib/tiers';
 import type { TierStatus } from '@/types';
 
@@ -250,8 +251,8 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
 
               <!-- Distance / Walk time -->
               <div class="flex items-center justify-between text-xs text-stone-700 bg-[#f4efe4] p-2 rounded mb-3 font-mono">
-                <span>🚶 {venue.walkingTimeMin} min walk</span>
-                <span>📏 {venue.distanceMiles} miles</span>
+                <span>🚶 {walkText(venue.walkingTimeMin)}</span>
+                <span>📏 {milesText(venue.distanceMiles)}</span>
               </div>
 
               <!-- Eat like us snippet -->

@@ -4,6 +4,7 @@ import AdminLayout from '@/layouts/AdminLayout.astro';
 import VenueTable from '@/components/islands/VenueTable.vue';
 import { venues } from '@/db/schema';
 import { db } from '@/lib/db';
+import { routeStatus } from '@/lib/route-status';
 import { hiddenReason } from '@/lib/visibility';
 
 export const prerender = false;
@@ -16,13 +17,16 @@ const rows = await db
     tier: venues.tier,
     latitude: venues.latitude,
     longitude: venues.longitude,
+    distanceMiles: venues.distanceMiles,
+    walkingTimeMin: venues.walkingTimeMin,
     updatedAt: venues.updatedAt,
   })
   .from(venues)
   .orderBy(asc(venues.name));
-const tableRows = rows.map(({ latitude, longitude, ...venue }) => ({
+const tableRows = rows.map(({ latitude, longitude, distanceMiles, walkingTimeMin, ...venue }) => ({
   ...venue,
   hiddenReason: hiddenReason({ tier: venue.tier, latitude, longitude }),
+  routePending: routeStatus({ latitude, longitude, distanceMiles, walkingTimeMin }) === 'route_pending',
   updatedAt: venue.updatedAt.toISOString(),
 }));
 ---

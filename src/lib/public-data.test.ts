@@ -82,7 +82,7 @@ describe('toPublicVenue', () => {
     }
   });
 
-  it('fills defaults for sparse rows without coordinates', () => {
+  it('fills defaults for sparse rows and leaves a pending route as null', () => {
     const venue = toPublicVenue(
       venueRow({
         latitude: null,
@@ -100,17 +100,17 @@ describe('toPublicVenue', () => {
     );
     assert.equal(venue.status, 'Under Consideration');
     assert.equal(venue.lat, null);
-    assert.equal(venue.distanceMiles, 0);
-    assert.equal(venue.walkingTimeMin, 1);
+    assert.equal(venue.distanceMiles, null);
+    assert.equal(venue.walkingTimeMin, null);
     assert.equal(venue.cuisine, 'Other');
     assert.equal(venue.lastInspectionDate, 'Awaiting Assessment');
     assert.equal(venue.mapSearchLink, 'https://www.google.com/maps/search/?api=1&query=Chip%20Shop%20Manchester');
   });
 
-  it('derives distance, walk time and map link from coordinates when missing', () => {
+  it('never estimates distance or walking time, but links to the coordinates', () => {
     const venue = toPublicVenue(venueRow({ distanceMiles: null, walkingTimeMin: null, mapSearchLink: null }));
-    assert.ok(venue.distanceMiles > 0);
-    assert.ok(venue.walkingTimeMin >= 1);
+    assert.equal(venue.distanceMiles, null);
+    assert.equal(venue.walkingTimeMin, null);
     assert.equal(venue.mapSearchLink, 'https://www.google.com/maps/search/?api=1&query=53.480000%2C-2.250000');
   });
 });

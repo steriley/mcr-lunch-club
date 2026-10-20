@@ -5,6 +5,7 @@ import { isUniqueViolation, jsonError, jsonResponse, readJson, requireAdmin, ser
 import { db } from '@/lib/db';
 import { parseTier } from '@/lib/tiers';
 import { venueInputSchema } from '@/lib/venue-schema';
+import { resolveRoute, routeWarning } from '@/lib/venue-route';
 import { isSlugTaken, recordVenueRevision, serializeVenue, venueValues } from '@/lib/venues';
 import { publicVenueCondition } from '@/lib/visibility';
 
@@ -52,9 +53,11 @@ export const POST: APIRoute = async ({ request }) => {
       return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });
     }
 
-    const [row] = await db.insert(venues).values(venueValues(parsed.data, session.user.id)).returning();
+    // ORS failures never block the save; the route stays pending instead.
+    const route = await resolveRoute(parsed.data, null);
+    const [row] = await db.insert(venues).values(venueValues(parsed.data, session.user.id, route)).returning();
     await recordVenueRevision(db, row, session.user.id);
-    return jsonResponse({ venue: serializeVenue(row) }, 201);
+    return jsonResponse({ venue: serializeVenue(row), routeWarning: routeWarning(route) }, 201);
   } catch (error) {
     if (isUniqueViolation(error)) {
       return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });

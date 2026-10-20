@@ -24,6 +24,8 @@ export const venues = pgTable('venues', {
   cuisine: cuisineEnum('cuisine').notNull().default('other'),
   distanceMiles: decimal('distance_miles', { precision: 5, scale: 2 }),
   walkingTimeMin: integer('walking_time_min'),
+  // When distance/walking time last came from an ORS route; null for pending or pre-ORS estimates.
+  routeUpdatedAt: timestamp('route_updated_at', { withTimezone: true }),
   lastInspectionDate: date('last_inspection_date'),
   mapSearchLink: text('map_search_link'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

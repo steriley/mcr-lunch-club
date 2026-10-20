@@ -140,7 +140,7 @@
             />
           </div>
           <p class="text-xs text-stone-600 font-sans mt-0.5">
-            {{ pickedVenue.cuisine }} &bull; {{ pickedVenue.walkingTimeMin }} mins walk ({{ pickedVenue.distanceMiles }} mi)
+            {{ pickedVenue.cuisine }} &bull; {{ walkText(pickedVenue.walkingTimeMin, 'mins walk') }} ({{ milesText(pickedVenue.distanceMiles, 'mi') }})
           </p>
 
           <div class="mt-3 p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs">
@@ -176,6 +176,7 @@ import { useStore } from '@nanostores/vue';
 import { $isWhereTodayOpen, closeWhereToday, selectVenue } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
 import { cuisineLabel, type CuisineValue } from '@/lib/cuisines';
+import { milesText, walkText } from '@/lib/route-display';
 import type { Venue } from '@/types';
 
 const isOpen = useStore($isWhereTodayOpen);
@@ -270,7 +271,8 @@ function consultOracle() {
   setTimeout(() => {
     // Filter approved venues based on selected criteria
     const approved = venuesList.value.filter((v) => v.status === 'Approved');
-    let pool = approved.filter((v) => v.walkingTimeMin <= selectedTime.value);
+    const withinWalk = (v: Venue) => v.walkingTimeMin !== null && v.walkingTimeMin <= selectedTime.value;
+    let pool = approved.filter(withinWalk);
 
     if (selectedBudget.value === '£') {
       pool = pool.filter((v) => v.cost === '£');
@@ -287,7 +289,7 @@ function consultOracle() {
 
     if (pool.length === 0) {
       // Fallback to all approved venues within walk time
-      pool = approved.filter((v) => v.walkingTimeMin <= selectedTime.value);
+      pool = approved.filter(withinWalk);
     }
     if (pool.length === 0) {
       pool = approved;

@@ -15,8 +15,9 @@ export interface Venue {
   status: TierStatus;
   lat: number | null;
   lng: number | null;
-  distanceMiles: number;
-  walkingTimeMin: number;
+  /** Walking route from HQ; null while the route is pending. */
+  distanceMiles: number | null;
+  walkingTimeMin: number | null;
   cost: CostTier;
   cuisine: string;
   eatLikeUs: string;

@@ -1,8 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  distanceFromBaseMiles,
-  estimateWalkingMinutes,
   isSlugTaken,
   listVenueRevisions,
   recordVenueRevision,
@@ -11,7 +9,6 @@ import {
 } from './venues';
 import type { Database } from './db-client';
 import { renderSql } from '../test/route-helpers';
-import { BASE_LAT, BASE_LNG } from './map/config';
 import { venueInputSchema, type VenueInput } from './venue-schema';
 import type { VenueRow } from '@/db/schema';
 
@@ -19,58 +16,27 @@ function input(overrides: Record<string, unknown> = {}): VenueInput {
   return venueInputSchema.parse({ name: 'Chip Shop', slug: 'chip-shop', tier: 'approved', cost: '££', ...overrides });
 }
 
-describe('distanceFromBaseMiles', () => {
-  it('is zero at the base', () => {
-    assert.equal(distanceFromBaseMiles(BASE_LAT, BASE_LNG), 0);
-  });
-
-  it('rounds to two decimal places', () => {
-    // 0.01 degrees of latitude is about 1.11km, or 0.69 miles
-    assert.equal(distanceFromBaseMiles(BASE_LAT + 0.01, BASE_LNG), 0.69);
-  });
-});
-
-describe('estimateWalkingMinutes', () => {
-  it('returns at least one minute', () => {
-    assert.equal(estimateWalkingMinutes(0), 1);
-    assert.equal(estimateWalkingMinutes(-1), 1);
-    assert.equal(estimateWalkingMinutes(0.01), 1);
-  });
-
-  it('adds a longer buffer beyond half a mile', () => {
-    assert.equal(estimateWalkingMinutes(0.5), 11); // 9.75 + 1
-    assert.equal(estimateWalkingMinutes(1), 22); // 19.5 + 2
-  });
-});
-
 describe('venueValues', () => {
-  it('derives distance and walking time from coordinates when blank', () => {
-    const values = venueValues(input({ latitude: BASE_LAT + 0.01, longitude: BASE_LNG }), 'user-1');
-    assert.equal(values.distanceMiles, '0.69');
-    assert.equal(values.walkingTimeMin, 15); // round(0.69 * 19.5 + 2)
+  it('stores the resolved route, never values from the input', () => {
+    const values = venueValues(input({ latitude: 53.48, longitude: -2.25, distanceMiles: 9, walkingTimeMin: 99 }), 'user-1', {
+      distanceMiles: 0.4,
+      walkingTimeMin: 8,
+    });
+    assert.equal(values.distanceMiles, '0.40');
+    assert.equal(values.walkingTimeMin, 8);
     assert.equal(values.updatedBy, 'user-1');
   });
 
-  it('keeps explicitly supplied distance and walking time', () => {
-    const values = venueValues(input({ latitude: 53.48, longitude: -2.25, distanceMiles: 2, walkingTimeMin: 5 }), null);
-    assert.equal(values.distanceMiles, '2.00');
-    assert.equal(values.walkingTimeMin, 5);
-    assert.equal(values.updatedBy, null);
-  });
-
-  it('leaves derived fields null without coordinates and formats coordinates to six places', () => {
-    const blank = venueValues(input(), null);
+  it('keeps a pending route as null and formats coordinates to six places', () => {
+    const blank = venueValues(input(), null, { distanceMiles: null, walkingTimeMin: null });
     assert.equal(blank.latitude, null);
     assert.equal(blank.distanceMiles, null);
     assert.equal(blank.walkingTimeMin, null);
+    assert.equal(blank.updatedBy, null);
 
-    const located = venueValues(input({ latitude: 53.5, longitude: -2.25 }), null);
+    const located = venueValues(input({ latitude: 53.5, longitude: -2.25 }), null, { distanceMiles: null, walkingTimeMin: null });
     assert.equal(located.latitude, '53.500000');
     assert.equal(located.longitude, '-2.250000');
-  });
-
-  it('derives walking time from a supplied distance', () => {
-    assert.equal(venueValues(input({ distanceMiles: 1 }), null).walkingTimeMin, 22);
   });
 });
 

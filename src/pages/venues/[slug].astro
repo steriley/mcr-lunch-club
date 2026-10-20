@@ -2,6 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import inspectionsData from '@/data/inspections.json';
 import { getPublicVenue, setPublicCacheHeaders } from '@/lib/public-data';
+import { milesText, walkText } from '@/lib/route-display';
 import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
 import { tierPathSegment, parseTier } from '@/lib/tiers';
 
@@ -136,13 +137,13 @@ const statusInfo = TIER_BANNERS[venue.status];
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-[#f4efe4] p-4 rounded-xl border border-[#dcd6c8] text-center">
           <div class="p-2">
             <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Walk Duration</span>
-            <span class="text-2xl font-bold text-[#8b1e22]">{venue.walkingTimeMin} mins</span>
+            <span class="text-2xl font-bold text-[#8b1e22]">{walkText(venue.walkingTimeMin, 'mins')}</span>
             <span class="text-xs text-stone-500 block font-sans">from Spinningfields Base</span>
           </div>
 
           <div class="p-2 border-t sm:border-t-0 sm:border-l border-[#dcd6c8]">
             <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Distance Vector</span>
-            <span class="text-2xl font-bold text-stone-900">{venue.distanceMiles.toFixed(2)} miles</span>
+            <span class="text-2xl font-bold text-stone-900">{milesText(venue.distanceMiles)}</span>
             {venue.lat !== null && venue.lng !== null && (
               <span class="text-xs text-stone-500 block font-sans">Centroid: {venue.lat.toFixed(5)}, {venue.lng.toFixed(5)}</span>
             )}
