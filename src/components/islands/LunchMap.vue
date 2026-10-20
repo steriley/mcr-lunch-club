@@ -1,7 +1,7 @@
 <template>
-  <div class="relative isolate w-full h-full min-h-[500px] overflow-hidden bg-[#f4efe4] rounded-lg border border-[#dcd6c8] shadow-inner">
+  <div class="relative isolate w-full h-full overflow-hidden bg-[#f4efe4] rounded-lg border border-[#dcd6c8] shadow-inner">
     <!-- Map Container -->
-    <div ref="mapContainer" class="w-full h-full min-h-[500px] z-0"></div>
+    <div ref="mapContainer" class="w-full h-full z-0"></div>
 
     <!-- Map Overlays / Quick Status Bar -->
     <div class="absolute top-3 left-3 z-[1000] max-w-[calc(100%-1.5rem)]">
