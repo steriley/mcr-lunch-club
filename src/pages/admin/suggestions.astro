@@ -1,0 +1,52 @@
+---
+import { count, desc, eq } from 'drizzle-orm';
+import SuggestionInbox from '@/components/islands/SuggestionInbox.vue';
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { venueSuggestions } from '@/db/schema';
+import { db } from '@/lib/db';
+import { SUGGESTION_STATUSES, type SuggestionStatus } from '@/lib/suggestion-schema';
+import { serializeSuggestion } from '@/lib/suggestions';
+
+export const prerender = false;
+
+const requested = Astro.url.searchParams.get('status');
+const status: SuggestionStatus = SUGGESTION_STATUSES.includes(requested as SuggestionStatus) ? (requested as SuggestionStatus) : 'new';
+
+const [rows, counts] = await Promise.all([
+  db.select().from(venueSuggestions).where(eq(venueSuggestions.status, status)).orderBy(desc(venueSuggestions.createdAt)).limit(200),
+  db.select({ status: venueSuggestions.status, total: count() }).from(venueSuggestions).groupBy(venueSuggestions.status),
+]);
+
+const totals = new Map(counts.map((row) => [row.status, row.total]));
+const tabs = [
+  { status: 'new', label: 'Inbox' },
+  { status: 'accepted', label: 'Drafted' },
+  { status: 'dismissed', label: 'Dismissed' },
+].map((tab) => ({ ...tab, total: totals.get(tab.status as SuggestionStatus) ?? 0, active: tab.status === status }));
+---
+
+<AdminLayout title="Suggestions">
+  <div class="space-y-6">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Member petitions</p>
+      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Venue suggestions</h1>
+      <p class="mt-2 max-w-2xl text-sm text-[#3d3d3d]">
+        Sent from the public “Suggest a Venue” form. Nothing here appears on the site until you create a draft venue, finish it and publish it.
+      </p>
+    </div>
+
+    <nav class="flex flex-wrap gap-2" aria-label="Suggestion status">
+      {tabs.map((tab) => (
+        <a
+          href={tab.status === 'new' ? '/admin/suggestions' : `/admin/suggestions?status=${tab.status}`}
+          class:list={['rounded-full border px-3 py-1.5 text-sm font-semibold', tab.active ? 'border-[#1B2F6B] bg-[#1B2F6B] text-white' : 'border-[#d9cfb8] bg-white text-[#1a1e24] hover:bg-[#f5efe5]']}
+          aria-current={tab.active ? 'page' : undefined}
+        >
+          {tab.label} <span class="ml-1 opacity-75">{tab.total}</span>
+        </a>
+      ))}
+    </nav>
+
+    <SuggestionInbox client:load suggestions={rows.map(serializeSuggestion)} />
+  </div>
+</AdminLayout>

@@ -1,116 +1,122 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 z-[2600] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+    class="fixed inset-0 z-[10020] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
     @click.self="closeModal"
   >
     <div
-      class="w-full max-w-md bg-[#fdfcf9] rounded-2xl border-2 border-[#2563eb] shadow-2xl overflow-hidden font-sans flex flex-col max-h-[90vh]"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="suggest-modal-title"
+      class="w-full max-w-md bg-[#fdfcf9] rounded-2xl border-2 border-[#1B2F6B] shadow-2xl overflow-hidden font-sans flex flex-col max-h-[90vh]"
     >
       <!-- Header -->
-      <div class="bg-[#1e3a8a] text-white p-4 flex items-center justify-between">
+      <div class="bg-[#1B2F6B] text-white p-4 flex items-center justify-between">
         <div class="flex items-center gap-2">
-          <span class="text-xl">📜</span>
+          <span class="text-xl" aria-hidden="true">📜</span>
           <div>
-            <h2 class="text-sm font-bold font-serif-header">Petition the Chairs</h2>
-            <p class="text-xs text-blue-200">Submit a Venue for Entry into 'To Be Assessed'</p>
+            <h2 id="suggest-modal-title" class="text-base font-bold font-serif-header">Petition the Chairs</h2>
+            <p class="text-xs text-blue-100">Suggest a venue for the Chairs to assess</p>
           </div>
         </div>
-        <button @click="closeModal" class="text-white/80 hover:text-white text-lg">✕</button>
+        <button type="button" @click="closeModal" class="text-white/80 hover:text-white text-lg p-1" aria-label="Close">✕</button>
+      </div>
+
+      <!-- Sent -->
+      <div v-if="sent" class="p-6 space-y-4 text-center text-[#1a1e24]" role="status">
+        <p class="text-3xl" aria-hidden="true">✉️</p>
+        <h3 class="text-lg font-bold font-serif-header">Petition received</h3>
+        <p class="text-sm text-stone-700">
+          The Chairs will review <strong>{{ sentName }}</strong>. If it merits attention it will appear under
+          <em>To Be Assessed</em> once they have looked into it.
+        </p>
+        <button
+          ref="doneButton"
+          type="button"
+          class="w-full bg-[#1B2F6B] hover:bg-[#111E47] text-white py-2.5 px-4 rounded-lg font-serif-header font-bold text-sm"
+          @click="closeModal"
+        >
+          Done
+        </button>
       </div>
 
       <!-- Form -->
-      <form @submit.prevent="submitPetition" class="p-5 overflow-y-auto space-y-3 text-xs text-[#1a1e24]">
+      <form v-else @submit.prevent="submitPetition" class="p-5 overflow-y-auto space-y-3 text-sm text-[#1a1e24]" novalidate>
         <div class="bg-blue-50 border border-blue-200 p-2.5 rounded text-xs text-blue-900 font-serif-header">
-          <strong>Article 3.1:</strong> Members may petition for new venues. Submitted establishments are placed immediately into <em>To Be Assessed</em> until two independent inspections are conducted.
+          <strong>Article 3.1:</strong> Members may petition for new venues. The Chairs review every petition; a venue enters
+          <em>To Be Assessed</em> only once they accept it.
+        </div>
+
+        <p v-if="formError" role="alert" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">{{ formError }}</p>
+
+        <div>
+          <label for="suggest-name" class="block font-semibold mb-1 text-xs">Establishment name</label>
+          <input id="suggest-name" ref="firstField" v-model="form.name" type="text" placeholder="e.g. Sampaio's Pasties" class="suggest-input" :aria-invalid="Boolean(errors.name)" required maxlength="200" />
+          <p v-if="errors.name" class="suggest-error">{{ errors.name }}</p>
         </div>
 
         <div>
-          <label class="block font-semibold mb-1">Establishment Name:</label>
-          <input
-            type="text"
-            v-model="name"
-            placeholder="e.g. Sampaio's Pasties"
-            class="w-full bg-white border border-[#dcd6c8] rounded p-2 text-xs"
-            required
-          />
+          <label for="suggest-address" class="block font-semibold mb-1 text-xs">Address or street (Manchester)</label>
+          <input id="suggest-address" v-model="form.address" type="text" placeholder="e.g. 14 Peter Street, M2 5QR" class="suggest-input" :aria-invalid="Boolean(errors.address)" required maxlength="255" />
+          <p v-if="errors.address" class="suggest-error">{{ errors.address }}</p>
         </div>
 
-        <div>
-          <label class="block font-semibold mb-1">Location / Address (Manchester):</label>
-          <input
-            type="text"
-            v-model="address"
-            placeholder="e.g. 14 Peter Street, M2 5QR"
-            class="w-full bg-white border border-[#dcd6c8] rounded p-2 text-xs"
-            required
-          />
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
           <div>
-            <label class="block font-semibold mb-1">Cuisine / Category:</label>
-            <input
-              type="text"
-              v-model="cuisine"
-              placeholder="e.g. Portuguese Deli"
-              class="w-full bg-white border border-[#dcd6c8] rounded p-2 text-xs"
-              required
-            />
+            <label for="suggest-cuisine" class="block font-semibold mb-1 text-xs">Cuisine</label>
+            <input id="suggest-cuisine" v-model="form.cuisine" type="text" placeholder="e.g. Portuguese Deli" class="suggest-input" maxlength="120" />
+            <p v-if="errors.cuisine" class="suggest-error">{{ errors.cuisine }}</p>
           </div>
 
           <div>
-            <label class="block font-semibold mb-1">Expected Cost:</label>
-            <select
-              v-model="cost"
-              class="w-full bg-white border border-[#dcd6c8] rounded p-2 text-xs font-mono font-bold"
-            >
-              <option value="£">£ (Budget / Takeaway)</option>
-              <option value="££">££ (Standard Sit-down)</option>
-              <option value="£££">£££ (Payday Treat)</option>
+            <label for="suggest-cost" class="block font-semibold mb-1 text-xs">Expected cost</label>
+            <select id="suggest-cost" v-model="form.cost" class="suggest-input font-mono font-bold">
+              <option value="£">£ (under £10)</option>
+              <option value="££">££ (above £10)</option>
+              <option value="£££">£££ (payday treat)</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label class="block font-semibold mb-1">Prescribed Order ("Eat Like Us"):</label>
-          <input
-            type="text"
-            v-model="recommendedOrder"
-            placeholder="What exact dish should the Chairs sample during the audit?"
-            class="w-full bg-white border border-[#dcd6c8] rounded p-2 text-xs"
-            required
-          />
+          <label for="suggest-order" class="block font-semibold mb-1 text-xs">What should the Chairs order?</label>
+          <input id="suggest-order" v-model="form.recommendedOrder" type="text" placeholder="The dish that proves your case" class="suggest-input" maxlength="500" />
+          <p v-if="errors.recommendedOrder" class="suggest-error">{{ errors.recommendedOrder }}</p>
         </div>
 
         <div>
-          <label class="block font-semibold mb-1">Solemn Rationale / Petition Testimony:</label>
+          <label for="suggest-rationale" class="block font-semibold mb-1 text-xs">Why does it merit attention?</label>
           <textarea
-            v-model="rationale"
-            rows="2"
-            placeholder="Why does this venue merit tribunal attention? (Keep bribery attempts out of it)."
-            class="w-full bg-white border border-[#dcd6c8] rounded p-2 text-xs"
+            id="suggest-rationale"
+            v-model="form.rationale"
+            rows="3"
+            placeholder="Make your case. (Keep bribery attempts out of it.)"
+            class="suggest-input"
+            :aria-invalid="Boolean(errors.rationale)"
             required
+            maxlength="2000"
           ></textarea>
+          <p v-if="errors.rationale" class="suggest-error">{{ errors.rationale }}</p>
         </div>
 
         <div>
-          <label class="block font-semibold mb-1">Submitter Name / Rank:</label>
-          <input
-            type="text"
-            v-model="submitter"
-            placeholder="e.g. Delegate Reynolds (Civil Observant)"
-            class="w-full bg-white border border-[#dcd6c8] rounded p-2 text-xs"
-          />
+          <label for="suggest-submitter" class="block font-semibold mb-1 text-xs">Your name <span class="font-normal text-stone-500">(optional)</span></label>
+          <input id="suggest-submitter" v-model="form.submitterName" type="text" placeholder="e.g. Delegate Reynolds" class="suggest-input" maxlength="120" />
         </div>
 
-        <!-- Submit Button -->
+        <!-- Honeypot: hidden from people and assistive tech. -->
+        <div class="hidden" aria-hidden="true">
+          <label for="suggest-website">Website</label>
+          <input id="suggest-website" v-model="form.website" type="text" tabindex="-1" autocomplete="off" />
+        </div>
+
         <div class="pt-2">
           <button
             type="submit"
-            class="w-full bg-[#1e3a8a] hover:bg-[#172554] text-white py-2.5 px-4 rounded-lg font-serif-header font-bold text-xs shadow transition-colors cursor-pointer"
+            :disabled="submitting"
+            class="w-full bg-[#1B2F6B] hover:bg-[#111E47] disabled:opacity-60 text-white py-2.5 px-4 rounded-lg font-serif-header font-bold text-sm shadow transition-colors cursor-pointer"
           >
-            Submit Formal Petition to Ledger
+            {{ submitting ? 'Sending…' : 'Submit petition to the Chairs' }}
           </button>
         </div>
       </form>
@@ -119,48 +125,110 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { nextTick, onUnmounted, reactive, ref, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
-import { $isSuggestModalOpen, closeSuggestModal, selectVenue } from '@/stores/filters';
-import { suggestVenue } from '@/stores/ledger';
+import { $isSuggestModalOpen, closeSuggestModal } from '@/stores/filters';
 import type { CostTier } from '@/types';
 
 const isOpen = useStore($isSuggestModalOpen);
 
-const name = ref('');
-const address = ref('');
-const cuisine = ref('');
-const cost = ref<CostTier>('££');
-const recommendedOrder = ref('');
-const rationale = ref('');
-const submitter = ref('');
+const emptyForm = () => ({
+  name: '',
+  address: '',
+  cuisine: '',
+  cost: '££' as CostTier,
+  recommendedOrder: '',
+  rationale: '',
+  submitterName: '',
+  website: '',
+});
+
+const form = reactive(emptyForm());
+const errors = ref<Record<string, string>>({});
+const formError = ref('');
+const submitting = ref(false);
+const sent = ref(false);
+const sentName = ref('');
+const firstField = ref<HTMLInputElement | null>(null);
+const doneButton = ref<HTMLButtonElement | null>(null);
+
+function onKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') closeModal();
+}
+
+watch(isOpen, async (open) => {
+  if (typeof window === 'undefined') return;
+  if (open) {
+    window.addEventListener('keydown', onKeydown);
+    await nextTick();
+    firstField.value?.focus();
+  } else {
+    window.removeEventListener('keydown', onKeydown);
+  }
+});
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') window.removeEventListener('keydown', onKeydown);
+});
 
 function closeModal() {
   closeSuggestModal();
+  if (sent.value) {
+    sent.value = false;
+    Object.assign(form, emptyForm());
+  }
+  errors.value = {};
+  formError.value = '';
+  if (window.location.hash === '#suggest-a-venue') {
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
 }
 
-function submitPetition() {
-  if (!name.value.trim() || !address.value.trim()) return;
-
-  const created = suggestVenue({
-    name: name.value,
-    address: address.value,
-    cuisine: cuisine.value,
-    cost: cost.value,
-    recommendedOrder: recommendedOrder.value,
-    rationale: rationale.value,
-    submitter: submitter.value,
-  });
-
-  // Reset form
-  name.value = '';
-  address.value = '';
-  cuisine.value = '';
-  recommendedOrder.value = '';
-  rationale.value = '';
-  submitter.value = '';
-
-  closeModal();
-  selectVenue(created);
+async function submitPetition() {
+  errors.value = {};
+  formError.value = '';
+  submitting.value = true;
+  try {
+    const response = await fetch('/api/suggestions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      errors.value = body?.fields ?? {};
+      formError.value = body?.error ?? 'The petition could not be sent. Please try again.';
+      return;
+    }
+    sentName.value = form.name.trim();
+    sent.value = true;
+    await nextTick();
+    doneButton.value?.focus();
+  } catch {
+    formError.value = 'The petition could not be sent. Check your connection and try again.';
+  } finally {
+    submitting.value = false;
+  }
 }
 </script>
+
+<style scoped>
+.suggest-input {
+  width: 100%;
+  background-color: #ffffff;
+  border: 1px solid #dcd6c8;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  font-size: 16px; /* 16px stops iOS Safari zooming into the field. */
+}
+
+.suggest-input[aria-invalid='true'] {
+  border-color: #b92b27;
+}
+
+.suggest-error {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #b92b27;
+}
+</style>

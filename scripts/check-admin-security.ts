@@ -72,6 +72,14 @@ for (const route of routesUnder('api/admin')) {
   report(foreign.status === 403, `POST ${route} with foreign Origin -> 403`, String(foreign.status));
 }
 
+// The public suggestion form takes anonymous posts, but only from this site.
+const foreignSuggestion = await request('/api/suggestions', {
+  method: 'POST',
+  headers: { Origin: 'https://attacker.example', 'Content-Type': 'application/json' },
+  body: '{}',
+});
+report(foreignSuggestion.status === 403, 'POST /api/suggestions with foreign Origin -> 403', String(foreignSuggestion.status));
+
 const signUp = await request('/api/auth/sign-up/email', {
   method: 'POST',
   headers: { Origin: base, 'Content-Type': 'application/json' },
