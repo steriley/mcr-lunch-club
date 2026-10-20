@@ -6,6 +6,7 @@ import { venues } from '@/db/schema';
 import { uuidParam } from '@/lib/admin-api';
 import { cuisineLabel, isCuisineValue } from '@/lib/cuisines';
 import { db } from '@/lib/db';
+import { describeVenueEvent, listVenueEvents } from '@/lib/venue-events';
 import { listVenueRevisions } from '@/lib/venues';
 
 export const prerender = false;
@@ -18,14 +19,15 @@ if (!venue) {
   return new Response('Venue not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
 }
 
-const revisions = await listVenueRevisions(db, venue.id);
+const [revisions, events] = await Promise.all([listVenueRevisions(db, venue.id), listVenueEvents(db, venue.id)]);
 const editorIds = [...new Set(revisions.map((revision) => revision.changedBy).filter((value): value is string => Boolean(value)))];
 const editors = editorIds.length
   ? await db.select({ id: user.id, name: user.name, email: user.email }).from(user).where(inArray(user.id, editorIds))
   : [];
 const editorNames = new Map(editors.map((editor) => [editor.id, editor.name || editor.email]));
 
-const IGNORED = new Set(['id', 'createdAt', 'updatedAt', 'updatedBy']);
+// Closure and route bookkeeping show up as events (below) or are internal.
+const IGNORED = new Set(['id', 'createdAt', 'updatedAt', 'updatedBy', 'closedAt', 'closedBy', 'routeUpdatedAt']);
 const LABELS: Record<string, string> = {
   name: 'Name', slug: 'Slug', tier: 'Tier', address: 'Address', latitude: 'Latitude', longitude: 'Longitude',
   pullQuote: 'Pull quote', lunchSpecial: 'Lunch special',
@@ -50,6 +52,8 @@ const entries = revisions.map((revision, index) => {
         .map((key) => ({ field: LABELS[key] ?? key, from: format(previous[key], key), to: format(snapshot[key], key) }))
     : [];
   return {
+    type: 'revision' as const,
+    at: revision.changedAt,
     id: revision.id,
     when: revision.changedAt.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' }),
     who: revision.changedBy ? editorNames.get(revision.changedBy) ?? 'Former user' : 'Import script',
@@ -58,6 +62,17 @@ const entries = revisions.map((revision, index) => {
     snapshot: JSON.stringify(snapshot, null, 2),
   };
 });
+
+const formatWhen = (value: Date) => value.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' });
+const eventEntries = events.map((event) => ({
+  type: 'event' as const,
+  at: event.createdAt,
+  id: event.id,
+  when: formatWhen(event.createdAt),
+  text: describeVenueEvent(event),
+  kind: event.kind,
+}));
+const timeline = [...entries, ...eventEntries].sort((a, b) => b.at.getTime() - a.at.getTime());
 ---
 
 <AdminLayout title={`History — ${venue.name}`}>
@@ -66,17 +81,24 @@ const entries = revisions.map((revision, index) => {
       <div>
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Audit trail</p>
         <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">{venue.name}: history</h1>
-        <p class="mt-2 text-sm text-[#535353]">A snapshot is stored every time the venue is saved (latest 100 shown).</p>
+        <p class="mt-2 text-sm text-[#535353]">A snapshot is stored every time the venue is saved (latest 100 shown), alongside actions such as closing and reopening.</p>
       </div>
       <a href={`/admin/venues/${venue.id}`} class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">Back to venue</a>
     </div>
 
-    {entries.length === 0 && (
+    {timeline.length === 0 && (
       <p class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 text-sm text-[#3d3d3d]">No saved revisions yet.</p>
     )}
 
     <ol class="space-y-4">
-      {entries.map((entry) => (
+      {timeline.map((entry) => entry.type === 'event' ? (
+        <li class="rounded-2xl border border-[#1B2F6B]/30 bg-[#edf3ff] p-5 shadow-sm">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <p class="font-semibold text-[#1a1e24]">{entry.text}</p>
+            <p class="text-sm text-[#535353]">{entry.when}</p>
+          </div>
+        </li>
+      ) : (
         <li class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-5 shadow-sm">
           <div class="flex flex-wrap items-baseline justify-between gap-2">
             <p class="font-semibold text-[#1a1e24]">{entry.who}</p>

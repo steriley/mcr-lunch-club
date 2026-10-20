@@ -1,5 +1,6 @@
 ---
 import { eq } from 'drizzle-orm';
+import VenueClosure from '@/components/islands/VenueClosure.vue';
 import VenueForm from '@/components/islands/VenueForm.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import { user } from '@/db/auth-schema';
@@ -7,6 +8,7 @@ import { venues } from '@/db/schema';
 import { uuidParam } from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { getBlobToken } from '@/lib/env';
+import { formatEventDate } from '@/lib/venue-events';
 import { serializeVenue } from '@/lib/venues';
 import { hiddenReason } from '@/lib/visibility';
 
@@ -26,7 +28,11 @@ const hidden = hiddenReason(row);
 const HIDDEN_TEXT = {
   no_tier: 'Hidden from the public site: no approved tier yet.',
   needs_location: 'Hidden from the public site: needs a location.',
+  closed: 'Hidden from the public site: permanently closed. Only Gone But Not Forgotten venues stay listed once closed.',
 };
+const [closer] = row.closedBy
+  ? await db.select({ name: user.name, email: user.email }).from(user).where(eq(user.id, row.closedBy)).limit(1)
+  : [];
 ---
 
 <AdminLayout title={`Edit ${row.name}`}>
@@ -44,9 +50,19 @@ const HIDDEN_TEXT = {
       </div>
     </div>
 
-    {hidden && (
+    {row.closedAt && (
+      <div role="status" class="rounded-xl border-2 border-stone-400 bg-stone-100 px-4 py-3 text-sm text-stone-800">
+        <strong class="block uppercase tracking-wider">Permanently closed</strong>
+        Marked closed on {formatEventDate(row.closedAt)}{closer ? ` by ${closer.name || closer.email}` : ''}. Off the map and Near Me
+        {row.tier === 'gone_but_not_forgotten' ? '; still listed under Gone But Not Forgotten.' : '; hidden from the public site.'}
+      </div>
+    )}
+
+    {hidden && hidden !== 'closed' && (
       <p role="status" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{HIDDEN_TEXT[hidden]}</p>
     )}
+
+    <VenueClosure client:load venueId={row.id} venueName={row.name} closed={Boolean(row.closedAt)} isGoneButNotForgotten={row.tier === 'gone_but_not_forgotten'} />
 
     <VenueForm
       client:load

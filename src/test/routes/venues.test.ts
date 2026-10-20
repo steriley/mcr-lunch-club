@@ -53,8 +53,8 @@ describe('GET /api/admin/venues', () => {
     const { sql, params } = renderSql(calls.find((call) => call.method === 'where')!.args[0]);
     assert.match(sql, /ilike/i);
     assert.match(sql, /"tier" = /);
-    assert.match(sql, /"tier" is not null and "venues"\."latitude" is not null and "venues"\."longitude" is not null/);
-    assert.deepEqual(params, ['%100\\%\\_chips%', '%100\\%\\_chips%', 'approved']);
+    assert.match(sql, /"tier" is not null and "venues"\."latitude" is not null and "venues"\."longitude" is not null and \("venues"\."closed_at" is null/);
+    assert.deepEqual(params, ['%100\\%\\_chips%', '%100\\%\\_chips%', 'approved', 'gone_but_not_forgotten']);
   });
 
   it('supports the hidden filter and no filters at all', async () => {

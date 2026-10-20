@@ -10,7 +10,8 @@ interface VenueRow {
   slug: string;
   tier: string | null;
   /** From hiddenReason() in src/lib/visibility.ts; null when the venue is public. */
-  hiddenReason: 'no_tier' | 'needs_location' | null;
+  hiddenReason: 'no_tier' | 'needs_location' | 'closed' | null;
+  closed: boolean;
   /** Has coordinates but no ORS walking route yet (see src/lib/route-status.ts). */
   routePending: boolean;
   updatedAt: string;
@@ -21,6 +22,7 @@ type SortKey = 'name' | 'tier' | 'status' | 'updatedAt';
 const HIDDEN_LABELS: Record<NonNullable<VenueRow['hiddenReason']>, string> = {
   no_tier: 'Hidden: no approved tier',
   needs_location: 'Hidden: needs location',
+  closed: 'Hidden: closed',
 };
 
 const props = defineProps<{ venues: VenueRow[] }>();
@@ -185,6 +187,9 @@ const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2
               <td class="px-4 py-3">
                 <span :class="['inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]', venue.hiddenReason ? 'bg-stone-200 text-stone-700' : 'bg-emerald-100 text-emerald-800']">
                   {{ venue.hiddenReason ? HIDDEN_LABELS[venue.hiddenReason] : 'Public' }}
+                </span>
+                <span v-if="venue.closed" class="ml-1 inline-flex whitespace-nowrap rounded-full bg-stone-700 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white">
+                  Closed
                 </span>
                 <span v-if="venue.routePending" class="ml-1 inline-flex whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-800">
                   Route pending

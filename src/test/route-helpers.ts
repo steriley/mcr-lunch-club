@@ -71,6 +71,31 @@ export function stubDbSequence(method: 'select' | 'insert' | 'update' | 'delete'
   return calls;
 }
 
+/**
+ * Makes `db.transaction(fn)` run `fn` against the (stubbed) `db` itself, so
+ * queries inside a transaction hit the same stubs. Returns how many
+ * transactions ran.
+ */
+export function stubTransactions() {
+  const counter = { count: 0 };
+  patch(db as Mutable, 'transaction', async (fn: (tx: unknown) => unknown) => {
+    counter.count += 1;
+    return fn(db);
+  });
+  return counter;
+}
+
+/** Makes `db.execute()` resolve to `rows` (wrapped as node-postgres does). */
+export function stubExecute(rows: unknown[] | Error = []) {
+  const calls: unknown[] = [];
+  patch(db as Mutable, 'execute', async (query: unknown) => {
+    calls.push(query);
+    if (rows instanceof Error) throw rows;
+    return { rows };
+  });
+  return calls;
+}
+
 export function stubAuthApi(name: string, implementation: (options: any) => unknown) {
   const calls: any[] = [];
   patch(auth.api as Mutable, name, async (options: unknown) => {

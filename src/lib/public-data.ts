@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 import { parseTier, tierLabel, type TierValue } from '@/lib/tiers';
 import type { CostBand } from '@/lib/venue-schema';
 import { sortForPublic } from '@/lib/venue-order';
-import { isPubliclyVisible, publicVenueCondition } from '@/lib/visibility';
+import { isMappable, isPubliclyVisible, publicVenueCondition } from '@/lib/visibility';
 import type { Incident, Venue } from '@/types';
 
 /**
@@ -28,6 +28,8 @@ function coordinateLink(latitude: number, longitude: number): string {
 /** A venue as shown on the public site. */
 export type PublicVenue = Venue & {
   imageUrl: string | null;
+  /** Permanently closed; only Gone But Not Forgotten venues are public while closed. */
+  closed: boolean;
 };
 
 /** A row that passed the visibility rule, so it has an approved tier. */
@@ -58,6 +60,7 @@ export function toPublicVenue(row: PublicRow): PublicVenue {
         ? coordinateLink(lat, lng)
         : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${row.name} Manchester`)}`),
     imageUrl: row.imageUrl,
+    closed: row.closedAt !== null,
   };
 }
 
@@ -74,6 +77,15 @@ function isPublicRow(row: VenueRow): row is PublicRow {
 export async function getPublicVenues(): Promise<PublicVenue[]> {
   const rows = await db.select().from(venues).where(publicVenueCondition()).orderBy(asc(venues.name));
   return sortForPublic(rows.filter(isPublicRow).map(toPublicVenue), (venue) => parseTier(venue.status)!);
+}
+
+/**
+ * Venues for the map, Near Me and the other home page islands: public and
+ * still open. Closed venues stay off the map even when their tier page lists them.
+ */
+export async function getMapVenues(): Promise<PublicVenue[]> {
+  const rows = await db.select().from(venues).where(publicVenueCondition()).orderBy(asc(venues.name));
+  return sortForPublic(rows.filter(isPublicRow).filter(isMappable).map(toPublicVenue), (venue) => parseTier(venue.status)!);
 }
 
 export async function getPublicVenue(slug: string): Promise<PublicVenueDetail | null> {

@@ -67,6 +67,7 @@ export function serializeVenue(venue: VenueRow) {
     distanceMiles: toNumber(venue.distanceMiles),
     createdAt: venue.createdAt.toISOString(),
     updatedAt: venue.updatedAt.toISOString(),
+    closedAt: venue.closedAt?.toISOString() ?? null,
   };
 }
 

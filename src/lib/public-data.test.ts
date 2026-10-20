@@ -3,6 +3,7 @@ import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   PUBLIC_CACHE_CONTROL,
+  getMapVenues,
   getPublicVenue,
   getPublicVenues,
   getPublishedIncidents,
@@ -37,6 +38,8 @@ function venueRow(overrides: Partial<VenueRow> = {}): VenueRow & { tier: NonNull
     walkingTimeMin: 9,
     lastInspectionDate: '2026-09-01',
     mapSearchLink: 'https://maps.example/chips',
+    closedAt: null,
+    closedBy: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     updatedBy: null,
@@ -207,6 +210,23 @@ describe('public venue queries', () => {
     const venues = await getPublicVenues();
     assert.deepEqual(venues.map((venue) => venue.slug), ['near', 'far', 'a-reject', 'z-reject']);
     assert.equal(venues[2].status, 'Rejected');
+  });
+
+  it('getMapVenues leaves closed venues off the map, even Gone But Not Forgotten ones', async () => {
+    const closedAt = new Date('2026-10-01T00:00:00Z');
+    stubDb('select', [
+      venueRow({ slug: 'open' }),
+      venueRow({ slug: 'closed-gone', tier: 'gone_but_not_forgotten', closedAt }),
+      venueRow({ slug: 'open-gone', tier: 'gone_but_not_forgotten' }),
+    ]);
+    assert.deepEqual((await getMapVenues()).map((venue) => venue.slug), ['open', 'open-gone']);
+  });
+
+  it('flags closed venues for the public pages', async () => {
+    stubDb('select', [venueRow({ slug: 'closed-gone', tier: 'gone_but_not_forgotten', closedAt: new Date() })]);
+    const [venue] = await getPublicVenues();
+    assert.equal(venue.closed, true);
+    assert.equal(venue.status, 'Gone But Not Forgotten');
   });
 
   it('getPublicVenue checks visibility and returns the detail fields, or null when hidden or missing', async () => {

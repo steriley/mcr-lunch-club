@@ -9,14 +9,15 @@ import WeatherCard from '@/components/WeatherCard.vue';
 import SuggestModal from '@/components/islands/SuggestModal.vue';
 import LedgerCanon from '@/components/LedgerCanon.astro';
 import { getPublicMapApiKey } from '@/lib/env';
-import { getPublicVenues, setPublicCacheHeaders } from '@/lib/public-data';
+import { getMapVenues, setPublicCacheHeaders } from '@/lib/public-data';
 import { milesText, walkText } from '@/lib/route-display';
 import { seedLedgerVenues } from '@/stores/ledger';
 import inspectionsData from '@/data/inspections.json';
 
 export const prerender = false;
 
-const venuesData = await getPublicVenues();
+// Closed venues never go on the map or in Near Me.
+const venuesData = await getMapVenues();
 seedLedgerVenues(venuesData);
 setPublicCacheHeaders(Astro.response.headers);
 
