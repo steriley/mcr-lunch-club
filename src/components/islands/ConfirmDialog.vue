@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
+
 const props = defineProps<{
   open: boolean;
   title?: string;
@@ -8,25 +10,63 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{ (event: 'confirm'): void; (event: 'cancel'): void }>();
+
+const cancelButton = ref<HTMLButtonElement | null>(null);
+let previouslyFocused: HTMLElement | null = null;
+
+function onKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') emit('cancel');
+}
+
+watch(
+  () => props.open,
+  async (open) => {
+    if (typeof window === 'undefined') return;
+    if (open) {
+      previouslyFocused = document.activeElement as HTMLElement | null;
+      window.addEventListener('keydown', onKeydown);
+      await nextTick();
+      cancelButton.value?.focus();
+    } else {
+      window.removeEventListener('keydown', onKeydown);
+      previouslyFocused?.focus();
+    }
+  }
+);
+
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined') window.removeEventListener('keydown', onKeydown);
+});
 </script>
 
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-[#1a1e24]/40 px-4">
-    <div class="w-full max-w-md rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-xl">
+  <div
+    v-if="open"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-[#1a1e24]/40 px-4"
+    @click.self="emit('cancel')"
+  >
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="confirm-dialog-title"
+      aria-describedby="confirm-dialog-message"
+      class="w-full max-w-md rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-xl"
+    >
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Confirm</p>
-      <h3 class="mt-2 text-2xl font-bold text-[#1a1e24]">{{ title || 'Are you sure?' }}</h3>
-      <p class="mt-3 text-sm text-[#3d3d3d]">{{ message || 'This action cannot be undone.' }}</p>
+      <h3 id="confirm-dialog-title" class="mt-2 text-2xl font-bold text-[#1a1e24]">{{ title || 'Are you sure?' }}</h3>
+      <p id="confirm-dialog-message" class="mt-3 text-sm text-[#3d3d3d]">{{ message || 'This action cannot be undone.' }}</p>
       <div class="mt-6 flex justify-end gap-3">
         <button
+          ref="cancelButton"
           type="button"
-          class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]"
+          class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2F6B]"
           @click="emit('cancel')"
         >
           {{ cancelLabel || 'Cancel' }}
         </button>
         <button
           type="button"
-          class="rounded-lg bg-[#B92B27] px-4 py-2 text-sm font-semibold text-white hover:bg-[#8e201d]"
+          class="rounded-lg bg-[#B92B27] px-4 py-2 text-sm font-semibold text-white hover:bg-[#8e201d] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B92B27] focus-visible:ring-offset-2"
           @click="emit('confirm')"
         >
           {{ confirmLabel || 'Confirm' }}

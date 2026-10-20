@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { authClient } from '@/lib/auth-client';
+import { safeAdminRedirect } from '@/lib/safe-redirect';
 
 const props = defineProps<{ next?: string }>();
 
@@ -27,11 +28,18 @@ async function handleSubmit() {
     });
 
     if (result.error) {
-      errorMessage.value = result.error.message || 'Invalid email or password.';
+      // Never reveal whether an email exists.
+      if (result.error.status === 429) {
+        errorMessage.value = 'Too many sign-in attempts. Please wait a minute and try again.';
+      } else if (result.error.code === 'BANNED_USER') {
+        errorMessage.value = 'This account has been deactivated.';
+      } else {
+        errorMessage.value = 'Invalid email or password.';
+      }
       return;
     }
 
-    window.location.assign(props.next || '/admin');
+    window.location.assign(safeAdminRedirect(props.next));
   } catch (error) {
     console.error('Login failed', error);
     errorMessage.value = 'Unable to sign in right now. Please try again.';

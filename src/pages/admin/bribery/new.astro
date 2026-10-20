@@ -2,29 +2,21 @@
 import { asc } from 'drizzle-orm';
 import BriberyForm from '@/components/islands/BriberyForm.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
-import { db, schema } from '@/lib/db';
+import { venues } from '@/db/schema';
+import { db } from '@/lib/db';
 
-const user = Astro.locals.user;
-if (!user || user.role !== 'admin') {
-  return Astro.redirect(`/admin/login?next=${encodeURIComponent(Astro.url.pathname)}`);
-}
+export const prerender = false;
 
-const { venues } = schema;
 const venueOptions = await db.select({ id: venues.id, name: venues.name }).from(venues).orderBy(asc(venues.name));
 ---
 
-<AdminLayout title="New bribery record — Chairs' Area" userName={user?.name ?? 'Chair'}>
+<AdminLayout title="New bribery record">
   <div class="space-y-6">
-    <div class="flex items-center justify-between gap-4">
-      <div>
-        <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Bribery review</p>
-        <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">New bribery record</h1>
-      </div>
-      <a href="/admin/bribery" class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">
-        Back to list
-      </a>
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Hall of Shame</p>
+      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">New record</h1>
     </div>
 
-    <BriberyForm client:load mode="create" :venues={JSON.stringify(venueOptions)} />
+    <BriberyForm client:load mode="create" venues={venueOptions} />
   </div>
 </AdminLayout>

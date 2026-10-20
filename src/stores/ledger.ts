@@ -1,24 +1,58 @@
 import { atom } from 'nanostores';
 import type { Venue, Inspection, TierStatus } from '@/types';
-import venuesData from '@/data/venues.json';
 import inspectionsData from '@/data/inspections.json';
 
 // Local storage keys
-const VENUES_STORAGE_KEY = 'mcr_lunch_club_venues_v1';
+const VENUES_STORAGE_KEY = 'mcr_lunch_club_venues_v2';
+const LEGACY_VENUES_STORAGE_KEY = 'mcr_lunch_club_venues_v1';
 const INSPECTIONS_STORAGE_KEY = 'mcr_lunch_club_inspections_v1';
 
-function getInitialVenues(): Venue[] {
-  if (typeof window !== 'undefined') {
-    try {
-      const stored = localStorage.getItem(VENUES_STORAGE_KEY);
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch (e) {
-      console.warn('Failed to parse venues from localStorage', e);
-    }
+/** Id of the <script type="application/json"> tag holding the published venues. */
+export const LEDGER_CANON_ELEMENT_ID = 'ledger-canon';
+
+// The published venue list from the database, embedded in the page by the server.
+let canonVenues: Venue[] = [];
+
+function readCanonFromPage(): Venue[] {
+  if (typeof document === 'undefined') return [];
+  const element = document.getElementById(LEDGER_CANON_ELEMENT_ID);
+  if (!element?.textContent) return [];
+  try {
+    return JSON.parse(element.textContent) as Venue[];
+  } catch (e) {
+    console.warn('Failed to parse the published venue list', e);
+    return [];
   }
-  return venuesData as Venue[];
+}
+
+/** Cheap fingerprint so local edits are dropped once the published list changes. */
+function fingerprint(venues: Venue[]): string {
+  const text = JSON.stringify(venues);
+  let hash = 5381;
+  for (let i = 0; i < text.length; i += 1) {
+    hash = ((hash << 5) + hash + text.charCodeAt(i)) | 0;
+  }
+  return `${venues.length}:${hash >>> 0}`;
+}
+
+function getInitialVenues(): Venue[] {
+  if (typeof window === 'undefined') return canonVenues;
+
+  canonVenues = readCanonFromPage();
+  try {
+    localStorage.removeItem(LEGACY_VENUES_STORAGE_KEY);
+    const stored = localStorage.getItem(VENUES_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored) as { canon?: string; venues?: Venue[] };
+      if (parsed.canon === fingerprint(canonVenues) && Array.isArray(parsed.venues)) {
+        return parsed.venues;
+      }
+      localStorage.removeItem(VENUES_STORAGE_KEY);
+    }
+  } catch (e) {
+    console.warn('Failed to parse venues from localStorage', e);
+  }
+  return canonVenues;
 }
 
 function getInitialInspections(): Inspection[] {
@@ -38,10 +72,20 @@ function getInitialInspections(): Inspection[] {
 export const $venuesList = atom<Venue[]>(getInitialVenues());
 export const $inspectionsList = atom<Inspection[]>(getInitialInspections());
 
+/**
+ * Server-side only: provide the published venues before rendering islands so
+ * their server-rendered HTML matches what hydrates in the browser.
+ */
+export function seedLedgerVenues(venues: Venue[]) {
+  if (typeof window !== 'undefined') return;
+  canonVenues = venues;
+  $venuesList.set(venues);
+}
+
 // Helper to save to local storage
 function persistVenues(venues: Venue[]) {
   if (typeof window !== 'undefined') {
-    localStorage.setItem(VENUES_STORAGE_KEY, JSON.stringify(venues));
+    localStorage.setItem(VENUES_STORAGE_KEY, JSON.stringify({ canon: fingerprint(canonVenues), venues }));
   }
 }
 
@@ -163,7 +207,7 @@ export function suggestVenue(params: {
  * Reset all venues and inspections back to original ledger state
  */
 export function resetLedgerToCanon() {
-  $venuesList.set(venuesData as Venue[]);
+  $venuesList.set(canonVenues);
   $inspectionsList.set(inspectionsData as Inspection[]);
   if (typeof window !== 'undefined') {
     localStorage.removeItem(VENUES_STORAGE_KEY);

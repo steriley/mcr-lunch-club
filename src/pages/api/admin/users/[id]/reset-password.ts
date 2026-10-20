@@ -1,40 +1,31 @@
+import type { APIRoute } from 'astro';
+import { authApiError, jsonError, jsonResponse, readJson, requireAdmin, userIdParam, validationError } from '@/lib/admin-api';
+import { auth } from '@/lib/auth';
+import { resetPasswordSchema } from '@/lib/user-schema';
+
 export const prerender = false;
 
-import { auth } from '@/lib/auth';
-import { adminGuard } from '@/lib/venue-validation';
+/**
+ * Sets a temporary password chosen by a Chair and signs the user out
+ * everywhere, so they must sign in again with it (and should then change it).
+ */
+export const POST: APIRoute = async ({ request, params }) => {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
 
-export async function POST({ params, request }: { params: Record<string, string | undefined>; request: Request }) {
-  const session = await adminGuard(request);
-  if (!session) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const id = userIdParam.safeParse(params.id);
+  if (!id.success) return jsonError(404, 'User not found.');
 
-  const id = params.id;
-  if (!id) {
-    return Response.json({ error: 'User id is required.' }, { status: 400 });
-  }
-
-  const body = await request.json().catch(() => null);
-  if (!body) {
-    return Response.json({ error: 'Request body is required.' }, { status: 400 });
-  }
-
-  const newPassword = String(body.password ?? '').trim();
-  if (!newPassword || newPassword.length < 12) {
-    return Response.json({ error: 'Password must be at least 12 characters.' }, { status: 400 });
-  }
+  const parsed = resetPasswordSchema.safeParse(await readJson(request));
+  if (!parsed.success) return validationError(parsed.error);
 
   try {
-    const response = await auth.api.setUserPassword({
-      headers: request.headers,
-      body: {
-        userId: id,
-        newPassword,
-      },
-    });
-
-    return Response.json(response);
-  } catch (error: any) {
-    return Response.json({ error: error?.message ?? 'Unable to reset this password right now.' }, { status: 400 });
+    await auth.api.setUserPassword({ headers: request.headers, body: { userId: id.data, newPassword: parsed.data.password } });
+    if (id.data !== session.user.id) {
+      await auth.api.revokeUserSessions({ headers: request.headers, body: { userId: id.data } });
+    }
+    return jsonResponse({ ok: true });
+  } catch (error) {
+    return authApiError('Reset password', error);
   }
-}
+};

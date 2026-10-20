@@ -1,127 +1,230 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
+import ConfirmDialog from './ConfirmDialog.vue';
+import { briberyInputSchema } from '@/lib/bribery-schema';
+
+interface BriberyData {
+  id: string;
+  title: string | null;
+  venueId: string | null;
+  venueNameText: string | null;
+  incidentDate: string | null;
+  incidentTime: string | null;
+  location: string | null;
+  peopleInvolved: string[];
+  witnesses: string[];
+  benefitOffered: string | null;
+  value: string | null;
+  description: string;
+  outcome: string | null;
+  published: boolean;
+}
 
 const props = defineProps<{
   mode: 'create' | 'edit';
-  record?: string | null;
-  venues?: string | null;
+  record?: BriberyData | null;
+  venues: Array<{ id: string; name: string }>;
 }>();
 
-const initialRecord = props.record ? JSON.parse(props.record) : null;
-const venueOptions = props.venues ? JSON.parse(props.venues) as Array<{ id: string; name: string }> : [];
-
-const fieldErrors = reactive<Record<string, string>>({});
 const form = reactive({
-  venueId: initialRecord?.venueId ?? '',
-  venueNameText: initialRecord?.venueNameText ?? '',
-  incidentDate: initialRecord?.incidentDate ? new Date(initialRecord.incidentDate).toISOString().slice(0, 10) : '',
-  description: initialRecord?.description ?? '',
-  outcome: initialRecord?.outcome ?? '',
-  published: initialRecord ? Boolean(initialRecord.published) : true,
+  title: props.record?.title ?? '',
+  venueId: props.record?.venueId ?? '',
+  venueNameText: props.record?.venueNameText ?? '',
+  incidentDate: props.record?.incidentDate ?? '',
+  incidentTime: props.record?.incidentTime ?? '',
+  location: props.record?.location ?? '',
+  peopleInvolved: (props.record?.peopleInvolved ?? []).join('\n'),
+  witnesses: (props.record?.witnesses ?? []).join('\n'),
+  benefitOffered: props.record?.benefitOffered ?? '',
+  value: props.record?.value ?? '',
+  description: props.record?.description ?? '',
+  outcome: props.record?.outcome ?? '',
+  published: props.record?.published ?? true,
 });
 
-const actionText = props.mode === 'create' ? 'Create record' : 'Save changes';
+const savedSnapshot = ref(JSON.stringify(form));
+const isDirty = computed(() => JSON.stringify(form) !== savedSnapshot.value);
+const errors = reactive<Record<string, string>>({});
+const formError = ref('');
+const isSubmitting = ref(false);
+const showDeleteDialog = ref(false);
 
 function clearErrors() {
-  Object.keys(fieldErrors).forEach((key) => {
-    delete fieldErrors[key];
-  });
+  for (const key of Object.keys(errors)) delete errors[key];
+  formError.value = '';
 }
 
 async function submit() {
   clearErrors();
+  const checked = briberyInputSchema.safeParse({ ...form });
+  if (!checked.success) {
+    for (const issue of checked.error.issues) errors[String(issue.path[0] ?? 'form')] ??= issue.message;
+    formError.value = 'Please correct the highlighted fields.';
+    return;
+  }
 
-  const payload = {
-    venueId: form.venueId || null,
-    venueNameText: form.venueNameText.trim(),
-    incidentDate: form.incidentDate || null,
-    description: form.description.trim(),
-    outcome: form.outcome.trim(),
-    published: form.published,
-  };
-
-  const endpoint = props.mode === 'create' ? '/api/admin/bribery' : `/api/admin/bribery/${initialRecord.id}`;
-  const method = props.mode === 'create' ? 'POST' : 'PUT';
-
+  isSubmitting.value = true;
   try {
-    const response = await fetch(endpoint, {
-      method,
+    const response = await fetch(props.mode === 'create' ? '/api/admin/bribery' : `/api/admin/bribery/${props.record!.id}`, {
+      method: props.mode === 'create' ? 'POST' : 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...form }),
     });
-
+    const result = await response.json().catch(() => ({}));
     if (!response.ok) {
-      const data = await response.json().catch(() => ({ error: 'Unable to save this bribery record.' }));
-      if (data.fields) {
-        Object.entries(data.fields).forEach(([key, value]) => {
-          fieldErrors[key] = String(value);
-        });
-      }
-      if (data.error && !Object.keys(data.fields ?? {}).length) {
-        fieldErrors.form = data.error;
-      }
+      Object.assign(errors, result.fields ?? {});
+      formError.value = result.error ?? 'Unable to save this record right now.';
       return;
     }
-
-    window.location.href = '/admin/bribery';
-  } catch (error) {
-    fieldErrors.form = 'Something went wrong while saving this bribery record.';
+    savedSnapshot.value = JSON.stringify(form);
+    window.location.assign('/admin/bribery?saved=1');
+  } catch {
+    formError.value = 'Unable to save this record right now.';
+  } finally {
+    isSubmitting.value = false;
   }
 }
+
+async function performDelete() {
+  showDeleteDialog.value = false;
+  isSubmitting.value = true;
+  try {
+    const response = await fetch(`/api/admin/bribery/${props.record!.id}`, { method: 'DELETE' });
+    if (!response.ok) {
+      formError.value = 'Unable to delete this record right now.';
+      return;
+    }
+    savedSnapshot.value = JSON.stringify(form);
+    window.location.assign('/admin/bribery?deleted=1');
+  } finally {
+    isSubmitting.value = false;
+  }
+}
+
+function onBeforeUnload(event: BeforeUnloadEvent) {
+  if (!isDirty.value) return;
+  event.preventDefault();
+  event.returnValue = '';
+}
+onMounted(() => window.addEventListener('beforeunload', onBeforeUnload));
+onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload));
+
+const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2F6B]/30';
+const labelClass = 'block text-sm font-semibold text-[#1a1e24]';
+const hintClass = 'mt-1 block text-xs font-normal text-[#535353]';
+const errorClass = 'mt-1 block text-xs font-medium text-red-700';
 </script>
 
 <template>
-  <form class="space-y-6 rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm" @submit.prevent="submit">
-    <div v-if="fieldErrors.form" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-      {{ fieldErrors.form }}
-    </div>
+  <form class="space-y-6 rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm" novalidate @submit.prevent="submit">
+    <div v-if="formError" role="alert" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ formError }}</div>
 
     <div class="grid gap-5 lg:grid-cols-2">
-      <label class="block text-sm font-semibold text-[#1a1e24]">
+      <label :class="[labelClass, 'lg:col-span-2']">
+        <span class="mb-2 block">Title</span>
+        <input v-model="form.title" :class="inputClass" placeholder="e.g. Red Roses for Forgiveness" />
+        <span v-if="errors.title" :class="errorClass">{{ errors.title }}</span>
+      </label>
+
+      <label :class="labelClass">
         <span class="mb-2 block">Venue</span>
-        <select v-model="form.venueId" class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none">
-          <option value="">No linked venue</option>
-          <option v-for="venue in venueOptions" :key="venue.id" :value="venue.id">
-            {{ venue.name }}
-          </option>
+        <select v-model="form.venueId" :class="inputClass">
+          <option value="">Not linked to a venue</option>
+          <option v-for="venue in venues" :key="venue.id" :value="venue.id">{{ venue.name }}</option>
         </select>
-        <span v-if="fieldErrors.venueId" class="mt-2 block text-xs font-medium text-red-700">{{ fieldErrors.venueId }}</span>
+        <span v-if="errors.venueId" :class="errorClass">{{ errors.venueId }}</span>
       </label>
 
-      <label class="block text-sm font-semibold text-[#1a1e24]">
-        <span class="mb-2 block">Venue name override</span>
-        <input v-model="form.venueNameText" placeholder="If the venue is not in the ledger" class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none" />
+      <label :class="labelClass">
+        <span class="mb-2 block">Venue name (if not in the ledger)</span>
+        <input v-model="form.venueNameText" :class="inputClass" />
+        <span v-if="errors.venueNameText" :class="errorClass">{{ errors.venueNameText }}</span>
       </label>
 
-      <label class="block text-sm font-semibold text-[#1a1e24]">
-        <span class="mb-2 block">Incident date</span>
-        <input v-model="form.incidentDate" type="date" class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none" />
+      <label :class="labelClass">
+        <span class="mb-2 block">Date</span>
+        <input v-model="form.incidentDate" type="date" :class="inputClass" />
+        <span v-if="errors.incidentDate" :class="errorClass">{{ errors.incidentDate }}</span>
       </label>
 
-      <label class="flex items-center gap-3 rounded-xl border border-[#d9cfb8] bg-white px-4 py-3 text-sm font-semibold text-[#1a1e24]">
-        <input v-model="form.published" type="checkbox" class="h-4 w-4 rounded border-[#d9cfb8] text-[#1B2F6B] focus:ring-[#1B2F6B]" />
-        Publish this record
+      <label :class="labelClass">
+        <span class="mb-2 block">Time</span>
+        <input v-model="form.incidentTime" type="time" :class="inputClass" />
+        <span v-if="errors.incidentTime" :class="errorClass">{{ errors.incidentTime }}</span>
+      </label>
+
+      <label :class="[labelClass, 'lg:col-span-2']">
+        <span class="mb-2 block">Location</span>
+        <input v-model="form.location" :class="inputClass" placeholder="e.g. Manchester Spinningfields" />
+        <span v-if="errors.location" :class="errorClass">{{ errors.location }}</span>
+      </label>
+
+      <label :class="labelClass">
+        <span class="mb-2 block">People involved</span>
+        <textarea v-model="form.peopleInvolved" rows="3" :class="inputClass"></textarea>
+        <span :class="hintClass">One per line.</span>
+        <span v-if="errors.peopleInvolved" :class="errorClass">{{ errors.peopleInvolved }}</span>
+      </label>
+
+      <label :class="labelClass">
+        <span class="mb-2 block">Witnesses</span>
+        <textarea v-model="form.witnesses" rows="3" :class="inputClass"></textarea>
+        <span :class="hintClass">One per line.</span>
+        <span v-if="errors.witnesses" :class="errorClass">{{ errors.witnesses }}</span>
+      </label>
+
+      <label :class="labelClass">
+        <span class="mb-2 block">Benefit offered</span>
+        <input v-model="form.benefitOffered" :class="inputClass" />
+        <span v-if="errors.benefitOffered" :class="errorClass">{{ errors.benefitOffered }}</span>
+      </label>
+
+      <label :class="labelClass">
+        <span class="mb-2 block">Estimated value</span>
+        <input v-model="form.value" :class="inputClass" placeholder="e.g. £6.50" />
+        <span v-if="errors.value" :class="errorClass">{{ errors.value }}</span>
       </label>
     </div>
 
-    <label class="block text-sm font-semibold text-[#1a1e24]">
-      <span class="mb-2 block">Description</span>
-      <textarea v-model="form.description" rows="6" placeholder="Detail the incident, offer, benefit or inducement." class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none"></textarea>
-      <span v-if="fieldErrors.description" class="mt-2 block text-xs font-medium text-red-700">{{ fieldErrors.description }}</span>
+    <label :class="labelClass">
+      <span class="mb-2 block">Context</span>
+      <textarea v-model="form.description" rows="5" :class="inputClass" placeholder="What happened?"></textarea>
+      <span v-if="errors.description" :class="errorClass">{{ errors.description }}</span>
     </label>
 
-    <label class="block text-sm font-semibold text-[#1a1e24]">
-      <span class="mb-2 block">Outcome</span>
-      <textarea v-model="form.outcome" rows="4" placeholder="Any note on the outcome, follow-up, or verdict." class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none"></textarea>
+    <label :class="labelClass">
+      <span class="mb-2 block">Outcome and resolution</span>
+      <textarea v-model="form.outcome" rows="4" :class="inputClass"></textarea>
+      <span v-if="errors.outcome" :class="errorClass">{{ errors.outcome }}</span>
     </label>
 
-    <div class="flex flex-col gap-3 border-t border-[#d9cfb8] pt-4 sm:flex-row sm:justify-end">
-      <a href="/admin/bribery" class="inline-flex items-center justify-center rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">
-        Cancel
-      </a>
-      <button type="submit" class="inline-flex items-center justify-center rounded-lg bg-[#1B2F6B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#111E47]">
-        {{ actionText }}
-      </button>
+    <label class="flex items-center gap-3 rounded-xl border border-[#d9cfb8] bg-white px-4 py-3 text-sm font-semibold text-[#1a1e24]">
+      <input v-model="form.published" type="checkbox" class="h-4 w-4 rounded border-[#d9cfb8]" />
+      Show on the public Hall of Shame
+    </label>
+
+    <div class="flex flex-col-reverse gap-3 border-t border-[#d9cfb8] pt-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <button v-if="mode === 'edit'" type="button" :disabled="isSubmitting" class="w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50 sm:w-auto" @click="showDeleteDialog = true">
+          Delete record
+        </button>
+      </div>
+      <div class="flex flex-col gap-3 sm:flex-row">
+        <span v-if="isDirty" class="self-center text-xs font-semibold text-[#8a5100]">Unsaved changes</span>
+        <a href="/admin/bribery" class="inline-flex items-center justify-center rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">Cancel</a>
+        <button type="submit" :disabled="isSubmitting" class="inline-flex items-center justify-center rounded-lg bg-[#1B2F6B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#111E47] disabled:opacity-70">
+          {{ isSubmitting ? 'Saving…' : mode === 'create' ? 'Create record' : 'Save changes' }}
+        </button>
+      </div>
     </div>
+
+    <ConfirmDialog
+      :open="showDeleteDialog"
+      title="Delete record"
+      message="Remove this entry from the Bribery / Improper Benefit Attempt Record permanently?"
+      confirm-label="Delete record"
+      @cancel="showDeleteDialog = false"
+      @confirm="performDelete"
+    />
   </form>
 </template>

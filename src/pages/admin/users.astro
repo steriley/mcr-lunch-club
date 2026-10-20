@@ -1,38 +1,32 @@
 ---
 import UserManagement from '@/components/islands/UserManagement.vue';
-import { auth } from '@/lib/auth';
 import AdminLayout from '@/layouts/AdminLayout.astro';
+import { auth } from '@/lib/auth';
 
-const user = Astro.locals.user;
-if (!user || user.role !== 'admin') {
-  return Astro.redirect(`/admin/login?next=${encodeURIComponent(Astro.url.pathname)}`);
-}
+export const prerender = false;
 
-const usersResponse = await auth.api.listUsers({
+const currentUser = Astro.locals.user!;
+const { users: entries } = await auth.api.listUsers({
   headers: Astro.request.headers,
-  query: {
-    limit: 200,
-    sortBy: 'createdAt',
-    sortDirection: 'desc',
-  },
+  query: { limit: 200, sortBy: 'createdAt', sortDirection: 'desc' },
 });
-const users = usersResponse.users.map((entry) => ({
+const users = entries.map((entry) => ({
   id: entry.id,
   email: entry.email,
   name: entry.name,
-  role: Array.isArray(entry.role) ? entry.role.join(', ') : (entry.role ?? 'user'),
+  role: entry.role ?? 'user',
   banned: Boolean(entry.banned),
   createdAt: entry.createdAt ? new Date(entry.createdAt).toISOString() : null,
 }));
 ---
 
-<AdminLayout title="Users — Chairs' Area" userName={user?.name ?? 'Chair'}>
+<AdminLayout title="Users">
   <div class="space-y-6">
     <div>
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Chair management</p>
-      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">User access</h1>
+      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Users</h1>
     </div>
 
-    <UserManagement client:load users={users} />
+    <UserManagement client:load users={users} currentUserId={currentUser.id} />
   </div>
 </AdminLayout>

@@ -1,12 +1,15 @@
 import type { APIRoute } from 'astro';
-import venuesData from '@/data/venues.json';
+import { getPublishedVenues, PUBLIC_CACHE_CONTROL } from '@/lib/public-data';
+
+export const prerender = false;
 
 export const GET: APIRoute = async () => {
-  return new Response(JSON.stringify(venuesData, null, 2), {
+  const venues = await getPublishedVenues();
+  return new Response(JSON.stringify(venues, null, 2), {
     status: 200,
     headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=3600',
+      'Cache-Control': PUBLIC_CACHE_CONTROL,
     },
   });
 };

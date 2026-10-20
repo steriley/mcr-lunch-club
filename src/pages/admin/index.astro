@@ -1,80 +1,132 @@
 ---
-import { auth } from '@/lib/auth';
-import { db, schema } from '@/lib/db';
+import { count, desc, eq, sql } from 'drizzle-orm';
+import TierBadge from '@/components/islands/TierBadge.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
+import { user } from '@/db/auth-schema';
+import { briberyRecords, venues } from '@/db/schema';
+import { db } from '@/lib/db';
+import { TIERS } from '@/lib/tiers';
 
-const user = Astro.locals.user;
-const session = Astro.locals.session;
-const { venues, briberyRecords } = schema;
+export const prerender = false;
 
-const venueRows = await db.select().from(venues);
-const briberyRows = await db.select().from(briberyRecords);
-const userList = await auth.api.listUsers({
-  headers: Astro.request.headers,
-  query: { limit: 200, sortBy: 'createdAt', sortDirection: 'desc' },
-});
+const currentUser = Astro.locals.user;
 
-const approvedCount = venueRows.filter((venue) => venue.published && venue.tier === 'approved').length;
-const draftCount = venueRows.filter((venue) => !venue.published).length;
-const briberyCount = briberyRows.length;
-const chairCount = userList.users.length;
+const [tierCounts, drafts, recent, [bribery], [chairs]] = await Promise.all([
+  db
+    .select({
+      tier: venues.tier,
+      published: sql<number>`count(*) filter (where ${venues.published})`.mapWith(Number),
+      drafts: sql<number>`count(*) filter (where not ${venues.published})`.mapWith(Number),
+    })
+    .from(venues)
+    .groupBy(venues.tier),
+  db
+    .select({ id: venues.id, name: venues.name, tier: venues.tier, updatedAt: venues.updatedAt })
+    .from(venues)
+    .where(eq(venues.published, false))
+    .orderBy(desc(venues.updatedAt))
+    .limit(10),
+  db
+    .select({ id: venues.id, name: venues.name, tier: venues.tier, published: venues.published, updatedAt: venues.updatedAt, editor: user.name })
+    .from(venues)
+    .leftJoin(user, eq(user.id, venues.updatedBy))
+    .orderBy(desc(venues.updatedAt))
+    .limit(8),
+  db.select({ total: count() }).from(briberyRecords),
+  db.select({ total: count() }).from(user).where(eq(user.role, 'admin')),
+]);
 
-const dashboardStats = [
-  { label: 'Published venues', value: String(approvedCount), tone: 'bg-[#E8F5EE] text-[#1E7A4E]' },
-  { label: 'Drafts', value: String(draftCount), tone: 'bg-[#fff4df] text-[#C27803]' },
-  { label: 'Bribery records', value: String(briberyCount), tone: 'bg-[#FDECEC] text-[#B92B27]' },
-  { label: 'Chairs', value: String(chairCount), tone: 'bg-[#edf3ff] text-[#1B2F6B]' },
+const countsByTier = new Map(tierCounts.map((row) => [row.tier, row]));
+const tiers = TIERS.map((tier) => ({
+  ...tier,
+  published: countsByTier.get(tier.value)?.published ?? 0,
+  drafts: countsByTier.get(tier.value)?.drafts ?? 0,
+}));
+const totalPublished = tiers.reduce((sum, tier) => sum + tier.published, 0);
+const totalDrafts = tiers.reduce((sum, tier) => sum + tier.drafts, 0);
+
+const formatWhen = (value: Date) =>
+  value.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' });
+
+const stats = [
+  { label: 'Published venues', value: totalPublished, href: '/admin/venues?status=published', tone: 'bg-[#E8F5EE] text-[#1E7A4E]' },
+  { label: 'Drafts', value: totalDrafts, href: '/admin/venues?status=draft', tone: 'bg-[#fff4df] text-[#C27803]' },
+  { label: 'Bribery records', value: bribery.total, href: '/admin/bribery', tone: 'bg-[#FDECEC] text-[#B92B27]' },
+  { label: 'Chairs', value: chairs.total, href: '/admin/users', tone: 'bg-[#edf3ff] text-[#1B2F6B]' },
 ];
 ---
 
-<AdminLayout title="Dashboard — Chairs' Area" userName={user?.name ?? 'Chair'}>
+<AdminLayout title="Dashboard">
   <div class="space-y-6">
     <div class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm">
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Overview</p>
-      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Welcome back, {user?.name ?? 'Chair'}.</h1>
-      <p class="mt-3 max-w-2xl text-sm text-[#3d3d3d]">
-        The ledger, verdicts and venue records are ready for review. Use the navigation above to manage the latest edits, inspections and chair account access.
-      </p>
+      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Welcome back, {currentUser?.name || 'Chair'}.</h1>
     </div>
 
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      {dashboardStats.map((stat) => (
-        <div class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-5 shadow-sm">
-          <div class:list={[stat.tone, 'inline-flex rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]']}>
-            {stat.label}
-          </div>
-          <div class="mt-4 text-3xl font-bold text-[#1a1e24]">{stat.value}</div>
-        </div>
+    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {stats.map((stat) => (
+        <a href={stat.href} class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-5 shadow-sm transition hover:border-[#1B2F6B] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2F6B]">
+          <span class:list={[stat.tone, 'inline-flex rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]']}>{stat.label}</span>
+          <span class="mt-4 block text-3xl font-bold text-[#1a1e24]">{stat.value}</span>
+        </a>
       ))}
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-      <div class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm">
-        <h2 class="text-xl font-bold text-[#1a1e24]">Recent chair activity</h2>
-        <ul class="mt-4 space-y-3 text-sm text-[#2d2d2d]">
-          <li class="border-b border-[#eadfca] pb-2">Review the latest venue edits and publish approvals from the ledger.</li>
-          <li class="border-b border-[#eadfca] pb-2">Check new bribery and impropriety records for follow-up and resolution.</li>
-          <li>Ensure the current chair roster is active and not blocked by bans or resets.</li>
-        </ul>
+    <section class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm" aria-labelledby="tiers-heading">
+      <h2 id="tiers-heading" class="text-xl font-bold text-[#1a1e24]">Venues by tier</h2>
+      <div class="mt-4 overflow-x-auto">
+        <table class="min-w-full text-left text-sm">
+          <thead class="text-[#535353]">
+            <tr>
+              <th scope="col" class="py-2 pr-4 font-semibold">Tier</th>
+              <th scope="col" class="py-2 pr-4 text-right font-semibold">Published</th>
+              <th scope="col" class="py-2 text-right font-semibold">Drafts</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#eadfca]">
+            {tiers.map((tier) => (
+              <tr>
+                <td class="py-2 pr-4"><a href={`/admin/venues?tier=${tier.value}`} class="hover:underline"><TierBadge tier={tier.value} /></a></td>
+                <td class="py-2 pr-4 text-right font-semibold">{tier.published}</td>
+                <td class="py-2 text-right">{tier.drafts}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+    </section>
 
-      <div class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm">
-        <h2 class="text-xl font-bold text-[#1a1e24]">Session</h2>
-        <dl class="mt-4 space-y-2 text-sm text-[#2d2d2d]">
-          <div class="flex justify-between gap-4">
-            <dt class="font-semibold">User</dt>
-            <dd>{user?.email ?? 'Chair'}</dd>
-          </div>
-          <div class="flex justify-between gap-4">
-            <dt class="font-semibold">Role</dt>
-            <dd>{session?.user.role ?? 'admin'}</dd>
-          </div>
-          <div class="flex justify-between gap-4">
-            <dt class="font-semibold">Session</dt>
-            <dd>{session?.session.id ? 'Active' : 'Unavailable'}</dd>
-          </div>
-        </dl>
-      </div>
+    <div class="grid gap-6 lg:grid-cols-2">
+      <section class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm" aria-labelledby="drafts-heading">
+        <h2 id="drafts-heading" class="text-xl font-bold text-[#1a1e24]">Drafts awaiting publication</h2>
+        {drafts.length === 0 ? (
+          <p class="mt-4 text-sm text-[#3d3d3d]">No drafts. Everything is published.</p>
+        ) : (
+          <ul class="mt-4 divide-y divide-[#eadfca] text-sm">
+            {drafts.map((venue) => (
+              <li class="flex items-center justify-between gap-3 py-2">
+                <a href={`/admin/venues/${venue.id}`} class="font-semibold text-[#1a1e24] hover:underline">{venue.name}</a>
+                <TierBadge tier={venue.tier} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm" aria-labelledby="recent-heading">
+        <h2 id="recent-heading" class="text-xl font-bold text-[#1a1e24]">Recently edited</h2>
+        <ul class="mt-4 divide-y divide-[#eadfca] text-sm">
+          {recent.map((venue) => (
+            <li class="py-2">
+              <div class="flex items-center justify-between gap-3">
+                <a href={`/admin/venues/${venue.id}`} class="font-semibold text-[#1a1e24] hover:underline">{venue.name}</a>
+                {!venue.published && <span class="text-xs font-semibold uppercase tracking-[0.12em] text-stone-600">Draft</span>}
+              </div>
+              <p class="text-xs text-[#535353]">{formatWhen(venue.updatedAt)}{venue.editor ? ` by ${venue.editor}` : ''}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   </div>
 </AdminLayout>

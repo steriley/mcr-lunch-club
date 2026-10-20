@@ -62,6 +62,21 @@ export function getMigrationDatabaseUrl(): string {
   return validateDatabaseUrl(optional('DATABASE_URL_UNPOOLED') ? 'DATABASE_URL_UNPOOLED' : 'DATABASE_URL', value);
 }
 
+export type DatabaseDriver = 'pg' | 'neon-http';
+
+/**
+ * `pg` (default) uses node-postgres over TCP and supports transactions.
+ * `neon-http` sends queries over HTTPS for environments where outbound
+ * Postgres connections are blocked; it does not support transactions.
+ */
+export function getDatabaseDriver(): DatabaseDriver {
+  const value = optional('DATABASE_DRIVER') ?? 'pg';
+  if (value !== 'pg' && value !== 'neon-http') {
+    throw new Error('Invalid environment variable: DATABASE_DRIVER must be "pg" or "neon-http".');
+  }
+  return value;
+}
+
 export function getAuthEnvironment() {
   const secret = required('BETTER_AUTH_SECRET');
   if (secret.length < 32) {
@@ -96,4 +111,8 @@ export function getWeatherApiKey(): string | undefined {
 
 export function getPublicMapApiKey(): string | undefined {
   return optional('PUBLIC_MAP_API_KEY');
+}
+
+export function getBlobToken(): string | undefined {
+  return optional('BLOB_READ_WRITE_TOKEN');
 }

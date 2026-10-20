@@ -1,4 +1,4 @@
-import { db, pool } from '@/lib/db-script';
+import { closeDatabase, db } from '@/lib/db-script';
 import { createAuth } from '@/lib/auth-config';
 import { getSeedChairEnvironment, isProduction } from '@/lib/env';
 
@@ -59,4 +59,4 @@ if (existing) {
   console.log(`Created Chair: ${email}`);
 }
 
-await pool.end();
+await closeDatabase();

@@ -1,13 +1,8 @@
 import { createAuthClient } from 'better-auth/vue';
+import { adminClient } from 'better-auth/client/plugins';
 
-const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4321';
-
+// Calls are only made from the browser; the fallback just satisfies SSR of islands.
 export const authClient = createAuthClient({
-  baseURL: baseUrl,
+  baseURL: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4321',
+  plugins: [adminClient()],
 });
-
-export function getAuthClient() {
-  return createAuthClient({
-    baseURL: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4321',
-  });
-}

@@ -1,0 +1,105 @@
+---
+import { eq, inArray } from 'drizzle-orm';
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { user } from '@/db/auth-schema';
+import { venues } from '@/db/schema';
+import { uuidParam } from '@/lib/admin-api';
+import { db } from '@/lib/db';
+import { listVenueRevisions } from '@/lib/venues';
+
+export const prerender = false;
+
+const id = uuidParam.safeParse(Astro.params.id);
+const [venue] = id.success
+  ? await db.select({ id: venues.id, name: venues.name }).from(venues).where(eq(venues.id, id.data)).limit(1)
+  : [];
+if (!venue) {
+  return new Response('Venue not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
+}
+
+const revisions = await listVenueRevisions(db, venue.id);
+const editorIds = [...new Set(revisions.map((revision) => revision.changedBy).filter((value): value is string => Boolean(value)))];
+const editors = editorIds.length
+  ? await db.select({ id: user.id, name: user.name, email: user.email }).from(user).where(inArray(user.id, editorIds))
+  : [];
+const editorNames = new Map(editors.map((editor) => [editor.id, editor.name || editor.email]));
+
+const IGNORED = new Set(['id', 'createdAt', 'updatedAt', 'updatedBy']);
+const LABELS: Record<string, string> = {
+  name: 'Name', slug: 'Slug', tier: 'Tier', address: 'Address', latitude: 'Latitude', longitude: 'Longitude',
+  summary: 'Summary', verdict: 'Verdict', pullQuote: 'Pull quote', lunchSpecial: 'Lunch special',
+  websiteUrl: 'Website', imageUrl: 'Image', cost: 'Cost', cuisine: 'Cuisine', rank: 'Rank',
+  distanceMiles: 'Distance', walkingTimeMin: 'Walking time', lastInspectionDate: 'Last inspection',
+  rejectionReason: 'Rejection reason', mapSearchLink: 'Map link', published: 'Published', sortOrder: 'Sort order',
+};
+
+const format = (value: unknown) => {
+  if (value === null || value === undefined || value === '') return '—';
+  const text = String(value);
+  return text.length > 140 ? `${text.slice(0, 140)}…` : text;
+};
+
+const entries = revisions.map((revision, index) => {
+  const snapshot = revision.snapshot as Record<string, unknown>;
+  const previous = revisions[index + 1]?.snapshot as Record<string, unknown> | undefined;
+  const changes = previous
+    ? Object.keys(snapshot)
+        .filter((key) => !IGNORED.has(key) && JSON.stringify(snapshot[key]) !== JSON.stringify(previous[key]))
+        .map((key) => ({ field: LABELS[key] ?? key, from: format(previous[key]), to: format(snapshot[key]) }))
+    : [];
+  return {
+    id: revision.id,
+    when: revision.changedAt.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' }),
+    who: revision.changedBy ? editorNames.get(revision.changedBy) ?? 'Former user' : 'Import script',
+    isFirst: !previous,
+    changes,
+    snapshot: JSON.stringify(snapshot, null, 2),
+  };
+});
+---
+
+<AdminLayout title={`History — ${venue.name}`}>
+  <div class="space-y-6">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Audit trail</p>
+        <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">{venue.name}: history</h1>
+        <p class="mt-2 text-sm text-[#535353]">A snapshot is stored every time the venue is saved, published or unpublished (latest 100 shown).</p>
+      </div>
+      <a href={`/admin/venues/${venue.id}`} class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">Back to venue</a>
+    </div>
+
+    {entries.length === 0 && (
+      <p class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 text-sm text-[#3d3d3d]">No saved revisions yet.</p>
+    )}
+
+    <ol class="space-y-4">
+      {entries.map((entry) => (
+        <li class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-5 shadow-sm">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <p class="font-semibold text-[#1a1e24]">{entry.who}</p>
+            <p class="text-sm text-[#535353]">{entry.when}</p>
+          </div>
+          {entry.isFirst ? (
+            <p class="mt-2 text-sm text-[#3d3d3d]">Earliest recorded version.</p>
+          ) : entry.changes.length === 0 ? (
+            <p class="mt-2 text-sm text-[#3d3d3d]">Saved with no field changes.</p>
+          ) : (
+            <dl class="mt-3 grid gap-2 text-sm">
+              {entry.changes.map((change) => (
+                <div class="grid gap-1 sm:grid-cols-[10rem_1fr]">
+                  <dt class="font-semibold text-[#1a1e24]">{change.field}</dt>
+                  <dd class="break-words text-[#3d3d3d]"><span class="line-through decoration-red-400">{change.from}</span> → <span>{change.to}</span></dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          <details class="mt-3 text-sm">
+            <summary class="cursor-pointer font-semibold text-[#1B2F6B]">Full snapshot</summary>
+            <pre class="mt-2 max-h-80 overflow-auto rounded-lg bg-white p-3 text-xs text-[#2d2d2d]">{entry.snapshot}</pre>
+          </details>
+        </li>
+      ))}
+    </ol>
+  </div>
+</AdminLayout>

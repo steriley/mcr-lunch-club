@@ -10,10 +10,12 @@
     "astro": "astro",
     "test": "tsx --test \"src/**/*.test.ts\"",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "tsx ./scripts/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx ./scripts/seed-chair.ts",
-    "auth:generate": "better-auth generate --config src/lib/auth.ts --output src/db/auth-schema.ts"
+    "auth:generate": "pnpm dlx auth@1.7.10 generate --config src/lib/auth.ts --output src/db/auth-schema.ts",
+    "db:import": "tsx ./scripts/import-existing-content.ts",
+    "check:security": "tsx ./scripts/check-admin-security.ts"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.8",
@@ -23,7 +25,9 @@
     "@better-fetch/fetch": "1.3.2",
     "@lucide/vue": "^1.57.0",
     "@nanostores/vue": "^1.0.0",
+    "@neondatabase/serverless": "^1.2.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@vercel/blob": "^2.8.2",
     "astro": "^7.4.0",
     "better-auth": "^1.7.10",
     "better-call": "1.4.2",

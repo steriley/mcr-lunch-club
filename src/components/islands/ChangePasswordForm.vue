@@ -38,11 +38,13 @@ async function handleSubmit() {
     });
 
     if (result.error) {
-      errorMessage.value = result.error.message || 'Password update failed.';
+      errorMessage.value = result.error.status === 429
+        ? 'Too many attempts. Please wait a minute and try again.'
+        : result.error.message || 'Password update failed.';
       return;
     }
 
-    successMessage.value = 'Password updated successfully.';
+    successMessage.value = 'Password updated. Other sessions have been signed out.';
     currentPassword.value = '';
     newPassword.value = '';
     confirmPassword.value = '';
@@ -77,11 +79,11 @@ async function handleSubmit() {
       <input v-model="confirmPassword" type="password" autocomplete="new-password" class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] outline-none ring-0 focus:border-[#1B2F6B]" />
     </label>
 
-    <p v-if="errorMessage" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+    <p v-if="errorMessage" role="alert" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
       {{ errorMessage }}
     </p>
 
-    <p v-if="successMessage" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+    <p v-if="successMessage" role="status" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
       {{ successMessage }}
     </p>
 

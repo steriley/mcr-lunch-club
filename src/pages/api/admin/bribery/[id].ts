@@ -1,98 +1,85 @@
+import type { APIRoute } from 'astro';
+import { eq } from 'drizzle-orm';
+import { briberyRecords } from '@/db/schema';
+import { jsonError, jsonResponse, readJson, requireAdmin, serverError, uuidParam, validationError } from '@/lib/admin-api';
+import { briberyInputSchema, briberyPublishSchema } from '@/lib/bribery-schema';
+import { briberyValues, serializeBribery } from '@/lib/bribery';
+import { db } from '@/lib/db';
+
 export const prerender = false;
 
-import { eq } from 'drizzle-orm';
-import { db, schema } from '@/lib/db';
-import { adminGuard, briberyErrorResponse, briberyInputSchema } from '@/lib/bribery-validation';
+const notFound = () => jsonError(404, 'Bribery record not found.');
 
-const { briberyRecords, venues } = schema;
+export const GET: APIRoute = async ({ request, params }) => {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
 
-export async function GET({ params, request }: { params: Record<string, string | undefined>; request: Request }) {
-  const session = await adminGuard(request);
-  if (!session) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  const id = uuidParam.safeParse(params.id);
+  if (!id.success) return notFound();
+
+  try {
+    const [row] = await db.select().from(briberyRecords).where(eq(briberyRecords.id, id.data)).limit(1);
+    return row ? jsonResponse({ record: serializeBribery(row) }) : notFound();
+  } catch (error) {
+    return serverError('Load bribery record', error);
   }
+};
 
-  const id = params.id;
-  if (!id) {
-    return Response.json({ error: 'Bribery id is required.' }, { status: 400 });
+export const PUT: APIRoute = async ({ request, params }) => {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
+
+  const id = uuidParam.safeParse(params.id);
+  if (!id.success) return notFound();
+
+  const parsed = briberyInputSchema.safeParse(await readJson(request));
+  if (!parsed.success) return validationError(parsed.error);
+
+  try {
+    const result = await briberyValues(db, parsed.data);
+    if (!result.ok) return jsonError(400, 'Please correct the highlighted fields.', { venueId: result.error });
+
+    const [row] = await db.update(briberyRecords).set(result.values).where(eq(briberyRecords.id, id.data)).returning();
+    return row ? jsonResponse({ record: serializeBribery(row) }) : notFound();
+  } catch (error) {
+    return serverError('Update bribery record', error);
   }
+};
 
-  const record = await db.query.briberyRecords.findFirst({ where: eq(briberyRecords.id, id) });
-  if (!record) {
-    return Response.json({ error: 'Bribery record not found.' }, { status: 404 });
+/** Publish or unpublish without resending the whole record. */
+export const PATCH: APIRoute = async ({ request, params }) => {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
+
+  const id = uuidParam.safeParse(params.id);
+  if (!id.success) return notFound();
+
+  const parsed = briberyPublishSchema.safeParse(await readJson(request));
+  if (!parsed.success) return validationError(parsed.error);
+
+  try {
+    const [row] = await db
+      .update(briberyRecords)
+      .set({ published: parsed.data.published, updatedAt: new Date() })
+      .where(eq(briberyRecords.id, id.data))
+      .returning();
+    return row ? jsonResponse({ record: serializeBribery(row) }) : notFound();
+  } catch (error) {
+    return serverError('Publish bribery record', error);
   }
+};
 
-  return Response.json({ bribery: record });
-}
+export const DELETE: APIRoute = async ({ request, params }) => {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
 
-export async function PUT({ params, request }: { params: Record<string, string | undefined>; request: Request }) {
-  const session = await adminGuard(request);
-  if (!session) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  const id = uuidParam.safeParse(params.id);
+  if (!id.success) return notFound();
+
+  try {
+    const [row] = await db.delete(briberyRecords).where(eq(briberyRecords.id, id.data)).returning({ id: briberyRecords.id });
+    return row ? jsonResponse({ ok: true }) : notFound();
+  } catch (error) {
+    return serverError('Delete bribery record', error);
   }
-
-  const id = params.id;
-  if (!id) {
-    return Response.json({ error: 'Bribery id is required.' }, { status: 400 });
-  }
-
-  const current = await db.query.briberyRecords.findFirst({ where: eq(briberyRecords.id, id) });
-  if (!current) {
-    return Response.json({ error: 'Bribery record not found.' }, { status: 404 });
-  }
-
-  const body = await request.json().catch(() => null);
-  if (!body) {
-    return Response.json({ error: 'Request body is required.' }, { status: 400 });
-  }
-
-  const parsed = briberyInputSchema.safeParse(body);
-  if (!parsed.success) {
-    return briberyErrorResponse(parsed.error);
-  }
-
-  const data = parsed.data;
-  let venueNameText = data.venueNameText?.trim() ?? '';
-  if (data.venueId) {
-    const venue = await db.query.venues.findFirst({ where: eq(venues.id, data.venueId) });
-    if (!venue) {
-      return Response.json({ error: 'Venue not found.', fields: { venueId: 'Please select a valid venue.' } }, { status: 404 });
-    }
-    venueNameText = venue.name;
-  }
-
-  const [row] = await (db.update(briberyRecords as any)
-    .set({
-      venueId: data.venueId ?? null,
-      venueNameText: venueNameText || null,
-      incidentDate: data.incidentDate ?? null,
-      description: data.description,
-      outcome: data.outcome || null,
-      published: data.published,
-      updatedAt: new Date(),
-    })
-    .where(eq(briberyRecords.id, id)) as any)
-    .returning();
-
-  return Response.json({ bribery: row });
-}
-
-export async function DELETE({ params, request }: { params: Record<string, string | undefined>; request: Request }) {
-  const session = await adminGuard(request);
-  if (!session) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const id = params.id;
-  if (!id) {
-    return Response.json({ error: 'Bribery id is required.' }, { status: 400 });
-  }
-
-  const existing = await db.query.briberyRecords.findFirst({ where: eq(briberyRecords.id, id) });
-  if (!existing) {
-    return Response.json({ error: 'Bribery record not found.' }, { status: 404 });
-  }
-
-  await db.delete(briberyRecords).where(eq(briberyRecords.id, id));
-  return Response.json({ ok: true });
-}
+};

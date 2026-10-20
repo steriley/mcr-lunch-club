@@ -1,60 +1,36 @@
+import type { APIRoute } from 'astro';
+import { authApiError, jsonResponse, readJson, requireAdmin, validationError } from '@/lib/admin-api';
+import { auth } from '@/lib/auth';
+import { createUserSchema } from '@/lib/user-schema';
+
 export const prerender = false;
 
-import { auth } from '@/lib/auth';
-import { adminGuard } from '@/lib/venue-validation';
-
-export async function GET({ request }: { request: Request }) {
-  const session = await adminGuard(request);
-  if (!session) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const response = await auth.api.listUsers({
-    headers: request.headers,
-    query: {
-      limit: 200,
-      sortBy: 'createdAt',
-      sortDirection: 'desc',
-    },
-  });
-
-  return Response.json(response);
-}
-
-export async function POST({ request }: { request: Request }) {
-  const session = await adminGuard(request);
-  if (!session) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const body = await request.json().catch(() => null);
-  if (!body) {
-    return Response.json({ error: 'Request body is required.' }, { status: 400 });
-  }
-
-  const email = String(body.email ?? '').trim().toLowerCase();
-  const name = String(body.name ?? '').trim();
-  const password = String(body.password ?? '').trim();
-  const role = body.role === 'user' || body.role === 'admin' ? body.role : 'admin';
-
-  if (!email || !name || !password) {
-    return Response.json({ error: 'Email, name and password are required.' }, { status: 400 });
-  }
+export const GET: APIRoute = async ({ request }) => {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
 
   try {
-    const response = await auth.api.createUser({
+    const result = await auth.api.listUsers({
       headers: request.headers,
-      body: {
-        email,
-        name,
-        password,
-        role,
-      },
+      query: { limit: 200, sortBy: 'createdAt', sortDirection: 'desc' },
     });
-
-    return Response.json(response, { status: 201 });
-  } catch (error: any) {
-    const message = error?.message ?? 'Unable to add this chair right now.';
-    return Response.json({ error: message }, { status: 400 });
+    return jsonResponse(result);
+  } catch (error) {
+    return authApiError('List users', error);
   }
-}
+};
+
+export const POST: APIRoute = async ({ request }) => {
+  const session = await requireAdmin(request);
+  if (session instanceof Response) return session;
+
+  const parsed = createUserSchema.safeParse(await readJson(request));
+  if (!parsed.success) return validationError(parsed.error);
+
+  try {
+    const result = await auth.api.createUser({ headers: request.headers, body: parsed.data });
+    return jsonResponse({ user: result.user }, 201);
+  } catch (error) {
+    return authApiError('Create user', error);
+  }
+};
