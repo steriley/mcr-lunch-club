@@ -10,6 +10,7 @@ import {
   VENUE_ID,
   adminRequest,
   quietly,
+  renderSql,
   restoreStubs,
   run,
   signInAs,
@@ -51,14 +52,18 @@ describe('GET /api/admin/venues', () => {
     assert.equal(body.venues.length, 1);
     assert.equal(body.venues[0].latitude, 53.48);
     assert.equal(body.venues[0].createdAt, now.toISOString());
-    assert.ok(calls.some((call) => call.method === 'where' && call.args[0] !== undefined));
+    const { sql, params } = renderSql(calls.find((call) => call.method === 'where')!.args[0]);
+    assert.match(sql, /ilike/i);
+    assert.match(sql, /"tier" = /);
+    assert.match(sql, /"published" = /);
+    assert.deepEqual(params, ['%100\\%\\_chips%', '%100\\%\\_chips%', 'approved', true]);
   });
 
   it('supports the draft filter and no filters at all', async () => {
     signInAs();
     let calls = stubDb('select', []);
     await run(GET, { request: adminRequest('GET'), url: new URL('https://x.test/?status=draft') });
-    assert.ok(calls.some((call) => call.method === 'where' && call.args[0] !== undefined));
+    assert.deepEqual(renderSql(calls.find((call) => call.method === 'where')!.args[0]).params, [false]);
 
     calls = stubDb('select', []);
     await run(GET, { request: adminRequest('GET'), url: new URL('https://x.test/') });
@@ -174,6 +179,17 @@ describe('/api/admin/venues/[id]', () => {
       signInAs();
       stubDb('select', [{ id: 'other' }]);
       assert.equal((await run(byId.PUT, ctx('PUT', VENUE_ID, input))).status, 409);
+    });
+
+    it('does not count the venue being edited as a slug clash', async () => {
+      signInAs();
+      const selects = stubDb('select', []);
+      stubDb('update', [row]);
+      stubDb('insert', []);
+      await run(byId.PUT, ctx('PUT', VENUE_ID, input));
+      const { sql, params } = renderSql(selects.find((call) => call.method === 'where')!.args[0]);
+      assert.match(sql, /"venues"\."id" <> \$2/);
+      assert.deepEqual(params, ['chip-shop', VENUE_ID]);
     });
 
     it('updates the venue and records a revision', async () => {

@@ -196,9 +196,10 @@ describe('authApiError', () => {
   });
 
   it('turns server errors and unknown errors into a 500', async () => {
-    silenceErrors(() => {
-      assert.equal(authApiError('Ban', new APIError('INTERNAL_SERVER_ERROR', { message: 'boom' })).status, 500);
-      assert.equal(authApiError('Ban', new Error('boom')).status, 500);
-    });
+    for (const error of [new APIError('INTERNAL_SERVER_ERROR', { message: 'secret detail' }), new APIError('BAD_GATEWAY', { message: 'secret detail' }), new Error('boom')]) {
+      const response = await silenceErrors(async () => authApiError('Ban', error));
+      assert.equal(response.status, 500);
+      assert.deepEqual(await response.json(), { error: 'Something went wrong. Please try again.' });
+    }
   });
 });

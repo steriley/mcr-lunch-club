@@ -10,6 +10,7 @@ import {
   venueValues,
 } from './venues';
 import type { Database } from './db-client';
+import { renderSql } from '../test/route-helpers';
 import { BASE_LAT, BASE_LNG } from './map/config';
 import { venueInputSchema, type VenueInput } from './venue-schema';
 import type { VenueRow } from '@/db/schema';
@@ -113,6 +114,23 @@ function fakeDb(rows: unknown[] = []) {
 describe('isSlugTaken', () => {
   it('is true when a venue already uses the slug', async () => {
     assert.equal(await isSlugTaken(fakeDb([{ id: 'x' }]).db, 'chip-shop'), true);
+  });
+
+  it('matches on the slug alone when no id is excluded', async () => {
+    const { db, calls } = fakeDb([]);
+    await isSlugTaken(db, 'chip-shop');
+    const { sql, params } = renderSql(calls.find((call) => call.method === 'where')!.args[0]);
+    assert.match(sql, /"slug" = \$1/);
+    assert.doesNotMatch(sql, /<>/);
+    assert.deepEqual(params, ['chip-shop']);
+  });
+
+  it('ignores the venue being edited when an id is excluded', async () => {
+    const { db, calls } = fakeDb([]);
+    await isSlugTaken(db, 'chip-shop', 'own-id');
+    const { sql, params } = renderSql(calls.find((call) => call.method === 'where')!.args[0]);
+    assert.match(sql, /"slug" = \$1 and "venues"\."id" <> \$2/);
+    assert.deepEqual(params, ['chip-shop', 'own-id']);
   });
 
   it('is false when nothing matches, with or without an excluded id', async () => {

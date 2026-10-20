@@ -37,8 +37,12 @@ describe('venueInputSchema', () => {
   });
 
   it('rejects out-of-range coordinates and ranks', () => {
-    assert.equal(venueInputSchema.safeParse({ ...valid, latitude: 91 }).success, false);
-    assert.equal(venueInputSchema.safeParse({ ...valid, longitude: -181 }).success, false);
+    for (const [field, limit] of [['latitude', 90], ['longitude', 180]] as const) {
+      assert.equal(venueInputSchema.safeParse({ ...valid, [field]: limit }).success, true);
+      assert.equal(venueInputSchema.safeParse({ ...valid, [field]: -limit }).success, true);
+      assert.equal(venueInputSchema.safeParse({ ...valid, [field]: limit + 0.1 }).success, false);
+      assert.equal(venueInputSchema.safeParse({ ...valid, [field]: -limit - 0.1 }).success, false);
+    }
     assert.equal(venueInputSchema.safeParse({ ...valid, latitude: 'abc' }).success, false);
     assert.equal(venueInputSchema.safeParse({ ...valid, rank: 0 }).success, false);
     assert.equal(venueInputSchema.safeParse({ ...valid, rank: 1.5 }).success, false);
