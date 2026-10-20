@@ -49,17 +49,6 @@ async function run(suggestion: SuggestionItem, action: () => Promise<Response>, 
   }
 }
 
-async function createDraft(suggestion: SuggestionItem) {
-  const response = await run(
-    suggestion,
-    () => fetch(`/api/admin/suggestions/${suggestion.id}/accept`, { method: 'POST' }),
-    'Could not create a draft venue.'
-  );
-  if (!response) return;
-  const { venueId } = await response.json();
-  window.location.assign(`/admin/venues/${venueId}?saved=1`);
-}
-
 async function setStatus(suggestion: SuggestionItem, status: 'new' | 'dismissed') {
   const response = await run(
     suggestion,
@@ -120,18 +109,18 @@ async function performDelete() {
               :href="`/admin/venues/${suggestion.venueId}`"
               class="rounded-lg border border-[#d9cfb8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5]"
             >
-              Open draft venue
+              Open venue
             </a>
             <template v-else>
-              <button
+              <!-- Accepting goes through the venue form: a real location must be picked, and the result is a hidden
+                   venue with a To Be Assessed proposal for a different admin to approve. Leaving the form changes nothing. -->
+              <a
                 v-if="suggestion.status !== 'dismissed'"
-                type="button"
-                class="rounded-lg bg-[#1B2F6B] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#111E47] disabled:opacity-60"
-                :disabled="busy[suggestion.id]"
-                @click="createDraft(suggestion)"
+                :href="`/admin/venues/new?fromSuggestion=${suggestion.id}`"
+                class="rounded-lg bg-[#1B2F6B] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#111E47]"
               >
-                Create draft venue
-              </button>
+                Accept…
+              </a>
               <button
                 type="button"
                 class="rounded-lg border border-[#d9cfb8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5] disabled:opacity-60"

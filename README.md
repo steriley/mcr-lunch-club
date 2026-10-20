@@ -142,8 +142,13 @@ Use a Neon **branch** so local work never touches production data:
   There is no email sending, so share initial/temporary passwords securely.
   Chairs change their own password and sign out other devices at `/admin/account`.
 - **Suggestions**: the public "Suggest a Venue" form stores petitions in the
-  database for review at `/admin/suggestions`. "Create draft venue" turns one
-  into a hidden venue with no approved tier for the Chairs to finish. The form is
+  database for review at `/admin/suggestions`. **Accept…** opens the new-venue
+  form prefilled with the name and cost band only: the suggested address just
+  seeds the location search (a real location must be picked or entered), and
+  the suggested cuisine, order and reasons are shown for reference. Saving
+  creates a hidden venue with a To Be Assessed proposal for a different Chair
+  to approve, and marks the suggestion accepted; leaving the form changes
+  nothing. The form is
   limited to 3 per sender per hour and 50 a day overall; senders' IPs are only
   kept as a keyed hash for that limit.
 - **Visibility**: there is no publish toggle. A venue is public when it has an

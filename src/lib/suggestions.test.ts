@@ -6,12 +6,13 @@ import { db } from '@/lib/db';
 import {
   SUGGESTIONS_PER_DAY,
   SUGGESTIONS_PER_SENDER_PER_HOUR,
-  createDraftVenueFromSuggestion,
   isSuggestionRateLimited,
+  markSuggestionAccepted,
   senderHash,
   serializeSuggestion,
+  suggestionPrefill,
 } from './suggestions';
-import { ADMIN, VENUE_ID, restoreStubs, stubDb, stubDbSequence } from '../test/route-helpers';
+import { ADMIN, VENUE_ID, renderSql, restoreStubs, stubDb, stubDbSequence } from '../test/route-helpers';
 
 afterEach(restoreStubs);
 
@@ -70,37 +71,33 @@ describe('isSuggestionRateLimited', () => {
   });
 });
 
-describe('createDraftVenueFromSuggestion', () => {
-  it('creates a hidden venue with no approved tier and a free slug, and marks the suggestion accepted', async () => {
-    // First slug candidate is taken, the second is free.
-    stubDbSequence('select', [[{ id: 'taken' }], []]);
-    const inserts = stubDb('insert', [{ id: 'new-venue', slug: 'pasty-palace-2', createdAt, updatedAt: createdAt, latitude: null, longitude: null, distanceMiles: null }]);
-    const updates = stubDb('update', []);
-
-    const venue = await createDraftVenueFromSuggestion(db, suggestion, ADMIN.id);
-    assert.equal(venue.id, 'new-venue');
-
-    const venueValues = inserts.find((call) => call.method === 'values')!.args[0] as any;
-    assert.equal(venueValues.slug, 'pasty-palace-2');
-    assert.ok(!('tier' in venueValues), 'no approved tier: the venue stays hidden');
-    assert.equal(venueValues.cost, '£');
-    assert.equal(venueValues.lunchSpecial, 'Steak pasty');
-    assert.equal(venueValues.cuisine, 'other');
-    assert.equal(venueValues.updatedBy, ADMIN.id);
-
-    const set = updates.find((call) => call.method === 'set')!.args[0] as any;
-    assert.equal(set.status, 'accepted');
-    assert.equal(set.venueId, 'new-venue');
-    assert.equal(set.reviewedBy, ADMIN.id);
+describe('suggestionPrefill', () => {
+  it('copies only the name and a valid cost band; everything else is reference', () => {
+    assert.deepEqual(suggestionPrefill(suggestion), {
+      id: VENUE_ID,
+      name: 'Pasty Palace',
+      cost: '£',
+      searchQuery: '14 Peter Street',
+      cuisineHint: 'Bakery',
+      recommendedOrder: 'Steak pasty',
+      rationale: 'Fast, cheap and excellent.',
+      submitterName: 'Delegate R',
+    });
+    assert.equal(suggestionPrefill({ ...suggestion, cost: 'cheap' }).cost, null);
   });
+});
 
-  it('defaults the cost band', async () => {
-    stubDb('select', []);
-    const inserts = stubDb('insert', [{ id: 'v', createdAt, updatedAt: createdAt, latitude: null, longitude: null, distanceMiles: null }]);
+describe('markSuggestionAccepted', () => {
+  it('only accepts a suggestion that is still new and unlinked', async () => {
+    const updates = stubDb('update', [{ id: VENUE_ID }]);
+    assert.equal(await markSuggestionAccepted(db, VENUE_ID, 'venue-1', ADMIN.id), true);
+    const set = updates.find((call) => call.method === 'set')!.args[0] as any;
+    assert.deepEqual({ status: set.status, venueId: set.venueId, reviewedBy: set.reviewedBy }, { status: 'accepted', venueId: 'venue-1', reviewedBy: ADMIN.id });
+    const { sql } = renderSql(updates.find((call) => call.method === 'where')!.args[0]);
+    assert.match(sql, /"status" = \$\d+ and "venue_suggestions"\."venue_id" is null/);
+
     stubDb('update', []);
-    await createDraftVenueFromSuggestion(db, { ...suggestion, cost: null, submitterName: null }, ADMIN.id);
-    const venueValues = inserts.find((call) => call.method === 'values')!.args[0] as any;
-    assert.equal(venueValues.cost, '££');
+    assert.equal(await markSuggestionAccepted(db, VENUE_ID, 'venue-1', ADMIN.id), false);
   });
 });
 

@@ -1,10 +1,9 @@
 import { createHmac } from 'node:crypto';
-import { and, count, eq, gte } from 'drizzle-orm';
-import { venueSuggestions, venues, type SuggestionRow } from '@/db/schema';
+import { and, count, eq, gte, isNull } from 'drizzle-orm';
+import { venueSuggestions, type SuggestionRow } from '@/db/schema';
 import type { Database } from '@/lib/db-client';
 import { getAuthEnvironment } from '@/lib/env';
-import { venueInputSchema, slugify } from '@/lib/venue-schema';
-import { isSlugTaken, recordVenueRevision, venueValues } from '@/lib/venues';
+import { COST_BANDS, type CostBand } from '@/lib/venue-schema';
 
 /** Per-sender limit for the public form. */
 export const SUGGESTIONS_PER_SENDER_PER_HOUR = 3;
@@ -33,36 +32,50 @@ export async function isSuggestionRateLimited(db: Database, hash: string | null)
   return recent.total >= SUGGESTIONS_PER_SENDER_PER_HOUR;
 }
 
-async function uniqueSlug(db: Database, name: string): Promise<string> {
-  const base = slugify(name) || 'suggested-venue';
-  for (let attempt = 1; attempt < 50; attempt += 1) {
-    const candidate = attempt === 1 ? base : `${base.slice(0, 115)}-${attempt}`;
-    if (!(await isSlugTaken(db, candidate))) return candidate;
-  }
-  return `${base.slice(0, 100)}-${Date.now()}`;
-}
+/** Accepting a suggestion always proposes this tier; a different admin must approve it. */
+export const SUGGESTION_PROPOSED_TIER = 'to_be_assessed' as const;
 
-/** Creates a hidden venue (no approved tier) from a suggestion and marks the suggestion accepted. */
-export async function createDraftVenueFromSuggestion(db: Database, suggestion: SuggestionRow, userId: string) {
-  const input = venueInputSchema.parse({
-    name: suggestion.name,
-    slug: await uniqueSlug(db, suggestion.name),
-    tier: null,
-    address: suggestion.address,
-    cost: suggestion.cost ?? '££',
-    // The suggested cuisine is free text; a Chair picks the category.
-    cuisine: 'other',
-    lunchSpecial: suggestion.recommendedOrder,
-  });
-
-  const [venue] = await db.insert(venues).values(venueValues(input, userId, { distanceMiles: null, walkingTimeMin: null })).returning();
-  await recordVenueRevision(db, venue, userId);
-  await db
+/**
+ * Marks a suggestion accepted and links it to the venue created from it.
+ * Runs inside the venue-creation transaction; false when the suggestion is
+ * gone or was already accepted or dismissed, so the caller can roll back.
+ */
+export async function markSuggestionAccepted(
+  db: Pick<Database, 'update'>,
+  suggestionId: string,
+  venueId: string,
+  userId: string,
+  now: Date = new Date()
+): Promise<boolean> {
+  const rows = await db
     .update(venueSuggestions)
-    .set({ status: 'accepted', venueId: venue.id, reviewedAt: new Date(), reviewedBy: userId })
-    .where(eq(venueSuggestions.id, suggestion.id));
-  return venue;
+    .set({ status: 'accepted', venueId, reviewedAt: now, reviewedBy: userId })
+    .where(and(eq(venueSuggestions.id, suggestionId), eq(venueSuggestions.status, 'new'), isNull(venueSuggestions.venueId)))
+    .returning({ id: venueSuggestions.id });
+  return rows.length === 1;
 }
+
+/**
+ * What the new-venue form may take from a suggestion. Only the name and a
+ * valid cost band are copied into venue fields. The address only seeds the
+ * location search, and cuisine, recommended order and rationale are shown
+ * as read-only reference: a stranger's text is never trusted as coordinates,
+ * cuisine or public copy.
+ */
+export function suggestionPrefill(suggestion: SuggestionRow) {
+  return {
+    id: suggestion.id,
+    name: suggestion.name,
+    cost: COST_BANDS.includes(suggestion.cost as CostBand) ? (suggestion.cost as CostBand) : null,
+    searchQuery: suggestion.address,
+    cuisineHint: suggestion.cuisine,
+    recommendedOrder: suggestion.recommendedOrder,
+    rationale: suggestion.rationale,
+    submitterName: suggestion.submitterName,
+  };
+}
+
+export type SuggestionPrefill = ReturnType<typeof suggestionPrefill>;
 
 export function serializeSuggestion(row: SuggestionRow) {
   const { senderHash: _senderHash, ...rest } = row;

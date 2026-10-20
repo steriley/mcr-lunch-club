@@ -83,13 +83,25 @@ function checkLocation(venue: { latitude: number | null; longitude: number | nul
  */
 export const venueInputSchema = venueFields.superRefine(checkLocation);
 
-/** A new venue, plus the tier to propose for it (it stays hidden until a different admin approves). */
+/**
+ * A new venue, plus the tier to propose for it (it stays hidden until a
+ * different admin approves). `fromSuggestion` accepts a member's suggestion:
+ * that always proposes To Be Assessed and needs a real location.
+ */
 export const venueCreateSchema = venueFields
   .extend({
     proposedTier: z.preprocess(emptyToNull, z.enum(TIER_VALUES, { error: 'Choose a tier.' }).nullable()).default(null),
+    fromSuggestion: z.preprocess(emptyToNull, z.uuid({ error: 'Unknown suggestion.' }).nullable()).default(null),
   })
   .superRefine((venue, context) => {
     checkLocation(venue, context);
+    if (venue.fromSuggestion && (venue.latitude === null || venue.longitude === null)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['latitude'],
+        message: 'Pick the venue from the location search (or enter it manually) before accepting a suggestion.',
+      });
+    }
     if (venue.proposedTier === 'approved') {
       context.addIssue({
         code: 'custom',

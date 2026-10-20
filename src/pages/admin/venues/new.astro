@@ -1,20 +1,40 @@
 ---
+import { eq } from 'drizzle-orm';
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import VenueForm from '@/components/islands/VenueForm.vue';
+import { venueSuggestions } from '@/db/schema';
+import { uuidParam } from '@/lib/admin-api';
+import { db } from '@/lib/db';
 import { getBlobToken } from '@/lib/env';
+import { suggestionPrefill } from '@/lib/suggestions';
 
 export const prerender = false;
+
+// ?fromSuggestion=<id>: accept a member's suggestion through this form.
+const requested = Astro.url.searchParams.get('fromSuggestion');
+const suggestionId = requested ? uuidParam.safeParse(requested) : null;
+const [suggestion] = suggestionId?.success
+  ? await db.select().from(venueSuggestions).where(eq(venueSuggestions.id, suggestionId.data)).limit(1)
+  : [];
+const usable = suggestion && suggestion.status === 'new' && !suggestion.venueId;
+const prefill = usable ? suggestionPrefill(suggestion) : null;
 ---
 
-<AdminLayout title="New venue">
+<AdminLayout title={prefill ? 'Accept suggestion' : 'New venue'}>
   <div class="space-y-6">
     <div class="flex items-center justify-between gap-4">
       <div>
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Venue management</p>
-        <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Create a venue</h1>
+        <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">{prefill ? `Accept “${prefill.name}”` : 'Create a venue'}</h1>
       </div>
     </div>
 
-    <VenueForm client:load mode="create" uploadsEnabled={Boolean(getBlobToken())} />
+    {requested && !prefill && (
+      <p role="alert" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        That suggestion has already been accepted or dismissed, or no longer exists. <a href="/admin/suggestions" class="font-semibold underline">Back to suggestions</a>
+      </p>
+    )}
+
+    <VenueForm client:load mode="create" uploadsEnabled={Boolean(getBlobToken())} suggestion={prefill} />
   </div>
 </AdminLayout>
