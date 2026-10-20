@@ -6,6 +6,10 @@ const client = createDatabase({
   url: getMigrationDatabaseUrl(),
   driver: getDatabaseDriver(),
   maxConnections: 1,
+  // Migrations report what they changed with RAISE NOTICE.
+  onNotice: (message) => {
+    if (!message.endsWith(', skipping')) console.log(`[db] ${message}`);
+  },
 });
 
 export const db = client.db;

@@ -18,9 +18,11 @@ interface CreateDatabaseOptions {
   driver: DatabaseDriver;
   maxConnections: number;
   logger?: boolean;
+  /** pg driver only: receives Postgres NOTICE messages (e.g. RAISE NOTICE in migrations). */
+  onNotice?: (message: string) => void;
 }
 
-export function createDatabase({ url, driver, maxConnections, logger = false }: CreateDatabaseOptions): DatabaseClient {
+export function createDatabase({ url, driver, maxConnections, logger = false, onNotice }: CreateDatabaseOptions): DatabaseClient {
   if (driver === 'neon-http') {
     // Query the endpoint host directly rather than the regional `api.` host,
     // so only the database's own hostname needs to be reachable.
@@ -31,6 +33,9 @@ export function createDatabase({ url, driver, maxConnections, logger = false }: 
   }
 
   const pool = new Pool({ connectionString: url, max: maxConnections });
+  if (onNotice) {
+    pool.on('connect', (client) => client.on('notice', (notice) => onNotice(notice.message ?? '')));
+  }
   const db = drizzlePg(pool, { schema, logger });
   return { db, driver, close: () => pool.end() };
 }
