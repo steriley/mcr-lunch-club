@@ -9,6 +9,7 @@
     "preview": "astro preview",
     "astro": "astro",
     "test": "tsx --test \"src/**/*.test.ts\"",
+    "test:coverage": "tsx --test --experimental-test-coverage --test-coverage-exclude=\"**/*.test.ts\" --test-coverage-exclude=\"src/test/**\" --test-coverage-exclude=\"**/*.json\" \"src/**/*.test.ts\"",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx ./scripts/migrate.ts",
     "db:studio": "drizzle-kit studio",
