@@ -3,8 +3,8 @@ import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { POST } from '@/pages/api/suggestions';
 import * as byId from '@/pages/api/admin/suggestions/[id]';
-import { POST as ACCEPT } from '@/pages/api/admin/suggestions/[id]/accept';
-import { ADMIN, VENUE_ID, adminRequest, quietly, restoreStubs, run, signInAs, stubDb, stubDbSequence } from '../route-helpers';
+import { POST as CREATE_VENUE } from '@/pages/api/admin/venues';
+import { ADMIN, VENUE_ID, adminRequest, quietly, restoreStubs, run, signInAs, stubDb, stubDbSequence, stubTransactions } from '../route-helpers';
 
 afterEach(restoreStubs);
 
@@ -87,14 +87,12 @@ describe('/api/admin/suggestions/[id]', () => {
     signInAs(null);
     assert.equal((await run(byId.PATCH, ctx('PATCH', VENUE_ID, { status: 'dismissed' }))).status, 401);
     assert.equal((await run(byId.DELETE, ctx('DELETE', VENUE_ID))).status, 401);
-    assert.equal((await run(ACCEPT, ctx('POST', VENUE_ID))).status, 401);
   });
 
   it('404s for malformed ids', async () => {
     signInAs();
     assert.equal((await run(byId.PATCH, ctx('PATCH', 'nope', { status: 'dismissed' }))).status, 404);
     assert.equal((await run(byId.DELETE, ctx('DELETE', 'nope'))).status, 404);
-    assert.equal((await run(ACCEPT, ctx('POST', 'nope'))).status, 404);
   });
 
   describe('PATCH', () => {
@@ -138,28 +136,52 @@ describe('/api/admin/suggestions/[id]', () => {
     });
   });
 
-  describe('POST accept', () => {
-    it('creates a draft venue and returns its id', async () => {
+  describe('accepting through the venue form (POST /api/admin/venues with fromSuggestion)', () => {
+    const SUGGESTION_ID = '1b2c3d4e-5f6a-4b7c-8d9e-0f1a2b3c4d5e';
+    const venueBody = { name: 'Pasty Palace', slug: 'pasty-palace', cost: '£', latitude: 53.477, longitude: -2.247, fromSuggestion: SUGGESTION_ID };
+    const created = { id: 'new-venue', slug: 'pasty-palace', tier: null, createdAt, updatedAt: createdAt, latitude: '53.477000', longitude: '-2.247000', distanceMiles: null, closedAt: null };
+
+    it('needs a picked or manually entered location', async () => {
       signInAs();
-      // Load the suggestion, then check the slug is free.
-      stubDbSequence('select', [[row], []]);
-      stubDb('insert', [{ id: 'new-venue', createdAt, updatedAt: createdAt, latitude: null, longitude: null, distanceMiles: null }]);
-      stubDb('update', []);
-      const response = await run(ACCEPT, ctx('POST', VENUE_ID));
+      const response = await run(CREATE_VENUE, { request: adminRequest('POST', { ...venueBody, latitude: null, longitude: null }) });
+      assert.equal(response.status, 400);
+      assert.match((await response.json()).fields.latitude, /location search/);
+    });
+
+    it('creates a hidden venue with a To Be Assessed proposal and marks the suggestion accepted, in one transaction', async () => {
+      signInAs();
+      const transactions = stubTransactions();
+      // slug check, then the proposal's venue lock and pending lookup
+      stubDbSequence('select', [[], [created], []]);
+      const inserts = stubDbSequence('insert', [[created], [], [{ id: 'proposal-1' }]]);
+      const updates = stubDb('update', [{ id: SUGGESTION_ID }]);
+      // The client asks for Rejected; accepted suggestions are always To Be Assessed.
+      const response = await run(CREATE_VENUE, { request: adminRequest('POST', { ...venueBody, proposedTier: 'rejected' }) });
       assert.equal(response.status, 201);
-      assert.deepEqual(await response.json(), { venueId: 'new-venue' });
+      assert.equal((await response.json()).proposalId, 'proposal-1');
+      assert.equal(transactions.count, 1);
+
+      const values = inserts.filter((call) => call.method === 'values').map((call) => call.args[0] as any);
+      assert.ok(!('tier' in values[0]), 'the venue has no approved tier');
+      assert.equal(values[2].proposedTier, 'to_be_assessed');
+      assert.equal(values[2].proposedBy, ADMIN.id);
+
+      const set = updates.find((call) => call.method === 'set')!.args[0] as any;
+      assert.equal(set.status, 'accepted');
+      assert.equal(set.venueId, 'new-venue');
+      assert.equal(set.reviewedBy, ADMIN.id);
+      assert.ok(set.reviewedAt instanceof Date);
     });
 
-    it('404s for an unknown suggestion', async () => {
+    it('saves nothing when the suggestion was already accepted or dismissed', async () => {
       signInAs();
-      stubDb('select', []);
-      assert.equal((await run(ACCEPT, ctx('POST', VENUE_ID))).status, 404);
-    });
-
-    it('refuses to draft the same suggestion twice', async () => {
-      signInAs();
-      stubDb('select', [{ ...row, venueId: 'existing' }]);
-      assert.equal((await run(ACCEPT, ctx('POST', VENUE_ID))).status, 409);
+      stubTransactions();
+      stubDbSequence('select', [[], [created], []]);
+      stubDbSequence('insert', [[created], [], [{ id: 'proposal-1' }]]);
+      stubDb('update', []);
+      const response = await run(CREATE_VENUE, { request: adminRequest('POST', venueBody) });
+      assert.equal(response.status, 409);
+      assert.match((await response.json()).error, /Nothing was saved/);
     });
   });
 });

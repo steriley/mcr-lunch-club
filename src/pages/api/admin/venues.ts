@@ -5,7 +5,8 @@ import { isUniqueViolation, jsonError, jsonResponse, readJson, requireAdmin, ser
 import { db } from '@/lib/db';
 import { parseTier } from '@/lib/tiers';
 import { PROPOSAL_ERROR_MESSAGES, PROPOSAL_ERROR_STATUS } from '@/lib/tier-proposals';
-import { createVenueWithProposal, ProposalFailed } from '@/lib/venue-create';
+import { markSuggestionAccepted, SUGGESTION_PROPOSED_TIER } from '@/lib/suggestions';
+import { createVenueWithProposal, ProposalFailed, SuggestionUnavailable } from '@/lib/venue-create';
 import { venueCreateSchema } from '@/lib/venue-schema';
 import { resolveRoute, routeWarning } from '@/lib/venue-route';
 import { isSlugTaken, serializeVenue } from '@/lib/venues';
@@ -58,11 +59,19 @@ export const POST: APIRoute = async ({ request }) => {
     // ORS failures never block the save; the route stays pending instead. Looked up before the transaction.
     const route = await resolveRoute(parsed.data, null);
     // The venue starts hidden (no approved tier); its tier is a proposal for a different admin to approve.
-    const { proposedTier, ...input } = parsed.data;
+    const { proposedTier, fromSuggestion, ...input } = parsed.data;
     const actor = { id: session.user.id, name: session.user.name, email: session.user.email };
-    const { venue, proposal } = await createVenueWithProposal(db, input, proposedTier, actor, route);
+    const { venue, proposal } = fromSuggestion
+      ? // Accepting a suggestion: always To Be Assessed, and the suggestion is marked accepted in the same transaction.
+        await createVenueWithProposal(db, input, SUGGESTION_PROPOSED_TIER, actor, route, async (tx, created) => {
+          if (!(await markSuggestionAccepted(tx, fromSuggestion, created.id, actor.id))) throw new SuggestionUnavailable();
+        })
+      : await createVenueWithProposal(db, input, proposedTier, actor, route);
     return jsonResponse({ venue: serializeVenue(venue), proposalId: proposal?.id ?? null, routeWarning: routeWarning(route) }, 201);
   } catch (error) {
+    if (error instanceof SuggestionUnavailable) {
+      return jsonError(409, 'That suggestion has already been accepted or dismissed, or no longer exists. Nothing was saved.');
+    }
     if (error instanceof ProposalFailed) {
       return jsonError(PROPOSAL_ERROR_STATUS[error.error], PROPOSAL_ERROR_MESSAGES[error.error], { proposedTier: PROPOSAL_ERROR_MESSAGES[error.error] });
     }

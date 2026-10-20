@@ -20,7 +20,7 @@ const [rows, counts] = await Promise.all([
 const totals = new Map(counts.map((row) => [row.status, row.total]));
 const tabs = [
   { status: 'new', label: 'Inbox' },
-  { status: 'accepted', label: 'Drafted' },
+  { status: 'accepted', label: 'Accepted' },
   { status: 'dismissed', label: 'Dismissed' },
 ].map((tab) => ({ ...tab, total: totals.get(tab.status as SuggestionStatus) ?? 0, active: tab.status === status }));
 ---
@@ -31,7 +31,7 @@ const tabs = [
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Member petitions</p>
       <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Venue suggestions</h1>
       <p class="mt-2 max-w-2xl text-sm text-[#3d3d3d]">
-        Sent from the public “Suggest a Venue” form. Nothing here appears on the site until you create a draft venue, finish it and give it a tier and a location.
+        Sent from the public “Suggest a Venue” form. Nothing here appears on the site. Accepting one opens the new-venue form; saving it creates a hidden venue with a To Be Assessed proposal that a different Chair must approve.
       </p>
     </div>
 

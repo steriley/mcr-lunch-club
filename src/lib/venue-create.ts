@@ -15,6 +15,13 @@ export class ProposalFailed extends Error {
   }
 }
 
+/** Thrown inside the transaction when the suggestion being accepted is no longer available. */
+export class SuggestionUnavailable extends Error {
+  constructor() {
+    super('Suggestion no longer available');
+  }
+}
+
 /**
  * Creates a venue with no approved tier (hidden) and, when a tier is given,
  * its first pending proposal, in one transaction. `afterCreate` runs inside

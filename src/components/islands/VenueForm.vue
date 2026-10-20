@@ -28,9 +28,23 @@ interface VenueData {
   updatedAt: string;
 }
 
+/** Mirrors suggestionPrefill() in src/lib/suggestions.ts. */
+interface SuggestionPrefill {
+  id: string;
+  name: string;
+  cost: string | null;
+  searchQuery: string;
+  cuisineHint: string | null;
+  recommendedOrder: string | null;
+  rationale: string;
+  submitterName: string | null;
+}
+
 const props = defineProps<{
   mode: 'create' | 'edit';
   venue?: VenueData | null;
+  /** Accepting a member's suggestion: only the name and cost band are copied; the rest is reference. */
+  suggestion?: SuggestionPrefill | null;
   updatedByName?: string | null;
   uploadsEnabled?: boolean;
 }>();
@@ -55,7 +69,15 @@ function toFormState(venue?: VenueData | null): Record<FormField, string> {
   return state;
 }
 
-const form = reactive(toFormState(props.venue));
+function applySuggestion(state: Record<FormField, string>, suggestion?: SuggestionPrefill | null) {
+  if (!suggestion) return state;
+  state.name = suggestion.name;
+  state.slug = slugify(suggestion.name);
+  if (suggestion.cost) state.cost = suggestion.cost;
+  return state;
+}
+
+const form = reactive(applySuggestion(toFormState(props.venue), props.suggestion));
 const venueId = ref(props.venue?.id ?? '');
 const updatedAt = ref(props.venue?.updatedAt ?? null);
 const savedSnapshot = ref(JSON.stringify(form));
@@ -126,6 +148,7 @@ async function retryRoute() {
 
 // New venues only: the tier to propose. It takes effect once a different admin approves it.
 const proposedTier = ref(props.mode === 'create' ? 'to_be_assessed' : '');
+const fromSuggestion = props.suggestion?.id ?? null;
 const proposableTiers = TIERS.filter((tier) => tier.value !== 'approved');
 
 const isDirty = computed(() => JSON.stringify(form) !== savedSnapshot.value);
@@ -161,7 +184,7 @@ async function save() {
   clearErrors();
   successMessage.value = '';
 
-  const body = props.mode === 'create' ? { ...form, proposedTier: proposedTier.value } : { ...form };
+  const body = props.mode === 'create' ? { ...form, proposedTier: proposedTier.value, fromSuggestion } : { ...form };
   const checked = (props.mode === 'create' ? venueCreateSchema : venueInputSchema).safeParse(body);
   if (!checked.success) {
     for (const issue of checked.error.issues) {
@@ -253,6 +276,15 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
     <div v-if="formError" role="alert" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ formError }}</div>
     <div v-if="successMessage" role="status" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{{ successMessage }}</div>
 
+    <aside v-if="suggestion" class="space-y-2 rounded-xl border border-dashed border-[#d9cfb8] bg-white p-4 text-sm" aria-label="The member's suggestion">
+      <p class="text-xs font-bold uppercase tracking-[0.14em] text-[#8a5100]">
+        Suggested by {{ suggestion.submitterName || 'a member' }} · for reference, not copied onto the site
+      </p>
+      <p><span class="font-semibold">Address given:</span> {{ suggestion.searchQuery }}</p>
+      <p v-if="suggestion.recommendedOrder"><span class="font-semibold">Recommended order:</span> {{ suggestion.recommendedOrder }}</p>
+      <p class="whitespace-pre-line"><span class="font-semibold">Why:</span> {{ suggestion.rationale }}</p>
+    </aside>
+
     <fieldset class="grid gap-5 md:grid-cols-2">
       <legend class="mb-3 text-lg font-bold text-[#1a1e24]">Basics</legend>
 
@@ -269,7 +301,12 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
         <span v-if="errors.slug" :class="errorClass">{{ errors.slug }}</span>
       </label>
 
-      <label v-if="mode === 'create'" :class="labelClass">
+      <div v-if="fromSuggestion" :class="labelClass">
+        <span class="mb-2 block">Proposed tier</span>
+        <p class="rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base">To Be Assessed</p>
+        <span :class="hintClass">Accepted suggestions are always proposed as To Be Assessed. The venue stays hidden until a different admin approves.</span>
+      </div>
+      <label v-else-if="mode === 'create'" :class="labelClass">
         <span class="mb-2 block">Proposed tier</span>
         <select v-model="proposedTier" :class="inputClass" :aria-invalid="Boolean(errors.proposedTier)">
           <option value="">Don't propose a tier yet</option>
@@ -293,6 +330,7 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
           <option v-for="cuisine in CUISINES" :key="cuisine.value" :value="cuisine.value">{{ cuisine.label }}</option>
         </select>
         <span v-if="errors.cuisine" :class="errorClass">{{ errors.cuisine }}</span>
+        <span v-if="suggestion?.cuisineHint" :class="hintClass">Suggested by the member: “{{ suggestion.cuisineHint }}” (for reference only)</span>
       </label>
 
     </fieldset>
@@ -312,7 +350,7 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
           </div>
         </div>
 
-        <PlaceSearch v-if="changingLocation && !manualEntry" :initial-query="form.address || form.name" @pick="pickPlace" />
+        <PlaceSearch v-if="changingLocation && !manualEntry" :initial-query="suggestion?.searchQuery || form.address || form.name" @pick="pickPlace" />
 
         <label class="inline-flex items-center gap-2 text-sm font-semibold text-[#1a1e24]">
           <input v-model="manualEntry" type="checkbox" class="h-4 w-4 rounded border-[#d9cfb8]" @change="manualEntry && (changingLocation = true)" />
