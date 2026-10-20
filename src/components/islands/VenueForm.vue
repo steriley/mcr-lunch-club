@@ -24,7 +24,6 @@ interface VenueData {
   cuisine: string;
   distanceMiles: number | null;
   walkingTimeMin: number | null;
-  lastInspectionDate: string | null;
   mapSearchLink: string | null;
   updatedAt: string;
 }
@@ -38,7 +37,7 @@ const props = defineProps<{
 
 const textFields = [
   'name', 'slug', 'tier', 'address', 'latitude', 'longitude', 'pullQuote', 'lunchSpecial',
-  'websiteUrl', 'imageUrl', 'cost', 'cuisine', 'lastInspectionDate',
+  'websiteUrl', 'imageUrl', 'cost', 'cuisine',
   'mapSearchLink',
 ] as const;
 type FormField = (typeof textFields)[number];
@@ -293,11 +292,6 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
         <span v-if="errors.cuisine" :class="errorClass">{{ errors.cuisine }}</span>
       </label>
 
-      <label :class="labelClass">
-        <span class="mb-2 block">Last inspection date</span>
-        <input v-model="form.lastInspectionDate" type="date" :class="inputClass" />
-        <span v-if="errors.lastInspectionDate" :class="errorClass">{{ errors.lastInspectionDate }}</span>
-      </label>
     </fieldset>
 
     <fieldset class="grid gap-5 border-t border-[#d9cfb8] pt-5 md:grid-cols-2">

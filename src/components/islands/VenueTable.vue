@@ -12,6 +12,7 @@ interface VenueRow {
   /** From hiddenReason() in src/lib/visibility.ts; null when the venue is public. */
   hiddenReason: 'no_tier' | 'needs_location' | 'closed' | null;
   closed: boolean;
+  lastInspectionDate: string | null;
   /** Has coordinates but no ORS walking route yet (see src/lib/route-status.ts). */
   routePending: boolean;
   updatedAt: string;
@@ -182,6 +183,7 @@ const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2
               <td class="px-4 py-3">
                 <a :href="`/admin/venues/${venue.id}`" class="font-semibold text-[#1a1e24] hover:underline">{{ venue.name }}</a>
                 <div class="text-xs text-[#535353]">{{ venue.slug }}</div>
+                <div class="text-xs text-[#535353]">Last inspected: {{ venue.lastInspectionDate ? formatDate(venue.lastInspectionDate) : 'never' }}</div>
               </td>
               <td class="px-4 py-3"><TierBadge :tier="venue.tier" /></td>
               <td class="px-4 py-3">

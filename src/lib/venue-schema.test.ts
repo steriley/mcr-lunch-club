@@ -9,7 +9,6 @@ describe('venueInputSchema', () => {
     const result = venueInputSchema.parse(valid);
     assert.equal(result.address, null);
     assert.equal(result.latitude, null);
-    assert.equal(result.lastInspectionDate, null);
   });
 
   it('turns blank optional strings into null and trims text', () => {
@@ -84,9 +83,8 @@ describe('venueInputSchema', () => {
     assert.equal(venueInputSchema.parse({ ...valid, mapSearchLink: '' }).mapSearchLink, null);
   });
 
-  it('validates the inspection date', () => {
-    assert.equal(venueInputSchema.safeParse({ ...valid, lastInspectionDate: '2026-09-01' }).success, true);
-    assert.equal(venueInputSchema.safeParse({ ...valid, lastInspectionDate: '2026-13-01' }).success, false);
+  it('never accepts a hand-edited inspection date', () => {
+    assert.ok(!('lastInspectionDate' in venueInputSchema.parse({ ...valid, lastInspectionDate: '2026-09-01' })));
   });
 
   it('enforces text length limits', () => {

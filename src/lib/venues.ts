@@ -25,7 +25,6 @@ export function venueValues(input: VenueInput, userId: string | null, route: Rou
     distanceMiles: route.distanceMiles === null ? null : route.distanceMiles.toFixed(2),
     walkingTimeMin: route.walkingTimeMin,
     ...(route.routeUpdatedAt === undefined ? {} : { routeUpdatedAt: route.routeUpdatedAt }),
-    lastInspectionDate: input.lastInspectionDate,
     mapSearchLink: input.mapSearchLink,
     updatedBy: userId,
     updatedAt: new Date(),

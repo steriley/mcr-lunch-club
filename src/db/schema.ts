@@ -1,4 +1,5 @@
-import { boolean, date, decimal, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import { boolean, check, date, decimal, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { user } from './auth-schema';
 import { CUISINE_VALUES } from '../lib/cuisines';
 import { TIER_VALUES } from '../lib/tiers';
@@ -26,6 +27,7 @@ export const venues = pgTable('venues', {
   walkingTimeMin: integer('walking_time_min'),
   // When distance/walking time last came from an ORS route; null for pending or pre-ORS estimates.
   routeUpdatedAt: timestamp('route_updated_at', { withTimezone: true }),
+  // Cached: the latest confirmed inspection (verified or legacy). Never edited by hand.
   lastInspectionDate: date('last_inspection_date'),
   mapSearchLink: text('map_search_link'),
   // Permanently closed (not a tier): set and cleared by any admin, logged in venue_events.
@@ -84,6 +86,45 @@ export const venueEvents = pgTable(
   (table) => [index('venue_events_venue_id_idx').on(table.venueId, table.createdAt)]
 );
 
+export const inspectionStatusEnum = pgEnum('inspection_status', ['pending', 'confirmed', 'lapsed']);
+export const inspectionKindEnum = pgEnum('inspection_kind', ['verified', 'legacy']);
+
+/**
+ * Inspections. A verified one needs two different admins to press "Visited
+ * today" on the same Europe/London day; a first press nobody confirms lapses
+ * at midnight. Legacy rows are dates imported from the Chairs' records and
+ * never count as verified. Names are snapshots so history survives account
+ * deletion.
+ */
+export const inspections = pgTable(
+  'inspections',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    venueId: uuid('venue_id').notNull().references(() => venues.id, { onDelete: 'cascade' }),
+    inspectionDate: date('inspection_date').notNull(),
+    status: inspectionStatusEnum('status').notNull().default('pending'),
+    kind: inspectionKindEnum('kind').notNull().default('verified'),
+    firstAdminId: text('first_admin_id').references(() => user.id, { onDelete: 'set null' }),
+    firstAdminName: text('first_admin_name'),
+    secondAdminId: text('second_admin_id').references(() => user.id, { onDelete: 'set null' }),
+    secondAdminName: text('second_admin_name'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+  },
+  (table) => [
+    // At most one pending inspection per venue.
+    uniqueIndex('inspections_one_pending_per_venue').on(table.venueId).where(sql`${table.status} = 'pending'`),
+    // Keeps the legacy import idempotent.
+    uniqueIndex('inspections_one_legacy_per_venue_date').on(table.venueId, table.inspectionDate).where(sql`${table.kind} = 'legacy'`),
+    index('inspections_venue_date_idx').on(table.venueId, table.inspectionDate),
+    // Backstop for the two-admin rule; ids may later be nulled when an account is deleted.
+    check(
+      'inspections_two_different_admins',
+      sql`${table.firstAdminId} is null or ${table.secondAdminId} is null or ${table.firstAdminId} <> ${table.secondAdminId}`
+    ),
+  ]
+);
+
 export const suggestionStatusEnum = pgEnum('suggestion_status', ['new', 'accepted', 'dismissed']);
 
 /** Venue suggestions sent in by members from the public "Suggest a Venue" form. */
@@ -110,11 +151,13 @@ export type VenueRow = typeof venues.$inferSelect;
 export type BriberyRow = typeof briberyRecords.$inferSelect;
 export type SuggestionRow = typeof venueSuggestions.$inferSelect;
 export type VenueEventRow = typeof venueEvents.$inferSelect;
+export type InspectionRow = typeof inspections.$inferSelect;
 
 export const schema = {
   venues,
   briberyRecords,
   venueRevisions,
   venueEvents,
+  inspections,
   venueSuggestions
 };

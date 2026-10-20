@@ -37,6 +37,13 @@ export function serverError(context: string, error: unknown): Response {
   return jsonError(500, 'Something went wrong. Please try again.');
 }
 
+/** Deactivated (banned) accounts may not act, even with a session that outlived the ban. */
+export function isBanned(user: { banned?: boolean | null; banExpires?: Date | string | null }, now: Date = new Date()): boolean {
+  if (!user.banned) return false;
+  if (!user.banExpires) return true;
+  return new Date(user.banExpires).getTime() > now.getTime();
+}
+
 export function hasAdminRole(role: string | null | undefined): boolean {
   return String(role ?? '')
     .split(',')
@@ -74,7 +81,7 @@ export async function requireAdmin(request: Request): Promise<AuthSession | Resp
   if (!session?.user) {
     return jsonError(401, 'Unauthorized');
   }
-  if (!hasAdminRole(session.user.role)) {
+  if (!hasAdminRole(session.user.role) || isBanned(session.user)) {
     return jsonError(403, 'Forbidden');
   }
   return session;

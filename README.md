@@ -55,6 +55,7 @@ cp .env.example .env.local   # then fill it in; see "Admin setup"
 pnpm dev                     # http://localhost:4321
 pnpm build                   # production build (Vercel output)
 pnpm test                    # unit tests
+pnpm test:db                 # database integration tests (needs TEST_DATABASE_URL, see Scripts)
 ```
 
 ---
@@ -106,6 +107,8 @@ Use a Neon **branch** so local work never touches production data:
 | `pnpm db:import` | Import `src/data/venues.json` and `src/data/incidents.json`. Idempotent (venues match on slug, records on title + date); existing rows are left alone. `--dry-run` reports without writing; `--update` overwrites existing venues from the files. |
 | `pnpm auth:generate` | Regenerate `src/db/auth-schema.ts` with the Better Auth CLI matching the installed version. Follow with `pnpm db:generate`. |
 | `pnpm routes:backfill` | Replace distance and walking time with ORS walking routes for venues that have coordinates but no ORS route yet. Throttled (`--delay-ms=2000`), resumable, stops cleanly on a rate limit. `--dry-run` lists venues without calling ORS; `--all` recomputes every venue. Needs `ORS_API_KEY`. |
+| `pnpm inspections:import-legacy` | One-off: import the corrected inspection dates in `drizzle/data/legacy-inspections.json` as legacy inspections and rebuild every venue's "last inspected" date. Venues not on the list lose their old date unless `--keep-unlisted` is passed. Aborts if any name cannot be matched; idempotent; `--dry-run` shows the changes first. |
+| `pnpm test:db` | Integration tests for the transactional rules (inspections, proposals) against `TEST_DATABASE_URL`, a throwaway **local** database whose name contains `test` (tables are truncated). |
 | `pnpm check:bundle` | After `pnpm build`: fail if the browser bundle contains `ORS_API_KEY` (name or value) or calls ORS directly. |
 | `pnpm check:security [url]` | Check that every `/admin` page and `/api/admin` route refuses anonymous and cross-origin requests, and that sign-up is disabled. Defaults to `http://localhost:4321`; pass the production URL after a deploy. |
 
@@ -156,6 +159,13 @@ Use a Neon **branch** so local work never touches production data:
   down or rate limited the venue still saves: without coordinates it is
   hidden ("Needs location"); with coordinates but no route it shows, listed
   last, with a "Route pending" badge and a **Retry** button.
+- **Inspections**: a venue's "last inspected" date can't be typed in. Each
+  Chair presses **Visited today** on the venue's page; an inspection counts
+  once two different Chairs press it on the same UK calendar day (server
+  clock, `Europe/London`). A lone press lapses at midnight. The page lists the
+  inspection history: "Verified by A and B" or legacy records imported from
+  the Chairs' old records (which show as "last inspected" but never count as
+  verified). Deactivated Chairs can't press it.
 - **Permanently closed**: a flag, not a tier. Any Chair can mark a venue
   closed (with a confirmation) or reopen it from its edit page; no second
   Chair is needed, and both are logged on the **History** page. Closed venues

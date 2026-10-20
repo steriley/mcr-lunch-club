@@ -1,5 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
-import { hasAdminRole, hasTrustedOrigin, isMutatingMethod, jsonError } from '@/lib/admin-api';
+import { hasAdminRole, hasTrustedOrigin, isBanned, isMutatingMethod, jsonError } from '@/lib/admin-api';
 import { auth } from '@/lib/auth';
 
 const ADMIN_PAGE_HEADERS = {
@@ -57,7 +57,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return redirect(destination.pathname + destination.search);
   }
 
-  if (!hasAdminRole(session.user.role)) {
+  if (!hasAdminRole(session.user.role) || isBanned(session.user)) {
     if (isAdminApi) {
       return jsonError(403, 'Forbidden');
     }
