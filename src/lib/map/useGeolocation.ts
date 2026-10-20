@@ -8,6 +8,38 @@ export interface UserPosition {
   accuracy: number;
 }
 
+/** Long enough for a cold GPS fix outdoors; shorter timeouts flap between fixes. */
+export const GEOLOCATION_TIMEOUT_MS = 25_000;
+
+// GeolocationPositionError codes.
+const PERMISSION_DENIED = 1;
+const POSITION_UNAVAILABLE = 2;
+const TIMEOUT = 3;
+
+/**
+ * How a geolocation error changes the state. Returns null when the error is
+ * transient and a position is already held, so the UI keeps using the last fix.
+ */
+export function resolveGeolocationError(
+  code: number,
+  hasPosition: boolean,
+  message?: string
+): { state: GeolocationState; message: string } | null {
+  if (code === PERMISSION_DENIED) {
+    return { state: 'denied', message: 'Location permission was denied.' };
+  }
+  if (hasPosition && (code === TIMEOUT || code === POSITION_UNAVAILABLE)) {
+    return null;
+  }
+  if (code === POSITION_UNAVAILABLE) {
+    return { state: 'unavailable', message: 'Location information is unavailable.' };
+  }
+  if (code === TIMEOUT) {
+    return { state: 'error', message: 'Location request timed out.' };
+  }
+  return { state: 'error', message: message || 'An unknown error occurred while retrieving location.' };
+}
+
 export function useGeolocation() {
   const state = ref<GeolocationState>('idle');
   const position = ref<UserPosition | null>(null);
@@ -44,28 +76,15 @@ export function useGeolocation() {
           errorMessage.value = null;
         },
         (err) => {
-          switch (err.code) {
-            case err.PERMISSION_DENIED:
-              state.value = 'denied';
-              errorMessage.value = 'Location permission was denied.';
-              break;
-            case err.POSITION_UNAVAILABLE:
-              state.value = 'unavailable';
-              errorMessage.value = 'Location information is unavailable.';
-              break;
-            case err.TIMEOUT:
-              state.value = 'error';
-              errorMessage.value = 'Location request timed out.';
-              break;
-            default:
-              state.value = 'error';
-              errorMessage.value = err.message || 'An unknown error occurred while retrieving location.';
-              break;
-          }
+          const hasLiveFix = state.value === 'active' && position.value !== null;
+          const next = resolveGeolocationError(err.code, hasLiveFix, err.message);
+          if (!next) return;
+          state.value = next.state;
+          errorMessage.value = next.message;
         },
         {
           enableHighAccuracy: true,
-          timeout: 10000,
+          timeout: GEOLOCATION_TIMEOUT_MS,
           maximumAge: 0,
         }
       );

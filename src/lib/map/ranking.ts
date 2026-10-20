@@ -1,4 +1,5 @@
 import type { Venue, TierStatus } from '@/types';
+import { BASE_COORDINATES } from './config';
 import { NEAR_ME_ELIGIBLE_TIERS } from './tiers';
 
 export interface LatLng {
@@ -30,6 +31,15 @@ export const DEFAULT_NEARBY_THRESHOLD_METRES = 4023; // 2.5 miles
  * Threshold for origin movement before recomputing ranking (anti-flicker).
  */
 export const ORIGIN_MOVE_THRESHOLD_METRES = 18; // 15-20 metres
+
+/**
+ * Beyond this distance from Spinningfields the user is "outside Manchester",
+ * and Near Me ranks from the base instead of from them.
+ */
+export const FAR_FROM_BASE_METRES = 30_000;
+
+/** Typical city walking pace used for Near Me walk estimates. */
+export const WALKING_METRES_PER_MINUTE = 80;
 
 /**
  * Great-circle distance between two coordinates in metres using the Haversine formula.
@@ -80,6 +90,22 @@ export function formatDistance(metres: number): string {
 
   const km = (metres / 1000).toFixed(1);
   return `${km} km`;
+}
+
+/** Walking minutes for a straight-line distance; never less than one minute. */
+export function estimateWalkMinutes(metres: number): number {
+  return Math.max(1, Math.round(Math.max(0, metres) / WALKING_METRES_PER_MINUTE));
+}
+
+/**
+ * The point Near Me ranks from: the user's position, or Spinningfields when
+ * there is no position yet or the user is too far away for distances to mean anything.
+ */
+export function resolveRankingOrigin(position: LatLng | null): { origin: LatLng; fromBase: boolean } {
+  if (!position || haversineMetres(position, BASE_COORDINATES) > FAR_FROM_BASE_METRES) {
+    return { origin: { lat: BASE_COORDINATES.lat, lng: BASE_COORDINATES.lng }, fromBase: true };
+  }
+  return { origin: { lat: position.lat, lng: position.lng }, fromBase: false };
 }
 
 /**

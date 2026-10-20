@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
-import { $filters, selectVenue, openNearMe } from '@/stores/filters';
+import { $filters, selectVenue, openNearMe, toggleTier } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
 import {
   BASE_LAT,
@@ -136,7 +136,8 @@ const filteredVenues = computed(() => {
       const matchCuisine = venue.cuisine.toLowerCase().includes(q);
       const matchNotes = (venue.notes || '').toLowerCase().includes(q);
       const matchOrder = (venue.eatLikeUs || '').toLowerCase().includes(q);
-      if (!matchName && !matchCuisine && !matchNotes && !matchOrder) return false;
+      const matchAddress = (venue.address || '').toLowerCase().includes(q);
+      if (!matchName && !matchCuisine && !matchNotes && !matchOrder && !matchAddress) return false;
     }
 
     return true;
@@ -175,7 +176,26 @@ onMounted(async () => {
 
   // Render Venue Markers
   renderMarkers();
+
+  focusLinkedVenue();
 });
+
+/** `/?venue=<slug>` (from a dossier's "Locate on Ledger Map") centres on that venue and opens it. */
+function focusLinkedVenue() {
+  const slug = new URLSearchParams(window.location.search).get('venue');
+  if (!slug || !mapInstance) return;
+  const venue = venuesList.value.find((candidate) => candidate.slug === slug);
+  if (!venue) return;
+
+  if (!filters.value.tiers.includes(venue.status)) {
+    toggleTier(venue.status);
+  }
+  if (venue.lat != null && venue.lng != null) {
+    mapInstance.setView([venue.lat, venue.lng], Math.max(mapInstance.getZoom(), 16));
+  }
+  selectVenue(venue);
+  mapContainer.value?.scrollIntoView({ block: 'center' });
+}
 
 onUnmounted(() => {
   if (mapInstance) {
@@ -218,22 +238,12 @@ function renderMarkers() {
     if (!marker) return;
 
     // Custom Popup
-    const popupContent = createVenuePopupContent(venue);
+    const popupContent = createVenuePopupContent(venue, () => selectVenue(venue));
     marker.bindPopup(popupContent, { maxWidth: 280, className: 'ledger-popup' });
 
     // Open detail sheet on click
     marker.on('click', () => {
       selectVenue(venue);
-    });
-
-    // Handle popup button click
-    marker.on('popupopen', () => {
-      const btn = document.getElementById(`btn-inspect-${venue.slug}`);
-      if (btn) {
-        btn.onclick = () => {
-          selectVenue(venue);
-        };
-      }
     });
 
     markersLayer.addLayer(marker);
