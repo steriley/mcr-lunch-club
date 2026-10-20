@@ -1,8 +1,11 @@
 import '../test/setup-env';
-import { describe, it } from 'node:test';
+import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   PUBLIC_CACHE_CONTROL,
+  getPublishedIncidents,
+  getPublishedVenue,
+  getPublishedVenues,
   formatIncidentDate,
   serializeForScript,
   setPublicCacheHeaders,
@@ -10,6 +13,9 @@ import {
   toPublicVenue,
 } from './public-data';
 import type { BriberyRow, VenueRow } from '@/db/schema';
+import { restoreStubs, stubDb } from '../test/route-helpers';
+
+afterEach(restoreStubs);
 
 function venueRow(overrides: Partial<VenueRow> = {}): VenueRow {
   return {
@@ -184,5 +190,33 @@ describe('setPublicCacheHeaders', () => {
     const headers = new Headers();
     setPublicCacheHeaders(headers);
     assert.equal(headers.get('Cache-Control'), PUBLIC_CACHE_CONTROL);
+  });
+});
+
+describe('published queries', () => {
+  it('getPublishedVenues maps every returned row', async () => {
+    stubDb('select', [venueRow(), venueRow({ slug: 'other', name: 'Other', tier: 'rejected' })]);
+    const venues = await getPublishedVenues();
+    assert.deepEqual(venues.map((venue) => venue.slug), ['chip-shop', 'other']);
+    assert.equal(venues[1].status, 'Rejected');
+  });
+
+  it('getPublishedVenue returns the detail fields, or null when unpublished or missing', async () => {
+    stubDb('select', [venueRow({ pullQuote: 'Gold', verdict: 'Fine', imageUrl: 'https://img.example/a.jpg' })]);
+    const venue = await getPublishedVenue('chip-shop');
+    assert.equal(venue?.pullQuote, 'Gold');
+    assert.equal(venue?.verdict, 'Fine');
+    assert.equal(venue?.imageUrl, 'https://img.example/a.jpg');
+    assert.equal(venue?.slug, 'chip-shop');
+
+    stubDb('select', []);
+    assert.equal(await getPublishedVenue('missing'), null);
+  });
+
+  it('getPublishedIncidents maps every returned record', async () => {
+    stubDb('select', [briberyRow(), briberyRow({ id: 'b2', incidentDate: null })]);
+    const incidents = await getPublishedIncidents();
+    assert.deepEqual(incidents.map((incident) => incident.id), ['b1', 'b2']);
+    assert.equal(incidents[1].date, '');
   });
 });

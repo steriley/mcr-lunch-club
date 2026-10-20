@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import type { Inspection, Venue } from '@/types';
 
 /**
- * The ledger reads the page and localStorage once, at import time, so each
- * scenario sets up the fake browser and then imports a fresh copy of the module.
+ * The ledger reads the page and localStorage once, at import time. Each scenario
+ * sets up a fake browser and re-runs the start-up readers directly.
  */
+import { getInitialInspections, getInitialVenues } from './ledger';
 
 const globals = globalThis as any;
-let importCount = 0;
 
 function venue(slug: string): Venue {
   return {
@@ -47,11 +47,6 @@ function fakeBrowser(options: { canon?: string | null; storage?: Record<string, 
   return store;
 }
 
-async function loadLedger() {
-  importCount += 1;
-  return import(`./ledger?scenario=${importCount}`) as Promise<typeof import('./ledger')>;
-}
-
 function fingerprintOf(venues: Venue[]): string {
   // Mirrors the module's private hash by round-tripping through its own persistence.
   const text = JSON.stringify(venues);
@@ -75,39 +70,38 @@ afterEach(() => {
 });
 
 describe('ledger in the browser', () => {
-  it('reads the published venues embedded in the page', async () => {
+  it('reads the published venues embedded in the page', () => {
     fakeBrowser({ canon: JSON.stringify([venue('a')]) });
-    const { $venuesList } = await loadLedger();
-    assert.deepEqual($venuesList.get(), [venue('a')]);
+    assert.deepEqual(getInitialVenues(), [venue('a')]);
   });
 
-  it('starts empty when the page has no or invalid venue data', async () => {
+  it('starts empty when the page has no or invalid venue data', () => {
     fakeBrowser({});
-    assert.deepEqual((await loadLedger()).$venuesList.get(), []);
+    assert.deepEqual(getInitialVenues(), []);
 
     fakeBrowser({ canon: '' });
-    assert.deepEqual((await loadLedger()).$venuesList.get(), []);
+    assert.deepEqual(getInitialVenues(), []);
 
     fakeBrowser({ canon: '{not json' });
     const restore = silence();
     try {
-      assert.deepEqual((await loadLedger()).$venuesList.get(), []);
+      assert.deepEqual(getInitialVenues(), []);
     } finally {
       restore();
     }
   });
 
-  it('restores local edits that match the current published list', async () => {
+  it('restores local edits that match the current published list', () => {
     const canon = [venue('a')];
     const edited = [{ ...venue('a'), status: 'Rejected' as const }];
     fakeBrowser({
       canon: JSON.stringify(canon),
       storage: { mcr_lunch_club_venues_v2: JSON.stringify({ canon: fingerprintOf(canon), venues: edited }) },
     });
-    assert.deepEqual((await loadLedger()).$venuesList.get(), edited);
+    assert.deepEqual(getInitialVenues(), edited);
   });
 
-  it('drops local edits made against an older published list, and the legacy key', async () => {
+  it('drops local edits made against an older published list, and the legacy key', () => {
     const canon = [venue('a')];
     const store = fakeBrowser({
       canon: JSON.stringify(canon),
@@ -116,28 +110,27 @@ describe('ledger in the browser', () => {
         mcr_lunch_club_venues_v2: JSON.stringify({ canon: 'stale', venues: [venue('old')] }),
       },
     });
-    assert.deepEqual((await loadLedger()).$venuesList.get(), canon);
+    assert.deepEqual(getInitialVenues(), canon);
     assert.equal(store.has('mcr_lunch_club_venues_v2'), false);
     assert.equal(store.has('mcr_lunch_club_venues_v1'), false);
   });
 
-  it('falls back to the published list when storage is unreadable', async () => {
+  it('falls back to the published list when storage is unreadable', () => {
     fakeBrowser({ canon: JSON.stringify([venue('a')]), throwOnRead: true });
     const restore = silence();
     try {
-      const { $venuesList, $inspectionsList } = await loadLedger();
-      assert.deepEqual($venuesList.get(), [venue('a')]);
-      assert.ok(Array.isArray($inspectionsList.get()));
+      assert.deepEqual(getInitialVenues(), [venue('a')]);
+      assert.ok(Array.isArray(getInitialInspections()));
     } finally {
       restore();
     }
   });
 
-  it('restores stored inspections', async () => {
+  it('restores stored inspections', () => {
     const inspections: Inspection[] = [
       { id: 'x', venueSlug: 'a', venueName: 'a', date: '2026-01-01', attendees: [], verdict: 'satisfactory', whatWasOrdered: 'Pie' },
     ];
     fakeBrowser({ storage: { mcr_lunch_club_inspections_v1: JSON.stringify(inspections) } });
-    assert.deepEqual((await loadLedger()).$inspectionsList.get(), inspections);
+    assert.deepEqual(getInitialInspections(), inspections);
   });
 });
