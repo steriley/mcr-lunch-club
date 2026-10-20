@@ -69,6 +69,11 @@ const statusInfo = TIER_BANNERS[venue.status];
 
       <!-- Dossier Body Content -->
       <div class="p-6 sm:p-8 space-y-6 text-[#1a1e24]">
+        {venue.closed && (
+          <p class="rounded-xl border-2 border-stone-400 bg-stone-100 px-4 py-3 font-sans text-sm font-bold uppercase tracking-wider text-stone-700">
+            Permanently closed
+          </p>
+        )}
         <!-- Title & Location Bar -->
         <div class="border-b border-[#dcd6c8] pb-6">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">

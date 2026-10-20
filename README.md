@@ -156,6 +156,12 @@ Use a Neon **branch** so local work never touches production data:
   down or rate limited the venue still saves: without coordinates it is
   hidden ("Needs location"); with coordinates but no route it shows, listed
   last, with a "Route pending" badge and a **Retry** button.
+- **Permanently closed**: a flag, not a tier. Any Chair can mark a venue
+  closed (with a confirmation) or reopen it from its edit page; no second
+  Chair is needed, and both are logged on the **History** page. Closed venues
+  never appear on the map or in Near Me. A closed venue whose tier is Gone But
+  Not Forgotten stays on that tier page and its own page, labelled
+  "Permanently closed"; any other closed venue is hidden (its page 404s).
 - **Public ordering**: within a tier, venues are listed by walking time (unknown
   times last), then name; Rejected and Gone But Not Forgotten are alphabetical
   (`src/lib/venue-order.ts`).

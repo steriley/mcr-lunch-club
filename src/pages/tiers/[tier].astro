@@ -242,6 +242,11 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
                   <span class="text-xs text-stone-500 font-sans block mt-0.5">
                     {venue.cuisine}
                   </span>
+                  {venue.closed && (
+                    <span class="mt-1 inline-block rounded border border-stone-300 bg-stone-100 px-1.5 py-0.5 font-sans text-xs font-bold uppercase tracking-wider text-stone-600">
+                      Permanently closed
+                    </span>
+                  )}
                 </div>
 
                 <span class="font-mono font-bold text-sm text-[#8b1e22] bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
