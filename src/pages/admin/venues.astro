@@ -21,15 +21,16 @@ const rows = await db
     closedAt: venues.closedAt,
     lastInspectionDate: venues.lastInspectionDate,
     walkingTimeMin: venues.walkingTimeMin,
+    routeUpdatedAt: venues.routeUpdatedAt,
     updatedAt: venues.updatedAt,
   })
   .from(venues)
   .orderBy(asc(venues.name));
-const tableRows = rows.map(({ latitude, longitude, distanceMiles, walkingTimeMin, closedAt, ...venue }) => ({
+const tableRows = rows.map(({ latitude, longitude, distanceMiles, walkingTimeMin, routeUpdatedAt, closedAt, ...venue }) => ({
   ...venue,
   hiddenReason: hiddenReason({ tier: venue.tier, latitude, longitude, closedAt }),
   closed: closedAt !== null,
-  routePending: routeStatus({ latitude, longitude, distanceMiles, walkingTimeMin }) === 'route_pending',
+  routeStatus: routeStatus({ latitude, longitude, distanceMiles, walkingTimeMin, routeUpdatedAt }),
   updatedAt: venue.updatedAt.toISOString(),
 }));
 ---

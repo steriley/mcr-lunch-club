@@ -219,7 +219,7 @@ describe('/api/admin/venues/[id]', () => {
       assert.deepEqual(params, ['chip-shop', VENUE_ID]);
     });
 
-    const stored = { latitude: '53.480000', longitude: '-2.250000', distanceMiles: '0.40', walkingTimeMin: 9 };
+    const stored = { latitude: '53.480000', longitude: '-2.250000', distanceMiles: '0.40', walkingTimeMin: 9, routeUpdatedAt: new Date('2026-10-01T00:00:00Z') };
 
     it('updates the venue and records a revision', async () => {
       signInAs();

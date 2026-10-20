@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { OrsError, routeToVenueValues, searchPlaces, walkingRoute, walkingRouteFromBase } from './ors';
+import { MATRIX_BATCH_SIZE, OrsError, routeToVenueValues, searchPlaces, walkingMatrixFromBase, walkingRoute, walkingRouteFromBase } from './ors';
 import { BASE_COORDINATES } from './map/config';
 
 const API_KEY = 'secret-ors-key';
@@ -176,5 +176,37 @@ describe('searchPlaces', () => {
 
   it('passes rate limits through', async () => {
     assert.equal((await rejection(searchPlaces('pizza', fakeFetch(() => new Response('', { status: 429 }))))).kind, 'rate_limited');
+  });
+});
+
+describe('walkingMatrixFromBase', () => {
+  it('asks for one source (HQ) and many destinations, and maps nulls to no route', async () => {
+    const ors = fakeFetch(() => Response.json({ distances: [[402.3, null]], durations: [[300, null]] }));
+    const results = await walkingMatrixFromBase([{ lat: 53.48, lng: -2.24 }, { lat: 53.49, lng: -2.23 }], ors);
+    assert.deepEqual(results, [{ distanceMetres: 402.3, durationSeconds: 300 }, null]);
+
+    const [call] = ors.calls;
+    assert.equal(call.url, 'https://api.openrouteservice.org/v2/matrix/foot-walking');
+    assert.equal((call.init.headers as Record<string, string>).Authorization, API_KEY);
+    assert.deepEqual(JSON.parse(String(call.init.body)), {
+      locations: [[BASE_COORDINATES.lng, BASE_COORDINATES.lat], [-2.24, 53.48], [-2.23, 53.49]],
+      sources: [0],
+      destinations: [1, 2],
+      metrics: ['distance', 'duration'],
+      units: 'm',
+    });
+  });
+
+  it('makes no request for an empty list and refuses oversized batches', async () => {
+    const ors = fakeFetch(() => Response.json({}));
+    assert.deepEqual(await walkingMatrixFromBase([], ors), []);
+    assert.equal(ors.calls.length, 0);
+    const tooMany = Array.from({ length: MATRIX_BATCH_SIZE + 1 }, () => ({ lat: 53.48, lng: -2.25 }));
+    await assert.rejects(walkingMatrixFromBase(tooMany, ors));
+  });
+
+  it('passes rate limits through', async () => {
+    const ors = fakeFetch(() => new Response('', { status: 429 }));
+    assert.equal((await rejection(walkingMatrixFromBase([{ lat: 53.48, lng: -2.25 }], ors))).kind, 'rate_limited');
   });
 });

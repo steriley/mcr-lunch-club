@@ -24,6 +24,7 @@ interface VenueData {
   cuisine: string;
   distanceMiles: number | null;
   walkingTimeMin: number | null;
+  routeUpdatedAt?: string | null;
   mapSearchLink: string | null;
   updatedAt: string;
 }
@@ -90,7 +91,11 @@ const showDeleteDialog = ref(false);
 const slugEdited = ref(props.mode === 'edit');
 
 // Distance and walking time are worked out by the server from an ORS walking route; shown read-only.
-const route = reactive({ distanceMiles: props.venue?.distanceMiles ?? null, walkingTimeMin: props.venue?.walkingTimeMin ?? null });
+const route = reactive({
+  distanceMiles: props.venue?.distanceMiles ?? null,
+  walkingTimeMin: props.venue?.walkingTimeMin ?? null,
+  routeUpdatedAt: props.venue?.routeUpdatedAt ?? null,
+});
 const savedLocation = ref({ latitude: props.venue?.latitude ?? null, longitude: props.venue?.longitude ?? null });
 const savedRouteStatus = computed(() => routeStatus({ ...savedLocation.value, ...route }));
 const hasLocation = computed(() => form.latitude !== '' && form.longitude !== '');
@@ -120,6 +125,7 @@ function clearLocation() {
 function applySavedVenue(venue: VenueData) {
   route.distanceMiles = venue.distanceMiles;
   route.walkingTimeMin = venue.walkingTimeMin;
+  route.routeUpdatedAt = venue.routeUpdatedAt ?? null;
   savedLocation.value = { latitude: venue.latitude, longitude: venue.longitude };
   form.latitude = venue.latitude === null ? '' : String(venue.latitude);
   form.longitude = venue.longitude === null ? '' : String(venue.longitude);
@@ -137,6 +143,7 @@ async function retryRoute() {
     }
     route.distanceMiles = result.venue.distanceMiles;
     route.walkingTimeMin = result.venue.walkingTimeMin;
+    route.routeUpdatedAt = result.venue.routeUpdatedAt;
     updatedAt.value = result.venue.updatedAt;
     routeMessage.value = 'Walking route updated.';
   } catch {
@@ -390,24 +397,28 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
       <div class="md:col-span-2 rounded-lg border border-dashed border-[#d9cfb8] bg-white px-3 py-2.5 text-sm">
         <p class="font-semibold text-[#1a1e24]">Walk from Spinningfields</p>
         <p v-if="locationChanged && hasLocation" class="text-[#535353]">Worked out from a walking route when you save.</p>
-        <template v-else-if="savedRouteStatus === 'ok'">
-          <p class="text-[#1a1e24]">{{ route.walkingTimeMin }} min walk · {{ route.distanceMiles?.toFixed(2) }} miles</p>
-          <p class="text-xs text-[#535353]">From an OpenRouteService walking route. Not editable.</p>
-        </template>
         <div v-else class="flex flex-wrap items-center gap-3">
-          <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-800">{{ ROUTE_STATUS_LABELS[savedRouteStatus] }}</span>
-          <span v-if="savedRouteStatus === 'route_pending'" class="text-[#535353]">The walking route could not be fetched yet. The venue still shows, listed last.</span>
-          <span v-else class="text-[#535353]">Add a location to work out the walk.</span>
+          <template v-if="savedRouteStatus === 'routed' || savedRouteStatus === 'estimated'">
+            <span class="text-[#1a1e24]">{{ route.walkingTimeMin }} min walk · {{ route.distanceMiles?.toFixed(2) }} miles</span>
+            <span v-if="savedRouteStatus === 'routed'" class="inline-flex rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-800">Routed</span>
+          </template>
+          <span v-if="savedRouteStatus !== 'routed'" class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-800">{{ ROUTE_STATUS_LABELS[savedRouteStatus] }}</span>
           <button
-            v-if="savedRouteStatus === 'route_pending' && mode === 'edit'"
+            v-if="savedRouteStatus !== 'needs_location' && mode === 'edit'"
             type="button"
             :disabled="isRetrying"
             class="rounded-lg border border-[#1B2F6B] bg-white px-3 py-1.5 text-xs font-semibold text-[#1B2F6B] hover:bg-[#edf3ff] disabled:opacity-60"
             @click="retryRoute"
           >
-            {{ isRetrying ? 'Retrying…' : 'Retry' }}
+            {{ isRetrying ? 'Re-routing…' : savedRouteStatus === 'route_pending' ? 'Retry' : 'Re-route' }}
           </button>
         </div>
+        <p class="mt-1 text-xs text-[#535353]">
+          <template v-if="savedRouteStatus === 'routed'">From an OpenRouteService walking route. Not editable.</template>
+          <template v-else-if="savedRouteStatus === 'estimated'">An old straight-line estimate from before walking routes. Re-route (or the backfill) replaces it.</template>
+          <template v-else-if="savedRouteStatus === 'route_pending'">The walking route could not be fetched yet. The venue still shows, listed last.</template>
+          <template v-else>Add a location to work out the walk.</template>
+        </p>
         <p v-if="routeMessage" role="status" class="mt-1 text-xs text-[#535353]">{{ routeMessage }}</p>
       </div>
 

@@ -66,6 +66,7 @@ export function serializeVenue(venue: VenueRow) {
     createdAt: venue.createdAt.toISOString(),
     updatedAt: venue.updatedAt.toISOString(),
     closedAt: venue.closedAt?.toISOString() ?? null,
+    routeUpdatedAt: venue.routeUpdatedAt?.toISOString() ?? null,
   };
 }
 

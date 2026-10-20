@@ -1,5 +1,5 @@
 import type { Venue, TierStatus } from '@/types';
-import { BASE_COORDINATES } from './config';
+import { BASE_COORDINATES, WALKING_METRES_PER_MINUTE } from './config';
 import { NEAR_ME_ELIGIBLE_TIERS } from './tiers';
 
 export interface LatLng {
@@ -38,8 +38,6 @@ export const ORIGIN_MOVE_THRESHOLD_METRES = 18; // 15-20 metres
  */
 export const FAR_FROM_BASE_METRES = 30_000;
 
-/** Typical city walking pace used for Near Me walk estimates. */
-export const WALKING_METRES_PER_MINUTE = 80;
 
 /**
  * Great-circle distance between two coordinates in metres using the Haversine formula.

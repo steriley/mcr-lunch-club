@@ -46,6 +46,7 @@ export const PUT: APIRoute = async ({ request, params }) => {
         longitude: venues.longitude,
         distanceMiles: venues.distanceMiles,
         walkingTimeMin: venues.walkingTimeMin,
+        routeUpdatedAt: venues.routeUpdatedAt,
       })
       .from(venues)
       .where(eq(venues.id, id.data))
