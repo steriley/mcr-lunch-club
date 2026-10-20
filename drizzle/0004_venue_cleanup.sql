@@ -3,8 +3,15 @@
 -- `published` toggle. `tier` becomes nullable and means "last approved tier".
 ALTER TABLE "venues" ALTER COLUMN "tier" DROP NOT NULL;--> statement-breakpoint
 -- Unpublished drafts must stay hidden once `published` is gone, so they lose
--- their tier. Run this first to see which venues it affects:
---   SELECT name, tier FROM venues WHERE published = false ORDER BY name;
+-- their tier. The migration prints their names (pnpm db:migrate shows NOTICEs);
+-- to preview beforehand: SELECT name, tier FROM venues WHERE published = false;
+DO $$
+DECLARE draft record;
+BEGIN
+  FOR draft IN SELECT "name", "tier" FROM "venues" WHERE "published" = false ORDER BY "name" LOOP
+    RAISE NOTICE 'Hidden draft (tier % cleared): %', draft."tier", draft."name";
+  END LOOP;
+END $$;--> statement-breakpoint
 UPDATE "venues" SET "tier" = NULL WHERE "published" = false;--> statement-breakpoint
 ALTER TABLE "venues" DROP COLUMN "summary";--> statement-breakpoint
 ALTER TABLE "venues" DROP COLUMN "verdict";--> statement-breakpoint

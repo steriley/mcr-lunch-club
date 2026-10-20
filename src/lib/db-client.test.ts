@@ -13,6 +13,12 @@ describe('createDatabase', () => {
     await client.close();
   });
 
+  it('accepts a notice handler for the node-postgres driver', async () => {
+    const client = createDatabase({ url, driver: 'pg', maxConnections: 1, onNotice: () => {} });
+    assert.equal(client.driver, 'pg');
+    await client.close();
+  });
+
   it('builds a Neon HTTP client with a no-op close', async () => {
     const client = createDatabase({ url, driver: 'neon-http', maxConnections: 1, logger: true });
     assert.equal(client.driver, 'neon-http');
