@@ -36,6 +36,13 @@
       "when": 1792524705090,
       "tag": "0004_venue_cleanup",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792524993177,
+      "tag": "0005_fixed_cuisines",
+      "breakpoints": true
     }
   ]
 }

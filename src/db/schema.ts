@@ -1,8 +1,10 @@
 import { boolean, date, decimal, integer, jsonb, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { user } from './auth-schema';
+import { CUISINE_VALUES } from '../lib/cuisines';
 import { TIER_VALUES } from '../lib/tiers';
 
 export const tierEnum = pgEnum('tier', TIER_VALUES);
+export const cuisineEnum = pgEnum('cuisine', CUISINE_VALUES);
 
 export const venues = pgTable('venues', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -19,7 +21,7 @@ export const venues = pgTable('venues', {
   imageUrl: text('image_url'),
   // Fields carried over from the original static content.
   cost: text('cost').notNull().default('££'),
-  cuisine: text('cuisine'),
+  cuisine: cuisineEnum('cuisine').notNull().default('other'),
   distanceMiles: decimal('distance_miles', { precision: 5, scale: 2 }),
   walkingTimeMin: integer('walking_time_min'),
   lastInspectionDate: date('last_inspection_date'),

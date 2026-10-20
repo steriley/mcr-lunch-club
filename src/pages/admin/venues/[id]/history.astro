@@ -4,6 +4,7 @@ import AdminLayout from '@/layouts/AdminLayout.astro';
 import { user } from '@/db/auth-schema';
 import { venues } from '@/db/schema';
 import { uuidParam } from '@/lib/admin-api';
+import { cuisineLabel, isCuisineValue } from '@/lib/cuisines';
 import { db } from '@/lib/db';
 import { listVenueRevisions } from '@/lib/venues';
 
@@ -33,8 +34,9 @@ const LABELS: Record<string, string> = {
   mapSearchLink: 'Map link',
 };
 
-const format = (value: unknown) => {
+const format = (value: unknown, key?: string) => {
   if (value === null || value === undefined || value === '') return '—';
+  if (key === 'cuisine' && isCuisineValue(value)) return cuisineLabel(value);
   const text = String(value);
   return text.length > 140 ? `${text.slice(0, 140)}…` : text;
 };
@@ -45,7 +47,7 @@ const entries = revisions.map((revision, index) => {
   const changes = previous
     ? Object.keys(snapshot)
         .filter((key) => !IGNORED.has(key) && JSON.stringify(snapshot[key]) !== JSON.stringify(previous[key]))
-        .map((key) => ({ field: LABELS[key] ?? key, from: format(previous[key]), to: format(snapshot[key]) }))
+        .map((key) => ({ field: LABELS[key] ?? key, from: format(previous[key], key), to: format(snapshot[key], key) }))
     : [];
   return {
     id: revision.id,

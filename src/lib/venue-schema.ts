@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CUISINE_VALUES, DEFAULT_CUISINE } from '@/lib/cuisines';
 import { TIER_VALUES } from '@/lib/tiers';
 
 /**
@@ -64,7 +65,7 @@ export const venueInputSchema = z.object({
   websiteUrl: optionalUrl('Website URL'),
   imageUrl: optionalUrl('Image URL'),
   cost: z.enum(COST_BANDS, { error: 'Choose a cost band.' }),
-  cuisine: optionalText(120, 'Cuisine'),
+  cuisine: z.enum(CUISINE_VALUES, { error: 'Choose a cuisine from the list.' }).default(DEFAULT_CUISINE),
   distanceMiles: optionalNumber(z.number().min(0, 'Distance cannot be negative.').max(999)),
   walkingTimeMin: optionalNumber(z.number().int('Walking time must be whole minutes.').min(0).max(999)),
   lastInspectionDate: z.preprocess(emptyToNull, z.iso.date({ error: 'Use a valid date.' }).nullable()),

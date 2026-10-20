@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import ImageUpload from './ImageUpload.vue';
+import { CUISINES } from '@/lib/cuisines';
 import { TIERS } from '@/lib/tiers';
 import { COST_BANDS, COST_BAND_LABELS, isOutsideUk, slugify, venueInputSchema } from '@/lib/venue-schema';
 
@@ -18,7 +19,7 @@ interface VenueData {
   websiteUrl: string | null;
   imageUrl: string | null;
   cost: string;
-  cuisine: string | null;
+  cuisine: string;
   distanceMiles: number | null;
   walkingTimeMin: number | null;
   lastInspectionDate: string | null;
@@ -49,6 +50,7 @@ function toFormState(venue?: VenueData | null): Record<FormField, string> {
   if (!venue) {
     state.tier = 'to_be_assessed';
     state.cost = '££';
+    state.cuisine = 'other';
   }
   return state;
 }
@@ -225,7 +227,9 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
 
       <label :class="labelClass">
         <span class="mb-2 block">Cuisine</span>
-        <input v-model="form.cuisine" type="text" :class="inputClass" placeholder="e.g. Steakhouse" />
+        <select v-model="form.cuisine" :class="inputClass" :aria-invalid="Boolean(errors.cuisine)">
+          <option v-for="cuisine in CUISINES" :key="cuisine.value" :value="cuisine.value">{{ cuisine.label }}</option>
+        </select>
         <span v-if="errors.cuisine" :class="errorClass">{{ errors.cuisine }}</span>
       </label>
 

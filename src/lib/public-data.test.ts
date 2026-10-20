@@ -32,7 +32,7 @@ function venueRow(overrides: Partial<VenueRow> = {}): VenueRow & { tier: NonNull
     websiteUrl: 'https://chips.example',
     imageUrl: null,
     cost: '££',
-    cuisine: 'British',
+    cuisine: 'fish_and_chips',
     distanceMiles: '0.40',
     walkingTimeMin: 9,
     lastInspectionDate: '2026-09-01',
@@ -75,6 +75,7 @@ describe('toPublicVenue', () => {
     assert.equal(venue.distanceMiles, 0.4);
     assert.equal(venue.walkingTimeMin, 9);
     assert.equal(venue.eatLikeUs, 'Chips');
+    assert.equal(venue.cuisine, 'Fish & Chips');
     assert.equal(venue.mapSearchLink, 'https://maps.example/chips');
     for (const removed of ['rank', 'notes', 'evidenceUrl', 'rejectionReason', 'verdict']) {
       assert.ok(!(removed in venue), removed);
@@ -89,7 +90,7 @@ describe('toPublicVenue', () => {
         distanceMiles: null,
         walkingTimeMin: null,
         mapSearchLink: null,
-        cuisine: null,
+        cuisine: 'other',
         lunchSpecial: null,
         address: null,
         websiteUrl: null,
@@ -101,7 +102,7 @@ describe('toPublicVenue', () => {
     assert.equal(venue.lat, null);
     assert.equal(venue.distanceMiles, 0);
     assert.equal(venue.walkingTimeMin, 1);
-    assert.equal(venue.cuisine, '');
+    assert.equal(venue.cuisine, 'Other');
     assert.equal(venue.lastInspectionDate, 'Awaiting Assessment');
     assert.equal(venue.mapSearchLink, 'https://www.google.com/maps/search/?api=1&query=Chip%20Shop%20Manchester');
   });

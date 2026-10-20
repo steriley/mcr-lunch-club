@@ -13,10 +13,18 @@ describe('venueInputSchema', () => {
   });
 
   it('turns blank optional strings into null and trims text', () => {
-    const result = venueInputSchema.parse({ ...valid, name: '  Chip Shop ', pullQuote: '   ', cuisine: ' British ' });
+    const result = venueInputSchema.parse({ ...valid, name: '  Chip Shop ', pullQuote: '   ', lunchSpecial: ' Chips ' });
     assert.equal(result.name, 'Chip Shop');
     assert.equal(result.pullQuote, null);
-    assert.equal(result.cuisine, 'British');
+    assert.equal(result.lunchSpecial, 'Chips');
+  });
+
+  it('only accepts cuisines from the fixed list, defaulting to Other', () => {
+    assert.equal(venueInputSchema.parse(valid).cuisine, 'other');
+    assert.equal(venueInputSchema.parse({ ...valid, cuisine: 'fish_and_chips' }).cuisine, 'fish_and_chips');
+    assert.equal(venueInputSchema.safeParse({ ...valid, cuisine: 'British' }).success, false);
+    assert.equal(venueInputSchema.safeParse({ ...valid, cuisine: 'Fish & Chips' }).success, false);
+    assert.equal(venueInputSchema.safeParse({ ...valid, cuisine: '' }).success, false);
   });
 
   it('coerces numeric strings from form fields', () => {

@@ -50,7 +50,8 @@ export async function createDraftVenueFromSuggestion(db: Database, suggestion: S
     tier: null,
     address: suggestion.address,
     cost: suggestion.cost ?? '££',
-    cuisine: suggestion.cuisine,
+    // The suggested cuisine is free text; a Chair picks the category.
+    cuisine: 'other',
     lunchSpecial: suggestion.recommendedOrder,
   });
 
