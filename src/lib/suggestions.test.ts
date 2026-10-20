@@ -82,7 +82,7 @@ describe('createDraftVenueFromSuggestion', () => {
 
     const venueValues = inserts.find((call) => call.method === 'values')!.args[0] as any;
     assert.equal(venueValues.slug, 'pasty-palace-2');
-    assert.equal(venueValues.tier, null);
+    assert.ok(!('tier' in venueValues), 'no approved tier: the venue stays hidden');
     assert.equal(venueValues.cost, '£');
     assert.equal(venueValues.lunchSpecial, 'Steak pasty');
     assert.equal(venueValues.cuisine, 'other');

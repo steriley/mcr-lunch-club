@@ -43,7 +43,7 @@ const optionalUrl = (label: string) =>
 
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
-export const venueInputSchema = z.object({
+const venueFields = z.object({
   name: z.string().trim().min(2, 'Venue name is required.').max(200, 'Venue name must be 200 characters or fewer.'),
   slug: z
     .string()
@@ -51,8 +51,6 @@ export const venueInputSchema = z.object({
     .min(2, 'Slug is required.')
     .max(120, 'Slug must be 120 characters or fewer.')
     .regex(SLUG_PATTERN, 'Use lowercase letters, numbers and single hyphens only.'),
-  // Null means no approved tier yet: the venue stays hidden from the public site.
-  tier: z.preprocess(emptyToNull, z.enum(TIER_VALUES, { error: 'Choose a tier.' }).nullable()),
   address: optionalText(255, 'Address'),
   latitude: optionalNumber(
     z.number({ error: 'Latitude must be a number.' }).min(-90, 'Latitude must be between -90 and 90.').max(90, 'Latitude must be between -90 and 90.')
@@ -67,7 +65,9 @@ export const venueInputSchema = z.object({
   cost: z.enum(COST_BANDS, { error: 'Choose a cost band.' }),
   cuisine: z.enum(CUISINE_VALUES, { error: 'Choose a cuisine from the list.' }).default(DEFAULT_CUISINE),
   mapSearchLink: optionalUrl('Map link'),
-}).superRefine((venue, context) => {
+});
+
+function checkLocation(venue: { latitude: number | null; longitude: number | null }, context: z.RefinementCtx) {
   // Coordinates come from an ORS search pick, or manual entry when search finds nothing.
   if ((venue.latitude === null) !== (venue.longitude === null)) {
     const field = venue.latitude === null ? 'latitude' : 'longitude';
@@ -75,9 +75,32 @@ export const venueInputSchema = z.object({
   } else if (isOutsideUk(venue.latitude, venue.longitude)) {
     context.addIssue({ code: 'custom', path: ['latitude'], message: 'These coordinates are outside the UK. Check them, or search for the venue instead.' });
   }
-});
+}
+
+/**
+ * Editable venue fields. The tier is not one of them: it only changes when a
+ * tier proposal is approved by a second admin (src/lib/tier-proposals.ts).
+ */
+export const venueInputSchema = venueFields.superRefine(checkLocation);
+
+/** A new venue, plus the tier to propose for it (it stays hidden until a different admin approves). */
+export const venueCreateSchema = venueFields
+  .extend({
+    proposedTier: z.preprocess(emptyToNull, z.enum(TIER_VALUES, { error: 'Choose a tier.' }).nullable()).default(null),
+  })
+  .superRefine((venue, context) => {
+    checkLocation(venue, context);
+    if (venue.proposedTier === 'approved') {
+      context.addIssue({
+        code: 'custom',
+        path: ['proposedTier'],
+        message: 'A new venue cannot be proposed straight into Approved: it needs a dual-verified inspection first.',
+      });
+    }
+  });
 
 export type VenueInput = z.output<typeof venueInputSchema>;
+export type VenueCreateInput = z.output<typeof venueCreateSchema>;
 export type VenueFormValues = z.input<typeof venueInputSchema>;
 
 /** Rough UK bounding box; venues outside it are rejected. */

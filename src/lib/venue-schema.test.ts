@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { isOutsideUk, slugify, venueInputSchema } from './venue-schema';
+import { isOutsideUk, slugify, venueCreateSchema, venueInputSchema } from './venue-schema';
 
 const valid = { name: 'Chip Shop', slug: 'chip-shop', tier: 'approved', cost: '££' };
 
@@ -32,10 +32,19 @@ describe('venueInputSchema', () => {
     assert.equal(result.longitude, -2.25);
   });
 
-  it('allows no approved tier, which keeps the venue hidden', () => {
-    assert.equal(venueInputSchema.parse({ ...valid, tier: '' }).tier, null);
-    assert.equal(venueInputSchema.parse({ ...valid, tier: null }).tier, null);
-    assert.equal(venueInputSchema.parse({ name: 'Chip Shop', slug: 'chip-shop', cost: '££' }).tier, null);
+  it('never takes the tier: it only changes through an approved proposal', () => {
+    assert.ok(!('tier' in venueInputSchema.parse({ ...valid, tier: 'rejected' })));
+  });
+
+  it('takes an optional proposed tier for a new venue, but never straight into Approved', () => {
+    assert.equal(venueCreateSchema.parse(valid).proposedTier, null);
+    assert.equal(venueCreateSchema.parse({ ...valid, proposedTier: '' }).proposedTier, null);
+    assert.equal(venueCreateSchema.parse({ ...valid, proposedTier: 'rejected' }).proposedTier, 'rejected');
+    assert.equal(venueCreateSchema.safeParse({ ...valid, proposedTier: 'great' }).success, false);
+    const approved = venueCreateSchema.safeParse({ ...valid, proposedTier: 'approved' });
+    assert.equal(approved.success, false);
+    assert.deepEqual(approved.error?.issues[0].path, ['proposedTier']);
+    assert.equal(venueCreateSchema.safeParse({ ...valid, latitude: 40.7, longitude: -74 }).success, false);
   });
 
   it('drops removed fields instead of storing them', () => {
@@ -45,10 +54,9 @@ describe('venueInputSchema', () => {
     }
   });
 
-  it('rejects invalid slugs, tiers and cost bands', () => {
+  it('rejects invalid slugs and cost bands', () => {
     assert.equal(venueInputSchema.safeParse({ ...valid, slug: 'Chip Shop' }).success, false);
     assert.equal(venueInputSchema.safeParse({ ...valid, slug: 'a--b' }).success, false);
-    assert.equal(venueInputSchema.safeParse({ ...valid, tier: 'great' }).success, false);
     assert.equal(venueInputSchema.safeParse({ ...valid, cost: '$' }).success, false);
   });
 

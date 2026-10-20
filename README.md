@@ -232,6 +232,17 @@ not sign you in on the `vercel.app` address; sign in on each separately.
   down or rate limited the venue still saves: without coordinates it is
   hidden ("Needs location"); with coordinates but no route it shows, listed
   last, with a "Route pending" badge and a **Retry** button.
+- **Tier changes need two Chairs**: a venue's tier is never edited directly.
+  Any Chair proposes a change from the venue page (a new venue's form takes a
+  "Proposed tier"); a **different** Chair approves or declines it from the
+  venue page or **Pending** (`/admin/pending`). Declining needs a reason,
+  which is internal and never public. One pending proposal per venue: only
+  its proposer can withdraw or replace it. Until approval the public site
+  keeps the last approved tier, and a new venue stays hidden. Moving a venue
+  into Approved needs a dual-verified inspection. With only one active Chair
+  nothing can be approved; there is no override. No notifications are sent.
+  (`pnpm db:import` still seeds tiers directly, for bootstrapping an empty
+  database only.)
 - **Inspections**: a venue's "last inspected" date can't be typed in. Each
   Chair presses **Visited today** on the venue's page; an inspection counts
   once two different Chairs press it on the same UK calendar day (server
