@@ -1,0 +1,22 @@
+---
+import Layout from '@/layouts/Layout.astro';
+
+export const prerender = false;
+
+Astro.response.status = 404;
+---
+
+<Layout title="Not Found — MCR Lunch Club" noindex>
+  <div class="max-w-xl mx-auto px-4 py-16 sm:py-24 w-full text-center space-y-5 font-serif-header">
+    <p class="text-5xl" aria-hidden="true">🍽️</p>
+    <p class="text-xs font-bold uppercase tracking-widest text-[#8b1e22] font-sans">Error 404 · No such entry</p>
+    <h1 class="text-3xl sm:text-4xl font-bold text-[#1a1e24]">This page is not in the Ledger</h1>
+    <p class="text-base text-stone-600 font-sans">
+      The venue may have closed, been renamed, or never passed the Chairs’ attention in the first place.
+    </p>
+    <div class="flex flex-wrap justify-center gap-3 pt-2 font-sans text-sm">
+      <a href="/" class="rounded-lg bg-[#1B2F6B] px-4 py-2.5 font-semibold text-white hover:bg-[#111E47]">Back to the map</a>
+      <a href="/tiers/approved" class="rounded-lg border border-[#dcd6c8] bg-white px-4 py-2.5 font-semibold text-[#1a1e24] hover:bg-stone-50">Browse the tiers</a>
+    </div>
+  </div>
+</Layout>

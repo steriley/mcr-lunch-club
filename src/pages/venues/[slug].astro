@@ -3,12 +3,15 @@ import Layout from '@/layouts/Layout.astro';
 import inspectionsData from '@/data/inspections.json';
 import { renderMarkdown } from '@/lib/markdown';
 import { getPublishedVenue, setPublicCacheHeaders } from '@/lib/public-data';
+import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
+import { tierPathSegment, parseTier } from '@/lib/tiers';
 
 export const prerender = false;
 
 const venue = Astro.params.slug ? await getPublishedVenue(Astro.params.slug) : null;
 if (!venue) {
-  return new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+  // An empty 404 makes Astro render src/pages/404.astro.
+  return new Response(null, { status: 404, statusText: 'Not found' });
 }
 setPublicCacheHeaders(Astro.response.headers);
 
@@ -20,46 +23,7 @@ const venueInspections = inspectionsData.filter(
   (insp) => insp.venueSlug === venue.slug
 );
 
-const STATUS_CONFIG: Record<string, { bg: string; text: string; quote: string; icon: string }> = {
-  'Approved': {
-    bg: 'bg-[#1E7A4E]',
-    text: 'text-amber-100',
-    quote: 'The Highest Honour in Manchester Lunching: The Right to be Returned To',
-    icon: '🏆',
-  },
-  'Under Consideration': {
-    bg: 'bg-[#C27803]',
-    text: 'text-amber-100',
-    quote: 'The Waiting Chamber of Judgement — Pending further evidence and appetite',
-    icon: '⏳',
-  },
-  'To Be Assessed': {
-    bg: 'bg-[#5A6474]',
-    text: 'text-blue-100',
-    quote: 'Entered the Field of Vision — Fate remains undecided pending inspection',
-    icon: '📜',
-  },
-  'If We Must': {
-    bg: 'bg-[#7C3A82]',
-    text: 'text-yellow-100',
-    quote: 'Not Celebrated, But Tolerated — Acceptable only when circumstance forces our hand',
-    icon: '🌧',
-  },
-  'Rejected': {
-    bg: 'bg-[#B92B27]',
-    text: 'text-stone-200',
-    quote: 'Removed from the Sacred Lunch Rotation — Returnable only through exceptional redemption',
-    icon: '⛔',
-  },
-  'Gone But Not Forgotten': {
-    bg: 'bg-[#71717A]',
-    text: 'text-stone-200',
-    quote: 'Doors Closed, But Legend Remains in the Lunching Annals',
-    icon: '🕊',
-  },
-};
-
-const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
+const statusInfo = TIER_BANNERS[venue.status];
 ---
 
 <Layout title={`${venue.name} — Official Ledger Dossier | MCR Lunch Club`}>
@@ -74,7 +38,7 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
         <a href="/manifesto" class="text-stone-600 hover:text-[#8b1e22] underline decoration-[#c59b27]">
           📜 Manifesto
         </a>
-        <a href={`/tiers/${venue.status.toLowerCase().replace(/\s+/g, '-')}`} class="text-stone-500 hover:text-stone-800">
+        <a href={`/tiers/${tierPathSegment(parseTier(venue.status)!)}`} class="text-stone-500 hover:text-stone-800">
           Registry: <span class="underline">{venue.status}</span>
         </a>
       </div>
@@ -106,7 +70,7 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
         <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 border-white/20 pt-3 sm:pt-0">
           <span class="text-2xl font-mono font-bold text-[#c59b27]">{venue.cost}</span>
           <span class="text-xs text-stone-200 font-sans uppercase tracking-wider font-semibold">
-            {venue.cost === '£' ? 'Under £10' : venue.cost === '££' ? 'Above £10' : 'Payday Treat'}
+            {COST_LABELS[venue.cost]}
           </span>
         </div>
       </div>
@@ -187,8 +151,10 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
 
           <div class="p-2 border-t sm:border-t-0 sm:border-l border-[#dcd6c8]">
             <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Distance Vector</span>
-            <span class="text-2xl font-bold text-stone-900">{venue.distanceMiles} miles</span>
-            <span class="text-xs text-stone-500 block font-sans">Centroid: {venue.lat}, {venue.lng}</span>
+            <span class="text-2xl font-bold text-stone-900">{venue.distanceMiles.toFixed(2)} miles</span>
+            {venue.lat !== null && venue.lng !== null && (
+              <span class="text-xs text-stone-500 block font-sans">Centroid: {venue.lat.toFixed(5)}, {venue.lng.toFixed(5)}</span>
+            )}
           </div>
 
           <div class="p-2 border-t sm:border-t-0 sm:border-l border-[#dcd6c8]">
@@ -258,7 +224,7 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
             </div>
           ) : (
             <div class="space-y-3 font-sans">
-              {venueInspections.map((insp: any) => (
+              {venueInspections.map((insp) => (
                 <div class="p-4 rounded-xl bg-white border border-[#dcd6c8] shadow-xs space-y-2">
                   <div class="flex items-center justify-between border-b border-stone-100 pb-2">
                     <span class="font-mono text-xs font-bold text-stone-800">{insp.date}</span>
@@ -302,7 +268,7 @@ const statusInfo = STATUS_CONFIG[venue.status] || STATUS_CONFIG['Approved'];
           </a>
 
           <a
-            href="/"
+            href={`/?venue=${encodeURIComponent(venue.slug)}`}
             class="flex-1 bg-[#8b1e22] hover:bg-[#70161a] text-white py-2.5 px-4 rounded-xl text-xs font-serif-header font-bold text-center shadow flex items-center justify-center gap-2"
           >
             <span>🗺️</span>

@@ -24,7 +24,12 @@ function coordinateLink(latitude: number, longitude: number): string {
 }
 
 /** A published venue; optional fields of `Venue` are always present here. */
-export type PublishedVenue = Venue & { notes: string; evidenceUrl: string; rejectionReason: string | null };
+export type PublishedVenue = Venue & {
+  notes: string;
+  evidenceUrl: string;
+  rejectionReason: string | null;
+  imageUrl: string | null;
+};
 
 export function toPublicVenue(row: VenueRow): PublishedVenue {
   const lat = row.latitude === null ? null : Number(row.latitude);
@@ -56,6 +61,7 @@ export function toPublicVenue(row: VenueRow): PublishedVenue {
         ? coordinateLink(lat, lng)
         : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${row.name} Manchester`)}`),
     notes: row.summary ?? '',
+    imageUrl: row.imageUrl,
   };
 }
 
@@ -63,7 +69,6 @@ export function toPublicVenue(row: VenueRow): PublishedVenue {
 export interface PublicVenueDetail extends PublishedVenue {
   pullQuote: string | null;
   verdict: string | null;
-  imageUrl: string | null;
 }
 
 // Same order as the original content: tier, Approved rank, then display order.
@@ -81,7 +86,7 @@ export async function getPublishedVenue(slug: string): Promise<PublicVenueDetail
     .where(and(eq(venues.slug, slug), eq(venues.published, true)))
     .limit(1);
   if (!row) return null;
-  return { ...toPublicVenue(row), pullQuote: row.pullQuote, verdict: row.verdict, imageUrl: row.imageUrl };
+  return { ...toPublicVenue(row), pullQuote: row.pullQuote, verdict: row.verdict };
 }
 
 function ordinal(day: number): string {

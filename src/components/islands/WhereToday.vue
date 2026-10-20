@@ -5,6 +5,9 @@
     @click.self="closeModal"
   >
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="where-today-title"
       class="w-full max-w-lg bg-[#fdfcf9] rounded-2xl border-2 border-[#c59b27] shadow-2xl overflow-hidden font-sans flex flex-col max-h-[90vh]"
     >
       <!-- Header -->
@@ -12,7 +15,7 @@
         <div class="flex items-center gap-2">
           <span class="text-2xl">⚖️</span>
           <div>
-            <h2 class="text-base font-bold font-serif-header text-[#c59b27]">
+            <h2 id="where-today-title" class="text-base font-bold font-serif-header text-[#c59b27]">
               The 12:25 Executive Decision Oracle
             </h2>
             <p class="text-xs text-stone-300">
@@ -20,18 +23,23 @@
             </p>
           </div>
         </div>
-        <button @click="closeModal" class="text-stone-400 hover:text-white p-1 text-lg">
+        <button ref="closeButton" type="button" aria-label="Close" @click="closeModal" class="text-stone-400 hover:text-white p-1 text-lg">
           ✕
         </button>
       </div>
 
       <!-- Overdue Re-inspection Alert Nudge -->
-      <div class="bg-amber-100/90 border-b border-amber-300 p-3 text-xs text-amber-950 flex items-start gap-2 font-serif-header">
-        <span class="text-base">⚠️</span>
+      <div v-if="overdueVenues.length" class="bg-amber-100/90 border-b border-amber-300 p-3 text-xs text-amber-950 flex items-start gap-2 font-serif-header">
+        <span class="text-base" aria-hidden="true">⚠️</span>
         <div class="flex-1">
           <strong class="font-bold">Overdue Sovereign Inspection Notice:</strong>
           <p class="text-xs font-sans text-amber-900 mt-0.5">
-            <strong>Kabana</strong> (last seen Jan 2026) and <strong>Lottie’s Bakehouse</strong> (Feb 2026) have languished without executive oversight for months. Prioritising them satisfies your civic obligation.
+            <template v-for="(overdue, index) in overdueVenues" :key="overdue.venue.slug">
+              <template v-if="index > 0"> and </template>
+              <strong>{{ overdue.venue.name }}</strong> (last seen {{ overdue.lastSeen }})
+            </template>
+            {{ overdueVenues.length === 1 ? 'has' : 'have' }} languished without executive oversight for months. Prioritising
+            {{ overdueVenues.length === 1 ? 'it' : 'them' }} satisfies your civic obligation.
           </p>
         </div>
       </div>
@@ -150,6 +158,7 @@
             <a
               :href="pickedVenue.mapSearchLink"
               target="_blank"
+              rel="noopener noreferrer"
               class="flex-1 bg-white hover:bg-stone-50 text-stone-900 border border-stone-300 py-2 px-3 rounded-lg text-xs font-semibold text-center"
             >
               Depart Immediately 🧭
@@ -162,7 +171,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $isWhereTodayOpen, closeWhereToday, selectVenue } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
@@ -176,6 +185,43 @@ const selectedBudget = ref<string>('any');
 const selectedMood = ref<string>('any');
 const isRolling = ref<boolean>(false);
 const pickedVenue = ref<Venue | null>(null);
+const closeButton = ref<HTMLButtonElement | null>(null);
+
+/** Approved venues not inspected for this long get a nudge. */
+const OVERDUE_AFTER_DAYS = 120;
+
+const overdueVenues = computed(() => {
+  const cutoff = Date.now() - OVERDUE_AFTER_DAYS * 24 * 60 * 60 * 1000;
+  return venuesList.value
+    .filter((venue) => venue.status === 'Approved')
+    .map((venue) => ({ venue, inspected: Date.parse(venue.lastInspectionDate) }))
+    .filter(({ inspected }) => !Number.isNaN(inspected) && inspected < cutoff)
+    .sort((a, b) => a.inspected - b.inspected)
+    .slice(0, 2)
+    .map(({ venue, inspected }) => ({
+      venue,
+      lastSeen: new Date(inspected).toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'Europe/London' }),
+    }));
+});
+
+function onKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') closeModal();
+}
+
+watch(isOpen, async (open) => {
+  if (typeof window === 'undefined') return;
+  if (open) {
+    window.addEventListener('keydown', onKeydown);
+    await nextTick();
+    closeButton.value?.focus();
+  } else {
+    window.removeEventListener('keydown', onKeydown);
+  }
+});
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') window.removeEventListener('keydown', onKeydown);
+});
 
 const timeOptions = [
   { val: 10, label: '≤ 10 mins', sub: 'Urgent meeting at 13:00' },
@@ -185,9 +231,9 @@ const timeOptions = [
 
 const budgetOptions = [
   { val: 'any', label: 'Any Cost', sub: 'Whatever it takes' },
-  { val: '£', label: '£ (<£10)', sub: 'Under £10' },
-  { val: '££', label: '££ (>£10)', sub: 'Above £10' },
-  { val: '£££', label: '£££ (Payday)', sub: 'Payday treat' },
+  { val: '£', label: '£', sub: 'Under £10' },
+  { val: '££', label: '££', sub: 'Above £10' },
+  { val: '£££', label: '£££', sub: 'Payday treat' },
 ];
 
 const moodOptions = [
@@ -202,6 +248,9 @@ const moodOptions = [
 function closeModal() {
   closeWhereToday();
   pickedVenue.value = null;
+  if (window.location.hash === '#where-to-today') {
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
 }
 
 function consultOracle() {

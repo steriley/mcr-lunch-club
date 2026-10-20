@@ -1,11 +1,16 @@
 <template>
   <div
     v-if="venue"
-    class="fixed inset-0 z-[2000] flex items-end md:items-center justify-center p-0 md:p-6 bg-black/40 backdrop-blur-xs transition-opacity"
+    class="fixed inset-0 z-[10010] flex items-end md:items-center justify-center p-0 md:p-6 bg-black/40 backdrop-blur-xs transition-opacity"
     @click.self="closeSheet"
   >
     <div
-      class="w-full md:max-w-xl max-h-[90vh] flex flex-col bg-[#fdfcf9] rounded-t-2xl md:rounded-2xl border border-[#dcd6c8] shadow-2xl overflow-hidden font-sans animate-in slide-in-from-bottom-6 duration-200"
+      ref="dialogRef"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="venue-sheet-title"
+      tabindex="-1"
+      class="w-full md:max-w-xl max-h-[90vh] flex flex-col outline-none bg-[#fdfcf9] rounded-t-2xl md:rounded-2xl border border-[#dcd6c8] shadow-2xl overflow-hidden font-sans animate-in slide-in-from-bottom-6 duration-200"
     >
       <!-- Header Bar / Manifesto Status Banner -->
       <div
@@ -36,6 +41,8 @@
         </div>
 
         <button
+          type="button"
+          aria-label="Close"
           @click="closeSheet"
           class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors text-lg"
         >
@@ -65,7 +72,7 @@
         <!-- Title & Badges -->
         <div class="flex items-start justify-between gap-3">
           <div>
-            <h2 class="text-2xl font-bold font-serif-header text-[#1a1e24] leading-tight">
+            <h2 id="venue-sheet-title" class="text-2xl font-bold font-serif-header text-[#1a1e24] leading-tight">
               {{ venue.name }}
             </h2>
             <p class="text-xs text-stone-600 mt-1 flex items-center gap-2 font-mono">
@@ -78,7 +85,7 @@
               {{ venue.cost }}
             </span>
             <span class="text-xs text-stone-500 font-serif-header mt-1">
-              {{ venue.cost === '£' ? 'Under £10' : venue.cost === '££' ? 'Above £10' : 'Payday Treat' }}
+              {{ COST_LABELS[venue.cost] }}
             </span>
           </div>
         </div>
@@ -92,7 +99,7 @@
           </div>
           <div class="border-l border-[#dcd6c8]">
             <span class="text-xs text-stone-600 uppercase tracking-wide block">Displacement</span>
-            <span class="text-base font-bold text-stone-900">{{ venue.distanceMiles }} miles</span>
+            <span class="text-base font-bold text-stone-900">{{ venue.distanceMiles.toFixed(2) }} miles</span>
             <span class="text-xs text-stone-500 block font-sans">within 2.5 mi limit</span>
           </div>
         </div>
@@ -128,13 +135,6 @@
               <span>Official Inspection Ledger</span>
               <span class="text-xs text-stone-500 font-normal">({{ venueInspections.length }} audits)</span>
             </h3>
-
-            <button
-              @click="onLogInspectionClick"
-              class="text-xs font-serif-header font-bold text-[#8b1e22] hover:underline"
-            >
-              + Log New Audit
-            </button>
           </div>
 
           <div v-if="venueInspections.length === 0" class="text-base text-stone-500 italic p-3 bg-stone-50 rounded text-center">
@@ -168,47 +168,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Chairs' Executive Authority Section (Visible when Chairs' Mode is ON) -->
-        <div v-if="isChairsMode" class="border-t-2 border-dashed border-[#c59b27] pt-3 mt-4 bg-amber-50/50 p-3 rounded-lg">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs font-bold font-serif-header text-[#8b1e22] uppercase tracking-wide">
-              🏛 Executive Tier Reclassification
-            </span>
-            <span class="text-xs bg-[#c59b27] text-[#1a1e24] px-1.5 py-0.5 rounded font-bold">Chairs Only</span>
-          </div>
-
-          <div class="space-y-2 text-xs">
-            <div>
-              <label class="block text-stone-700 font-semibold mb-1">Target Status:</label>
-              <select v-model="targetTier" class="w-full bg-white border border-stone-300 rounded p-1.5 font-serif-header">
-                <option value="Approved">Approved (The Pantheon)</option>
-                <option value="Under Consideration">Under Consideration (Purgatory)</option>
-                <option value="To Be Assessed">To Be Assessed (Antechamber)</option>
-                <option value="If We Must">If We Must (Despair)</option>
-                <option value="Rejected">Rejected (Outer Darkness)</option>
-                <option value="Gone But Not Forgotten">Gone But Not Forgotten (In Memoriam)</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block text-stone-700 font-semibold mb-1">Mandatory Solemn Reason for Decree:</label>
-              <textarea
-                v-model="reclassificationReason"
-                rows="2"
-                placeholder="State the formal rationale for this promotion/demotion..."
-                class="w-full bg-white border border-stone-300 rounded p-1.5 text-xs outline-none"
-              ></textarea>
-            </div>
-
-            <button
-              @click="submitReclassification"
-              class="w-full bg-[#1a1e24] hover:bg-[#8b1e22] text-[#f9f7f1] py-1.5 px-3 rounded font-serif-header font-bold transition-colors"
-            >
-              Enact Sovereign Decree
-            </button>
-          </div>
-        </div>
       </div>
 
       <!-- Footer Buttons -->
@@ -232,6 +191,7 @@
         </a>
 
         <button
+          type="button"
           @click="copyShareLink"
           class="p-2 text-stone-600 hover:text-stone-900 bg-white border border-[#dcd6c8] rounded-md shadow-xs text-xs font-semibold"
           title="Copy Link for Lunch Chat"
@@ -244,66 +204,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick, onUnmounted, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
-import { $activeVenue, selectVenue, openInspectionModal, $isChairsMode } from '@/stores/filters';
-import { $inspectionsList, changeVenueTier } from '@/stores/ledger';
-import type { TierStatus } from '@/types';
+import { $activeVenue, selectVenue } from '@/stores/filters';
+import { $inspectionsList } from '@/stores/ledger';
+import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
 
 const venue = useStore($activeVenue);
 const inspectionsList = useStore($inspectionsList);
-const isChairsMode = useStore($isChairsMode);
 
 const copied = ref(false);
-const targetTier = ref<TierStatus>('Approved');
-const reclassificationReason = ref('');
+const dialogRef = ref<HTMLElement | null>(null);
+let previouslyFocused: HTMLElement | null = null;
 
-const statusBannerStyle = computed(() => {
-  const s = venue.value?.status;
-  switch (s) {
-    case 'Approved':
-      return {
-        bg: 'bg-[#1E7A4E]',
-        icon: '🏆',
-        quote: 'The Highest Honour in Manchester Lunching: The Right to be Returned To',
-      };
-    case 'Under Consideration':
-      return {
-        bg: 'bg-[#C27803]',
-        icon: '⏳',
-        quote: 'The Waiting Chamber of Judgement — Pending further evidence and appetite',
-      };
-    case 'To Be Assessed':
-      return {
-        bg: 'bg-[#5A6474]',
-        icon: '📜',
-        quote: 'Entered the Field of Vision — Fate remains undecided pending inspection',
-      };
-    case 'If We Must':
-      return {
-        bg: 'bg-[#7C3A82]',
-        icon: '🌧',
-        quote: 'Not Celebrated, But Tolerated — Acceptable only when circumstance forces our hand',
-      };
-    case 'Rejected':
-      return {
-        bg: 'bg-[#B92B27]',
-        icon: '⛔',
-        quote: 'Removed from the Sacred Lunch Rotation — Returnable only through exceptional redemption',
-      };
-    case 'Gone But Not Forgotten':
-      return {
-        bg: 'bg-[#71717A]',
-        icon: '🕊',
-        quote: 'Doors Closed, But Legend Remains in the Lunching Annals',
-      };
-    default:
-      return {
-        bg: 'bg-stone-800',
-        icon: '🏛',
-        quote: 'Official Ledger of the Manchester Lunch Club',
-      };
-  }
+const statusBannerStyle = computed(() => (venue.value && TIER_BANNERS[venue.value.status]) || {
+  bg: 'bg-stone-800',
+  icon: '🏛',
+  quote: 'Official Ledger of the Manchester Lunch Club',
 });
 
 const venueInspections = computed(() => {
@@ -311,14 +228,34 @@ const venueInspections = computed(() => {
   return inspectionsList.value.filter((i) => i.venueSlug === venue.value?.slug);
 });
 
-function closeSheet() {
-  selectVenue(null);
+// Capture phase, so Esc closes this sheet before Near Me (underneath) sees it.
+function onKeydown(event: KeyboardEvent) {
+  if (event.key !== 'Escape') return;
+  event.stopPropagation();
+  event.preventDefault();
+  closeSheet();
 }
 
-function onLogInspectionClick() {
-  if (venue.value) {
-    openInspectionModal(venue.value);
+watch(venue, async (current, previous) => {
+  if (typeof window === 'undefined') return;
+  if (current && !previous) {
+    previouslyFocused = document.activeElement as HTMLElement | null;
+    window.addEventListener('keydown', onKeydown, true);
+    await nextTick();
+    dialogRef.value?.focus();
+  } else if (!current && previous) {
+    window.removeEventListener('keydown', onKeydown, true);
+    previouslyFocused?.focus?.();
+    previouslyFocused = null;
   }
+});
+
+onUnmounted(() => {
+  if (typeof window !== 'undefined') window.removeEventListener('keydown', onKeydown, true);
+});
+
+function closeSheet() {
+  selectVenue(null);
 }
 
 function copyShareLink() {
@@ -330,19 +267,5 @@ function copyShareLink() {
       copied.value = false;
     }, 2000);
   });
-}
-
-function submitReclassification() {
-  if (!venue.value) return;
-  if (!reclassificationReason.value.trim()) {
-    alert('The Chairs require an explicit solemn reason for any status decree.');
-    return;
-  }
-  const success = changeVenueTier(venue.value.slug, targetTier.value, reclassificationReason.value);
-  if (success) {
-    reclassificationReason.value = '';
-    // update current active venue reference
-    venue.value.status = targetTier.value;
-  }
 }
 </script>
