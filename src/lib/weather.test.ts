@@ -80,6 +80,14 @@ describe('normalizeWeather', () => {
     assert.equal(today.icon, 'light-rain');
   });
 
+  it('returns at most five upcoming days', () => {
+    const week = collection(
+      Array.from({ length: 8 }, (_, i) => ({ time: `2026-10-${17 + i}T00:00Z`, dayMaxScreenTemperature: i }))
+    );
+    const result = normalizeWeather(hourly, week, NOW);
+    assert.deepEqual(result.days.map((day) => day.temperatureC), [0, 1, 2, 3, 4]);
+  });
+
   it('reports unavailable and unknown conditions', () => {
     const result = normalizeWeather(
       collection([{ time: '2026-10-17T18:00Z' }, { time: '2026-10-17T19:00Z', significantWeatherCode: 99 }]),

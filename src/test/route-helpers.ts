@@ -1,4 +1,6 @@
 import './setup-env';
+import { PgDialect } from 'drizzle-orm/pg-core';
+import type { SQL } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 
@@ -114,3 +116,8 @@ export async function quietly<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 export const run = (route: Function, context: Record<string, unknown>) => route(context) as Promise<Response>;
+
+/** Renders a Drizzle condition to its SQL text and parameters, so tests can assert what is actually queried. */
+export function renderSql(condition: unknown): { sql: string; params: unknown[] } {
+  return new PgDialect().sqlToQuery(condition as SQL);
+}
