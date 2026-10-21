@@ -77,15 +77,34 @@ export function getDatabaseDriver(): DatabaseDriver {
   return value;
 }
 
+/** True on a Vercel Preview Deployment (VERCEL_ENV is a Vercel system variable). */
+export function isVercelPreview(): boolean {
+  return env.VERCEL_ENV === 'preview';
+}
+
+/**
+ * Origins a Vercel Preview Deployment is served from: the stable per-branch
+ * URL first, then the per-deployment URL. Empty outside previews.
+ */
+export function getPreviewOrigins(): string[] {
+  if (!isVercelPreview()) return [];
+  const hosts = [optional('VERCEL_BRANCH_URL'), optional('VERCEL_URL')].filter((host): host is string => Boolean(host));
+  return Array.from(new Set(hosts.map((host) => `https://${host}`)));
+}
+
 export function getAuthEnvironment() {
   const secret = required('BETTER_AUTH_SECRET');
   if (secret.length < 32) {
     throw new Error('Invalid environment variable: BETTER_AUTH_SECRET must be at least 32 characters long.');
   }
 
+  // Preview URLs change per branch and deployment, so previews use their own
+  // URL rather than a fixed BETTER_AUTH_URL (which may be the production one).
+  const [previewUrl] = getPreviewOrigins();
+
   return {
     secret,
-    url: validateAuthUrl(required('BETTER_AUTH_URL')),
+    url: previewUrl ?? validateAuthUrl(required('BETTER_AUTH_URL')),
   };
 }
 
