@@ -76,7 +76,7 @@ import {
   createBaseMarker,
   createWalkingIsochrones,
   createVenueMarker,
-  createVenuePopupContent,
+  bindVenuePopup,
 } from '@/lib/map';
 
 const props = defineProps<{
@@ -237,14 +237,9 @@ function renderMarkers() {
     const marker = createVenueMarker(L, venue);
     if (!marker) return;
 
-    // Custom Popup
-    const popupContent = createVenuePopupContent(venue, () => selectVenue(venue));
-    marker.bindPopup(popupContent, { maxWidth: 280, className: 'ledger-popup' });
-
-    // Open detail sheet on click
-    marker.on('click', () => {
-      selectVenue(venue);
-    });
+    // Tapping the pin opens the popup; its dossier button opens the venue panel.
+    // 70px keeps the popup clear of the Base pill and zoom buttons.
+    bindVenuePopup(marker, venue, () => selectVenue(venue), 70);
 
     markersLayer.addLayer(marker);
   });

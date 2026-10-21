@@ -135,3 +135,27 @@ export function createVenuePopupContent(venue: Venue, onViewDossier?: () => void
 
   return popupContent;
 }
+
+/**
+ * Binds the venue popup to a marker, so tapping the pin opens only the popup.
+ * The popup's dossier button closes it before running `onViewDossier`, so
+ * nothing is left behind on the map once the venue panel is closed.
+ * `overlayClearance` is the height in px of the controls floating over the
+ * top of the map; the map pans so the popup opens below them.
+ */
+export function bindVenuePopup(
+  marker: any,
+  venue: Venue,
+  onViewDossier: () => void,
+  overlayClearance = 0
+): void {
+  const popupContent = createVenuePopupContent(venue, () => {
+    marker.closePopup();
+    onViewDossier();
+  });
+  marker.bindPopup(popupContent, {
+    maxWidth: 280,
+    className: 'ledger-popup',
+    autoPanPaddingTopLeft: [10, overlayClearance + 10],
+  });
+}
