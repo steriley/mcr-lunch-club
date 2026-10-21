@@ -442,7 +442,7 @@ import {
   createTileLayer,
   createBaseMarker,
   createVenueMarker,
-  createVenuePopupContent,
+  bindVenuePopup,
   useGeolocation,
   createUserMarkerLayers,
   rankVenues,
@@ -966,8 +966,8 @@ function renderVenueMarkers() {
 
     venueMarkersMap.set(venue.id, marker);
 
-    const popupContent = createVenuePopupContent(venue, () => selectVenue(venue));
-    marker.bindPopup(popupContent, { maxWidth: 280, className: 'ledger-popup' });
+    // 56px keeps the popup clear of the Near Me header.
+    bindVenuePopup(marker, venue, () => selectVenue(venue), 56);
 
     marker.on('click', () => {
       selectVenueItem(venue, true);

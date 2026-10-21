@@ -1,6 +1,7 @@
 import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  bindVenuePopup,
   createBaseMarker,
   createVenueIconHtml,
   createVenueMarker,
@@ -124,6 +125,42 @@ describe('createVenuePopupContent', () => {
     (globalThis as any).document = { createElement: () => element };
     createVenuePopupContent(venue(), () => { clicked += 1; });
     assert.equal(clicked, 1);
+  });
+});
+
+describe('bindVenuePopup', () => {
+  afterEach(() => {
+    delete (globalThis as any).document;
+  });
+
+  function fakePopupSetup() {
+    let dossierHandler: (() => void) | undefined;
+    const button = { addEventListener: (_type: string, handler: () => void) => { dossierHandler = handler; } };
+    const element: any = { querySelector: () => button };
+    (globalThis as any).document = { createElement: () => element };
+    const calls: string[] = [];
+    const marker = {
+      bindPopup: (content: unknown, options: any) =>
+        calls.push(`bindPopup:${content === element}:${options.className}:${options.autoPanPaddingTopLeft}`),
+      closePopup: () => calls.push('closePopup'),
+      on: () => calls.push('on'),
+    };
+    return { marker, calls, pressDossier: () => dossierHandler?.() };
+  }
+
+  it('binds only the popup, so tapping the pin does not open the venue panel', () => {
+    const { marker, calls } = fakePopupSetup();
+    let opened = 0;
+    bindVenuePopup(marker, venue(), () => { opened += 1; }, 70);
+    assert.deepEqual(calls, ['bindPopup:true:ledger-popup:10,80']);
+    assert.equal(opened, 0);
+  });
+
+  it('closes the popup before opening the venue panel from the dossier button', () => {
+    const { marker, calls, pressDossier } = fakePopupSetup();
+    bindVenuePopup(marker, venue(), () => calls.push('openPanel'));
+    pressDossier();
+    assert.deepEqual(calls.slice(1), ['closePopup', 'openPanel']);
   });
 });
 
