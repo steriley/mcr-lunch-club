@@ -1,0 +1,39 @@
+---
+import type { BenchWalk } from '@/lib/sovereign-bench';
+
+interface Props {
+  walk: BenchWalk;
+  venueName: string;
+}
+
+const { walk, venueName } = Astro.props;
+---
+
+{
+  walk.directionsUrl ? (
+    <a
+      class="bench-walk is-link"
+      href={walk.directionsUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Walking directions to ${venueName}`}
+      data-walk-directions
+      data-lat={walk.lat}
+      data-lng={walk.lng}
+    >
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="13" cy="4.5" r="1.8" stroke="currentColor" stroke-width="1.8" />
+        <path d="m10.5 21 1.8-6.5-2.6-2.6 1.1-5 3.4 1.6 2.3 2.7m-6.6.3L7.5 12m5.6-.7 2.9 3.3 2.5-.6M13 14.5l2.7 3.2.8 3.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      {walk.label}
+    </a>
+  ) : (
+    <span class="bench-walk">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="13" cy="4.5" r="1.8" stroke="currentColor" stroke-width="1.8" />
+        <path d="m10.5 21 1.8-6.5-2.6-2.6 1.1-5 3.4 1.6 2.3 2.7m-6.6.3L7.5 12m5.6-.7 2.9 3.3 2.5-.6M13 14.5l2.7 3.2.8 3.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      {walk.label}
+    </span>
+  )
+}
