@@ -1,14 +1,16 @@
 ---
 import { serializeForScript } from '@/lib/public-data';
-import { LEDGER_CANON_ELEMENT_ID } from '@/stores/ledger';
-import type { Venue } from '@/types';
+import { LEDGER_CANON_ELEMENT_ID, LEDGER_INSPECTIONS_ELEMENT_ID } from '@/stores/ledger';
+import type { Inspection, Venue } from '@/types';
 
 interface Props {
   venues: Venue[];
+  inspections?: Inspection[];
 }
 
-// Public venues for the ledger store; must come before any island that reads it.
-const { venues } = Astro.props;
+// Public venues and inspections for the ledger store; must come before any island that reads them.
+const { venues, inspections } = Astro.props;
 ---
 
 <script is:inline type="application/json" id={LEDGER_CANON_ELEMENT_ID} set:html={serializeForScript(venues)} />
+{inspections && <script is:inline type="application/json" id={LEDGER_INSPECTIONS_ELEMENT_ID} set:html={serializeForScript(inspections)} />}

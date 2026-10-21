@@ -1,8 +1,8 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import inspectionsData from '@/data/inspections.json';
 import { formatDate } from '@/lib/dates';
-import { getPublicVenue, setPublicCacheHeaders } from '@/lib/public-data';
+import { INSPECTION_KIND_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
+import { getPublicInspections, getPublicVenue, setPublicCacheHeaders } from '@/lib/public-data';
 import { milesText, walkText } from '@/lib/route-display';
 import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
 import { tierPathSegment, parseTier } from '@/lib/tiers';
@@ -16,10 +16,7 @@ if (!venue) {
 }
 setPublicCacheHeaders(Astro.response.headers);
 
-// Filter inspections for this venue
-const venueInspections = inspectionsData.filter(
-  (insp) => insp.venueSlug === venue.slug
-);
+const venueInspections = await getPublicInspections(venue.slug);
 
 const statusInfo = TIER_BANNERS[venue.status];
 ---
@@ -192,7 +189,7 @@ const statusInfo = TIER_BANNERS[venue.status];
 
           {venueInspections.length === 0 ? (
             <div class="p-6 text-center bg-stone-50 rounded-xl border border-dashed border-stone-300 text-base text-stone-500 font-sans">
-              No formal inspections logged for this venue in the primary ledger. It sits in pending status awaiting member evaluation or tribunal attention.
+              No inspections on record for this venue yet. One is entered once two Chairs confirm the same day's visit.
             </div>
           ) : (
             <div class="space-y-3 font-sans">
@@ -200,27 +197,11 @@ const statusInfo = TIER_BANNERS[venue.status];
                 <div class="p-4 rounded-xl bg-white border border-[#dcd6c8] shadow-xs space-y-2">
                   <div class="flex items-center justify-between border-b border-stone-100 pb-2">
                     <span class="font-mono text-xs font-bold text-stone-800">{formatDate(insp.date)}</span>
-                    <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono ${insp.verdict === 'satisfactory' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'}`}>
-                      {insp.verdict}
+                    <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono ${insp.kind === 'verified' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-stone-100 text-stone-600 border border-stone-300'}`}>
+                      {INSPECTION_KIND_LABELS[insp.kind]}
                     </span>
                   </div>
-
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-base">
-                    <div>
-                      <span class="font-bold text-stone-700">Audit Quorum:</span>{' '}
-                      <span class="text-stone-900">{insp.attendees.join(', ')}</span>
-                    </div>
-                    <div>
-                      <span class="font-bold text-stone-700">Sampled Order:</span>{' '}
-                      <span class="text-stone-900 italic font-serif-header">“{insp.whatWasOrdered}”</span>
-                    </div>
-                  </div>
-
-                  {insp.notes && (
-                    <p class="text-xs text-stone-600 font-serif-header italic bg-stone-50 p-2 rounded border border-stone-200">
-                      “{insp.notes}”
-                    </p>
-                  )}
+                  <p class="text-base text-stone-900">{inspectionWitnesses(insp)}</p>
                 </div>
               ))}
             </div>

@@ -26,15 +26,17 @@ export interface Venue {
   mapSearchLink: string;
 }
 
+/** A confirmed inspection, as recorded in the Chairs' Area. */
 export interface Inspection {
   id: string;
   venueSlug: string;
   venueName: string;
+  /** YYYY-MM-DD: the London day of the visit. */
   date: string;
-  attendees: string[];
-  verdict: 'satisfactory' | 'sub-par';
-  whatWasOrdered: string;
-  notes?: string;
+  /** verified: two Chairs pressed "Visited today" that day. legacy: imported from the Chairs' older records. */
+  kind: 'verified' | 'legacy';
+  /** The two Chairs who confirmed a verified inspection; empty for a legacy record. */
+  chairs: string[];
 }
 
 export interface Incident {

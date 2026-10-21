@@ -28,7 +28,7 @@ Built on **Astro 7** (server output on Vercel) with targeted **Vue 3 islands** h
   - `/tiers/[tier]` — Registry classifications (`approved`, `under-consideration`, `to-be-assessed`, `if-we-must`, `rejected`, `gone-but-not-forgotten`)
   - `/hall-of-shame` — The Bribery & Improper Benefit Attempt Record
   - `/manifesto` — The Constitutional Articles of Governance
-  - `/inspections` — The Complete Chronological Audit Log (still read from `src/data/inspections.json`)
+  - `/inspections` — The Complete Chronological Audit Log: every confirmed inspection (dual-verified or legacy) of a public venue
   - `/api/venues.json` — Public venues as JSON
   - `/api/suggestions` — Public "Suggest a Venue" endpoint (same-origin only, rate limited)
   - `/admin/*` — The Chairs' Area (sign-in required; see below)
@@ -41,7 +41,7 @@ Built on **Astro 7** (server output on Vercel) with targeted **Vue 3 islands** h
   - `SuggestModal.vue` (`client:idle`) — Member petition form; suggestions go to the Chairs' Area inbox (`/admin/suggestions`), never straight onto the site.
 - **State Management**:
   - `nanostores` with `@nanostores/vue` for cross-island reactive filtering and modal state.
-  - `src/stores/ledger.ts` holds the public venues the server embeds in the page (`LedgerCanon.astro`) and the inspection log.
+  - `src/stores/ledger.ts` holds the public venues and confirmed inspections the server embeds in the page (`LedgerCanon.astro`).
 - **Data Validation**:
   - Zod schemas in `src/lib/venue-schema.ts`, `src/lib/bribery-schema.ts`, `src/lib/suggestion-schema.ts` and `src/lib/user-schema.ts`, shared by the APIs and the forms.
 
