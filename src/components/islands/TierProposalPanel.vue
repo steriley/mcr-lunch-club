@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue';
 import ProposalActions from './ProposalActions.vue';
 import TierBadge from './TierBadge.vue';
+import DossierCard from './dossier/DossierCard.vue';
+import DossierIcon from './dossier/DossierIcon.vue';
 import { formatDateTime } from '@/lib/dates';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
 
@@ -19,8 +21,6 @@ const props = defineProps<{
   currentTier: string | null;
   pending: PendingProposal | null;
   currentUserId: string;
-  /** e.g. "21st Oct 26, verified by Sam and Alex", or null when there is none. */
-  latestVerifiedInspection: string | null;
   activeAdmins: number;
 }>();
 
@@ -60,44 +60,42 @@ async function propose() {
 </script>
 
 <template>
-  <section class="space-y-4 rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-5 shadow-sm" aria-labelledby="tier-heading">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h2 id="tier-heading" class="text-lg font-bold text-[#1a1e24]">Tier</h2>
-        <p class="mt-1 flex items-center gap-2 text-sm text-[#1a1e24]">Current approved tier: <TierBadge :tier="currentTier" /></p>
-      </div>
-      <p class="text-xs text-[#535353]">
-        Latest verified inspection: {{ latestVerifiedInspection ?? 'No verified inspection' }}
-      </p>
+  <DossierCard id="tier-decree" title="Tier Decree" tag="Judicial bench" icon="scale">
+    <div class="dossier-inset flex flex-wrap items-center justify-between gap-2 bg-[var(--dossier-field)]">
+      <span class="text-[13px] font-semibold">Active decree tier</span>
+      <TierBadge :tier="currentTier" />
     </div>
 
-    <div v-if="pending" role="status" class="space-y-2 rounded-xl border border-amber-300 bg-amber-50 p-4">
-      <p class="text-sm font-semibold text-amber-900">
-        Tier change to {{ label(pending.proposedTier) }} proposed by {{ pending.proposedByName ?? 'a former admin' }}. Awaiting a different admin.
+    <div v-if="pending" role="status" class="space-y-2 rounded-lg border border-[#C27803]/50 bg-[#FEF5E7] p-3">
+      <p class="text-[13px] font-semibold text-[#7a4b02]">
+        Motion: {{ label(pending.fromTier) }} → {{ label(pending.proposedTier) }}, tabled by {{ pending.proposedByName ?? 'a former admin' }}.
       </p>
-      <p class="text-xs text-amber-900">{{ label(pending.fromTier) }} → {{ label(pending.proposedTier) }} · {{ proposedWhen }}</p>
+      <p class="text-[12px] text-[#7a4b02]">{{ proposedWhen }} · awaiting a different Chair</p>
       <ProposalActions :proposal-id="pending.id" :proposed-by="pending.proposedBy" :current-user-id="currentUserId" :can-decide="activeAdmins >= 2" />
     </div>
 
-    <p v-if="activeAdmins < 2" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-      Only one active admin exists. A second active admin is required before any tier change can be approved.
+    <p v-if="activeAdmins < 2" class="rounded-lg border border-[#C27803]/40 bg-[#FEF5E7] px-3 py-2 text-[13px] text-[#7a4b02]">
+      Only one active Chair exists. A second active Chair is required before any motion can pass.
     </p>
 
-    <div v-if="canPropose" class="flex flex-wrap items-end gap-3">
-      <label class="block text-sm font-semibold text-[#1a1e24]">
-        <span class="mb-2 block">{{ pending ? 'Replace your proposal with' : 'Propose tier change' }}</span>
-        <select v-model="proposedTier" class="rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24]">
+    <div v-if="canPropose">
+      <label class="dossier-label" for="propose-tier">{{ pending ? 'Replace your motion with' : 'Propose tier motion' }}</label>
+      <div class="flex gap-2">
+        <select id="propose-tier" v-model="proposedTier" class="dossier-input min-w-0 flex-1 text-sm">
           <option value="" disabled>Choose a tier…</option>
           <option v-for="tier in choices" :key="tier.value" :value="tier.value">{{ tier.label }}</option>
         </select>
-      </label>
-      <button type="button" :disabled="busy" class="rounded-lg bg-[#1B2F6B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#111E47] disabled:opacity-60" @click="propose">
-        {{ busy ? 'Proposing…' : 'Propose' }}
-      </button>
+        <button type="button" :disabled="busy" class="dossier-btn is-primary" @click="propose">{{ busy ? 'Proposing…' : 'Propose' }}</button>
+      </div>
     </div>
-    <p v-if="canPropose" class="text-xs text-[#535353]">
-      Nothing changes publicly until a different admin approves. Moving into Approved needs a dual-verified inspection (“Visited today”).
+    <p v-if="errorMessage" role="alert" class="dossier-error mt-0">{{ errorMessage }}</p>
+
+    <p class="flex gap-2 rounded-lg border border-[var(--dossier-border)] bg-[var(--dossier-paper)] p-3 text-[12px] leading-[18px] text-[var(--dossier-muted)]">
+      <DossierIcon name="info" :size="16" class="mt-px text-[var(--dossier-secondary)]" />
+      <span>
+        <strong class="text-[var(--dossier-ink)]">Rule 4.B:</strong> nothing changes publicly until a different Chair cosigns the motion. Promotion to
+        <em>Approved</em> cannot take effect by motion alone; it needs the dual-verified inspection above.
+      </span>
     </p>
-    <p v-if="errorMessage" role="alert" class="text-sm text-red-700">{{ errorMessage }}</p>
-  </section>
+  </DossierCard>
 </template>

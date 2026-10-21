@@ -1525,3 +1525,301 @@
     display: none;
   }
 }
+
+/*
+ * Venue dossier (/admin/venues/<id> and /admin/venues/new): the Sovereign
+ * Food Ledger docket. Inputs sit on a warm off-white, never pure white.
+ */
+/* In the components layer so Tailwind utilities on the same element win. */
+@layer components {
+  .dossier {
+    --dossier-canvas: #FBF6EA;
+    --dossier-card: #F3ECDB;
+    --dossier-paper: #F7F0DF;
+    --dossier-field: #FFFCF4;
+    --dossier-border: #D9CFB8;
+    --dossier-primary: #001854;
+    --dossier-primary-container: #1B2F6B;
+    --dossier-secondary: #8A5100;
+    --dossier-amber: #FFA538;
+    --dossier-ink: #1E1B17;
+    --dossier-muted: #454650;
+    --dossier-danger: #B92B27;
+    --dossier-danger-bg: #FDF0F0;
+    --dossier-green: #1E7A4E;
+    color: var(--dossier-ink);
+  }
+
+  .dossier-serif {
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  }
+
+  .dossier-overline {
+    color: var(--dossier-muted);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 14px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  .dossier-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+    padding: 24px;
+    border: 1px solid var(--dossier-border);
+    border-radius: 12px;
+    background: var(--dossier-card);
+    box-shadow: 0 1px 2px rgb(22 19 15 / 5%);
+  }
+
+  .dossier-card.is-accent {
+    border: 2px solid rgb(138 81 0 / 35%);
+  }
+
+  .dossier-card.is-danger {
+    border-color: rgb(185 43 39 / 45%);
+    background: var(--dossier-danger-bg);
+  }
+
+  .dossier-card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--dossier-border);
+  }
+
+  .dossier-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--dossier-primary);
+    font: 600 20px/26px "Playfair Display", Georgia, serif;
+  }
+
+  .dossier-card.is-danger .dossier-card-title,
+  .dossier-card.is-danger .dossier-card-tag {
+    color: var(--dossier-danger);
+  }
+
+  .dossier-card-tag {
+    color: var(--dossier-secondary);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  .dossier-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--dossier-ink);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .dossier-input {
+    width: 100%;
+    min-width: 0;
+    padding: 10px 14px;
+    border: 1px solid var(--dossier-border);
+    border-radius: 8px;
+    background: var(--dossier-field);
+    color: var(--dossier-ink);
+    font-size: 15px;
+    line-height: 1.45;
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  .dossier-input:focus {
+    border-color: var(--dossier-primary-container);
+    box-shadow: 0 0 0 3px rgb(27 47 107 / 18%);
+  }
+
+  .dossier-input[aria-invalid="true"] {
+    border-color: var(--dossier-danger);
+  }
+
+  .dossier-mono {
+    font-family: ui-monospace, "Fira Code", SFMono-Regular, Menlo, monospace;
+  }
+
+  .dossier-hint {
+    display: block;
+    margin-top: 6px;
+    color: var(--dossier-muted);
+    font-size: 13px;
+    line-height: 19px;
+  }
+
+  .dossier-error {
+    display: block;
+    margin-top: 6px;
+    color: var(--dossier-danger);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .dossier-inset {
+    padding: 14px;
+    border: 1px solid var(--dossier-border);
+    border-radius: 10px;
+    background: var(--dossier-paper);
+  }
+
+  .dossier-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 14px;
+    border: 1px solid var(--dossier-border);
+    border-radius: 8px;
+    background: var(--dossier-paper);
+    color: var(--dossier-primary);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 16px;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+  }
+
+  .dossier-btn:hover:not(:disabled) {
+    background: var(--dossier-card);
+  }
+
+  .dossier-btn:disabled {
+    cursor: not-allowed;
+    opacity: .6;
+  }
+
+  .dossier-btn.is-primary {
+    border-color: var(--dossier-primary-container);
+    background: var(--dossier-primary-container);
+    color: #FBF6EA;
+  }
+
+  .dossier-btn.is-primary:hover:not(:disabled) {
+    background: var(--dossier-primary);
+  }
+
+  .dossier-btn.is-danger {
+    border-color: rgb(185 43 39 / 40%);
+    background: var(--dossier-danger-bg);
+    color: var(--dossier-danger);
+  }
+
+  .dossier-btn.is-danger:hover:not(:disabled) {
+    background: var(--dossier-danger);
+    color: #FBF6EA;
+  }
+
+  .dossier-btn.is-danger-solid {
+    border-color: var(--dossier-danger);
+    background: var(--dossier-danger);
+    color: #FBF6EA;
+  }
+
+  .dossier-btn.is-danger-solid:hover:not(:disabled) {
+    background: #8e201d;
+  }
+
+  .dossier-btn.is-quiet {
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .dossier-btn.is-small {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .dossier-link {
+    border: 0;
+    background: none;
+    color: var(--dossier-primary-container);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .dossier-link.is-danger {
+    color: var(--dossier-danger);
+  }
+
+  .dossier-link:hover {
+    text-decoration: underline;
+  }
+
+  .dossier-spin {
+    animation: dossier-spin 900ms linear infinite;
+  }
+
+  @keyframes dossier-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .dossier-pulse {
+    animation: dossier-pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes dossier-pulse {
+    50% {
+      opacity: .35;
+    }
+  }
+
+  .dossier-bar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+    border-top: 1px solid var(--dossier-border);
+    background: rgb(251 246 234 / 88%);
+    box-shadow: 0 -6px 20px -8px rgb(22 19 15 / 18%);
+    backdrop-filter: blur(10px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dossier-spin,
+    .dossier-pulse {
+      animation: none;
+    }
+  }
+
+  /* "Print" in the public docket preview prints just the slip. */
+  @media print {
+    body.printing-docket * {
+      visibility: hidden;
+    }
+
+    body.printing-docket .docket-slip,
+    body.printing-docket .docket-slip * {
+      visibility: visible;
+    }
+
+    body.printing-docket .docket-slip {
+      position: absolute;
+      inset: 0;
+      box-shadow: none;
+    }
+
+    body.printing-docket .docket-slip-actions {
+      display: none;
+    }
+  }
+}

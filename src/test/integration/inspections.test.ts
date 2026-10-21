@@ -39,8 +39,13 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
     assert.deepEqual({ status: row.status, date: row.inspectionDate, first: row.firstAdminName }, { status: 'pending', date: '2026-10-21', first: 'Sam' });
     assert.equal(await lastInspected(), null);
 
-    assert.deepEqual((await getVisitStatus(db, venueId, sam.id, noon)).pending, { firstAdminName: 'Sam', byMe: true });
-    assert.deepEqual((await getVisitStatus(db, venueId, alex.id, noon)).pending, { firstAdminName: 'Sam', byMe: false });
+    const pendingFor = async (adminId: string) => {
+      const { firstAdminName, byMe, firstAt } = (await getVisitStatus(db, venueId, adminId, noon)).pending!;
+      assert.ok(!Number.isNaN(Date.parse(firstAt)), 'pending carries when the first Chair pressed');
+      return { firstAdminName, byMe };
+    };
+    assert.deepEqual(await pendingFor(sam.id), { firstAdminName: 'Sam', byMe: true });
+    assert.deepEqual(await pendingFor(alex.id), { firstAdminName: 'Sam', byMe: false });
   });
 
   it('two different admins on the same London day confirm one verified inspection', async () => {
@@ -59,7 +64,9 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
     assert.ok(row.confirmedAt);
     assert.equal(await lastInspected(), '2026-10-21');
     assert.equal((await latestVerifiedInspection(db, venueId))?.id, row.id);
-    assert.deepEqual((await getVisitStatus(db, venueId, jo.id, noon)).confirmed, { firstAdminName: 'Sam', secondAdminName: 'Alex' });
+    const { firstAdminName, secondAdminName, confirmedAt } = (await getVisitStatus(db, venueId, jo.id, noon)).confirmed!;
+    assert.deepEqual({ firstAdminName, secondAdminName }, { firstAdminName: 'Sam', secondAdminName: 'Alex' });
+    assert.ok(confirmedAt, 'confirmed carries when the second Chair pressed');
   });
 
   it('the same admin pressing twice never confirms', async () => {

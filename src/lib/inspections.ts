@@ -99,10 +99,10 @@ export async function recordVisit(db: Database, venueId: string, actor: Actor, n
 
 export interface VisitStatus {
   today: string;
-  /** Someone pressed today and it still needs a second admin. */
-  pending: { firstAdminName: string; byMe: boolean } | null;
+  /** Someone pressed today and it still needs a second admin. Times are ISO timestamps. */
+  pending: { firstAdminName: string; byMe: boolean; firstAt: string } | null;
   /** Today's verified inspection, once confirmed. */
-  confirmed: { firstAdminName: string; secondAdminName: string } | null;
+  confirmed: { firstAdminName: string; secondAdminName: string; firstAt: string; confirmedAt: string | null } | null;
 }
 
 /** What the "Visited today" control shows. Read-only: an earlier day's pending press shows as nothing. */
@@ -116,8 +116,18 @@ export async function getVisitStatus(db: Database, venueId: string, userId: stri
   const pending = rows.find((row) => row.status === 'pending');
   return {
     today,
-    pending: pending && !confirmed ? { firstAdminName: pending.firstAdminName ?? 'Another admin', byMe: pending.firstAdminId === userId } : null,
-    confirmed: confirmed ? { firstAdminName: confirmed.firstAdminName ?? 'A former admin', secondAdminName: confirmed.secondAdminName ?? 'a former admin' } : null,
+    pending:
+      pending && !confirmed
+        ? { firstAdminName: pending.firstAdminName ?? 'Another admin', byMe: pending.firstAdminId === userId, firstAt: pending.createdAt.toISOString() }
+        : null,
+    confirmed: confirmed
+      ? {
+          firstAdminName: confirmed.firstAdminName ?? 'A former admin',
+          secondAdminName: confirmed.secondAdminName ?? 'a former admin',
+          firstAt: confirmed.createdAt.toISOString(),
+          confirmedAt: confirmed.confirmedAt?.toISOString() ?? null,
+        }
+      : null,
   };
 }
 
