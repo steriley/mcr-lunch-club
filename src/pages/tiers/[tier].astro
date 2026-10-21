@@ -1,18 +1,18 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import TierChip from '@/components/TierChip.vue';
 import { getPublicVenues, setPublicCacheHeaders } from '@/lib/public-data';
 import { milesText, walkText } from '@/lib/route-display';
 import { TIERS, tierPathSegment } from '@/lib/tiers';
+import { TIER_COLORS, TIER_DISPLAY_ORDER, countVenuesByTier } from '@/lib/tier-display';
 import type { TierStatus } from '@/types';
 
 export const prerender = false;
 
-// Order of the tier tabs on this page.
-const TAB_ORDER = ['approved', 'under_consideration', 'to_be_assessed', 'if_we_must', 'rejected', 'gone_but_not_forgotten'] as const;
-const allTiers: { slug: string; name: TierStatus }[] = TAB_ORDER.map((value) => ({
-  slug: tierPathSegment(value),
-  name: TIERS.find((tier) => tier.value === value)!.label,
-}));
+const allTiers: { slug: string; name: TierStatus }[] = TIER_DISPLAY_ORDER.map((name) => {
+  const { value } = TIERS.find((tier) => tier.label === name)!;
+  return { slug: tierPathSegment(value), name };
+});
 
 const tier = allTiers.find((entry) => entry.slug === Astro.params.tier);
 if (!tier) {
@@ -22,7 +22,9 @@ if (!tier) {
 
 const tierName = tier.name;
 // getPublicVenues already returns each tier in its public order (src/lib/venue-order.ts).
-const venues = (await getPublicVenues()).filter((venue) => venue.status === tierName);
+const publicVenues = await getPublicVenues();
+const venues = publicVenues.filter((venue) => venue.status === tierName);
+const tierCounts = countVenuesByTier(publicVenues);
 setPublicCacheHeaders(Astro.response.headers);
 const currentTierSlug = Astro.params.tier;
 
@@ -89,16 +91,17 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
     </div>
 
     <!-- Tier Navigation Tabs -->
-    <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#dcd6c8] text-xs">
+    <nav class="flex items-center gap-[7px] overflow-x-auto pb-2 border-b border-[#dcd6c8]" aria-label="Browse by verdict">
       {allTiers.map((t) => (
-        <a
+        <TierChip
           href={`/tiers/${t.slug}`}
-          class={`px-3 py-1.5 rounded-full whitespace-nowrap transition-colors border font-serif-header ${t.slug === currentTierSlug ? 'bg-[#1a1e24] text-[#c59b27] border-[#c59b27] font-bold shadow-xs' : 'bg-white text-stone-700 hover:bg-stone-100 border-[#dcd6c8]'}`}
-        >
-          {t.name}
-        </a>
+          name={t.name}
+          color={TIER_COLORS[t.name]}
+          count={tierCounts[t.name]}
+          selected={t.slug === currentTierSlug}
+        />
       ))}
-    </div>
+    </nav>
 
     <!-- Tier Header Hero Card -->
     <div class={`${meta.bannerBg} tier-header-gradient text-white p-6 sm:p-8 rounded-2xl border-2 border-[#c59b27] shadow-xl space-y-4`}>

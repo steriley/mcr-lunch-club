@@ -40,3 +40,30 @@ export const COST_LABELS: Record<CostTier, string> = {
   '££': 'Above £10',
   '£££': 'Payday treat',
 };
+
+/** The order tiers appear in on the homepage filter and the tier page tabs. */
+export const TIER_DISPLAY_ORDER: readonly TierStatus[] = [
+  'Approved',
+  'Under Consideration',
+  'To Be Assessed',
+  'If We Must',
+  'Rejected',
+  'Gone But Not Forgotten',
+];
+
+/** Accent colour for each tier's chip. Matches the banner backgrounds above. */
+export const TIER_COLORS: Record<TierStatus, string> = {
+  Approved: '#1E7A4E',
+  'Under Consideration': '#C27803',
+  'To Be Assessed': '#5A6474',
+  'If We Must': '#7C3A82',
+  Rejected: '#B92B27',
+  'Gone But Not Forgotten': '#71717A',
+};
+
+/** Number of venues in each tier, including tiers with none. */
+export function countVenuesByTier(venues: readonly { status: TierStatus }[]): Record<TierStatus, number> {
+  const counts = Object.fromEntries(TIER_DISPLAY_ORDER.map((tier) => [tier, 0])) as Record<TierStatus, number>;
+  for (const venue of venues) counts[venue.status] += 1;
+  return counts;
+}
