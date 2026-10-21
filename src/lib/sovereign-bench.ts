@@ -17,8 +17,6 @@ export interface BenchWalk {
 }
 
 export interface BenchCard {
-  /** "#01" to "#05". */
-  rank: string;
   slug: string;
   name: string;
   href: string;
@@ -55,10 +53,6 @@ function clean(text: string | null | undefined): string | null {
   return trimmed ? trimmed : null;
 }
 
-function rankLabel(index: number): string {
-  return `#${String(index + 1).padStart(2, '0')}`;
-}
-
 function walkFor(venue: PublicVenue): BenchWalk {
   const { walkingTimeMin, distanceMiles, lat, lng } = venue;
   if (walkingTimeMin === null) return { label: walkText(null), lat: null, lng: null, directionsUrl: null };
@@ -68,13 +62,12 @@ function walkFor(venue: PublicVenue): BenchWalk {
   return { label, lat, lng, directionsUrl: getWalkingDirectionsUrl(lat, lng, 'server') };
 }
 
-function toCard(pick: Pick, index: number, inspections: Inspection[]): BenchCard {
+function toCard(pick: Pick, inspections: Inspection[]): BenchCard {
   const { venue } = pick;
   const own = inspections.filter((inspection) => inspection.venueSlug === venue.slug);
   // YYYY-MM-DD sorts as text, so the order of the input does not matter.
   const newest = own.reduce<string | null>((latest, { date }) => (latest === null || date > latest ? date : latest), null);
   return {
-    rank: rankLabel(index),
     slug: venue.slug,
     name: venue.name,
     href: `/venues/${venue.slug}`,
@@ -97,6 +90,6 @@ export function buildSovereignBench(goldenCut: GoldenCutVenue[], venues: PublicV
   const mode = goldenCut.length > 0 ? 'golden-cut' : 'nearest';
   const picks: Pick[] =
     mode === 'golden-cut' ? goldenCut : venues.filter((venue) => venue.status === 'Approved').map((venue) => ({ venue }));
-  const [hero = null, ...pillars] = picks.slice(0, BENCH_SIZE).map((pick, index) => toCard(pick, index, inspections));
+  const [hero = null, ...pillars] = picks.slice(0, BENCH_SIZE).map((pick) => toCard(pick, inspections));
   return { mode, hero, pillars };
 }

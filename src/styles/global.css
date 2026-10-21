@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=award_star,directions_walk&display=block");
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
@@ -553,10 +554,15 @@
   text-transform: uppercase;
 }
 
-.bench-kicker svg {
-  flex: 0 0 16px;
+.bench .material-symbols-outlined {
+  flex: none;
+  overflow: hidden;
+  user-select: none;
+}
+
+.bench-kicker .material-symbols-outlined {
   width: 16px;
-  height: 16px;
+  font-size: 16px;
 }
 
 .bench-title {
@@ -587,6 +593,7 @@
 
 /* Hero card */
 .bench-hero {
+  position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -730,9 +737,32 @@
   text-decoration: none;
 }
 
-.bench-hero-name a:hover {
+.bench-hero-name a:hover,
+.bench-hero:hover .bench-hero-link {
   color: var(--bench-amber);
+}
+
+.bench-hero-name a:hover {
   text-decoration: underline;
+}
+
+/* Stretched link, as on the pillars: the whole hero card opens the venue page. */
+.bench-hero-link::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  content: "";
+}
+
+.bench-hero-link:focus-visible {
+  outline: none;
+}
+
+/* Inside the card: the hero clips its overflow, so an outer ring would be cut off. */
+.bench-hero-link:focus-visible::after {
+  outline: 3px solid var(--bench-navy);
+  outline-offset: -3px;
+  border-radius: 12px;
 }
 
 .bench-last {
@@ -822,10 +852,9 @@
   font-weight: 500;
 }
 
-.bench-walk svg {
-  flex: 0 0 16px;
-  width: 16px;
-  height: 16px;
+.bench-walk .material-symbols-outlined {
+  width: 14px;
+  font-size: 14px;
 }
 
 /* Above the pillar's stretched link, so it wins the click. */
@@ -974,12 +1003,6 @@
 .bench-pillar-link:focus-visible::after {
   outline: 2px solid var(--bench-peach);
   outline-offset: 2px;
-}
-
-.bench-rank {
-  color: var(--bench-amber);
-  font: 700 11px/1 "Plus Jakarta Sans", sans-serif;
-  letter-spacing: .06em;
 }
 
 .bench-cost {
