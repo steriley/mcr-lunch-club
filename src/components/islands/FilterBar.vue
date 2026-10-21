@@ -21,25 +21,16 @@
 
       <div class="ledger-tier-row">
         <div class="ledger-tier-filters" role="group" aria-label="Filter by verdict">
-          <button
+          <TierChip
             v-for="tier in allTiers"
             :key="tier.name"
-            type="button"
-            :aria-pressed="filters.tiers.includes(tier.name)"
-            :class="['ledger-tier-chip', filters.tiers.includes(tier.name) && 'is-selected']"
-            :style="filters.tiers.includes(tier.name)
-              ? { backgroundColor: tier.color, borderColor: tier.color } : undefined"
+            :name="tier.name"
+            :color="tier.color"
+            :count="tierCounts[tier.name]"
+            :selected="filters.tiers.includes(tier.name)"
+            show-check
             @click="toggleTier(tier.name)"
-          >
-            <span
-              :class="['ledger-tier-dot', filters.tiers.includes(tier.name) && 'is-selected']"
-              :style="!filters.tiers.includes(tier.name) ? { backgroundColor: tier.color } : undefined"
-              aria-hidden="true"
-            ></span>
-            <span>{{ tier.name }}</span>
-            <span class="nav-count ledger-tier-count">{{ getTierCount(tier.name) }}</span>
-            <span v-if="filters.tiers.includes(tier.name)" class="ledger-tier-check" aria-hidden="true">✓</span>
-          </button>
+          />
         </div>
 
         <button
@@ -151,7 +142,9 @@ import {
 } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
 import { CUISINES } from '@/lib/cuisines';
-import type { CostTier, TierStatus } from '@/types';
+import { TIER_COLORS, TIER_DISPLAY_ORDER, countVenuesByTier } from '@/lib/tier-display';
+import TierChip from '@/components/TierChip.vue';
+import type { CostTier } from '@/types';
 
 const filters = useStore($filters);
 const venuesList = useStore($venuesList);
@@ -166,14 +159,8 @@ const activeSecondaryFilterCount = computed(() => {
     + Number(current.cuisine !== 'all');
 });
 
-const allTiers: { name: TierStatus; color: string }[] = [
-  { name: 'Approved', color: '#1E7A4E' },
-  { name: 'Under Consideration', color: '#C27803' },
-  { name: 'To Be Assessed', color: '#5A6474' },
-  { name: 'Rejected', color: '#B92B27' },
-  { name: 'If We Must', color: '#7C3A82' },
-  { name: 'Gone But Not Forgotten', color: '#71717A' },
-];
+const allTiers = TIER_DISPLAY_ORDER.map((name) => ({ name, color: TIER_COLORS[name] }));
+const tierCounts = computed(() => countVenuesByTier(venuesList.value));
 
 const costOptions: { id: CostTier | 'all'; label: string; title: string }[] = [
   { id: 'all', label: 'All', title: 'All price brackets' },
@@ -229,10 +216,6 @@ const availableCuisines = computed(() => {
   const inUse = new Set(venuesList.value.map((venue) => venue.cuisine));
   return CUISINES.map((cuisine) => cuisine.label).filter((label) => inUse.has(label));
 });
-
-function getTierCount(tier: TierStatus) {
-  return venuesList.value.filter((venue) => venue.status === tier).length;
-}
 
 function onWalkChange(event: Event) {
   const target = event.target as HTMLSelectElement;
@@ -418,48 +401,6 @@ function resetAll() {
   display: none;
 }
 
-.ledger-tier-chip {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  gap: 7px;
-  min-height: 27px;
-  padding: 5px 10px;
-  border: 1px solid #D9CFB8;
-  border-radius: 999px;
-  background: #F7F0DF;
-  color: #1e1b17;
-  font: 600 12px/1.2 "Plus Jakarta Sans", sans-serif;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
-}
-
-.ledger-tier-chip:hover:not(.is-selected) {
-  background: #fff8f3;
-  border-color: #b9ae94;
-}
-
-.ledger-tier-chip.is-selected {
-  color: white;
-}
-
-.ledger-tier-dot {
-  width: 7px;
-  height: 7px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-}
-
-.ledger-tier-dot.is-selected {
-  background: white !important;
-}
-
-.ledger-tier-check {
-  font-size: 12px;
-  line-height: 1;
-}
-
 .ledger-secondary-filters {
   display: flex;
   align-items: center;
@@ -542,7 +483,6 @@ function resetAll() {
 
 .ledger-select:focus-visible,
 .ledger-cost-button:focus-visible,
-.ledger-tier-chip:focus-visible,
 .ledger-secondary-toggle:focus-visible,
 .ledger-reset-button:focus-visible {
   outline: 2px solid #1B2F6B;
@@ -598,11 +538,6 @@ function resetAll() {
 
   .ledger-tier-filters {
     margin-inline: -1px;
-  }
-
-  .ledger-tier-chip {
-    min-height: 28px;
-    font-size: 12px;
   }
 
   .ledger-filter-groups {
