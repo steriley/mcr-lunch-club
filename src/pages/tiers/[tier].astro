@@ -169,43 +169,6 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
       </div>
     )}
 
-    <!-- Rejected Venues Specific Censure Notice -->
-    {tierName === 'Rejected' && (
-      <div class="bg-[#1a1e24] text-[#f9f7f1] border-2 border-rose-800 p-6 rounded-2xl shadow-lg space-y-3 font-sans">
-        <div class="flex items-center gap-2 text-rose-400 font-bold uppercase tracking-wider text-xs font-serif-header">
-          <span class="text-lg">⛔</span>
-          <span>Specific Rejection Decrees & Footnotes</span>
-        </div>
-        <p class="text-xs sm:text-sm text-stone-300">
-          The following venues were formally removed from the rotation under specific inspection findings:
-        </p>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 font-serif-header">
-          <div class="bg-rose-950/60 border border-rose-700/60 p-3 rounded-xl">
-            <a href="/venues/pho-cue" class="font-bold text-white hover:text-amber-300 text-sm block">
-              Pho Cue**
-            </a>
-            <span class="text-base text-rose-300 font-sans block mt-1">Closed during inspections</span>
-          </div>
-          <div class="bg-rose-950/60 border border-rose-700/60 p-3 rounded-xl">
-            <a href="/venues/sqew-shawarma-bar" class="font-bold text-white hover:text-amber-300 text-sm block">
-              Sqew Shawarma Bar*
-            </a>
-            <span class="text-base text-rose-300 font-sans block mt-1">Unacceptable drop in consistent quality</span>
-          </div>
-          <div class="bg-rose-950/60 border border-rose-700/60 p-3 rounded-xl">
-            <a href="/venues/street-food-kitchen-by-eastzeast" class="font-bold text-white hover:text-amber-300 text-sm block">
-              Street Food Kitchen by eastZeast**
-            </a>
-            <span class="text-base text-rose-300 font-sans block mt-1">Closed during inspections</span>
-          </div>
-        </div>
-        <div class="border-t border-white/10 pt-2 text-base text-stone-400 space-y-0.5 font-mono italic">
-          <div>* rejected due to an unacceptable drop in consistent quality</div>
-          <div>** rejected due to being closed during inspections</div>
-        </div>
-      </div>
-    )}
-
     <!-- Venue Grid -->
     <div class="space-y-4">
       <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2 font-serif-header">
