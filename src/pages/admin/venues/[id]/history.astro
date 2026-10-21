@@ -5,6 +5,7 @@ import { user } from '@/db/auth-schema';
 import { venues } from '@/db/schema';
 import { uuidParam } from '@/lib/admin-api';
 import { cuisineLabel, isCuisineValue } from '@/lib/cuisines';
+import { formatDate, formatDateTime } from '@/lib/dates';
 import { db } from '@/lib/db';
 import { describeProposal, listVenueProposals } from '@/lib/tier-proposals';
 import { describeVenueEvent, listVenueEvents } from '@/lib/venue-events';
@@ -44,6 +45,7 @@ const LABELS: Record<string, string> = {
 const format = (value: unknown, key?: string) => {
   if (value === null || value === undefined || value === '') return '—';
   if (key === 'cuisine' && isCuisineValue(value)) return cuisineLabel(value);
+  if (key === 'lastInspectionDate') return formatDate(String(value));
   const text = String(value);
   return text.length > 140 ? `${text.slice(0, 140)}…` : text;
 };
@@ -60,7 +62,7 @@ const entries = revisions.map((revision, index) => {
     type: 'revision' as const,
     at: revision.changedAt,
     id: revision.id,
-    when: revision.changedAt.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' }),
+    when: formatDateTime(revision.changedAt),
     who: revision.changedBy ? editorNames.get(revision.changedBy) ?? 'Former user' : 'Import script',
     isFirst: !previous,
     changes,
@@ -68,12 +70,11 @@ const entries = revisions.map((revision, index) => {
   };
 });
 
-const formatWhen = (value: Date) => value.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' });
 const eventEntries = events.map((event) => ({
   type: 'event' as const,
   at: event.createdAt,
   id: event.id,
-  when: formatWhen(event.createdAt),
+  when: formatDateTime(event.createdAt),
   text: describeVenueEvent(event),
   note: undefined as string | undefined,
 }));
@@ -82,7 +83,7 @@ const proposalEntries = proposals.flatMap((proposal) =>
     type: 'event' as const,
     at: line.at,
     id: `${proposal.id}-${index}`,
-    when: formatWhen(line.at),
+    when: formatDateTime(line.at),
     text: line.text,
     note: line.note,
   }))

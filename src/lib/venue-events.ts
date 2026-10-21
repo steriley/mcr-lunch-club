@@ -1,5 +1,6 @@
 import { desc, eq } from 'drizzle-orm';
 import { venueEvents, type VenueEventRow } from '@/db/schema';
+import { formatDate } from '@/lib/dates';
 import type { Database } from '@/lib/db-client';
 
 /**
@@ -34,17 +35,13 @@ export async function listVenueEvents(db: Database, venueId: string): Promise<Ve
   return db.select().from(venueEvents).where(eq(venueEvents.venueId, venueId)).orderBy(desc(venueEvents.createdAt)).limit(200);
 }
 
-export function formatEventDate(value: Date): string {
-  return value.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Europe/London' });
-}
-
 const EVENT_VERBS: Record<VenueEventKind, string> = {
   closed: 'Closed',
   reopened: 'Reopened',
 };
 
-/** e.g. "Closed by Sam on 21 Oct 2026". */
+/** e.g. "Closed by Sam on 21st Oct 26". */
 export function describeVenueEvent(event: Pick<VenueEventRow, 'kind' | 'actorName' | 'createdAt'>): string {
   const verb = EVENT_VERBS[event.kind as VenueEventKind] ?? event.kind;
-  return `${verb} by ${event.actorName ?? 'a former admin'} on ${formatEventDate(event.createdAt)}`;
+  return `${verb} by ${event.actorName ?? 'a former admin'} on ${formatDate(event.createdAt)}`;
 }

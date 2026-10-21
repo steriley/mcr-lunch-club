@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { briberyRecords, venues, type BriberyRow, type VenueRow } from '@/db/schema';
 import { cuisineLabel } from '@/lib/cuisines';
+import { formatDateTime } from '@/lib/dates';
 import { db } from '@/lib/db';
 import { parseTier, tierLabel, type TierValue } from '@/lib/tiers';
 import type { CostBand } from '@/lib/venue-schema';
@@ -98,25 +99,10 @@ export async function getPublicVenue(slug: string): Promise<PublicVenueDetail | 
   return { ...toPublicVenue(row), pullQuote: row.pullQuote };
 }
 
-function ordinal(day: number): string {
-  const tens = day % 100;
-  if (tens >= 11 && tens <= 13) return `${day}th`;
-  return `${day}${({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[day % 10] ?? 'th'}`;
-}
-
-/** e.g. "8th July 2026 at 9am", matching the original Hall of Shame entries. */
+/** e.g. "8th Jul 26, 09:00": the incident's calendar day plus its recorded time, if any. */
 export function formatIncidentDate(date: string | null, time: string | null): string | undefined {
   if (!date) return undefined;
-  const [year, month, day] = date.split('-').map(Number);
-  const monthName = new Date(Date.UTC(year, month - 1, day)).toLocaleString('en-GB', { month: 'long', timeZone: 'UTC' });
-  let text = `${ordinal(day)} ${monthName} ${year}`;
-  if (time) {
-    const [hours, minutes] = time.split(':').map(Number);
-    const suffix = hours >= 12 ? 'pm' : 'am';
-    const hour12 = hours % 12 || 12;
-    text += ` at ${hour12}${minutes ? `:${String(minutes).padStart(2, '0')}` : ''}${suffix}`;
-  }
-  return text;
+  return formatDateTime(date, { time });
 }
 
 export function toPublicIncident(row: BriberyRow): Incident {

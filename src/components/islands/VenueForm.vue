@@ -4,6 +4,7 @@ import ConfirmDialog from './ConfirmDialog.vue';
 import ImageUpload from './ImageUpload.vue';
 import PlaceSearch, { type PlaceCandidate } from './PlaceSearch.vue';
 import { CUISINES } from '@/lib/cuisines';
+import { formatDateTime } from '@/lib/dates';
 import { ROUTE_STATUS_LABELS, routeStatus } from '@/lib/route-status';
 import { TIERS } from '@/lib/tiers';
 import { COST_BANDS, COST_BAND_LABELS, isOutsideUk, slugify, venueCreateSchema, venueInputSchema } from '@/lib/venue-schema';
@@ -167,7 +168,7 @@ const coordinateWarning = computed(() => {
 });
 const lastUpdatedText = computed(() => {
   if (!updatedAt.value) return '';
-  const when = new Date(updatedAt.value).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' });
+  const when = formatDateTime(updatedAt.value);
   return props.updatedByName ? `Last updated ${when} by ${props.updatedByName}` : `Last updated ${when}`;
 });
 

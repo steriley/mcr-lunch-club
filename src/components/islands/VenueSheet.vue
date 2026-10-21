@@ -133,7 +133,7 @@
               class="p-2.5 rounded bg-white border border-[#dcd6c8] text-xs shadow-xs"
             >
               <div class="flex items-center justify-between text-xs border-b border-stone-100 pb-1 mb-1">
-                <span class="font-mono text-stone-600">{{ insp.date }}</span>
+                <span class="font-mono text-stone-600">{{ formatDate(insp.date) }}</span>
                 <span
                   :class="insp.verdict === 'satisfactory' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
                   class="px-1.5 py-0.2 rounded font-bold uppercase text-xs"
@@ -193,6 +193,7 @@ import { ref, computed, nextTick, onUnmounted, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $activeVenue, selectVenue } from '@/stores/filters';
 import { $inspectionsList } from '@/stores/ledger';
+import { formatDate } from '@/lib/dates';
 import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
 import { milesText, walkText } from '@/lib/route-display';
 

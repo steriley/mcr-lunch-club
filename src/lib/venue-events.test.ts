@@ -5,17 +5,17 @@ import { actorName, describeVenueEvent } from './venue-events';
 describe('describeVenueEvent', () => {
   const createdAt = new Date('2026-10-21T22:30:00Z'); // 23:30 in London (BST)
 
-  it('reads like "Closed by Sam on 21 Oct 2026"', () => {
-    assert.equal(describeVenueEvent({ kind: 'closed', actorName: 'Sam', createdAt }), 'Closed by Sam on 21 Oct 2026');
-    assert.equal(describeVenueEvent({ kind: 'reopened', actorName: 'Alex', createdAt }), 'Reopened by Alex on 21 Oct 2026');
+  it('reads like "Closed by Sam on 21st Oct 26"', () => {
+    assert.equal(describeVenueEvent({ kind: 'closed', actorName: 'Sam', createdAt }), 'Closed by Sam on 21st Oct 26');
+    assert.equal(describeVenueEvent({ kind: 'reopened', actorName: 'Alex', createdAt }), 'Reopened by Alex on 21st Oct 26');
   });
 
   it('uses the London date', () => {
-    assert.equal(describeVenueEvent({ kind: 'closed', actorName: 'Sam', createdAt: new Date('2026-10-21T23:30:00Z') }), 'Closed by Sam on 22 Oct 2026');
+    assert.equal(describeVenueEvent({ kind: 'closed', actorName: 'Sam', createdAt: new Date('2026-10-21T23:30:00Z') }), 'Closed by Sam on 22nd Oct 26');
   });
 
   it('copes with a missing name snapshot', () => {
-    assert.equal(describeVenueEvent({ kind: 'closed', actorName: null, createdAt }), 'Closed by a former admin on 21 Oct 2026');
+    assert.equal(describeVenueEvent({ kind: 'closed', actorName: null, createdAt }), 'Closed by a former admin on 21st Oct 26');
   });
 });
 

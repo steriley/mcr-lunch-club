@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import TierBadge from './TierBadge.vue';
+import { formatDate } from '@/lib/dates';
 import { ROUTE_STATUS_LABELS, type RouteStatus } from '@/lib/route-status';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
 
@@ -80,10 +81,6 @@ function ariaSort(key: SortKey) {
 function sortIndicator(key: SortKey) {
   if (sortKey.value !== key) return '↕';
   return sortAscending.value ? '↑' : '↓';
-}
-
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'Europe/London' });
 }
 
 async function performDelete() {
@@ -184,7 +181,7 @@ const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2
               <td class="px-4 py-3">
                 <a :href="`/admin/venues/${venue.id}`" class="font-semibold text-[#1a1e24] hover:underline">{{ venue.name }}</a>
                 <div class="text-xs text-[#535353]">{{ venue.slug }}</div>
-                <div class="text-xs text-[#535353]">Last inspected: {{ venue.lastInspectionDate ? formatDate(venue.lastInspectionDate) : 'never' }}</div>
+                <div class="text-xs text-[#535353]">Last inspected: {{ formatDate(venue.lastInspectionDate, { fallback: 'never' }) }}</div>
               </td>
               <td class="px-4 py-3"><TierBadge :tier="venue.tier" /></td>
               <td class="px-4 py-3">

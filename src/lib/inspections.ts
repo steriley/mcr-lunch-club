@@ -2,7 +2,7 @@ import { and, desc, eq, lt, max, sql } from 'drizzle-orm';
 import { inspections, venues, type InspectionRow } from '@/db/schema';
 import { isUniqueViolation } from '@/lib/admin-api';
 import type { Database } from '@/lib/db-client';
-import { formatIsoDate, londonDate } from '@/lib/london-date';
+import { londonDate } from '@/lib/london-date';
 import { actorName, type Actor } from '@/lib/venue-events';
 
 /**
@@ -145,5 +145,3 @@ export function describeInspection(row: Pick<InspectionRow, 'kind' | 'firstAdmin
   if (row.kind === 'legacy') return "Legacy record (imported from the Chairs' records)";
   return `Verified by ${row.firstAdminName ?? 'a former admin'} and ${row.secondAdminName ?? 'a former admin'}`;
 }
-
-export { formatIsoDate };

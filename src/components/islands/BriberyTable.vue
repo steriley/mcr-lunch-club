@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
+import { formatDate } from '@/lib/dates';
 
 interface RecordRow {
   id: string;
@@ -18,11 +19,6 @@ const busy = ref<Record<string, boolean>>({});
 const pendingDelete = ref<RecordRow | null>(null);
 const message = ref('');
 const errorMessage = ref('');
-
-function formatDate(value: string | null) {
-  if (!value) return '—';
-  return new Date(`${value}T12:00:00Z`).toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
-}
 
 async function togglePublished(record: RecordRow) {
   message.value = '';
