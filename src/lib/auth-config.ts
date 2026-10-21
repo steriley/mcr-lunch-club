@@ -3,7 +3,7 @@ import { betterAuth } from 'better-auth';
 import { admin } from 'better-auth/plugins/admin';
 import type { Database } from '@/lib/db-client';
 import * as authSchema from '@/db/auth-schema';
-import { getAuthEnvironment, getPreviewOrigins, isProduction } from '@/lib/env';
+import { getAuthEnvironment, isProduction } from '@/lib/env';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-policy';
 
 /** Session lifetime and sliding refresh, in seconds. Change here only. */
@@ -13,21 +13,18 @@ export const SESSION_SETTINGS = {
 };
 
 export function createAuth(database: Database) {
-  const { secret, url: authUrl } = getAuthEnvironment();
-  const siteOrigin = new URL(authUrl).origin;
-  const trustedOrigins = Array.from(
-    new Set(
-      isProduction()
-        ? [siteOrigin, ...getPreviewOrigins()]
-        : ['http://localhost:4321', 'http://127.0.0.1:4321', siteOrigin]
-    )
-  );
+  const { secret, url: authUrl, allowedHosts } = getAuthEnvironment();
 
   return betterAuth({
     appName: 'MCR Lunch Club',
-    baseURL: authUrl,
+    // Resolved per request from the Host header, so the custom domain and the
+    // Vercel URLs all work; each allowed host is also a trusted origin.
+    baseURL: {
+      allowedHosts: isProduction() ? allowedHosts : [...allowedHosts, 'localhost:4321', '127.0.0.1:4321'],
+      fallback: authUrl,
+      protocol: isProduction() ? 'https' : 'auto'
+    },
     secret,
-    trustedOrigins,
     database: drizzleAdapter(database, {
       provider: 'pg',
       schema: authSchema
