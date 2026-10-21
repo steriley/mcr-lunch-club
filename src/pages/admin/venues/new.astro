@@ -5,7 +5,7 @@ import VenueForm from '@/components/islands/VenueForm.vue';
 import { venueSuggestions } from '@/db/schema';
 import { uuidParam } from '@/lib/admin-api';
 import { db } from '@/lib/db';
-import { getBlobToken } from '@/lib/env';
+import { getBlobToken, getPublicMapApiKey } from '@/lib/env';
 import { suggestionPrefill } from '@/lib/suggestions';
 
 export const prerender = false;
@@ -21,20 +21,11 @@ const prefill = usable ? suggestionPrefill(suggestion) : null;
 ---
 
 <AdminLayout title={prefill ? 'Accept suggestion' : 'New venue'}>
-  <div class="space-y-6">
-    <div class="flex items-center justify-between gap-4">
-      <div>
-        <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Venue management</p>
-        <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">{prefill ? `Accept “${prefill.name}”` : 'Create a venue'}</h1>
-      </div>
-    </div>
+  {requested && !prefill && (
+    <p role="alert" class="mb-6 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+      That suggestion has already been accepted or dismissed, or no longer exists. <a href="/admin/suggestions" class="font-semibold underline">Back to suggestions</a>
+    </p>
+  )}
 
-    {requested && !prefill && (
-      <p role="alert" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-        That suggestion has already been accepted or dismissed, or no longer exists. <a href="/admin/suggestions" class="font-semibold underline">Back to suggestions</a>
-      </p>
-    )}
-
-    <VenueForm client:load mode="create" uploadsEnabled={Boolean(getBlobToken())} suggestion={prefill} />
-  </div>
+  <VenueForm client:load mode="create" uploadsEnabled={Boolean(getBlobToken())} suggestion={prefill} mapApiKey={getPublicMapApiKey()} />
 </AdminLayout>

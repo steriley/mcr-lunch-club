@@ -33,7 +33,7 @@ describe('POST /api/admin/venues/[id]/visited-today', () => {
     signInAs({ ...ADMIN, name: 'Sam' });
     stubTransactions();
     stubExecute([{ id: VENUE_ID }]);
-    const pending = { id: 'i1', venueId: VENUE_ID, status: 'pending', kind: 'verified', firstAdminId: ADMIN.id, firstAdminName: 'Sam', inspectionDate: '2026-10-21' };
+    const pending = { id: 'i1', venueId: VENUE_ID, status: 'pending', kind: 'verified', firstAdminId: ADMIN.id, firstAdminName: 'Sam', inspectionDate: '2026-10-21', createdAt: new Date('2026-10-21T11:44:00Z') };
     stubDb('update', []);
     // confirmed-today lookup, pending lookup, then the status read.
     const { stubDbSequence } = await import('../route-helpers');
@@ -43,7 +43,7 @@ describe('POST /api/admin/venues/[id]/visited-today', () => {
     assert.equal(response.status, 200);
     const body = await response.json();
     assert.equal(body.result, 'waiting');
-    assert.deepEqual(body.status.pending, { firstAdminName: 'Sam', byMe: true });
+    assert.deepEqual(body.status.pending, { firstAdminName: 'Sam', byMe: true, firstAt: '2026-10-21T11:44:00.000Z' });
     const values = inserts.find((call) => call.method === 'values')!.args[0] as any;
     assert.equal(values.firstAdminId, ADMIN.id);
     assert.equal(values.status, 'pending');
