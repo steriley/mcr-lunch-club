@@ -7,11 +7,13 @@ import VenueSheet from '@/components/islands/VenueSheet.vue';
 import WhereToday from '@/components/islands/WhereToday.vue';
 import WeatherCard from '@/components/WeatherCard.vue';
 import SuggestModal from '@/components/islands/SuggestModal.vue';
+import BenchWalk from '@/components/BenchWalk.astro';
 import LedgerCanon from '@/components/LedgerCanon.astro';
 import { formatDate } from '@/lib/dates';
 import { getPublicMapApiKey } from '@/lib/env';
 import { getGoldenCut, getMapVenues, getPublicInspections, setPublicCacheHeaders } from '@/lib/public-data';
-import { milesText, walkText } from '@/lib/route-display';
+import { walkText } from '@/lib/route-display';
+import { buildSovereignBench } from '@/lib/sovereign-bench';
 import { seedLedgerInspections, seedLedgerVenues } from '@/stores/ledger';
 
 export const prerender = false;
@@ -25,22 +27,8 @@ setPublicCacheHeaders(Astro.response.headers);
 const publicMapApiKey = getPublicMapApiKey();
 // Already in public order: nearest first.
 const approvedVenues = venuesData.filter((venue) => venue.status === 'Approved');
-// Position by proximity, shown as the docket number.
-const proximityRank = (slug: string) => approvedVenues.findIndex((venue) => venue.slug === slug) + 1;
-const verifiedCount = (slug: string) => inspectionsData.filter((inspection) => inspection.venueSlug === slug && inspection.kind === 'verified').length;
-const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
-const firstAddressLine = (address: string) => address.split(',')[0] ?? '';
-const docketNumber = (index: number) => `#${String(index).padStart(2, '0')}`;
-
-// The Golden Cut, curated by the Chairs: #01 is the hero, #02 to #05 the list below it.
-// Until they pick any, the docket falls back to the nearest Approved venues and has no hero.
-const [hero, ...companions] = goldenCut;
-const heroVerified = hero ? verifiedCount(hero.venue.slug) : 0;
-// Newest first.
-const heroLatestInspection = hero ? inspectionsData.find((inspection) => inspection.venueSlug === hero.venue.slug) : undefined;
-const docketItems = hero
-  ? companions.map(({ venue, puffPiece, anchorDish }, index) => ({ venue, rank: docketNumber(index + 2), hook: puffPiece ?? anchorDish ?? venue.eatLikeUs }))
-  : approvedVenues.slice(0, 5).map((venue) => ({ venue, rank: docketNumber(proximityRank(venue.slug)), hook: venue.eatLikeUs }));
+const { mode, hero, pillars } = buildSovereignBench(goldenCut, venuesData, inspectionsData);
+const isGoldenCut = mode === 'golden-cut';
 // Lists are already nearest first, unknown walking times last.
 const valueShortcut = approvedVenues.find((venue) => venue.cost === '£');
 const swiftShortcut = approvedVenues.find((venue) => venue !== valueShortcut);
@@ -146,142 +134,137 @@ const fieldShortcuts = [
         </section>
       </div>
 
-      <aside aria-labelledby="docket-title" class:list={[{ 'golden-cut': hero }]}>
-        <div class="docket-heading">
-          <div>
-            <span class="docket-kicker">{hero ? 'Chosen by the Chairs' : 'Gazetted roll call'}</span>
-            <h1 class="docket-title" id="docket-title">{hero ? 'The Golden Cut' : 'Active Verdicts on the Docket'}</h1>
+      <aside class="bench" aria-labelledby="bench-title">
+        <div class="bench-header">
+          <div class="bench-header-copy">
+            <p class="bench-kicker">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="m12 3 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.3 6.8 19.1l1-5.8-4.3-4.1 5.9-.9L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              {isGoldenCut ? "The Golden Cut // The Chairs’ Permanent Quintet" : 'Gazetted roll call // Nearest approved'}
+            </p>
+            <h1 class="bench-title" id="bench-title">The Sovereign Bench of Manchester Lunch</h1>
           </div>
-          <span class="docket-sort">{hero ? <>Heavy <br />rotation</> : <>Ranked <br />by proximity</>}</span>
+          <span class="bench-header-pill">{isGoldenCut ? 'Top lunching guaranteed' : 'Ranked by proximity'}</span>
         </div>
 
-        {hero && (
-          <article class="docket-panel docket-feature is-golden">
-            <div class="docket-feature-ribbon">
-              <div class="docket-register">
-                <span>The Golden Cut — #01</span>
-                {heroVerified > 0 && (
-                  <>
-                    <span class="docket-ribbon-divider golden-ribbon-status">/</span>
-                    <span class="golden-ribbon-status">Inspection confirmed</span>
-                  </>
-                )}
-              </div>
-              {heroVerified > 0 && <strong class="golden-cut-count">{plural(heroVerified, 'verified audit')}</strong>}
+        {hero ? (
+          <article class="bench-hero">
+            <div class="bench-hero-media">
+              <span class="bench-placeholder" aria-hidden="true">
+                <img src="/brand/approved-sticker.png" alt="" />
+              </span>
+              <img
+                class="bench-image"
+                src={hero.imageUrl}
+                alt={hero.name}
+                onerror="this.onerror=null;this.parentElement.classList.add('is-placeholder')"
+              />
+              <a class="bench-seal" href={hero.href} aria-label={`View ${hero.name}'s audit`}>
+                <img src="/brand/approved-sticker.png" alt="" />
+              </a>
             </div>
 
-            <div class="docket-photo">
-              <img
-                src={hero.venue.imageUrl ?? `/venues/${hero.venue.slug}.jpg`}
-                alt={hero.venue.name}
-                class="docket-photo-image"
-                onerror="this.onerror=null;this.src='/brand/logo.png';this.alt='';this.classList.add('is-placeholder')"
-              />
-              <img
-                src="/brand/approved-sticker.png"
-                alt="MCR Lunch Club Approved"
-                class="docket-photo-seal"
-              />
-              <div class="docket-verdict-stamp">
-                <span class="docket-verdict-stamp-icon" aria-hidden="true">✓</span>
-                <span>
-                  <strong>Approved</strong>
-                  <small>{plural(heroVerified, 'verified inspection')}</small>
-                </span>
+            <div class="bench-hero-body">
+              <div class="bench-hero-heading">
+                <span class="bench-badge">{isGoldenCut ? `The Golden Cut ${hero.rank}` : `${hero.rank} by proximity`} · Approved · {hero.cost}</span>
+                <h2 class="bench-hero-name"><a href={hero.href}>{hero.name}</a></h2>
+                {hero.lastInspection && <p class="bench-last">Last Inspection: {hero.lastInspection}</p>}
               </div>
-            </div>
 
-            <div class="docket-feature-body">
-              <div class="docket-feature-title-row">
-                <div>
-                  <a class="docket-venue-name" href={`/venues/${hero.venue.slug}`}>{hero.venue.name}</a>
-                  <div class="docket-venue-meta">{hero.venue.cuisine}{hero.venue.address && ` · ${firstAddressLine(hero.venue.address)}`}</div>
+              {hero.eatLikeUs && (
+                <div class="bench-eat">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M7 3v7m-2.5-7v5a2.5 2.5 0 0 0 5 0V3M7 10v11M17 21V3c-2.2 1.2-3.5 3.7-3.5 7.2V14H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <div>
+                    <span class="bench-eat-label">Eat like us</span>
+                    <span class="bench-eat-dish">{hero.eatLikeUs}</span>
+                  </div>
                 </div>
-                <span class="docket-cost">{hero.venue.cost}</span>
-              </div>
+              )}
 
-              {hero.puffPiece && (
-                <blockquote class="docket-review">
-                  “{hero.puffPiece}”
+              {hero.quote && (
+                <blockquote class="bench-quote">
+                  <p>“{hero.quote}”</p>
                   <cite>— The Chairs</cite>
                 </blockquote>
               )}
 
-              {hero.anchorDish && (
-                <p class="golden-anchor">
-                  <span>Anchor dish</span>
-                  <strong>{hero.anchorDish}</strong>
-                </p>
-              )}
-
-              <div class="docket-stat-grid">
-                <div>
-                  <span>From base</span>
-                  <strong>{walkText(hero.venue.walkingTimeMin)}</strong>
-                </div>
-                <div>
-                  <span>Distance</span>
-                  <strong>{milesText(hero.venue.distanceMiles)}</strong>
-                </div>
-                <div>
-                  <span>Audits passed</span>
-                  <strong>{heroVerified} verified</strong>
-                </div>
-              </div>
-
-              <div class="docket-feature-tags">
-                {heroLatestInspection && <span class="docket-feature-tag">Last audit: {formatDate(heroLatestInspection.date)}</span>}
-                <span class="docket-feature-tag is-approved">Tier: Approved</span>
-              </div>
-
-              <div class="docket-feature-actions">
-                <a class="docket-action" href={`/venues/${hero.venue.slug}`}>
-                  <span aria-hidden="true">▤</span>
-                  View Full Audit
-                </a>
-                <a class="docket-action is-secondary" href={hero.venue.mapSearchLink} target="_blank" rel="noopener noreferrer">
-                  <span aria-hidden="true">♙</span>
-                  Route{hero.venue.walkingTimeMin !== null && ` (${hero.venue.walkingTimeMin}m)`}
-                </a>
+              <div class="bench-telemetry">
+                <BenchWalk walk={hero.walk} venueName={hero.name} />
+                {hero.inspectionCount > 0 && (
+                  <span class="bench-count">{hero.inspectionCount} {hero.inspectionCount === 1 ? 'Inspection' : 'Inspections'}</span>
+                )}
               </div>
             </div>
           </article>
+        ) : (
+          <p class="bench-empty">No approved venues are on the bench yet.</p>
         )}
 
-        <div class="docket-list" aria-label={hero ? 'The rest of The Golden Cut' : 'Nearest approved venues'}>
-          {docketItems.map(({ venue, rank, hook }) => (
-            <a class="docket-list-item" href={`/venues/${venue.slug}`}>
-              <span class="docket-list-image-wrap">
-                <img
-                  class="docket-list-image"
-                  src={venue.imageUrl ?? `/venues/${venue.slug}.jpg`}
-                  alt=""
-                  width="96"
-                  height="96"
-                  loading="lazy"
-                  decoding="async"
-                  onerror="this.onerror=null;this.src='/brand/logo.png';this.classList.add('is-placeholder')"
-                />
-                <span class="docket-rank">{rank}</span>
-              </span>
-              <span class="docket-list-content">
-                <span class="docket-list-header">
-                  <span class="docket-list-heading">
-                    <span class="docket-list-name">{venue.name}</span>
-                    <span class="docket-list-meta">{venue.cuisine}{hero && venue.address && ` · ${firstAddressLine(venue.address)}`}</span>
-                  </span>
-                  <span class="docket-list-cost">{venue.cost}</span>
-                </span>
-                <span class="docket-list-description">{hook}</span>
-                <span class="docket-list-footer">
-                  <span class="docket-list-walk">{walkText(venue.walkingTimeMin)} · {milesText(venue.distanceMiles, 'mi')}</span>
-                  <span class="docket-list-tier">Approved tier</span>
-                </span>
-              </span>
-            </a>
-          ))}
-        </div>
+        {pillars.length > 0 && (
+          <div class="bench-pillars-section">
+            <p class="bench-pillars-label">{isGoldenCut ? 'Chair-inspected & approved' : 'Approved & on the record'}</p>
+            <div class="bench-pillars">
+              {pillars.map((pillar) => (
+                <article class="bench-pillar">
+                  <div class="bench-pillar-main">
+                    <div class="bench-thumb">
+                      <span class="bench-placeholder" aria-hidden="true">
+                        <img src="/brand/approved-sticker.png" alt="" />
+                      </span>
+                      <img
+                        class="bench-image"
+                        src={pillar.imageUrl}
+                        alt=""
+                        width="80"
+                        height="80"
+                        loading="lazy"
+                        decoding="async"
+                        onerror="this.onerror=null;this.parentElement.classList.add('is-placeholder')"
+                      />
+                    </div>
+                    <div class="bench-pillar-copy">
+                      <div class="bench-pillar-title-row">
+                        <h3 class="bench-pillar-name">
+                          <a class="bench-pillar-link" href={pillar.href}>
+                            <span class="bench-rank">{pillar.rank}</span> {pillar.name}
+                          </a>
+                        </h3>
+                        <span class="bench-cost">{pillar.cost}</span>
+                      </div>
+                      {pillar.lastInspection && <p class="bench-last">Last Inspection: {pillar.lastInspection}</p>}
+                      {pillar.quote ? (
+                        <p class="bench-pillar-text is-quote">{pillar.quote}</p>
+                      ) : (
+                        pillar.eatLikeUs && <p class="bench-pillar-text">Eat like us: {pillar.eatLikeUs}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div class="bench-telemetry">
+                    <BenchWalk walk={pillar.walk} venueName={pillar.name} />
+                    {pillar.inspectionCount > 0 && (
+                      <span class="bench-count">{pillar.inspectionCount} {pillar.inspectionCount === 1 ? 'Inspection' : 'Inspections'}</span>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
       </aside>
     </div>
   </div>
 </Layout>
+
+<script>
+  import { getWalkingDirectionsUrl } from '@/lib/map/directions';
+
+  // The page ships Google walking directions; Apple devices get Apple Maps, like the Near Me walk button.
+  document.querySelectorAll<HTMLAnchorElement>('a[data-walk-directions]').forEach((link) => {
+    const lat = Number(link.dataset.lat);
+    const lng = Number(link.dataset.lng);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) link.href = getWalkingDirectionsUrl(lat, lng);
+  });
+</script>
