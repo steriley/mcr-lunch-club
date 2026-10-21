@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
+import { formatDateTime } from '@/lib/dates';
 import type { SuggestionStatus } from '@/lib/suggestion-schema';
 
 interface SuggestionItem {
@@ -24,10 +25,6 @@ const busy = ref<Record<string, boolean>>({});
 const pendingDelete = ref<SuggestionItem | null>(null);
 const message = ref('');
 const errorMessage = ref('');
-
-function formatWhen(value: string) {
-  return new Date(value).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' });
-}
 
 async function run(suggestion: SuggestionItem, action: () => Promise<Response>, failure: string) {
   message.value = '';
@@ -100,7 +97,7 @@ async function performDelete() {
               <template v-if="suggestion.cost"> · {{ suggestion.cost }}</template>
             </p>
             <p class="mt-1 text-xs text-[#535353]">
-              {{ suggestion.submitterName || 'Anonymous member' }} · {{ formatWhen(suggestion.createdAt) }}
+              {{ suggestion.submitterName || 'Anonymous member' }} · {{ formatDateTime(suggestion.createdAt) }}
             </p>
           </div>
           <div class="flex shrink-0 flex-wrap gap-2">

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatIsoDate, londonDate } from './london-date';
+import { londonDate } from './london-date';
 
 describe('londonDate', () => {
   it('uses GMT in winter', () => {
@@ -25,12 +25,5 @@ describe('londonDate', () => {
     assert.equal(londonDate(new Date('2026-10-24T23:00:00Z')), '2026-10-25');
     assert.equal(londonDate(new Date('2026-10-25T23:59:59Z')), '2026-10-25');
     assert.equal(londonDate(new Date('2026-10-26T00:00:00Z')), '2026-10-26');
-  });
-});
-
-describe('formatIsoDate', () => {
-  it('formats without shifting the day', () => {
-    assert.equal(formatIsoDate('2026-10-21'), '21 Oct 2026');
-    assert.equal(formatIsoDate('2026-01-01'), '1 Jan 2026');
   });
 });

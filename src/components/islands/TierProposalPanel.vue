@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import ProposalActions from './ProposalActions.vue';
 import TierBadge from './TierBadge.vue';
+import { formatDateTime } from '@/lib/dates';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
 
 interface PendingProposal {
@@ -18,7 +19,7 @@ const props = defineProps<{
   currentTier: string | null;
   pending: PendingProposal | null;
   currentUserId: string;
-  /** e.g. "21 Oct 2026, verified by Sam and Alex", or null when there is none. */
+  /** e.g. "21st Oct 26, verified by Sam and Alex", or null when there is none. */
   latestVerifiedInspection: string | null;
   activeAdmins: number;
 }>();
@@ -29,9 +30,7 @@ const proposedTier = ref('');
 const busy = ref(false);
 const errorMessage = ref('');
 const canPropose = computed(() => !props.pending || props.pending.proposedBy === props.currentUserId);
-const proposedWhen = computed(() =>
-  props.pending ? new Date(props.pending.proposedAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' }) : ''
-);
+const proposedWhen = computed(() => (props.pending ? formatDateTime(props.pending.proposedAt) : ''));
 
 async function propose() {
   errorMessage.value = '';

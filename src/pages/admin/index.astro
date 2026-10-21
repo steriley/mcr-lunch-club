@@ -4,6 +4,7 @@ import TierBadge from '@/components/islands/TierBadge.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import { user } from '@/db/auth-schema';
 import { briberyRecords, tierProposals, venueSuggestions, venues } from '@/db/schema';
+import { formatDateTime } from '@/lib/dates';
 import { db } from '@/lib/db';
 import { TIERS } from '@/lib/tiers';
 import { isPubliclyVisible, publicVenueCondition } from '@/lib/visibility';
@@ -56,9 +57,6 @@ const tiers = TIERS.map((tier) => ({
 }));
 const totalVisible = tierCounts.reduce((sum, row) => sum + row.visible, 0);
 const totalHidden = tierCounts.reduce((sum, row) => sum + row.hidden, 0);
-
-const formatWhen = (value: Date) =>
-  value.toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/London' });
 
 const stats = [
   { label: 'Public venues', value: totalVisible, href: '/admin/venues?status=public', tone: 'bg-[#E8F5EE] text-[#1E7A4E]' },
@@ -137,7 +135,7 @@ const stats = [
                 <a href={`/admin/venues/${venue.id}`} class="font-semibold text-[#1a1e24] hover:underline">{venue.name}</a>
                 {!isPubliclyVisible(venue) && <span class="text-xs font-semibold uppercase tracking-[0.12em] text-stone-600">Hidden</span>}
               </div>
-              <p class="text-xs text-[#535353]">{formatWhen(venue.updatedAt)}{venue.editor ? ` by ${venue.editor}` : ''}</p>
+              <p class="text-xs text-[#535353]">{formatDateTime(venue.updatedAt)}{venue.editor ? ` by ${venue.editor}` : ''}</p>
             </li>
           ))}
         </ul>

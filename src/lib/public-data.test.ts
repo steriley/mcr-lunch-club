@@ -123,24 +123,16 @@ describe('formatIncidentDate', () => {
     assert.equal(formatIncidentDate(null, '09:00'), undefined);
   });
 
-  it('formats ordinals', () => {
-    const format = (day: number) => formatIncidentDate(`2026-07-${String(day).padStart(2, '0')}`, null);
-    assert.equal(format(1), '1st July 2026');
-    assert.equal(format(2), '2nd July 2026');
-    assert.equal(format(3), '3rd July 2026');
-    assert.equal(format(4), '4th July 2026');
-    assert.equal(format(11), '11th July 2026');
-    assert.equal(format(12), '12th July 2026');
-    assert.equal(format(13), '13th July 2026');
-    assert.equal(format(21), '21st July 2026');
-    assert.equal(format(22), '22nd July 2026');
+  it('formats the date as "8th Jul 26"', () => {
+    assert.equal(formatIncidentDate('2026-07-08', null), '8th Jul 26');
+    assert.equal(formatIncidentDate('2026-09-21', null), '21st Sept 26');
   });
 
-  it('formats 12-hour times', () => {
-    assert.equal(formatIncidentDate('2026-07-08', '09:00'), '8th July 2026 at 9am');
-    assert.equal(formatIncidentDate('2026-07-08', '12:30'), '8th July 2026 at 12:30pm');
-    assert.equal(formatIncidentDate('2026-07-08', '00:05'), '8th July 2026 at 12:05am');
-    assert.equal(formatIncidentDate('2026-07-08', '23:00'), '8th July 2026 at 11pm');
+  it('adds the recorded 24-hour time without converting it', () => {
+    assert.equal(formatIncidentDate('2026-07-08', '09:00'), '8th Jul 26, 09:00');
+    assert.equal(formatIncidentDate('2026-07-08', '12:30:00'), '8th Jul 26, 12:30');
+    assert.equal(formatIncidentDate('2026-07-08', '00:05'), '8th Jul 26, 00:05');
+    assert.equal(formatIncidentDate('2026-07-08', '23:00'), '8th Jul 26, 23:00');
   });
 });
 
@@ -149,7 +141,7 @@ describe('toPublicIncident', () => {
     const incident = toPublicIncident(briberyRow());
     assert.equal(incident.date, '2026-07-08');
     assert.equal(incident.time, '09:00');
-    assert.equal(incident.formattedDate, '8th July 2026 at 9am');
+    assert.equal(incident.formattedDate, '8th Jul 26, 09:00');
     assert.equal(incident.location, 'The till');
     assert.equal(incident.context, 'A cookie was offered.');
     assert.deepEqual(incident.peopleInvolved, ['Ann']);

@@ -218,6 +218,7 @@ function weatherPoint(record: UnknownRecord, metadata: UnknownRecord, daily: boo
 function dateInManchester(value: string): string | null {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
+  // dates-guard:allow compares London calendar days; nothing here is displayed
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Europe/London',
     year: 'numeric',

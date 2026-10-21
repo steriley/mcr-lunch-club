@@ -282,6 +282,7 @@ const currentIcon = computed<WeatherIcon>(() => dispatch.value?.icon ?? (loading
 function isNightInManchester(time: string): boolean {
   const timestamp = Date.parse(time);
   if (!Number.isFinite(timestamp)) return false;
+  // dates-guard:allow reads the London hour to pick a night icon; nothing here is displayed
   const hour = Number(new Intl.DateTimeFormat('en-GB', {
     timeZone: 'Europe/London',
     hour: '2-digit',

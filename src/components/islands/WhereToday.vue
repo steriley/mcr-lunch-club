@@ -176,6 +176,7 @@ import { useStore } from '@nanostores/vue';
 import { $isWhereTodayOpen, closeWhereToday, selectVenue } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
 import { cuisineLabel, type CuisineValue } from '@/lib/cuisines';
+import { formatDate } from '@/lib/dates';
 import { milesText, walkText } from '@/lib/route-display';
 import type { Venue } from '@/types';
 
@@ -200,10 +201,7 @@ const overdueVenues = computed(() => {
     .filter(({ inspected }) => !Number.isNaN(inspected) && inspected < cutoff)
     .sort((a, b) => a.inspected - b.inspected)
     .slice(0, 2)
-    .map(({ venue, inspected }) => ({
-      venue,
-      lastSeen: new Date(inspected).toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'Europe/London' }),
-    }));
+    .map(({ venue }) => ({ venue, lastSeen: formatDate(venue.lastInspectionDate) }));
 });
 
 function onKeydown(event: KeyboardEvent) {

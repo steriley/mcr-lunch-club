@@ -1,6 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import inspectionsData from '@/data/inspections.json';
+import { formatDate } from '@/lib/dates';
 import { setPublicCacheHeaders } from '@/lib/public-data';
 
 export const prerender = false;
@@ -69,7 +70,7 @@ setPublicCacheHeaders(Astro.response.headers);
           <div class="bg-[#fdfcf9] rounded-xl border border-[#dcd6c8] shadow-sm p-5 space-y-3 flex flex-col justify-between">
             <div>
               <div class="flex items-center justify-between border-b border-stone-200 pb-2 mb-2">
-                <span class="font-mono text-xs font-bold text-stone-500">{insp.date}</span>
+                <span class="font-mono text-xs font-bold text-stone-500">{formatDate(insp.date)}</span>
                 <span
                   class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono border ${
                     insp.verdict === 'satisfactory'

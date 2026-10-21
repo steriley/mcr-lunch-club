@@ -8,6 +8,7 @@ import WhereToday from '@/components/islands/WhereToday.vue';
 import WeatherCard from '@/components/WeatherCard.vue';
 import SuggestModal from '@/components/islands/SuggestModal.vue';
 import LedgerCanon from '@/components/LedgerCanon.astro';
+import { formatDate } from '@/lib/dates';
 import { getPublicMapApiKey } from '@/lib/env';
 import { getMapVenues, setPublicCacheHeaders } from '@/lib/public-data';
 import { milesText, walkText } from '@/lib/route-display';
@@ -131,7 +132,7 @@ const fieldShortcuts = [
                 </svg>
                 Auditor's Fast Docket &amp; Field Shortcuts
               </h2>
-              {latestLedgerEntry && <span>Latest audit · {latestLedgerEntry.date}</span>}
+              {latestLedgerEntry && <span>Latest audit · {formatDate(latestLedgerEntry.date)}</span>}
             </div>
             <div class="field-shortcut-grid">
               {fieldShortcuts.map(({ label, venue, detail, variant }) => venue && (
@@ -214,14 +215,14 @@ const fieldShortcuts = [
                 <blockquote class="docket-review">
                   “{featuredReview}”
                   {latestAudit && (
-                    <cite>— Official review · {latestAudit.date}</cite>
+                    <cite>— Official review · {formatDate(latestAudit.date)}</cite>
                   )}
                 </blockquote>
               )}
 
               <div class="docket-feature-tags">
                 <span class="docket-feature-tag is-approved">Eat Like Us: 2 Slice Lunch Deal</span>
-                {latestAudit && <span class="docket-feature-tag">Last audit: {latestAudit.date}</span>}
+                {latestAudit && <span class="docket-feature-tag">Last audit: {formatDate(latestAudit.date)}</span>}
                 <span class="docket-feature-tag">Tier: Approved</span>
               </div>
 

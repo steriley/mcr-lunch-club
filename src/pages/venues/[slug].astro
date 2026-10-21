@@ -1,6 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import inspectionsData from '@/data/inspections.json';
+import { formatDate } from '@/lib/dates';
 import { getPublicVenue, setPublicCacheHeaders } from '@/lib/public-data';
 import { milesText, walkText } from '@/lib/route-display';
 import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
@@ -156,7 +157,7 @@ const statusInfo = TIER_BANNERS[venue.status];
 
           <div class="p-2 border-t sm:border-t-0 sm:border-l border-[#dcd6c8]">
             <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Last Sovereign Audit</span>
-            <span class="text-lg font-bold text-stone-800 font-mono mt-1 block">{venue.lastInspectionDate}</span>
+            <span class="text-lg font-bold text-stone-800 font-mono mt-1 block">{formatDate(venue.lastInspectionDate, { fallback: 'Awaiting Assessment' })}</span>
             <span class="text-xs text-stone-500 block font-sans">Permanent Record</span>
           </div>
         </div>
@@ -198,7 +199,7 @@ const statusInfo = TIER_BANNERS[venue.status];
               {venueInspections.map((insp) => (
                 <div class="p-4 rounded-xl bg-white border border-[#dcd6c8] shadow-xs space-y-2">
                   <div class="flex items-center justify-between border-b border-stone-100 pb-2">
-                    <span class="font-mono text-xs font-bold text-stone-800">{insp.date}</span>
+                    <span class="font-mono text-xs font-bold text-stone-800">{formatDate(insp.date)}</span>
                     <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono ${insp.verdict === 'satisfactory' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'}`}>
                       {insp.verdict}
                     </span>
