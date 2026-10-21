@@ -134,12 +134,21 @@
             >
               <div class="flex items-center justify-between text-xs border-b border-stone-100 pb-1 mb-1">
                 <span class="font-mono text-stone-600">{{ formatDate(insp.date) }}</span>
-                <span
-                  :class="insp.kind === 'verified' ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-100 text-stone-600'"
-                  class="px-1.5 py-0.2 rounded font-bold uppercase text-xs"
-                >
-                  {{ INSPECTION_KIND_LABELS[insp.kind] }}
-                </span>
+                <div class="flex items-center gap-1">
+                  <span
+                    v-if="insp.outcome"
+                    :class="INSPECTION_OUTCOME_BADGE_CLASSES[insp.outcome]"
+                    class="px-1.5 py-0.2 rounded border font-bold uppercase text-xs"
+                  >
+                    {{ INSPECTION_OUTCOME_LABELS[insp.outcome] }}
+                  </span>
+                  <span
+                    :class="insp.kind === 'verified' ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-100 text-stone-600'"
+                    class="px-1.5 py-0.2 rounded font-bold uppercase text-xs"
+                  >
+                    {{ INSPECTION_KIND_LABELS[insp.kind] }}
+                  </span>
+                </div>
               </div>
               <div class="text-base text-stone-800">{{ inspectionWitnesses(insp) }}</div>
             </div>
@@ -186,7 +195,7 @@ import { useStore } from '@nanostores/vue';
 import { $activeVenue, selectVenue } from '@/stores/filters';
 import { $inspectionsList } from '@/stores/ledger';
 import { formatDate } from '@/lib/dates';
-import { INSPECTION_KIND_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
+import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
 import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
 import { milesText, walkText } from '@/lib/route-display';
 

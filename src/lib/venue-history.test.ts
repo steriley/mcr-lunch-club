@@ -29,17 +29,22 @@ describe('revisionEntries', () => {
 
 describe('inspectionEntries', () => {
   const inspection = (overrides: Partial<InspectionRow>) =>
-    ({ id: 'i', inspectionDate: '2026-10-20', kind: 'verified', firstAdminName: 'Sam', secondAdminName: 'Alex', confirmedAt: at('2026-10-20T12:40:00Z'), ...overrides }) as InspectionRow;
+    ({ id: 'i', inspectionDate: '2026-10-20', kind: 'verified', outcome: 'satisfactory', firstAdminName: 'Sam', secondAdminName: 'Alex', confirmedAt: at('2026-10-20T12:40:00Z'), ...overrides }) as InspectionRow;
 
   it('dates a verified inspection by its confirmation time', () => {
     const [entry] = inspectionEntries([inspection({})]);
     assert.equal(entry.kind, 'inspection');
     assert.equal(entry.when, '20th Oct 26, 13:40');
-    assert.equal(entry.text, 'Inspection of 20th Oct 26: Verified by Sam and Alex');
+    assert.equal(entry.text, 'Inspection of 20th Oct 26: Verified by Sam and Alex, satisfactory');
+  });
+
+  it('says when an inspection was below par', () => {
+    const [entry] = inspectionEntries([inspection({ outcome: 'below_par' })]);
+    assert.equal(entry.text, 'Inspection of 20th Oct 26: Verified by Sam and Alex, below par');
   });
 
   it('shows only the date for a legacy record, which has no time', () => {
-    const [entry] = inspectionEntries([inspection({ kind: 'legacy', confirmedAt: null })]);
+    const [entry] = inspectionEntries([inspection({ kind: 'legacy', outcome: null, confirmedAt: null })]);
     assert.equal(entry.when, '20th Oct 26');
     assert.match(entry.text, /Legacy record/);
     assert.equal(entry.at.toISOString(), '2026-10-20T12:00:00.000Z');

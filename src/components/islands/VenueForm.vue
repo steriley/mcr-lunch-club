@@ -14,6 +14,7 @@ import GovernanceCard from './dossier/GovernanceCard.vue';
 import PublicDocketModal, { type DocketPreview } from './dossier/PublicDocketModal.vue';
 import { CUISINES, cuisineLabel, isCuisineValue } from '@/lib/cuisines';
 import { formatDate, formatDateTime } from '@/lib/dates';
+import { INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import { routeStatus, type RouteStatus } from '@/lib/route-status';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
 import { COST_BANDS, COST_BAND_LABELS, isOutsideUk, slugify, venueCreateSchema, venueInputSchema } from '@/lib/venue-schema';
@@ -383,7 +384,9 @@ function onConcordConfirmed(status: VisitStatus) {
       id: `local-inspection-${status.today}`,
       kind: 'inspection',
       when: formatDateTime(status.confirmed.confirmedAt ?? new Date()),
-      text: `Inspection of ${formatDate(status.today)}: Verified by ${status.confirmed.firstAdminName} and ${status.confirmed.secondAdminName}`,
+      text: `Inspection of ${formatDate(status.today)}: Verified by ${status.confirmed.firstAdminName} and ${status.confirmed.secondAdminName}${
+        status.confirmed.outcome ? `, ${INSPECTION_OUTCOME_LABELS[status.confirmed.outcome].toLowerCase()}` : ''
+      }`,
     },
     ...timeline.value,
   ];

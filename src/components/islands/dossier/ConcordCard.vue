@@ -1,9 +1,11 @@
 <script lang="ts">
+import type { InspectionOutcome } from '@/types';
+
 /** Mirrors VisitStatus in src/lib/inspections.ts. */
 export interface VisitStatus {
   today: string;
-  pending: { firstAdminName: string; byMe: boolean; firstAt: string } | null;
-  confirmed: { firstAdminName: string; secondAdminName: string; firstAt: string; confirmedAt: string | null } | null;
+  pending: { firstAdminName: string; byMe: boolean; firstAt: string; outcome: InspectionOutcome | null } | null;
+  confirmed: { firstAdminName: string; secondAdminName: string; firstAt: string; confirmedAt: string | null; outcome: InspectionOutcome | null } | null;
 }
 </script>
 
@@ -12,10 +14,13 @@ import { computed, ref } from 'vue';
 import DossierCard from './DossierCard.vue';
 import DossierIcon from './DossierIcon.vue';
 import { formatDate, formatDateTime } from '@/lib/dates';
+import { INSPECTION_OUTCOMES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 
 /**
  * "Visited today" as a two-signature concord. A press records this Chair's
  * signature; only a different Chair's press on the same UK day completes it.
+ * The first Chair also says how the inspection went; the cosigner affirms
+ * that outcome rather than choosing their own.
  */
 const props = defineProps<{ venueId: string; initialStatus: VisitStatus; latestVerifiedInspection: string | null }>();
 const emit = defineEmits<{ (event: 'confirmed', status: VisitStatus): void }>();
@@ -25,6 +30,8 @@ const latest = ref(props.latestVerifiedInspection);
 const busy = ref(false);
 const errorMessage = ref('');
 const justConfirmed = ref(false);
+// No default: the Chair must say how the inspection went before signing.
+const chosenOutcome = ref<InspectionOutcome | null>(null);
 
 const state = computed(() => {
   if (status.value.confirmed) return 'confirmed';
@@ -34,12 +41,19 @@ const state = computed(() => {
 });
 const signatures = computed(() => (status.value.confirmed ? 2 : status.value.pending ? 1 : 0));
 const first = computed(() => status.value.confirmed ?? status.value.pending);
+const recordedOutcome = computed(() => (first.value?.outcome ? INSPECTION_OUTCOME_LABELS[first.value.outcome] : null));
+const canPress = computed(() => !busy.value && (state.value === 'confirm_other' || chosenOutcome.value !== null));
 
 async function press() {
   errorMessage.value = '';
   busy.value = true;
   try {
-    const response = await fetch(`/api/admin/venues/${props.venueId}/visited-today`, { method: 'POST' });
+    const response = await fetch(`/api/admin/venues/${props.venueId}/visited-today`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // A cosigner sends nothing: they affirm the outcome the first Chair recorded.
+      body: JSON.stringify(state.value === 'none' ? { outcome: chosenOutcome.value } : {}),
+    });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) {
       errorMessage.value = result.error ?? 'Could not record your visit. Try again.';
@@ -49,7 +63,8 @@ async function press() {
     justConfirmed.value = Boolean(result.confirmedNow);
     if (result.confirmedNow && result.status.confirmed) {
       const { firstAdminName, secondAdminName } = result.status.confirmed;
-      latest.value = `${formatDate(result.status.today)}, verified by ${firstAdminName} and ${secondAdminName}`;
+      const outcomeLabel = result.status.confirmed.outcome ? `, ${INSPECTION_OUTCOME_LABELS[result.status.confirmed.outcome as InspectionOutcome].toLowerCase()}` : '';
+      latest.value = `${formatDate(result.status.today)}, verified by ${firstAdminName} and ${secondAdminName}${outcomeLabel}`;
       emit('confirmed', result.status);
     }
   } catch {
@@ -104,22 +119,47 @@ async function press() {
       </ul>
     </div>
 
+    <fieldset v-if="state === 'none'" class="space-y-2" :disabled="busy">
+      <legend class="dossier-overline mb-1">How did the inspection go?</legend>
+      <div class="grid grid-cols-2 gap-2">
+        <label
+          v-for="option in INSPECTION_OUTCOMES"
+          :key="option"
+          :class="[
+            'flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2.5 text-[13px] font-semibold',
+            chosenOutcome === option
+              ? option === 'below_par'
+                ? 'border-[var(--dossier-danger)] text-[var(--dossier-danger)]'
+                : 'border-[var(--dossier-green)] text-[var(--dossier-green)]'
+              : 'border-[var(--dossier-border)] text-[var(--dossier-ink)]',
+          ]"
+        >
+          <input v-model="chosenOutcome" type="radio" name="inspection-outcome" :value="option" class="accent-current" />
+          {{ INSPECTION_OUTCOME_LABELS[option] }}
+        </label>
+      </div>
+    </fieldset>
+    <p v-else-if="state === 'confirm_other' && recordedOutcome" class="dossier-inset text-[13px] text-[var(--dossier-ink)]">
+      {{ status.pending!.firstAdminName }} recorded this inspection as <strong>{{ recordedOutcome.toLowerCase() }}</strong>. Cosigning affirms that.
+    </p>
+
     <button
       v-if="state === 'none' || state === 'confirm_other'"
       type="button"
       class="dossier-btn is-primary w-full py-3 text-sm"
-      :disabled="busy"
+      :disabled="!canPress"
       @click="press"
     >
       <DossierIcon :name="busy ? 'refresh' : 'check'" :size="16" :class="busy && 'dossier-spin'" />
       {{ busy ? 'Recording…' : state === 'none' ? 'Affirm inspection (visited today)' : `Cosign ${status.pending!.firstAdminName}'s inspection` }}
     </button>
     <p v-else-if="state === 'waiting_for_other'" class="dossier-inset text-[13px] text-[var(--dossier-ink)]">
-      You've signed today's visit. Waiting for a different Chair to cosign before midnight.
+      You've signed today's visit<template v-if="recordedOutcome"> as {{ recordedOutcome.toLowerCase() }}</template>. Waiting for a different Chair to cosign before midnight.
     </p>
     <p v-else class="flex items-center gap-2 rounded-lg border border-[var(--dossier-green)]/40 bg-[#E8F5EE] px-3 py-2.5 text-[13px] font-semibold text-[var(--dossier-green)]">
       <DossierIcon name="checkCircle" :size="16" />
       {{ justConfirmed ? 'Inspection verified. Concord complete.' : 'Inspected and verified today.' }}
+      <template v-if="recordedOutcome">Outcome: {{ recordedOutcome.toLowerCase() }}.</template>
     </p>
 
     <p v-if="errorMessage" role="alert" class="dossier-error mt-0">{{ errorMessage }}</p>

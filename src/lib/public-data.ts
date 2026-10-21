@@ -129,7 +129,7 @@ export async function getGoldenCut(): Promise<GoldenCutVenue[]> {
 }
 
 export function toPublicInspection(
-  inspection: Pick<InspectionRow, 'id' | 'inspectionDate' | 'kind' | 'firstAdminName' | 'secondAdminName'>,
+  inspection: Pick<InspectionRow, 'id' | 'inspectionDate' | 'kind' | 'outcome' | 'firstAdminName' | 'secondAdminName'>,
   venue: Pick<VenueRow, 'slug' | 'name'>
 ): Inspection {
   return {
@@ -138,6 +138,7 @@ export function toPublicInspection(
     venueName: venue.name,
     date: inspection.inspectionDate,
     kind: inspection.kind,
+    outcome: inspection.kind === 'verified' ? inspection.outcome : null,
     chairs: inspection.kind === 'verified' ? [inspection.firstAdminName ?? 'Former Chair', inspection.secondAdminName ?? 'Former Chair'] : [],
   };
 }

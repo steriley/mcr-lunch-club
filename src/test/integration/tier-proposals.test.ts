@@ -113,10 +113,10 @@ describe('tier proposals (database)', { skip: skipIntegration }, () => {
     assert.deepEqual(await proposeTier(db, venueId, 'approved', sam), { ok: false, error: 'needs_verified_inspection' });
 
     // A lone press is not enough either.
-    await recordVisit(db, venueId, sam, new Date('2026-10-21T11:00:00Z'));
+    await recordVisit(db, venueId, sam, 'satisfactory', new Date('2026-10-21T11:00:00Z'));
     assert.deepEqual(await proposeTier(db, venueId, 'approved', sam), { ok: false, error: 'needs_verified_inspection' });
 
-    await recordVisit(db, venueId, alex, new Date('2026-10-21T12:00:00Z'));
+    await recordVisit(db, venueId, alex, 'satisfactory', new Date('2026-10-21T12:00:00Z'));
     const proposal = unwrap(await proposeTier(db, venueId, 'approved', sam));
     const [inspection] = await db.select().from(inspections).where(eq(inspections.kind, 'verified'));
     assert.equal(proposal.inspectionId, inspection.id);
