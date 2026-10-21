@@ -78,7 +78,8 @@ Environment Variables**. Never commit real values.
 | `DATABASE_URL_UNPOOLED` | Direct Neon connection for migrations and scripts; falls back to `DATABASE_URL`. |
 | `DATABASE_DRIVER` | `pg` (default, node-postgres over TCP, supports transactions). Set `neon-http` only where outbound Postgres connections (port 5432) are blocked, e.g. a sandboxed cloud dev environment; it sends queries over HTTPS and has no transactions. |
 | `BETTER_AUTH_SECRET` | Signing/encryption secret, at least 32 characters (`openssl rand -base64 32`). Different per environment. |
-| `BETTER_AUTH_URL` | Site origin: `http://localhost:4321` locally, the production URL (e.g. `https://mcrlunchclub.com`) on Vercel. Also the only trusted origin in production. |
+| `BETTER_AUTH_URL` | Site origin: `http://localhost:4321` locally, the production URL (e.g. `https://mcrlunchclub.com`) on Vercel. Also the only trusted origin in production. Preview deployments use their own Vercel URL instead, so it is not needed for Preview. |
+| `PRODUCTION_DATABASE_HOST` | Preview builds only: the production Neon host (e.g. `ep-calm-river-123456.eu-west-2.aws.neon.tech`, pooled or direct). Preview builds refuse to migrate a database on that endpoint. See *Preview deployments* below. |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob token for venue image uploads. Created when you connect a Blob store to the project; without it the form accepts image URLs only. |
 | `SEED_CHAIR_EMAIL` / `SEED_CHAIR_NAME` / `SEED_CHAIR_PASSWORD` | Only for `pnpm db:seed`. Remove them from your machine afterwards. |
 | `METOFFICE_API_KEY`, `PUBLIC_MAP_API_KEY` | Optional weather and map tile keys. |
@@ -100,6 +101,7 @@ Use a Neon **branch** so local work never touches production data:
 | --- | --- |
 | `pnpm db:generate` | Generate a migration in `drizzle/` after changing `src/db/schema.ts`. Commit it. |
 | `pnpm db:migrate` | Apply committed migrations (uses `DATABASE_URL_UNPOOLED`). |
+| `pnpm db:migrate:preview` | Run by the Vercel build. On a Preview deployment it applies migrations to that deployment's own Neon branch; everywhere else it does nothing. |
 | `pnpm db:studio` | Open Drizzle Studio. |
 | `pnpm db:seed` | Create (or re-promote) the first Chair from `SEED_CHAIR_*`. Idempotent; refuses to run with `NODE_ENV=production` unless `--force` is passed. `--reset-password` resets an existing Chair's password. Prints the email only. |
 | `pnpm db:import` | Import `src/data/venues.json` and `src/data/incidents.json`. Idempotent (venues match on slug, records on title + date); existing rows are left alone. `--dry-run` reports without writing; `--update` overwrites existing venues from the files. |
@@ -111,7 +113,8 @@ Use a Neon **branch** so local work never touches production data:
 1. **Database**: add Neon from the Vercel Marketplace to the project so
    `DATABASE_URL` / `DATABASE_URL_UNPOOLED` are provisioned.
 2. **Env vars**: set `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` (the production
-   domain) for Production, and separate values for Preview if you use it.
+   domain) for Production. For Preview set a different `BETTER_AUTH_SECRET` and
+   `PRODUCTION_DATABASE_HOST` (see *Preview deployments* below).
 3. **Blob (optional)**: create a Blob store under **Storage** and connect it to
    the project, which adds `BLOB_READ_WRITE_TOKEN`.
 4. **Migrations are a manual, explicit step**; they do not run on build. From a
@@ -128,6 +131,51 @@ Use a Neon **branch** so local work never touches production data:
    from **Chairs' Area → Users**.
 6. **Content** (once, if the database is empty): `pnpm db:import`.
 7. **Verify**: `pnpm check:security https://<your-domain>`.
+
+### Preview deployments (a Neon branch per pull request)
+
+Every pull request gets a Vercel Preview deployment with its own Neon branch,
+`preview/<git-branch>`, copied from production when the branch is first
+deployed. Changes made on a preview (signing in, editing venues) never touch
+production, and the preview build applies the pull request's migrations to its
+branch so the schema matches the code.
+
+One-off setup:
+
+1. **Turn on Preview branching** in the Neon integration. Vercel-managed
+   (Marketplace) integration: **Vercel → Storage → your database → Settings /
+   Connect Project**, tick **Preview** under *Deployments Configuration*, and
+   turn on **Resource must be active before deployment** so the build waits for
+   the branch. Neon-managed integration: **Neon Console → Integrations → Vercel →
+   Manage** and enable preview branches (and *Automatically delete obsolete Neon
+   branches*). The branch's `DATABASE_URL` / `DATABASE_URL_UNPOOLED` are
+   injected into that deployment only, so they never show in Vercel's
+   environment variable settings.
+2. **Vercel → Settings → Environment Variables, Preview environment**:
+   - `BETTER_AUTH_SECRET`: a different secret from production. Production
+     sessions don't carry over; sign in again on the preview with your normal
+     Chair details (they are copied with the data).
+   - `PRODUCTION_DATABASE_HOST`: the production Neon host, from the production
+     `DATABASE_URL`. This is the safety catch: if Preview branching is ever off,
+     the preview build sees the production database, and `pnpm db:migrate:preview`
+     fails the build rather than apply an unmerged migration to production.
+   - `BETTER_AUTH_URL` is not needed; previews use `VERCEL_BRANCH_URL` /
+     `VERCEL_URL` and trust both. Keep **Automatically expose System
+     Environment Variables** on (the default).
+3. **Deployment Protection** stays on as normal; sign in to Vercel to view a
+   preview.
+
+Notes:
+
+- The branch is created from production the first time a git branch deploys and
+  reused for later pushes, so it keeps any data you add on the preview. Delete
+  the `preview/<git-branch>` branch in the Neon Console to start afresh on the
+  next deployment.
+- Production migrations are still the manual step in the runbook above; run
+  them before merging a pull request that needs the new schema.
+- Vercel-managed integration: preview branches are removed when their
+  deployments are (6 months by default). Delete old ones in the Neon Console if
+  you get near the branch limit.
 
 ### Operating notes
 
@@ -182,6 +230,7 @@ mcr-lunch-club/
 ├── docs/                      # Build specs
 ├── scripts/
 │   ├── migrate.ts             # pnpm db:migrate
+│   ├── migrate-preview.ts     # pnpm db:migrate:preview (Vercel preview builds)
 │   ├── seed-chair.ts          # pnpm db:seed
 │   ├── import-existing-content.ts  # pnpm db:import
 │   └── check-admin-security.ts     # pnpm check:security

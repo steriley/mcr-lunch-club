@@ -3,7 +3,7 @@ import { betterAuth } from 'better-auth';
 import { admin } from 'better-auth/plugins/admin';
 import type { Database } from '@/lib/db-client';
 import * as authSchema from '@/db/auth-schema';
-import { getAuthEnvironment, isProduction } from '@/lib/env';
+import { getAuthEnvironment, getPreviewOrigins, isProduction } from '@/lib/env';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-policy';
 
 /** Session lifetime and sliding refresh, in seconds. Change here only. */
@@ -16,7 +16,11 @@ export function createAuth(database: Database) {
   const { secret, url: authUrl } = getAuthEnvironment();
   const siteOrigin = new URL(authUrl).origin;
   const trustedOrigins = Array.from(
-    new Set(isProduction() ? [siteOrigin] : ['http://localhost:4321', 'http://127.0.0.1:4321', siteOrigin])
+    new Set(
+      isProduction()
+        ? [siteOrigin, ...getPreviewOrigins()]
+        : ['http://localhost:4321', 'http://127.0.0.1:4321', siteOrigin]
+    )
   );
 
   return betterAuth({
