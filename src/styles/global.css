@@ -496,49 +496,39 @@
 }
 
 /*
- * The Sovereign Bench: the homepage aside. A navy panel with one hero card and
- * up to four pillars in a single column. The hero image sits beside its text once
- * the aside is wide enough (container query), since the aside width changes with the page.
+ * The Sovereign Bench: the homepage aside. A navy panel with one hero card
+ * (photo across the top, copy below) and up to four pillars, all in one column.
  */
 .bench {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-width: 0;
   padding: 16px;
-  overflow: hidden;
   border: 1px solid rgb(217 207 184 / 40%);
   border-radius: 16px;
   background: var(--bench-navy);
   color: #fff;
-  box-shadow: 0 20px 25px -5px rgb(14 27 68 / 22%), 0 8px 10px -6px rgb(14 27 68 / 18%);
-  container-type: inline-size;
 }
 
-.bench::before {
-  position: absolute;
-  top: -48px;
-  right: -48px;
-  width: 192px;
-  height: 192px;
-  border-radius: 50%;
-  background: rgb(138 81 0 / 15%);
-  filter: blur(40px);
-  content: "";
-  pointer-events: none;
-}
-
-.bench > * {
-  position: relative;
+.bench .material-symbols-outlined {
+  flex: none;
+  overflow: hidden;
+  user-select: none;
 }
 
 .bench-header {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
   padding-bottom: 10px;
   border-bottom: 1px solid rgb(138 81 0 / 30%);
+}
+
+.bench-header-copy {
+  flex: 1 1 260px;
 }
 
 .bench-kicker {
@@ -554,28 +544,20 @@
   text-transform: uppercase;
 }
 
-.bench .material-symbols-outlined {
-  flex: none;
-  overflow: hidden;
-  user-select: none;
-}
-
 .bench-kicker .material-symbols-outlined {
-  width: 16px;
-  font-size: 16px;
+  width: 22px;
+  font-size: 22px;
 }
 
 .bench-title {
   margin: 2px 0 0;
   color: #fff8f3;
-  font: 700 20px/1.2 "Playfair Display", Georgia, serif;
+  font: 700 clamp(20px, 4vw, 24px)/1.2 "Playfair Display", Georgia, serif;
   letter-spacing: -.01em;
 }
 
 .bench-header-pill {
-  align-self: flex-start;
   padding: 4px 10px;
-  border: 1px solid rgb(138 81 0 / 20%);
   border-radius: 8px;
   background: rgb(37 49 91 / 80%);
   color: var(--bench-peach);
@@ -591,33 +573,81 @@
   font-size: 14px;
 }
 
-/* Hero card */
-.bench-hero {
+/* Cards: the hero and the pillars share a frame and a stretched link. */
+.bench-hero,
+.bench-pillar {
   position: relative;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   border: 1px solid var(--ledger-border);
   border-radius: 12px;
-  background: var(--ledger-card);
   color: var(--ledger-ink);
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 22%), 0 4px 6px -4px rgb(0 0 0 / 18%);
+}
+
+.bench-hero {
+  background: var(--ledger-card);
+}
+
+.bench-pillar {
+  gap: 8px;
+  padding: 12px;
+  background: var(--bench-pillar);
+}
+
+.bench-pillar:hover {
+  border-color: #1b2f6b;
+}
+
+/* The overlay makes the whole card the click target; the walk link and seal sit above it. */
+.bench-hero-link,
+.bench-pillar-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.bench-hero-link::after,
+.bench-pillar-link::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  content: "";
+}
+
+.bench-hero:hover .bench-hero-link,
+.bench-pillar:hover .bench-pillar-link {
+  color: var(--bench-amber);
+}
+
+.bench-hero-link:focus-visible,
+.bench-pillar-link:focus-visible {
+  outline: none;
+}
+
+/* The ring goes round the whole card, in a colour that shows on the navy panel. */
+.bench-hero-link:focus-visible::after,
+.bench-pillar-link:focus-visible::after {
+  outline: 2px solid var(--bench-peach);
+  outline-offset: 2px;
+}
+
+/* Photo, with the placeholder underneath for when it fails to load (today's common case). */
+.bench-hero-media,
+.bench-thumb {
+  position: relative;
+  overflow: hidden;
+  background: var(--ledger-card);
 }
 
 .bench-hero-media {
-  position: relative;
-  flex: none;
-  min-height: 220px;
-  overflow: hidden;
-  background: #34302b;
+  height: 200px;
+  border-radius: 11px 11px 0 0;
 }
 
-.bench-hero-media:not(.is-placeholder)::after {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgb(0 24 84 / 95%), rgb(0 24 84 / 30%) 50%, transparent);
-  content: "";
-  pointer-events: none;
+.bench-thumb {
+  flex: none;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
 }
 
 .bench-image {
@@ -625,43 +655,37 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  display: block;
   object-fit: cover;
-  object-position: center;
-  transition: transform 700ms ease;
 }
 
-.bench-hero:hover .bench-image {
-  transform: scale(1.05);
+.is-placeholder > .bench-image {
+  display: none;
 }
 
-/* Sits under the photo and shows when it fails to load, which is the common case today. */
 .bench-placeholder {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   border: 1px solid var(--ledger-border);
-  background: var(--ledger-card);
 }
 
 .bench-placeholder::before {
   position: absolute;
-  inset: 6px;
+  inset: 5px;
   border: 1px solid rgb(217 207 184 / 70%);
   border-radius: 4px;
   content: "";
 }
 
 .bench-placeholder img {
-  width: 50%;
-  max-width: 104px;
-  height: auto;
-  opacity: .9;
+  width: 104px;
+  height: 104px;
 }
 
-.is-placeholder > .bench-image {
-  display: none;
+.bench-thumb .bench-placeholder img {
+  width: 48px;
+  height: 48px;
 }
 
 .bench-seal {
@@ -672,11 +696,6 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  transition: transform 150ms ease;
-}
-
-.bench-seal:hover {
-  transform: scale(1.1);
 }
 
 .bench-seal:focus-visible {
@@ -692,16 +711,13 @@
   border-radius: 50%;
   background: var(--ledger-paper);
   object-fit: cover;
-  box-shadow: 0 4px 10px rgb(0 0 0 / 30%);
 }
 
+/* Hero copy */
 .bench-hero-body {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  justify-content: space-between;
   gap: 10px;
-  min-width: 0;
   padding: 14px;
 }
 
@@ -724,45 +740,18 @@
   text-transform: uppercase;
 }
 
-.bench-hero-name {
+.bench-hero-name,
+.bench-pillar-name {
   margin: 0;
   color: var(--bench-primary);
-  font: 700 20px/1.25 "Playfair Display", Georgia, serif;
-  letter-spacing: -.01em;
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 700;
   overflow-wrap: anywhere;
 }
 
-.bench-hero-name a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.bench-hero-name a:hover,
-.bench-hero:hover .bench-hero-link {
-  color: var(--bench-amber);
-}
-
-.bench-hero-name a:hover {
-  text-decoration: underline;
-}
-
-/* Stretched link, as on the pillars: the whole hero card opens the venue page. */
-.bench-hero-link::after {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  content: "";
-}
-
-.bench-hero-link:focus-visible {
-  outline: none;
-}
-
-/* Inside the card: the hero clips its overflow, so an outer ring would be cut off. */
-.bench-hero-link:focus-visible::after {
-  outline: 3px solid var(--bench-navy);
-  outline-offset: -3px;
-  border-radius: 12px;
+.bench-hero-name {
+  font-size: 22px;
+  line-height: 1.2;
 }
 
 .bench-last {
@@ -779,11 +768,10 @@
   border: 1px solid rgb(217 207 184 / 60%);
   border-radius: 8px;
   background: var(--ledger-paper);
-  box-shadow: inset 0 1px 3px rgb(22 19 15 / 8%);
 }
 
 .bench-eat svg {
-  flex: 0 0 18px;
+  flex: none;
   width: 18px;
   height: 18px;
   margin-top: 2px;
@@ -812,7 +800,6 @@
   border: 1px solid rgb(217 207 184 / 50%);
   border-radius: 8px;
   background: rgb(255 255 255 / 80%);
-  box-shadow: 0 1px 2px rgb(22 19 15 / 6%);
 }
 
 .bench-quote p {
@@ -832,7 +819,7 @@
   text-transform: uppercase;
 }
 
-/* Walk link and inspections pill, shared by the hero and the pillars */
+/* Walk link and inspections pill, on the hero and every pillar */
 .bench-telemetry {
   display: flex;
   flex-wrap: wrap;
@@ -853,11 +840,11 @@
 }
 
 .bench-walk .material-symbols-outlined {
-  width: 14px;
-  font-size: 14px;
+  width: 18px;
+  font-size: 18px;
 }
 
-/* Above the pillar's stretched link, so it wins the click. */
+/* Above the stretched link, so it wins the click. */
 .bench-walk.is-link {
   position: relative;
   z-index: 1;
@@ -884,12 +871,11 @@
   text-transform: uppercase;
 }
 
-/* Pillars #02 to #05 */
+/* Pillars */
 .bench-pillars-section {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 4px;
 }
 
 .bench-pillars-label {
@@ -906,53 +892,10 @@
   gap: 10px;
 }
 
-.bench-pillar {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 12px;
-  border: 1px solid var(--ledger-border);
-  border-radius: 12px;
-  background: var(--bench-pillar);
-  color: var(--ledger-ink);
-  box-shadow: 0 1px 3px rgb(22 19 15 / 12%);
-  transition: border-color 150ms ease, box-shadow 150ms ease;
-}
-
-.bench-pillar:hover {
-  border-color: #1b2f6b;
-  box-shadow: 0 4px 10px rgb(22 19 15 / 18%);
-}
-
 .bench-pillar-main {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-}
-
-.bench-thumb {
-  position: relative;
-  flex: 0 0 80px;
-  width: 80px;
-  height: 80px;
-  overflow: hidden;
-  border-radius: 8px;
-  background: var(--ledger-card);
-  box-shadow: 0 1px 2px rgb(22 19 15 / 15%);
-}
-
-.bench-thumb .bench-placeholder img {
-  width: 56%;
-}
-
-.bench-thumb .bench-placeholder::before {
-  inset: 4px;
-}
-
-.bench-pillar:hover .bench-thumb .bench-image {
-  transform: scale(1.05);
 }
 
 .bench-pillar-copy {
@@ -972,41 +915,12 @@
 
 .bench-pillar-name {
   min-width: 0;
-  margin: 0;
-  color: var(--bench-primary);
-  font: 700 15px/1.25 "Playfair Display", Georgia, serif;
-  overflow-wrap: anywhere;
-}
-
-/* Stretched link: the overlay makes the whole card the click target. */
-.bench-pillar-link {
-  color: inherit;
-  text-decoration: none;
-}
-
-.bench-pillar-link::after {
-  position: absolute;
-  inset: 0;
-  border-radius: 12px;
-  content: "";
-}
-
-.bench-pillar:hover .bench-pillar-link {
-  color: var(--bench-amber);
-}
-
-.bench-pillar-link:focus-visible {
-  outline: none;
-}
-
-/* The ring goes round the whole card, in a colour that shows on the navy panel. */
-.bench-pillar-link:focus-visible::after {
-  outline: 2px solid var(--bench-peach);
-  outline-offset: 2px;
+  font-size: 15px;
+  line-height: 1.25;
 }
 
 .bench-cost {
-  flex: 0 0 auto;
+  flex: none;
   color: var(--bench-amber);
   font-size: 12px;
   font-weight: 700;
@@ -1029,45 +943,6 @@
 
 .bench-pillar-text.is-quote {
   font-style: italic;
-}
-
-@container (min-width: 440px) {
-  .bench-hero {
-    flex-direction: row;
-  }
-
-  .bench-hero-media {
-    width: 41.667%;
-    min-height: 100%;
-  }
-
-  .bench-header {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .bench-header-pill {
-    align-self: center;
-  }
-
-  .bench-title {
-    font-size: 24px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bench-image,
-  .bench-seal,
-  .bench-pillar {
-    transition: none;
-  }
-
-  .bench-hero:hover .bench-image,
-  .bench-pillar:hover .bench-thumb .bench-image,
-  .bench-seal:hover {
-    transform: none;
-  }
 }
 
 .field-dispatch {
