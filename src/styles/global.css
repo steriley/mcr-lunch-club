@@ -425,7 +425,7 @@
 
 .home-workspace-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 1fr);
+  grid-template-columns: minmax(0, 1.8fr) minmax(320px, 1fr);
   align-items: start;
   gap: 18px;
 }
@@ -496,8 +496,8 @@
 
 /*
  * The Sovereign Bench: the homepage aside. A navy panel with one hero card and
- * up to four pillars. Layout follows the aside's own width (container queries),
- * since the aside is narrow beside the map and wide once the page is one column.
+ * up to four pillars in a single column. The hero image sits beside its text once
+ * the aside is wide enough (container query), since the aside width changes with the page.
  */
 .bench {
   position: relative;
@@ -874,7 +874,6 @@
 
 .bench-pillars {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 }
 
@@ -1009,7 +1008,7 @@
   font-style: italic;
 }
 
-@container (min-width: 480px) {
+@container (min-width: 440px) {
   .bench-hero {
     flex-direction: row;
   }
@@ -1031,12 +1030,6 @@
 
   .bench-title {
     font-size: 24px;
-  }
-}
-
-@container (min-width: 520px) {
-  .bench-pillars {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
