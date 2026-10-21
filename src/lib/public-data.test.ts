@@ -252,6 +252,7 @@ function inspectionRow(overrides: Partial<InspectionRow> = {}): InspectionRow {
     inspectionDate: '2026-10-01',
     status: 'confirmed',
     kind: 'verified',
+    outcome: 'satisfactory',
     firstAdminId: 'a1',
     firstAdminName: 'Sam',
     secondAdminId: 'a2',
@@ -270,8 +271,14 @@ describe('toPublicInspection', () => {
       venueName: 'Chip Shop',
       date: '2026-10-01',
       kind: 'verified',
+      outcome: 'satisfactory',
       chairs: ['Sam', 'Alex'],
     });
+  });
+
+  it('shows a below-par outcome, and none for a legacy record', () => {
+    assert.equal(toPublicInspection(inspectionRow({ outcome: 'below_par' }), venueRow()).outcome, 'below_par');
+    assert.equal(toPublicInspection(inspectionRow({ kind: 'legacy', outcome: null }), venueRow()).outcome, null);
   });
 
   it('copes with deleted Chairs and names nobody on a legacy record', () => {

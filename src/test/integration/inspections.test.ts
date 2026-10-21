@@ -33,7 +33,7 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
 
   it('a first press waits for a second admin', async () => {
     const db = await testDb();
-    const outcome = await recordVisit(db, venueId, sam, noon);
+    const outcome = await recordVisit(db, venueId, sam, 'satisfactory', noon);
     assert.equal(outcome.result, 'waiting');
     const [row] = await rows();
     assert.deepEqual({ status: row.status, date: row.inspectionDate, first: row.firstAdminName }, { status: 'pending', date: '2026-10-21', first: 'Sam' });
@@ -50,8 +50,8 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
 
   it('two different admins on the same London day confirm one verified inspection', async () => {
     const db = await testDb();
-    await recordVisit(db, venueId, sam, noon);
-    const outcome = await recordVisit(db, venueId, alex, lateEvening);
+    await recordVisit(db, venueId, sam, 'satisfactory', noon);
+    const outcome = await recordVisit(db, venueId, alex, 'satisfactory', lateEvening);
     assert.equal(outcome.result, 'confirmed');
     assert.equal(outcome.result === 'confirmed' && outcome.confirmedNow, true);
 
@@ -69,10 +69,58 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
     assert.ok(confirmedAt, 'confirmed carries when the second Chair pressed');
   });
 
+  it('the first press sets the outcome and the cosigner affirms it', async () => {
+    const db = await testDb();
+    await recordVisit(db, venueId, sam, 'below_par', noon);
+    assert.equal((await getVisitStatus(db, venueId, alex.id, noon)).pending?.outcome, 'below_par');
+
+    const confirmed = await recordVisit(db, venueId, alex, undefined, lateEvening);
+    assert.equal(confirmed.result, 'confirmed');
+    const [row] = await rows();
+    assert.equal(row.outcome, 'below_par');
+    assert.equal((await getVisitStatus(db, venueId, jo.id, noon)).confirmed?.outcome, 'below_par');
+    assert.equal((await latestVerifiedInspection(db, venueId))?.outcome, 'below_par');
+  });
+
+  it('a cosigner may repeat the outcome but cannot name a different one', async () => {
+    const db = await testDb();
+    await recordVisit(db, venueId, sam, 'satisfactory', noon);
+    const mismatch = await recordVisit(db, venueId, alex, 'below_par', noon);
+    assert.equal(mismatch.result, 'outcome_mismatch');
+    const [pending] = await rows();
+    assert.deepEqual({ status: pending.status, outcome: pending.outcome, second: pending.secondAdminId }, { status: 'pending', outcome: 'satisfactory', second: null });
+
+    assert.equal((await recordVisit(db, venueId, alex, 'satisfactory', noon)).result, 'confirmed');
+    assert.equal((await rows())[0].outcome, 'satisfactory');
+  });
+
+  it('a first press without an outcome is refused and records nothing', async () => {
+    const db = await testDb();
+    assert.equal((await recordVisit(db, venueId, sam, undefined, noon)).result, 'outcome_required');
+    assert.deepEqual(await rows(), []);
+  });
+
+  it('the same admin pressing again cannot change the outcome', async () => {
+    const db = await testDb();
+    await recordVisit(db, venueId, sam, 'satisfactory', noon);
+    assert.equal((await recordVisit(db, venueId, sam, 'below_par', noon)).result, 'waiting');
+    assert.equal((await rows())[0].outcome, 'satisfactory');
+  });
+
+  it('the database requires an outcome on every verified inspection but not on legacy ones', async () => {
+    const db = await testDb();
+    await assert.rejects(
+      db.insert(inspections).values({ venueId, inspectionDate: '2026-10-21', status: 'pending', kind: 'verified', firstAdminId: 'sam' }),
+      violates('inspections_verified_has_outcome')
+    );
+    await db.insert(inspections).values({ venueId, inspectionDate: '2026-07-01', status: 'confirmed', kind: 'legacy' });
+    assert.equal((await rows())[0].outcome, null);
+  });
+
   it('the same admin pressing twice never confirms', async () => {
     const db = await testDb();
-    await recordVisit(db, venueId, sam, noon);
-    const again = await recordVisit(db, venueId, sam, lateEvening);
+    await recordVisit(db, venueId, sam, 'satisfactory', noon);
+    const again = await recordVisit(db, venueId, sam, 'satisfactory', lateEvening);
     assert.equal(again.result, 'waiting');
     const all = await rows();
     assert.equal(all.length, 1);
@@ -82,7 +130,7 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
 
   it('the database itself rejects one admin confirming their own press', async () => {
     const db = await testDb();
-    await recordVisit(db, venueId, sam, noon);
+    await recordVisit(db, venueId, sam, 'satisfactory', noon);
     await assert.rejects(
       db.update(inspections).set({ status: 'confirmed', secondAdminId: 'sam' }).where(eq(inspections.venueId, venueId)),
       violates('inspections_two_different_admins')
@@ -91,19 +139,19 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
 
   it('allows only one pending inspection per venue', async () => {
     const db = await testDb();
-    await recordVisit(db, venueId, sam, noon);
+    await recordVisit(db, venueId, sam, 'satisfactory', noon);
     await assert.rejects(
-      db.insert(inspections).values({ venueId, inspectionDate: '2026-10-21', status: 'pending', firstAdminId: 'alex' }),
+      db.insert(inspections).values({ venueId, inspectionDate: '2026-10-21', status: 'pending', outcome: 'satisfactory', firstAdminId: 'alex' }),
       violates('inspections_one_pending_per_venue')
     );
   });
 
   it('a first press nobody confirms lapses at London midnight; a press after midnight starts afresh', async () => {
     const db = await testDb();
-    await recordVisit(db, venueId, sam, lateEvening);
+    await recordVisit(db, venueId, sam, 'satisfactory', lateEvening);
     assert.equal((await getVisitStatus(db, venueId, alex.id, justAfterMidnight)).pending, null, 'yesterday’s press no longer shows');
 
-    const outcome = await recordVisit(db, venueId, alex, justAfterMidnight);
+    const outcome = await recordVisit(db, venueId, alex, 'satisfactory', justAfterMidnight);
     assert.equal(outcome.result, 'waiting', 'Alex starts a new pending inspection instead of confirming Sam’s');
     const all = (await rows()).sort((a, b) => a.inspectionDate.localeCompare(b.inspectionDate));
     assert.deepEqual(
@@ -119,17 +167,17 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
   it('works across the GMT/BST change', async () => {
     const db = await testDb();
     // 25 Oct 2026: clocks go back at 02:00 BST. 00:30 BST and 23:30 GMT are the same London day.
-    await recordVisit(db, venueId, sam, new Date('2026-10-24T23:30:00Z'));
-    const outcome = await recordVisit(db, venueId, alex, new Date('2026-10-25T23:30:00Z'));
+    await recordVisit(db, venueId, sam, 'satisfactory', new Date('2026-10-24T23:30:00Z'));
+    const outcome = await recordVisit(db, venueId, alex, 'satisfactory', new Date('2026-10-25T23:30:00Z'));
     assert.equal(outcome.result, 'confirmed');
     assert.equal((await rows())[0].inspectionDate, '2026-10-25');
   });
 
   it('a later press on an already confirmed day changes nothing', async () => {
     const db = await testDb();
-    await recordVisit(db, venueId, sam, noon);
-    await recordVisit(db, venueId, alex, noon);
-    const third = await recordVisit(db, venueId, jo, lateEvening);
+    await recordVisit(db, venueId, sam, 'satisfactory', noon);
+    await recordVisit(db, venueId, alex, 'satisfactory', noon);
+    const third = await recordVisit(db, venueId, jo, 'satisfactory', lateEvening);
     assert.equal(third.result, 'confirmed');
     assert.equal(third.result === 'confirmed' && third.confirmedNow, false);
     assert.equal((await rows()).length, 1);
@@ -142,7 +190,7 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
       await createAdmin('sam', 'Sam');
       await createAdmin('alex', 'Alex');
       venueId = await createVenue(`Race ${round}`);
-      const results = await Promise.all([recordVisit(db, venueId, sam, noon), recordVisit(db, venueId, alex, noon)]);
+      const results = await Promise.all([recordVisit(db, venueId, sam, 'satisfactory', noon), recordVisit(db, venueId, alex, 'satisfactory', noon)]);
       assert.deepEqual(results.map((result) => result.result).sort(), ['confirmed', 'waiting']);
       const all = await rows();
       assert.equal(all.length, 1);
@@ -153,8 +201,8 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
 
   it('a third admin racing a confirmation still leaves one inspection', async () => {
     const db = await testDb();
-    await recordVisit(db, venueId, sam, noon);
-    await Promise.all([recordVisit(db, venueId, alex, noon), recordVisit(db, venueId, jo, noon)]);
+    await recordVisit(db, venueId, sam, 'satisfactory', noon);
+    await Promise.all([recordVisit(db, venueId, alex, 'satisfactory', noon), recordVisit(db, venueId, jo, 'satisfactory', noon)]);
     const confirmed = (await rows()).filter((row) => row.status === 'confirmed');
     assert.equal(confirmed.length, 1);
     assert.equal((await rows()).length, 1);
@@ -162,8 +210,8 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
 
   it('keeps history when an admin account is deleted', async () => {
     const db = await testDb();
-    await recordVisit(db, venueId, sam, noon);
-    await recordVisit(db, venueId, alex, noon);
+    await recordVisit(db, venueId, sam, 'satisfactory', noon);
+    await recordVisit(db, venueId, alex, 'satisfactory', noon);
     const { user } = await import('@/db/auth-schema');
     await db.delete(user).where(eq(user.id, 'sam'));
     const [row] = await db.select().from(inspections).where(and(eq(inspections.venueId, venueId), eq(inspections.status, 'confirmed')));
@@ -172,7 +220,7 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
   });
 
   it('404s for an unknown venue', async () => {
-    const outcome = await recordVisit(await testDb(), '3f2b7a52-5c1e-4c0d-9a4f-1a2b3c4d5e6f', sam, noon);
+    const outcome = await recordVisit(await testDb(), '3f2b7a52-5c1e-4c0d-9a4f-1a2b3c4d5e6f', sam, 'satisfactory', noon);
     assert.equal(outcome.result, 'not_found');
   });
 });

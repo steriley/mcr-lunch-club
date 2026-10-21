@@ -257,10 +257,12 @@ not sign you in on the `vercel.app` address; sign in on each separately.
 - **Inspections**: a venue's "last inspected" date can't be typed in. Each
   Chair presses **Visited today** on the venue's page; an inspection counts
   once two different Chairs press it on the same UK calendar day (server
-  clock, `Europe/London`). A lone press lapses at midnight. The page lists the
-  inspection history: "Verified by A and B" or legacy records imported from
-  the Chairs' old records (which show as "last inspected" but never count as
-  verified). Deactivated Chairs can't press it.
+  clock, `Europe/London`). The first Chair also says how it went,
+  **Satisfactory** or **Below par**; the second Chair cosigns that outcome and
+  cannot choose a different one. A lone press lapses at midnight. The page lists the
+  inspection history: "Verified by A and B, below par" or legacy records imported from
+  the Chairs' old records (which show as "last inspected", have no outcome,
+  and never count as verified). Deactivated Chairs can't press it.
   Public pages (`/inspections`, venue pages, the home page) show the same
   confirmed records; pending and lapsed presses never appear.
 - **The Golden Cut**: up to five Approved venues the Chairs pick for the top

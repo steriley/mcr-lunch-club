@@ -1,7 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { formatDate } from '@/lib/dates';
-import { INSPECTION_KIND_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
+import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
 import { getPublicInspections, setPublicCacheHeaders } from '@/lib/public-data';
 
 export const prerender = false;
@@ -79,15 +79,22 @@ const legacyCount = inspections.length - verifiedCount;
               <div>
                 <div class="flex items-center justify-between border-b border-stone-200 pb-2 mb-2">
                   <span class="font-mono text-xs font-bold text-stone-500">{formatDate(insp.date)}</span>
-                  <span
-                    class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono border ${
-                      insp.kind === 'verified'
-                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                        : 'bg-stone-100 text-stone-600 border-stone-300'
-                    }`}
-                  >
-                    {INSPECTION_KIND_LABELS[insp.kind]}
-                  </span>
+                  <div class="flex items-center gap-1.5">
+                    {insp.outcome && (
+                      <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono border ${INSPECTION_OUTCOME_BADGE_CLASSES[insp.outcome]}`}>
+                        {INSPECTION_OUTCOME_LABELS[insp.outcome]}
+                      </span>
+                    )}
+                    <span
+                      class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono border ${
+                        insp.kind === 'verified'
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                          : 'bg-stone-100 text-stone-600 border-stone-300'
+                      }`}
+                    >
+                      {INSPECTION_KIND_LABELS[insp.kind]}
+                    </span>
+                  </div>
                 </div>
 
                 <a

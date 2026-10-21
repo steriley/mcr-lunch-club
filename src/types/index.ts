@@ -26,6 +26,9 @@ export interface Venue {
   mapSearchLink: string;
 }
 
+/** How an inspection went. */
+export type InspectionOutcome = 'satisfactory' | 'below_par';
+
 /** A confirmed inspection, as recorded in the Chairs' Area. */
 export interface Inspection {
   id: string;
@@ -35,6 +38,8 @@ export interface Inspection {
   date: string;
   /** verified: two Chairs pressed "Visited today" that day. legacy: imported from the Chairs' older records. */
   kind: 'verified' | 'legacy';
+  /** How it went; null for a legacy record, which is a date only. */
+  outcome: InspectionOutcome | null;
   /** The two Chairs who confirmed a verified inspection; empty for a legacy record. */
   chairs: string[];
 }

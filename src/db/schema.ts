@@ -90,13 +90,15 @@ export const venueEvents = pgTable(
 
 export const inspectionStatusEnum = pgEnum('inspection_status', ['pending', 'confirmed', 'lapsed']);
 export const inspectionKindEnum = pgEnum('inspection_kind', ['verified', 'legacy']);
+export const inspectionOutcomeEnum = pgEnum('inspection_outcome', ['satisfactory', 'below_par']);
 
 /**
  * Inspections. A verified one needs two different admins to press "Visited
  * today" on the same Europe/London day; a first press nobody confirms lapses
  * at midnight. Legacy rows are dates imported from the Chairs' records and
  * never count as verified. Names are snapshots so history survives account
- * deletion.
+ * deletion. The first Chair's press sets the outcome and the cosigner
+ * affirms it; legacy rows have none.
  */
 export const inspections = pgTable(
   'inspections',
@@ -106,6 +108,7 @@ export const inspections = pgTable(
     inspectionDate: date('inspection_date').notNull(),
     status: inspectionStatusEnum('status').notNull().default('pending'),
     kind: inspectionKindEnum('kind').notNull().default('verified'),
+    outcome: inspectionOutcomeEnum('outcome'),
     firstAdminId: text('first_admin_id').references(() => user.id, { onDelete: 'set null' }),
     firstAdminName: text('first_admin_name'),
     secondAdminId: text('second_admin_id').references(() => user.id, { onDelete: 'set null' }),
@@ -124,6 +127,8 @@ export const inspections = pgTable(
       'inspections_two_different_admins',
       sql`${table.firstAdminId} is null or ${table.secondAdminId} is null or ${table.firstAdminId} <> ${table.secondAdminId}`
     ),
+    // Every verified inspection records how it went; legacy rows are dates only.
+    check('inspections_verified_has_outcome', sql`${table.kind} = 'legacy' or ${table.outcome} is not null`),
   ]
 );
 

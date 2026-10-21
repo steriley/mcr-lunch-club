@@ -1,7 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { formatDate } from '@/lib/dates';
-import { INSPECTION_KIND_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
+import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
 import { getPublicInspections, getPublicVenue, setPublicCacheHeaders } from '@/lib/public-data';
 import { milesText, walkText } from '@/lib/route-display';
 import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
@@ -197,9 +197,16 @@ const statusInfo = TIER_BANNERS[venue.status];
                 <div class="p-4 rounded-xl bg-white border border-[#dcd6c8] shadow-xs space-y-2">
                   <div class="flex items-center justify-between border-b border-stone-100 pb-2">
                     <span class="font-mono text-xs font-bold text-stone-800">{formatDate(insp.date)}</span>
-                    <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono ${insp.kind === 'verified' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-stone-100 text-stone-600 border border-stone-300'}`}>
-                      {INSPECTION_KIND_LABELS[insp.kind]}
-                    </span>
+                    <div class="flex items-center gap-1.5">
+                      {insp.outcome && (
+                        <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono border ${INSPECTION_OUTCOME_BADGE_CLASSES[insp.outcome]}`}>
+                          {INSPECTION_OUTCOME_LABELS[insp.outcome]}
+                        </span>
+                      )}
+                      <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono ${insp.kind === 'verified' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-stone-100 text-stone-600 border border-stone-300'}`}>
+                        {INSPECTION_KIND_LABELS[insp.kind]}
+                      </span>
+                    </div>
                   </div>
                   <p class="text-base text-stone-900">{inspectionWitnesses(insp)}</p>
                 </div>
