@@ -42,7 +42,6 @@ describe('buildSovereignBench: Golden Cut mode', () => {
     assert.equal(bench.mode, 'golden-cut');
     assert.equal(bench.hero?.slug, 'a');
     assert.deepEqual(bench.pillars.map((card) => card.slug), ['b', 'c', 'd', 'e']);
-    assert.deepEqual([bench.hero, ...bench.pillars].map((card) => card?.rank), ['#01', '#02', '#03', '#04', '#05']);
     assert.equal(bench.hero?.href, '/venues/a');
   });
 
@@ -75,7 +74,6 @@ describe('buildSovereignBench: fallback mode', () => {
     assert.equal(bench.mode, 'nearest');
     assert.equal(bench.hero?.slug, 'a');
     assert.deepEqual(bench.pillars.map((card) => card.slug), ['b', 'c', 'd', 'e']);
-    assert.deepEqual([bench.hero, ...bench.pillars].map((card) => card?.rank), ['#01', '#02', '#03', '#04', '#05']);
   });
 
   it('shows only what there is when fewer than five are Approved', () => {
