@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import { boolean, check, date, decimal, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { user } from './auth-schema';
 import { CUISINE_VALUES } from '../lib/cuisines';
+import { GOLDEN_CUT_SIZE } from '../lib/golden-cut-schema';
 import { TIER_VALUES } from '../lib/tiers';
 
 export const tierEnum = pgEnum('tier', TIER_VALUES);
@@ -160,6 +161,28 @@ export const tierProposals = pgTable(
   ]
 );
 
+/**
+ * The Golden Cut: up to five Approved venues the Chairs curate for the top
+ * of the home page. Position 1 is the hero. The puff piece and anchor dish
+ * are written for this display only; when blank the page falls back to the
+ * venue's own lunch special.
+ */
+export const goldenCut = pgTable(
+  'golden_cut',
+  {
+    venueId: uuid('venue_id').primaryKey().references(() => venues.id, { onDelete: 'cascade' }),
+    position: integer('position').notNull(),
+    puffPiece: text('puff_piece'),
+    anchorDish: text('anchor_dish'),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedBy: text('updated_by').references(() => user.id, { onDelete: 'set null' }),
+  },
+  (table) => [
+    uniqueIndex('golden_cut_position_idx').on(table.position),
+    check('golden_cut_position_range', sql`${table.position} between 1 and ${sql.raw(String(GOLDEN_CUT_SIZE))}`),
+  ]
+);
+
 export const suggestionStatusEnum = pgEnum('suggestion_status', ['new', 'accepted', 'dismissed']);
 
 /** Venue suggestions sent in by members from the public "Suggest a Venue" form. */
@@ -188,6 +211,7 @@ export type SuggestionRow = typeof venueSuggestions.$inferSelect;
 export type VenueEventRow = typeof venueEvents.$inferSelect;
 export type InspectionRow = typeof inspections.$inferSelect;
 export type TierProposalRow = typeof tierProposals.$inferSelect;
+export type GoldenCutRow = typeof goldenCut.$inferSelect;
 
 export const schema = {
   venues,

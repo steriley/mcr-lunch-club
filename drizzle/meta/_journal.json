@@ -71,6 +71,13 @@
       "when": 1792526941540,
       "tag": "0009_tier_proposals",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792603421512,
+      "tag": "0010_golden_cut",
+      "breakpoints": true
     }
   ]
 }

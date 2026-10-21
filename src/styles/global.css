@@ -802,6 +802,76 @@
   font: italic 12px/1.55 "Playfair Display", Georgia, serif;
 }
 
+/* The Golden Cut: gold accents on the curated docket. */
+.golden-cut .docket-kicker {
+  color: #a86a12;
+}
+
+.docket-feature.is-golden {
+  border-color: var(--ledger-gold);
+  box-shadow: 0 0 0 3px rgb(242 154 46 / 16%), 0 3px 12px -2px rgb(22 19 15 / 8%);
+}
+
+.docket-feature.is-golden .docket-feature-ribbon {
+  border-bottom: 2px solid var(--ledger-gold);
+}
+
+.docket-feature.is-golden .docket-register span:first-child {
+  color: #f5c451;
+}
+
+.docket-feature.is-golden .docket-register span {
+  white-space: nowrap;
+}
+
+.golden-cut-count {
+  flex: 0 0 auto;
+  padding: 3px 6px;
+  border-radius: 4px;
+  background: var(--ledger-gold);
+  color: var(--ledger-deep);
+  font-size: 12px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.docket-photo-image.is-placeholder {
+  padding: 32px;
+  background: var(--ledger-card);
+  object-fit: contain;
+}
+
+.golden-anchor {
+  margin: 0;
+  padding: 8px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  border: 1px solid rgb(242 154 46 / 45%);
+  border-radius: 6px;
+  background: #fff6e6;
+}
+
+.golden-anchor span {
+  color: #8a5100;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.golden-anchor strong {
+  color: var(--ledger-ink);
+  font: 700 14px/1.35 "Playfair Display", Georgia, serif;
+}
+
+.golden-cut .docket-rank {
+  border-color: rgb(242 154 46 / 70%);
+  background: var(--ledger-deep);
+  color: #f5c451;
+}
+
 .docket-feature-actions {
   display: flex;
   gap: 8px;
@@ -1447,6 +1517,11 @@
   }
 
   .docket-sort br {
+    display: none;
+  }
+
+  /* Room for the position and audit count on a phone. */
+  .golden-ribbon-status {
     display: none;
   }
 }
