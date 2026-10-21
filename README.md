@@ -79,7 +79,9 @@ Environment Variables**. Never commit real values.
 | `DATABASE_URL_UNPOOLED` | Direct Neon connection for migrations and scripts; falls back to `DATABASE_URL`. |
 | `DATABASE_DRIVER` | `pg` (default, node-postgres over TCP, supports transactions). Set `neon-http` only where outbound Postgres connections (port 5432) are blocked, e.g. a sandboxed cloud dev environment; it sends queries over HTTPS and has no transactions. |
 | `BETTER_AUTH_SECRET` | Signing/encryption secret, at least 32 characters (`openssl rand -base64 32`). Different per environment. |
-| `BETTER_AUTH_URL` | Site origin: `http://localhost:4321` locally, the production URL (e.g. `https://mcrlunchclub.com`) on Vercel. Also the only trusted origin in production. |
+| `BETTER_AUTH_URL` | Main site origin: `http://localhost:4321` locally, `https://mcrlunchclub.com` on Vercel Production. Not needed for Preview, which uses its own Vercel URL. See *Signing in on more than one domain* below. |
+| `BETTER_AUTH_ALLOWED_HOSTS` | Optional, comma-separated: extra hosts the Chairs' Area works on, e.g. the production `mcr-lunch-club.vercel.app` alias. |
+| `PRODUCTION_DATABASE_HOST` | Preview builds: the production Neon host (e.g. `ep-calm-river-123456.eu-west-2.aws.neon.tech`, pooled or direct). Preview builds refuse to migrate a database on that endpoint. See *Preview deployments* below. |
 | `BLOB_READ_WRITE_TOKEN` | Vercel Blob token for venue image uploads. Created when you connect a Blob store to the project; without it the form accepts image URLs only. |
 | `SEED_CHAIR_EMAIL` / `SEED_CHAIR_NAME` / `SEED_CHAIR_PASSWORD` | Only for `pnpm db:seed`. Remove them from your machine afterwards. |
 | `ORS_API_KEY` | [OpenRouteService](https://openrouteservice.org) key, **server-only** (never prefix it with `PUBLIC_`). Powers the admin venue location search and the walking distance and time from HQ. Without it venues still save, but the location must be entered manually and routes stay "pending". `OPENROUTESERVICE_API_KEY` is accepted as an alternative name. Free Standard plan: 2,000 directions a day (40 a minute); Matrix has its own lower daily quota. Visitors never trigger requests, only admin saves and the backfill. |
@@ -102,6 +104,7 @@ Use a Neon **branch** so local work never touches production data:
 | --- | --- |
 | `pnpm db:generate` | Generate a migration in `drizzle/` after changing `src/db/schema.ts`. Commit it. |
 | `pnpm db:migrate` | Apply committed migrations (uses `DATABASE_URL_UNPOOLED`). |
+| `pnpm db:migrate:deploy` | Last step of the Vercel build. Production builds migrate production; Preview builds migrate their own Neon branch; anywhere else it does nothing. |
 | `pnpm db:studio` | Open Drizzle Studio. |
 | `pnpm db:seed` | Create (or re-promote) the first Chair from `SEED_CHAIR_*`. Idempotent; refuses to run with `NODE_ENV=production` unless `--force` is passed. `--reset-password` resets an existing Chair's password. Prints the email only. |
 | `pnpm db:import` | Import `src/data/venues.json` and `src/data/incidents.json`. Idempotent (venues match on slug, records on title + date); existing rows are left alone. `--dry-run` reports without writing; `--update` overwrites existing venues from the files. |
@@ -117,15 +120,26 @@ Use a Neon **branch** so local work never touches production data:
 1. **Database**: add Neon from the Vercel Marketplace to the project so
    `DATABASE_URL` / `DATABASE_URL_UNPOOLED` are provisioned.
 2. **Env vars**: set `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` (the production
-   domain) for Production, and separate values for Preview if you use it.
+   domain) for Production, plus `BETTER_AUTH_ALLOWED_HOSTS` if you use the
+   `vercel.app` address too. For Preview set a different `BETTER_AUTH_SECRET`
+   and `PRODUCTION_DATABASE_HOST` (see *Preview deployments* below).
 3. **Blob (optional)**: create a Blob store under **Storage** and connect it to
    the project, which adds `BLOB_READ_WRITE_TOKEN`.
-4. **Migrations are a manual, explicit step**; they do not run on build. From a
-   trusted machine with the production direct URL in the environment:
+4. **Migrations run automatically** as the last step of every Vercel build
+   (`pnpm test && pnpm build && pnpm db:migrate:deploy`), so they only run
+   once the tests and build have passed:
+   - **Production** (merging to `main`) migrates the production database before
+     the new deployment goes live.
+   - **Preview** migrates that preview's own Neon branch (see below).
+
+   The old deployment keeps serving for the few seconds between the migration
+   and the new one going live, so keep migrations backwards compatible: add
+   columns and tables first, and remove old ones in a later pull request once
+   no deployed code uses them. Instant Rollback in Vercel rolls back code, not
+   the schema. To migrate by hand, e.g. the first time:
    ```bash
    DATABASE_URL_UNPOOLED='<production direct url>' pnpm db:migrate
    ```
-   Run this before deploying code that needs the new schema.
 5. **First Chair** (once): with production env vars set locally,
    ```bash
    NODE_ENV=production SEED_CHAIR_EMAIL=… SEED_CHAIR_NAME=… SEED_CHAIR_PASSWORD=… pnpm db:seed --force
@@ -134,6 +148,65 @@ Use a Neon **branch** so local work never touches production data:
    from **Chairs' Area → Users**.
 6. **Content** (once, if the database is empty): `pnpm db:import`.
 7. **Verify**: `pnpm check:security https://<your-domain>`.
+
+### Preview deployments (a Neon branch per pull request)
+
+Every pull request gets a Vercel Preview deployment with its own Neon branch,
+`preview/<git-branch>`, copied from production when the branch is first
+deployed. Changes made on a preview (signing in, editing venues) never touch
+production, and the preview build applies the pull request's migrations to its
+branch so the schema matches the code.
+
+One-off setup:
+
+1. **Turn on Preview branching** in the Neon integration. Vercel-managed
+   (Marketplace) integration: **Vercel → Storage → your database → Settings /
+   Connect Project**, tick **Preview** under *Deployments Configuration*, and
+   turn on **Resource must be active before deployment** so the build waits for
+   the branch. Neon-managed integration: **Neon Console → Integrations → Vercel →
+   Manage** and enable preview branches (and *Automatically delete obsolete Neon
+   branches*). The branch's `DATABASE_URL` / `DATABASE_URL_UNPOOLED` are
+   injected into that deployment only, so they never show in Vercel's
+   environment variable settings.
+2. **Vercel → Settings → Environment Variables, Preview environment**:
+   - `BETTER_AUTH_SECRET`: a different secret from production. Production
+     sessions don't carry over; sign in again on the preview with your normal
+     Chair details (they are copied with the data).
+   - `PRODUCTION_DATABASE_HOST`: the production Neon host, from the production
+     `DATABASE_URL`. This is the safety catch: if Preview branching is ever off,
+     the preview build sees the production database, and `pnpm db:migrate:deploy`
+     fails the build rather than apply an unmerged migration to production.
+   - `BETTER_AUTH_URL` is not needed; previews use `VERCEL_BRANCH_URL` /
+     `VERCEL_URL` and allow both. Keep **Automatically expose System
+     Environment Variables** on (the default).
+3. **Deployment Protection** stays on as normal; sign in to Vercel to view a
+   preview.
+
+Notes:
+
+- The branch is created from production the first time a git branch deploys and
+  reused for later pushes, so it keeps any data you add on the preview. Delete
+  the `preview/<git-branch>` branch in the Neon Console to start afresh on the
+  next deployment.
+- Merging the pull request migrates production automatically in the
+  production build; the preview branch is not merged back, only the code is.
+- Vercel-managed integration: preview branches are removed when their
+  deployments are (6 months by default). Delete old ones in the Neon Console if
+  you get near the branch limit.
+
+### Signing in on more than one domain
+
+Better Auth works out its URL from each request's host, from an allow-list, so
+the Chairs' Area works on `mcrlunchclub.com` and on the Vercel addresses at the
+same time. On Production the list is the `BETTER_AUTH_URL` host, the project's
+production domain and the deployment's own Vercel URLs, plus anything in
+`BETTER_AUTH_ALLOWED_HOSTS`. To use the production `*.vercel.app` alias, add it
+there, e.g. `BETTER_AUTH_ALLOWED_HOSTS=mcr-lunch-club.vercel.app` (comma-separate
+several). Avoid a bare `*.vercel.app` wildcard: every allowed host is also a
+trusted origin, and anyone can deploy to `vercel.app`.
+
+Sign-in cookies belong to one host, so signing in on `mcrlunchclub.com` does
+not sign you in on the `vercel.app` address; sign in on each separately.
 
 ### Operating notes
 
@@ -236,6 +309,7 @@ mcr-lunch-club/
 ├── docs/                      # Build specs
 ├── scripts/
 │   ├── migrate.ts             # pnpm db:migrate
+│   ├── migrate-deploy.ts      # pnpm db:migrate:deploy (Vercel builds)
 │   ├── seed-chair.ts          # pnpm db:seed
 │   ├── import-existing-content.ts  # pnpm db:import
 │   └── check-admin-security.ts     # pnpm check:security

@@ -77,15 +77,57 @@ export function getDatabaseDriver(): DatabaseDriver {
   return value;
 }
 
+/** True on a Vercel Preview Deployment (VERCEL_ENV is a Vercel system variable). */
+export function isVercelPreview(): boolean {
+  return env.VERCEL_ENV === 'preview';
+}
+
+/**
+ * Origins a Vercel Preview Deployment is served from: the stable per-branch
+ * URL first, then the per-deployment URL. Empty outside previews.
+ */
+export function getPreviewOrigins(): string[] {
+  if (!isVercelPreview()) return [];
+  const hosts = [optional('VERCEL_BRANCH_URL'), optional('VERCEL_URL')].filter((host): host is string => Boolean(host));
+  return Array.from(new Set(hosts.map((host) => `https://${host}`)));
+}
+
+function hostOf(value: string): string {
+  return (value.includes('://') ? new URL(value).host : value).toLowerCase();
+}
+
+/**
+ * Hosts the site answers on, for Better Auth's `allowedHosts`: the auth URL's
+ * host, this deployment's Vercel URLs (per-branch and per-deployment, plus the
+ * production domain on production) and any extra hosts or wildcard patterns in
+ * BETTER_AUTH_ALLOWED_HOSTS, comma-separated.
+ */
+function getAllowedHosts(authUrl: string): string[] {
+  const vercelHosts = [optional('VERCEL_BRANCH_URL'), optional('VERCEL_URL')];
+  if (env.VERCEL_ENV === 'production') {
+    vercelHosts.push(optional('VERCEL_PROJECT_PRODUCTION_URL'));
+  }
+  const extraHosts = (optional('BETTER_AUTH_ALLOWED_HOSTS') ?? '').split(',').map((host) => host.trim());
+
+  const hosts = [authUrl, ...vercelHosts, ...extraHosts].filter((host): host is string => Boolean(host));
+  return Array.from(new Set(hosts.map(hostOf)));
+}
+
 export function getAuthEnvironment() {
   const secret = required('BETTER_AUTH_SECRET');
   if (secret.length < 32) {
     throw new Error('Invalid environment variable: BETTER_AUTH_SECRET must be at least 32 characters long.');
   }
 
+  // Preview URLs change per branch and deployment, so previews use their own
+  // URL rather than a fixed BETTER_AUTH_URL (which may be the production one).
+  const [previewUrl] = getPreviewOrigins();
+  const url = previewUrl ?? validateAuthUrl(required('BETTER_AUTH_URL'));
+
   return {
     secret,
-    url: validateAuthUrl(required('BETTER_AUTH_URL')),
+    url,
+    allowedHosts: getAllowedHosts(url),
   };
 }
 

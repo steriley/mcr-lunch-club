@@ -13,17 +13,18 @@ export const SESSION_SETTINGS = {
 };
 
 export function createAuth(database: Database) {
-  const { secret, url: authUrl } = getAuthEnvironment();
-  const siteOrigin = new URL(authUrl).origin;
-  const trustedOrigins = Array.from(
-    new Set(isProduction() ? [siteOrigin] : ['http://localhost:4321', 'http://127.0.0.1:4321', siteOrigin])
-  );
+  const { secret, url: authUrl, allowedHosts } = getAuthEnvironment();
 
   return betterAuth({
     appName: 'MCR Lunch Club',
-    baseURL: authUrl,
+    // Resolved per request from the Host header, so the custom domain and the
+    // Vercel URLs all work; each allowed host is also a trusted origin.
+    baseURL: {
+      allowedHosts: isProduction() ? allowedHosts : [...allowedHosts, 'localhost:4321', '127.0.0.1:4321'],
+      fallback: authUrl,
+      protocol: isProduction() ? 'https' : 'auto'
+    },
     secret,
-    trustedOrigins,
     database: drizzleAdapter(database, {
       provider: 'pg',
       schema: authSchema

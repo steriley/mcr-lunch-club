@@ -5,6 +5,7 @@ import {
   getBlobToken,
   getDatabaseDriver,
   getMigrationDatabaseUrl,
+  getPreviewOrigins,
   getPublicMapApiKey,
   getRuntimeDatabaseUrl,
   getSeedChairEnvironment,
@@ -27,6 +28,11 @@ const KEYS = [
   'WEATHER_API_KEY',
   'PUBLIC_MAP_API_KEY',
   'BLOB_READ_WRITE_TOKEN',
+  'VERCEL_ENV',
+  'VERCEL_URL',
+  'VERCEL_BRANCH_URL',
+  'VERCEL_PROJECT_PRODUCTION_URL',
+  'BETTER_AUTH_ALLOWED_HOSTS',
 ];
 
 let saved: Record<string, string | undefined>;
@@ -94,7 +100,77 @@ describe('getAuthEnvironment', () => {
     process.env.BETTER_AUTH_URL = 'ftp://example.com';
     assert.throws(() => getAuthEnvironment(), /http or https/);
     process.env.BETTER_AUTH_URL = 'https://example.com';
-    assert.deepEqual(getAuthEnvironment(), { secret: 'x'.repeat(32), url: 'https://example.com' });
+    assert.deepEqual(getAuthEnvironment(), {
+      secret: 'x'.repeat(32),
+      url: 'https://example.com',
+      allowedHosts: ['example.com'],
+    });
+  });
+
+  it('uses the preview branch URL on Vercel previews instead of BETTER_AUTH_URL', () => {
+    process.env.BETTER_AUTH_SECRET = 'x'.repeat(32);
+    process.env.BETTER_AUTH_URL = 'https://mcrlunchclub.com';
+    process.env.VERCEL_URL = 'app-abc123.vercel.app';
+    process.env.VERCEL_BRANCH_URL = 'app-git-feature.vercel.app';
+    assert.equal(getAuthEnvironment().url, 'https://mcrlunchclub.com');
+
+    process.env.VERCEL_ENV = 'preview';
+    assert.equal(getAuthEnvironment().url, 'https://app-git-feature.vercel.app');
+    delete process.env.VERCEL_BRANCH_URL;
+    assert.equal(getAuthEnvironment().url, 'https://app-abc123.vercel.app');
+  });
+
+  it('falls back to BETTER_AUTH_URL on a preview without Vercel URLs', () => {
+    process.env.BETTER_AUTH_SECRET = 'x'.repeat(32);
+    process.env.VERCEL_ENV = 'preview';
+    assert.throws(() => getAuthEnvironment(), /BETTER_AUTH_URL/);
+    process.env.BETTER_AUTH_URL = 'https://preview.example.com';
+    assert.equal(getAuthEnvironment().url, 'https://preview.example.com');
+  });
+});
+
+describe('getPreviewOrigins', () => {
+  it('lists the branch and deployment origins only on previews', () => {
+    process.env.VERCEL_URL = 'app-abc123.vercel.app';
+    process.env.VERCEL_BRANCH_URL = 'app-git-feature.vercel.app';
+    process.env.VERCEL_ENV = 'production';
+    assert.deepEqual(getPreviewOrigins(), []);
+    process.env.VERCEL_ENV = 'preview';
+    assert.deepEqual(getPreviewOrigins(), ['https://app-git-feature.vercel.app', 'https://app-abc123.vercel.app']);
+    process.env.VERCEL_BRANCH_URL = 'app-abc123.vercel.app';
+    assert.deepEqual(getPreviewOrigins(), ['https://app-abc123.vercel.app']);
+  });
+});
+
+describe('auth allowed hosts', () => {
+  beforeEach(() => {
+    process.env.BETTER_AUTH_SECRET = 'x'.repeat(32);
+    process.env.BETTER_AUTH_URL = 'https://mcrlunchclub.com';
+    process.env.VERCEL_URL = 'app-abc123.vercel.app';
+    process.env.VERCEL_BRANCH_URL = 'app-git-main.vercel.app';
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = 'www.mcrlunchclub.com';
+  });
+
+  it('allow the custom domain, the Vercel URLs and the production domain on production', () => {
+    process.env.VERCEL_ENV = 'production';
+    assert.deepEqual(getAuthEnvironment().allowedHosts, [
+      'mcrlunchclub.com',
+      'app-git-main.vercel.app',
+      'app-abc123.vercel.app',
+      'www.mcrlunchclub.com',
+    ]);
+  });
+
+  it('leave the production domain out on previews', () => {
+    process.env.VERCEL_ENV = 'preview';
+    assert.deepEqual(getAuthEnvironment().allowedHosts, ['app-git-main.vercel.app', 'app-abc123.vercel.app']);
+  });
+
+  it('add BETTER_AUTH_ALLOWED_HOSTS entries, with or without a scheme, without duplicates', () => {
+    delete process.env.VERCEL_URL;
+    delete process.env.VERCEL_BRANCH_URL;
+    process.env.BETTER_AUTH_ALLOWED_HOSTS = ' mcr-lunch-club.vercel.app , https://Lunch.Example.com,,mcrlunchclub.com ';
+    assert.deepEqual(getAuthEnvironment().allowedHosts, ['mcrlunchclub.com', 'mcr-lunch-club.vercel.app', 'lunch.example.com']);
   });
 });
 
