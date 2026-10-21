@@ -261,6 +261,16 @@ not sign you in on the `vercel.app` address; sign in on each separately.
   inspection history: "Verified by A and B" or legacy records imported from
   the Chairs' old records (which show as "last inspected" but never count as
   verified). Deactivated Chairs can't press it.
+  Public pages (`/inspections`, venue pages, the home page) show the same
+  confirmed records; pending and lapsed presses never appear.
+- **The Golden Cut**: up to five Approved venues the Chairs pick for the top
+  of the home page, edited at `/admin/golden-cut` (drag or use the arrows to
+  reorder, then save; any Chair, no countersign). #01 gets the hero card and
+  its puff piece in full; #02 to #05 show a short hook. Blank text falls back
+  to the venue's pull quote and lunch special. A venue that leaves Approved,
+  closes or loses its location drops off the home page (the next one moves
+  up) and is flagged in the editor. With nothing picked, the home page shows
+  the five nearest Approved venues instead.
 - **Permanently closed**: a flag, not a tier. Any Chair can mark a venue
   closed (with a confirmation) or reopen it from its edit page; no second
   Chair is needed, and both are logged on the **History** page. Closed venues

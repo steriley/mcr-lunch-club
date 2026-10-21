@@ -1,0 +1,36 @@
+---
+import { asc, eq } from 'drizzle-orm';
+import GoldenCutEditor from '@/components/islands/GoldenCutEditor.vue';
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { venues } from '@/db/schema';
+import { db } from '@/lib/db';
+import { listGoldenCut, notShownReason } from '@/lib/golden-cut';
+import { GOLDEN_CUT_SIZE } from '@/lib/golden-cut-schema';
+
+export const prerender = false;
+
+const [entries, approved] = await Promise.all([
+  listGoldenCut(db),
+  db
+    .select({ id: venues.id, name: venues.name, tier: venues.tier, latitude: venues.latitude, longitude: venues.longitude, closedAt: venues.closedAt })
+    .from(venues)
+    .where(eq(venues.tier, 'approved'))
+    .orderBy(asc(venues.name)),
+]);
+const approvedVenues = approved.map((venue) => ({ id: venue.id, name: venue.name, notShownReason: notShownReason(venue) }));
+---
+
+<AdminLayout title="The Golden Cut">
+  <div class="space-y-6">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Home page showcase</p>
+      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">The Golden Cut</h1>
+      <p class="mt-2 max-w-3xl text-sm text-[#535353]">
+        Up to {GOLDEN_CUT_SIZE} Approved venues in heavy rotation, shown at the top of the home page. Position #01 gets the hero card and its puff piece in
+        full; #02 to #05 show a short hook. Drag to reorder (or use the arrows), then save. Any Chair can change it; no countersign.
+      </p>
+    </div>
+
+    <GoldenCutEditor client:load entries={entries} approvedVenues={approvedVenues} />
+  </div>
+</AdminLayout>

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {
   PUBLIC_CACHE_CONTROL,
   countPublicInspections,
+  getGoldenCut,
   getMapVenues,
   getPublicInspections,
   getPublicVenue,
@@ -315,5 +316,39 @@ describe('public inspection queries', () => {
     assert.equal(await countPublicInspections(), 7);
     stubDb('select', []);
     assert.equal(await countPublicInspections(), 0);
+  });
+});
+
+describe('getGoldenCut', () => {
+  const entry = (venueId: string, position: number, overrides = {}) => ({ venueId, position, puffPiece: null, anchorDish: null, ...overrides });
+
+  it('reads Approved public venues in position order', async () => {
+    const calls = stubDb('select', []);
+    await getGoldenCut();
+    const { sql, params } = renderSql(calls.find((call) => call.method === 'where')!.args[0]);
+    assert.match(sql, /"tier" is not null/);
+    assert.ok(params.includes('approved'));
+    assert.ok(calls.some((call) => call.method === 'orderBy'));
+  });
+
+  it('skips venues that left Approved or closed, so the next one moves up', async () => {
+    stubDb('select', [
+      { entry: entry('a', 1), venue: venueRow({ slug: 'closed', tier: 'approved', closedAt: new Date() }) },
+      { entry: entry('b', 2), venue: venueRow({ slug: 'demoted', tier: 'if_we_must' }) },
+      { entry: entry('c', 3), venue: venueRow({ slug: 'open' }) },
+    ]);
+    assert.deepEqual((await getGoldenCut()).map((item) => item.venue.slug), ['open']);
+  });
+
+  it("uses the Chairs' text, falling back to the pull quote and lunch special", async () => {
+    stubDb('select', [
+      { entry: entry('a', 1, { puffPiece: 'The best.', anchorDish: 'Pizza' }), venue: venueRow({ slug: 'written' }) },
+      { entry: entry('b', 2), venue: venueRow({ slug: 'fallback', pullQuote: 'Gold', lunchSpecial: 'Chips' }) },
+      { entry: entry('c', 3), venue: venueRow({ slug: 'bare', pullQuote: null, lunchSpecial: null }) },
+    ]);
+    assert.deepEqual(
+      (await getGoldenCut()).map(({ puffPiece, anchorDish }) => [puffPiece, anchorDish]),
+      [['The best.', 'Pizza'], ['Gold', 'Chips'], [null, null]]
+    );
   });
 });

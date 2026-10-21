@@ -1,5 +1,5 @@
 import { and, asc, count, desc, eq, sql } from 'drizzle-orm';
-import { briberyRecords, inspections, venues, type BriberyRow, type InspectionRow, type VenueRow } from '@/db/schema';
+import { briberyRecords, goldenCut, inspections, venues, type BriberyRow, type InspectionRow, type VenueRow } from '@/db/schema';
 import { cuisineLabel } from '@/lib/cuisines';
 import { formatDateTime } from '@/lib/dates';
 import { db } from '@/lib/db';
@@ -97,6 +97,35 @@ export async function getPublicVenue(slug: string): Promise<PublicVenueDetail | 
     .limit(1);
   if (!row || !isPublicRow(row)) return null;
   return { ...toPublicVenue(row), pullQuote: row.pullQuote };
+}
+
+/** A Golden Cut venue for the home page, in position order (the first is the hero). */
+export interface GoldenCutVenue {
+  venue: PublicVenue;
+  /** The Chairs' write-up; falls back to the venue's pull quote. */
+  puffPiece: string | null;
+  /** The dish to order; falls back to the venue's lunch special. */
+  anchorDish: string | null;
+}
+
+/**
+ * The Golden Cut, skipping any venue that is no longer Approved or no longer
+ * on the map, so the next one moves up rather than leaving a gap.
+ */
+export async function getGoldenCut(): Promise<GoldenCutVenue[]> {
+  const rows = await db
+    .select({ entry: goldenCut, venue: venues })
+    .from(goldenCut)
+    .innerJoin(venues, eq(goldenCut.venueId, venues.id))
+    .where(and(publicVenueCondition(), eq(venues.tier, 'approved')))
+    .orderBy(asc(goldenCut.position));
+  return rows
+    .filter(({ venue }) => isPublicRow(venue) && isMappable(venue) && venue.tier === 'approved')
+    .map(({ entry, venue }) => ({
+      venue: toPublicVenue(venue as PublicRow),
+      puffPiece: entry.puffPiece ?? venue.pullQuote,
+      anchorDish: entry.anchorDish ?? venue.lunchSpecial,
+    }));
 }
 
 export function toPublicInspection(
