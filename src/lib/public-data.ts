@@ -1,5 +1,5 @@
-import { and, asc, desc, eq, sql } from 'drizzle-orm';
-import { briberyRecords, venues, type BriberyRow, type VenueRow } from '@/db/schema';
+import { and, asc, count, desc, eq, sql } from 'drizzle-orm';
+import { briberyRecords, inspections, venues, type BriberyRow, type InspectionRow, type VenueRow } from '@/db/schema';
 import { cuisineLabel } from '@/lib/cuisines';
 import { formatDateTime } from '@/lib/dates';
 import { db } from '@/lib/db';
@@ -7,7 +7,7 @@ import { parseTier, tierLabel, type TierValue } from '@/lib/tiers';
 import type { CostBand } from '@/lib/venue-schema';
 import { sortForPublic } from '@/lib/venue-order';
 import { isMappable, isPubliclyVisible, publicVenueCondition } from '@/lib/visibility';
-import type { Incident, Venue } from '@/types';
+import type { Incident, Inspection, Venue } from '@/types';
 
 /**
  * Read-only queries for the public site. Venues are filtered with the shared
@@ -97,6 +97,46 @@ export async function getPublicVenue(slug: string): Promise<PublicVenueDetail | 
     .limit(1);
   if (!row || !isPublicRow(row)) return null;
   return { ...toPublicVenue(row), pullQuote: row.pullQuote };
+}
+
+export function toPublicInspection(
+  inspection: Pick<InspectionRow, 'id' | 'inspectionDate' | 'kind' | 'firstAdminName' | 'secondAdminName'>,
+  venue: Pick<VenueRow, 'slug' | 'name'>
+): Inspection {
+  return {
+    id: inspection.id,
+    venueSlug: venue.slug,
+    venueName: venue.name,
+    date: inspection.inspectionDate,
+    kind: inspection.kind,
+    chairs: inspection.kind === 'verified' ? [inspection.firstAdminName ?? 'Former Chair', inspection.secondAdminName ?? 'Former Chair'] : [],
+  };
+}
+
+/** Confirmed inspections (verified or legacy) of public venues. Pending and lapsed presses never show. */
+function publicInspectionCondition(venueSlug?: string) {
+  return and(eq(inspections.status, 'confirmed'), publicVenueCondition(), venueSlug === undefined ? undefined : eq(venues.slug, venueSlug));
+}
+
+/** Public inspections, newest first; all of them, or one venue's. */
+export async function getPublicInspections(venueSlug?: string): Promise<Inspection[]> {
+  const rows = await db
+    .select({ inspection: inspections, venue: venues })
+    .from(inspections)
+    .innerJoin(venues, eq(inspections.venueId, venues.id))
+    .where(publicInspectionCondition(venueSlug))
+    .orderBy(desc(inspections.inspectionDate), sql`${inspections.confirmedAt} desc nulls last`);
+  return rows.filter(({ venue }) => isPublicRow(venue)).map(({ inspection, venue }) => toPublicInspection(inspection, venue));
+}
+
+/** For the nav badge on every public page. */
+export async function countPublicInspections(): Promise<number> {
+  const [row] = await db
+    .select({ total: count() })
+    .from(inspections)
+    .innerJoin(venues, eq(inspections.venueId, venues.id))
+    .where(publicInspectionCondition());
+  return row?.total ?? 0;
 }
 
 /** e.g. "8th Jul 26, 09:00": the incident's calendar day plus its recorded time, if any. */

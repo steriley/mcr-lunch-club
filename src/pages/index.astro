@@ -10,16 +10,16 @@ import SuggestModal from '@/components/islands/SuggestModal.vue';
 import LedgerCanon from '@/components/LedgerCanon.astro';
 import { formatDate } from '@/lib/dates';
 import { getPublicMapApiKey } from '@/lib/env';
-import { getMapVenues, setPublicCacheHeaders } from '@/lib/public-data';
+import { getMapVenues, getPublicInspections, setPublicCacheHeaders } from '@/lib/public-data';
 import { milesText, walkText } from '@/lib/route-display';
-import { seedLedgerVenues } from '@/stores/ledger';
-import inspectionsData from '@/data/inspections.json';
+import { seedLedgerInspections, seedLedgerVenues } from '@/stores/ledger';
 
 export const prerender = false;
 
 // Closed venues never go on the map or in Near Me.
-const venuesData = await getMapVenues();
+const [venuesData, inspectionsData] = await Promise.all([getMapVenues(), getPublicInspections()]);
 seedLedgerVenues(venuesData);
+seedLedgerInspections(inspectionsData);
 setPublicCacheHeaders(Astro.response.headers);
 
 const publicMapApiKey = getPublicMapApiKey();
@@ -34,21 +34,17 @@ const docketVenues = approvedVenues
 const featuredInspections = featuredVenue
   ? inspectionsData.filter((inspection) => inspection.venueSlug === featuredVenue.slug)
   : [];
-const satisfactoryAudits = featuredInspections.filter((inspection) => inspection.verdict === 'satisfactory');
-const latestAudit = featuredInspections
-  .slice()
-  .sort((a, b) => b.date.localeCompare(a.date))[0];
-const featuredReview = latestAudit?.notes ?? '';
+// Newest first.
+const verifiedAudits = featuredInspections.filter((inspection) => inspection.kind === 'verified');
+const latestAudit = featuredInspections[0];
 const featuredAddress = featuredVenue?.address.split(',')[0] ?? '';
 // Lists are already nearest first, unknown walking times last.
 const valueShortcut = approvedVenues.find((venue) => venue.cost === '£');
 const swiftShortcut = approvedVenues.find((venue) => venue !== valueShortcut);
 const scrutinyShortcut = venuesData.find((venue) => venue.status === 'Under Consideration');
-const latestLedgerEntry = inspectionsData
-  .slice()
-  .sort((a, b) => b.date.localeCompare(a.date))[0];
+const latestLedgerEntry = inspectionsData[0];
 const scrutinyAuditCount = scrutinyShortcut
-  ? inspectionsData.filter((inspection) => inspection.venueSlug === scrutinyShortcut.slug && inspection.verdict === 'satisfactory').length
+  ? inspectionsData.filter((inspection) => inspection.venueSlug === scrutinyShortcut.slug).length
   : 0;
 const fieldShortcuts = [
   {
@@ -66,14 +62,14 @@ const fieldShortcuts = [
   {
     label: 'Under scrutiny',
     venue: scrutinyShortcut,
-    detail: `${scrutinyAuditCount} satisfactory ${scrutinyAuditCount === 1 ? 'visit' : 'visits'} filed · ${walkText(scrutinyShortcut?.walkingTimeMin ?? null)}`,
+    detail: `${scrutinyAuditCount} ${scrutinyAuditCount === 1 ? 'inspection' : 'inspections'} on record · ${walkText(scrutinyShortcut?.walkingTimeMin ?? null)}`,
     variant: 'is-consideration',
   },
 ].filter((shortcut) => shortcut.venue);
 ---
 
 <Layout title="MCR Lunch Club — The Official Manchester Lunch Ledger">
-  <LedgerCanon venues={venuesData} />
+  <LedgerCanon venues={venuesData} inspections={inspectionsData} />
   <FilterBar client:load />
 
   <div class="home-workspace">
@@ -182,7 +178,7 @@ const fieldShortcuts = [
                 <span class="docket-verdict-stamp-icon" aria-hidden="true">✓</span>
                 <span>
                   <strong>Approved</strong>
-                  <small>{satisfactoryAudits.length} satisfactory audits</small>
+                  <small>{verifiedAudits.length} verified {verifiedAudits.length === 1 ? 'inspection' : 'inspections'}</small>
                 </span>
               </div>
             </div>
@@ -207,18 +203,9 @@ const fieldShortcuts = [
                 </div>
                 <div>
                   <span>Audits filed</span>
-                  <strong>{satisfactoryAudits.length} passed</strong>
+                  <strong>{verifiedAudits.length} verified</strong>
                 </div>
               </div>
-
-              {featuredReview && (
-                <blockquote class="docket-review">
-                  “{featuredReview}”
-                  {latestAudit && (
-                    <cite>— Official review · {formatDate(latestAudit.date)}</cite>
-                  )}
-                </blockquote>
-              )}
 
               <div class="docket-feature-tags">
                 <span class="docket-feature-tag is-approved">Eat Like Us: 2 Slice Lunch Deal</span>

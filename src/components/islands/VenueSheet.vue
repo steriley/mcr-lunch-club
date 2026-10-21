@@ -118,12 +118,12 @@
             <h3 class="text-sm font-bold font-serif-header text-[#1a1e24] flex items-center gap-1.5">
               <span>📋</span>
               <span>Official Inspection Ledger</span>
-              <span class="text-xs text-stone-500 font-normal">({{ venueInspections.length }} audits)</span>
+              <span class="text-xs text-stone-500 font-normal">({{ venueInspections.length }} {{ venueInspections.length === 1 ? 'inspection' : 'inspections' }})</span>
             </h3>
           </div>
 
           <div v-if="venueInspections.length === 0" class="text-base text-stone-500 italic p-3 bg-stone-50 rounded text-center">
-            No formal inspections recorded in the ledger yet. Awaiting initial tribunal.
+            No inspections on record yet. Awaiting the first dual-Chair visit.
           </div>
 
           <div v-else class="space-y-2">
@@ -135,21 +135,13 @@
               <div class="flex items-center justify-between text-xs border-b border-stone-100 pb-1 mb-1">
                 <span class="font-mono text-stone-600">{{ formatDate(insp.date) }}</span>
                 <span
-                  :class="insp.verdict === 'satisfactory' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
+                  :class="insp.kind === 'verified' ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-100 text-stone-600'"
                   class="px-1.5 py-0.2 rounded font-bold uppercase text-xs"
                 >
-                  {{ insp.verdict }}
+                  {{ INSPECTION_KIND_LABELS[insp.kind] }}
                 </span>
               </div>
-              <div class="text-base text-stone-800">
-                <span class="font-bold">Inspectors:</span> {{ insp.attendees.join(', ') }}
-              </div>
-              <div class="text-base text-stone-700 mt-0.5">
-                <span class="font-bold">Ordered:</span> {{ insp.whatWasOrdered }}
-              </div>
-              <p v-if="insp.notes" class="text-stone-600 italic mt-1 font-serif-header">
-                “{{ insp.notes }}”
-              </p>
+              <div class="text-base text-stone-800">{{ inspectionWitnesses(insp) }}</div>
             </div>
           </div>
         </div>
@@ -194,6 +186,7 @@ import { useStore } from '@nanostores/vue';
 import { $activeVenue, selectVenue } from '@/stores/filters';
 import { $inspectionsList } from '@/stores/ledger';
 import { formatDate } from '@/lib/dates';
+import { INSPECTION_KIND_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
 import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
 import { milesText, walkText } from '@/lib/route-display';
 

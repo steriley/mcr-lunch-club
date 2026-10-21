@@ -3,7 +3,9 @@ import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   PUBLIC_CACHE_CONTROL,
+  countPublicInspections,
   getMapVenues,
+  getPublicInspections,
   getPublicVenue,
   getPublicVenues,
   getPublishedIncidents,
@@ -11,9 +13,10 @@ import {
   serializeForScript,
   setPublicCacheHeaders,
   toPublicIncident,
+  toPublicInspection,
   toPublicVenue,
 } from './public-data';
-import type { BriberyRow, VenueRow } from '@/db/schema';
+import type { BriberyRow, InspectionRow, VenueRow } from '@/db/schema';
 import { publicVenueCondition } from './visibility';
 import { renderSql, restoreStubs, stubDb } from '../test/route-helpers';
 
@@ -238,5 +241,79 @@ describe('public venue queries', () => {
     const incidents = await getPublishedIncidents();
     assert.deepEqual(incidents.map((incident) => incident.id), ['b1', 'b2']);
     assert.equal(incidents[1].date, '');
+  });
+});
+
+function inspectionRow(overrides: Partial<InspectionRow> = {}): InspectionRow {
+  return {
+    id: 'i1',
+    venueId: 'uuid',
+    inspectionDate: '2026-10-01',
+    status: 'confirmed',
+    kind: 'verified',
+    firstAdminId: 'a1',
+    firstAdminName: 'Sam',
+    secondAdminId: 'a2',
+    secondAdminName: 'Alex',
+    createdAt: new Date(),
+    confirmedAt: new Date(),
+    ...overrides,
+  } as InspectionRow;
+}
+
+describe('toPublicInspection', () => {
+  it('shows the venue, the date and both Chairs of a verified inspection', () => {
+    assert.deepEqual(toPublicInspection(inspectionRow(), venueRow()), {
+      id: 'i1',
+      venueSlug: 'chip-shop',
+      venueName: 'Chip Shop',
+      date: '2026-10-01',
+      kind: 'verified',
+      chairs: ['Sam', 'Alex'],
+    });
+  });
+
+  it('copes with deleted Chairs and names nobody on a legacy record', () => {
+    assert.deepEqual(toPublicInspection(inspectionRow({ firstAdminName: null, secondAdminName: null }), venueRow()).chairs, ['Former Chair', 'Former Chair']);
+    assert.deepEqual(toPublicInspection(inspectionRow({ kind: 'legacy', firstAdminName: null, secondAdminName: null }), venueRow()).chairs, []);
+  });
+
+  it('never exposes admin ids', () => {
+    const inspection = toPublicInspection(inspectionRow(), venueRow());
+    for (const key of ['firstAdminId', 'secondAdminId', 'venueId', 'status']) assert.ok(!(key in inspection), key);
+  });
+});
+
+describe('public inspection queries', () => {
+  it('only reads confirmed inspections of public venues', async () => {
+    const calls = stubDb('select', []);
+    await getPublicInspections();
+    const { sql, params } = renderSql(calls.find((call) => call.method === 'where')!.args[0]);
+    assert.match(sql, /"inspections"\."status" = \$1/);
+    assert.equal(params[0], 'confirmed');
+    assert.ok(sql.includes(renderSql(publicVenueCondition()).sql.replace(/\$\d+/g, (n) => `$${Number(n.slice(1)) + 1}`)));
+  });
+
+  it('filters by venue when given a slug', async () => {
+    const calls = stubDb('select', []);
+    await getPublicInspections('chip-shop');
+    const { sql, params } = renderSql(calls.find((call) => call.method === 'where')!.args[0]);
+    assert.match(sql, /"venues"\."slug" = /);
+    assert.ok(params.includes('chip-shop'));
+  });
+
+  it('maps rows and drops any venue that fails the visibility rule', async () => {
+    stubDb('select', [
+      { inspection: inspectionRow(), venue: venueRow() },
+      { inspection: inspectionRow({ id: 'hidden' }), venue: venueRow({ slug: 'closed', closedAt: new Date() }) },
+    ]);
+    assert.deepEqual((await getPublicInspections()).map((inspection) => inspection.id), ['i1']);
+  });
+
+  it('counts public inspections, with 0 for an empty result', async () => {
+    stubDb('select', [{ total: 7 }]);
+    assert.equal(await countPublicInspections(), 7);
+    stubDb('select', []);
+    assert.equal(await countPublicInspections(), 0);
   });
 });

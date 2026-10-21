@@ -6,7 +6,7 @@ import type { Venue } from '@/types';
  * The ledger reads the page once, at import time. Each scenario sets up a fake
  * browser and re-runs the start-up reader directly.
  */
-import { getInitialVenues } from './ledger';
+import { getInitialInspections, getInitialVenues } from './ledger';
 
 const globals = globalThis as any;
 
@@ -29,12 +29,15 @@ function venue(slug: string): Venue {
   };
 }
 
-function fakeBrowser(options: { canon?: string | null; storage?: Record<string, string>; throwOnRemove?: boolean }) {
+function fakeBrowser(options: { canon?: string | null; inspections?: string; storage?: Record<string, string>; throwOnRemove?: boolean }) {
   const store = new Map(Object.entries(options.storage ?? {}));
   globals.window = {};
   globals.document = {
-    getElementById: (id: string) =>
-      id === 'ledger-canon' && options.canon !== undefined ? { textContent: options.canon } : null,
+    getElementById: (id: string) => {
+      if (id === 'ledger-canon' && options.canon !== undefined) return { textContent: options.canon };
+      if (id === 'ledger-inspections' && options.inspections !== undefined) return { textContent: options.inspections };
+      return null;
+    },
   };
   globals.localStorage = {
     getItem: (key: string) => store.get(key) ?? null,
@@ -101,5 +104,22 @@ describe('ledger in the browser', () => {
   it('still reads the published list when storage is blocked', () => {
     fakeBrowser({ canon: JSON.stringify([venue('a')]), throwOnRemove: true });
     assert.deepEqual(getInitialVenues(), [venue('a')]);
+  });
+
+  it('reads the inspections embedded in the page, or starts empty without them', () => {
+    const log = [{ id: 'i1', venueSlug: 'a', venueName: 'a', date: '2026-10-01', kind: 'legacy', chairs: [] }];
+    fakeBrowser({ inspections: JSON.stringify(log) });
+    assert.deepEqual(getInitialInspections(), log);
+
+    fakeBrowser({});
+    assert.deepEqual(getInitialInspections(), []);
+
+    fakeBrowser({ inspections: '{not json' });
+    const restore = silence();
+    try {
+      assert.deepEqual(getInitialInspections(), []);
+    } finally {
+      restore();
+    }
   });
 });
