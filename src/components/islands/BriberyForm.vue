@@ -3,27 +3,11 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import { briberyInputSchema } from '@/lib/bribery-schema';
 import { apiFetch } from '@/lib/api-fetch';
-
-interface BriberyData {
-  id: string;
-  title: string | null;
-  venueId: string | null;
-  venueNameText: string | null;
-  incidentDate: string | null;
-  incidentTime: string | null;
-  location: string | null;
-  peopleInvolved: string[];
-  witnesses: string[];
-  benefitOffered: string | null;
-  value: string | null;
-  description: string;
-  outcome: string | null;
-  published: boolean;
-}
+import type { SerializedBribery } from '@/lib/bribery';
 
 const props = defineProps<{
   mode: 'create' | 'edit';
-  record?: BriberyData | null;
+  record?: SerializedBribery | null;
   venues: Array<{ id: string; name: string }>;
 }>();
 

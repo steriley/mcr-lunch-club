@@ -6,7 +6,8 @@ import path from 'node:path';
 /**
  * Islands are bundled for the browser, so nothing they import (directly or
  * transitively) may read server secrets such as ORS_API_KEY. This walks the
- * import graph of every island and of the client stores.
+ * import graph of every island and of the client stores. Type-only imports
+ * (`import type`) are erased at build time, so they are not followed.
  */
 
 const ROOT = path.resolve('src');
@@ -31,12 +32,17 @@ function resolveImport(from: string, specifier: string): string | null {
   return null;
 }
 
-function importsOf(file: string): string[] {
-  const source = readFileSync(file, 'utf8');
-  const specifiers = [...source.matchAll(/(?:import|export)\s[^'"]*?from\s+['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)|import\s+['"]([^'"]+)['"]/g)].map(
+/** Runtime import specifiers in a source file; `import type` and `export type` are skipped. */
+export function runtimeImports(source: string): string[] {
+  return [...source.matchAll(/(?:import|export)\s(?!type\s)[^'"]*?from\s+['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)|import\s+['"]([^'"]+)['"]/g)].map(
     (match) => match[1] ?? match[2] ?? match[3]
   );
-  return specifiers.map((specifier) => resolveImport(file, specifier)).filter((value): value is string => value !== null);
+}
+
+function importsOf(file: string): string[] {
+  return runtimeImports(readFileSync(file, 'utf8'))
+    .map((specifier) => resolveImport(file, specifier))
+    .filter((value): value is string => value !== null);
 }
 
 function reachable(entry: string): Set<string> {
@@ -54,6 +60,18 @@ function reachable(entry: string): Set<string> {
 
 describe('client bundle safety', () => {
   const entries = [...filesUnder(path.join(ROOT, 'components'), /\.vue$/), ...filesUnder(path.join(ROOT, 'stores'), /^(?!.*\.test\.ts$).*\.ts$/)];
+
+  it('follows runtime imports but not type-only ones', () => {
+    const source = [
+      "import { db } from '@/lib/db';",
+      "import type { SerializedVenue } from '@/lib/venues';",
+      "export type { VisitStatus } from '@/lib/inspections';",
+      "import { tierInfo, type TierValue } from '@/lib/tiers';",
+      "import '@/styles/global.css';",
+      "const leaflet = await import('leaflet');",
+    ].join('\n');
+    assert.deepEqual(runtimeImports(source), ['@/lib/db', '@/lib/tiers', '@/styles/global.css', 'leaflet']);
+  });
 
   it('finds the islands to check', () => {
     assert.ok(entries.some((file) => file.endsWith('VenueForm.vue')));

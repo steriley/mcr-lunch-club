@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { hiddenReason, isMappable, isPubliclyVisible, publicVenueCondition, type VisibilityFields } from './visibility';
+import { hiddenReason, isMappable, isPubliclyVisible, type VisibilityFields } from './visibility';
+import { publicVenueCondition } from './visibility-sql';
 import { renderSql } from '../test/route-helpers';
 
 const CLOSED_AT = new Date('2026-10-21T12:00:00Z');

@@ -1,16 +1,7 @@
-<script lang="ts">
-import type { InspectionOutcome } from '@/types';
-
-/** Mirrors VisitStatus in src/lib/inspections.ts. */
-export interface VisitStatus {
-  today: string;
-  pending: { firstAdminName: string; byMe: boolean; firstAt: string; outcome: InspectionOutcome | null } | null;
-  confirmed: { firstAdminName: string; secondAdminName: string; firstAt: string; confirmedAt: string | null; outcome: InspectionOutcome | null } | null;
-}
-</script>
-
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import type { InspectionOutcome } from '@/types';
+import type { VisitStatus } from '@/lib/inspections';
 import DossierCard from './DossierCard.vue';
 import DossierIcon from './DossierIcon.vue';
 import { formatDate, formatDateTime } from '@/lib/dates';

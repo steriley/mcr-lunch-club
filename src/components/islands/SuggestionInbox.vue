@@ -2,32 +2,19 @@
 import { ref } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import { formatDateTime } from '@/lib/dates';
-import type { SuggestionStatus } from '@/lib/suggestion-schema';
 import { apiFetch, type ApiFetchOptions } from '@/lib/api-fetch';
+import type { SerializedSuggestion } from '@/lib/suggestions';
 
-interface SuggestionItem {
-  id: string;
-  name: string;
-  address: string;
-  cuisine: string | null;
-  cost: string | null;
-  recommendedOrder: string | null;
-  rationale: string;
-  submitterName: string | null;
-  status: SuggestionStatus;
-  venueId: string | null;
-  createdAt: string;
-}
 
-const props = defineProps<{ suggestions: SuggestionItem[] }>();
+const props = defineProps<{ suggestions: SerializedSuggestion[] }>();
 
-const rows = ref<SuggestionItem[]>(props.suggestions.map((suggestion) => ({ ...suggestion })));
+const rows = ref<SerializedSuggestion[]>(props.suggestions.map((suggestion) => ({ ...suggestion })));
 const busy = ref<Record<string, boolean>>({});
-const pendingDelete = ref<SuggestionItem | null>(null);
+const pendingDelete = ref<SerializedSuggestion | null>(null);
 const message = ref('');
 const errorMessage = ref('');
 
-async function run(suggestion: SuggestionItem, options: ApiFetchOptions): Promise<boolean> {
+async function run(suggestion: SerializedSuggestion, options: ApiFetchOptions): Promise<boolean> {
   message.value = '';
   errorMessage.value = '';
   busy.value[suggestion.id] = true;
@@ -37,7 +24,7 @@ async function run(suggestion: SuggestionItem, options: ApiFetchOptions): Promis
   return result.ok;
 }
 
-async function setStatus(suggestion: SuggestionItem, status: 'new' | 'dismissed') {
+async function setStatus(suggestion: SerializedSuggestion, status: 'new' | 'dismissed') {
   if (!(await run(suggestion, { method: 'PATCH', body: { status }, fallback: 'Could not update the suggestion.' }))) return;
   rows.value = rows.value.filter((row) => row.id !== suggestion.id);
   message.value = status === 'dismissed' ? `“${suggestion.name}” dismissed.` : `“${suggestion.name}” moved back to the inbox.`;

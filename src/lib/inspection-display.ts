@@ -20,7 +20,7 @@ export const INSPECTION_OUTCOME_BADGE_CLASSES: Record<InspectionOutcome, string>
 };
 
 /** "Verified by Sam and Alex", or where a legacy record came from. */
-export function inspectionWitnesses(inspection: Pick<Inspection, 'kind' | 'chairs'>): string {
+export function inspectionWitnesses(inspection: { kind: Inspection['kind']; chairs: readonly string[] }): string {
   if (inspection.kind === 'legacy' || inspection.chairs.length === 0) return "From the Chairs' earlier records";
   return `Verified by ${inspection.chairs.join(' and ')}`;
 }

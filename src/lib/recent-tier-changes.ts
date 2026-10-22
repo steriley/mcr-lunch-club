@@ -1,7 +1,8 @@
 import { and, eq, gte } from 'drizzle-orm';
 import { tierProposals, venues } from '@/db/schema';
 import { db } from '@/lib/db';
-import { isPubliclyVisible, publicVenueCondition } from '@/lib/visibility';
+import { isPubliclyVisible } from '@/lib/visibility';
+import { publicVenueCondition } from '@/lib/visibility-sql';
 import type { TierChange } from '@/lib/weekly-bulletin';
 
 /**
