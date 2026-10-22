@@ -1,9 +1,9 @@
 import { atom } from 'nanostores';
 import type { FilterState, TierStatus, CostTier, Venue } from '@/types';
+import { DEFAULT_HOME_TIERS } from '@/lib/tier-display';
 
 export const initialFilterState: FilterState = {
-  tiers: ['Approved'],
-  showAllTiers: false,
+  tiers: [...DEFAULT_HOME_TIERS],
   cost: 'all',
   maxWalkMinutes: 25,
   inspectedDays: 'all',
@@ -23,31 +23,7 @@ export const $isNearMeOpen = atom<boolean>(false);
 
 // Filter Actions
 export function setTiers(tiers: TierStatus[]) {
-  $filters.set({ ...$filters.get(), tiers, showAllTiers: tiers.length > 1 });
-}
-
-export function toggleAllTiers() {
-  const current = $filters.get();
-  if (current.showAllTiers) {
-    $filters.set({
-      ...current,
-      tiers: ['Approved'],
-      showAllTiers: false,
-    });
-  } else {
-    $filters.set({
-      ...current,
-      tiers: [
-        'Approved',
-        'Under Consideration',
-        'To Be Assessed',
-        'Rejected',
-        'If We Must',
-        'Gone But Not Forgotten',
-      ],
-      showAllTiers: true,
-    });
-  }
+  $filters.set({ ...$filters.get(), tiers });
 }
 
 export function toggleTier(tier: TierStatus) {
@@ -61,7 +37,6 @@ export function toggleTier(tier: TierStatus) {
   $filters.set({
     ...current,
     tiers: updated,
-    showAllTiers: updated.length === 6,
   });
 }
 

@@ -1,4 +1,5 @@
 import type { TierStatus } from '@/types';
+import { TIER_COLORS } from '@/lib/tier-display';
 
 export interface TierColors {
   bg: string;
@@ -16,12 +17,20 @@ export interface TierMetadata {
   nearMeDefault: boolean;
 }
 
+/**
+ * Chip and pin fills come from TIER_COLORS (the single source of tier colours);
+ * only the map-specific border and text colours are defined here.
+ */
+function tierColors(status: TierStatus, border: string): TierColors {
+  return { bg: TIER_COLORS[status], border, text: '#ffffff', pinBg: TIER_COLORS[status] };
+}
+
 export const TIER_METADATA: Record<TierStatus, TierMetadata> = {
   Approved: {
     status: 'Approved',
     slug: 'approved',
     label: 'Approved',
-    colors: { bg: '#1E7A4E', border: '#155b39', text: '#ffffff', pinBg: '#1E7A4E' },
+    colors: tierColors('Approved', '#155b39'),
     nearMeEligible: true,
     nearMeDefault: true,
   },
@@ -29,7 +38,7 @@ export const TIER_METADATA: Record<TierStatus, TierMetadata> = {
     status: 'Under Consideration',
     slug: 'under-consideration',
     label: 'Under Consideration',
-    colors: { bg: '#C27803', border: '#8a5100', text: '#ffffff', pinBg: '#C27803' },
+    colors: tierColors('Under Consideration', '#8a5100'),
     nearMeEligible: true,
     nearMeDefault: false,
   },
@@ -37,7 +46,7 @@ export const TIER_METADATA: Record<TierStatus, TierMetadata> = {
     status: 'To Be Assessed',
     slug: 'to-be-assessed',
     label: 'To Be Assessed',
-    colors: { bg: '#5A6474', border: '#454e5c', text: '#ffffff', pinBg: '#5A6474' },
+    colors: tierColors('To Be Assessed', '#454e5c'),
     nearMeEligible: true,
     nearMeDefault: false,
   },
@@ -45,7 +54,7 @@ export const TIER_METADATA: Record<TierStatus, TierMetadata> = {
     status: 'If We Must',
     slug: 'if-we-must',
     label: 'If We Must',
-    colors: { bg: '#7C3A82', border: '#602d64', text: '#ffffff', pinBg: '#7C3A82' },
+    colors: tierColors('If We Must', '#602d64'),
     nearMeEligible: true,
     nearMeDefault: false,
   },
@@ -53,7 +62,7 @@ export const TIER_METADATA: Record<TierStatus, TierMetadata> = {
     status: 'Rejected',
     slug: 'rejected',
     label: 'Rejected',
-    colors: { bg: '#B92B27', border: '#8f201d', text: '#ffffff', pinBg: '#B92B27' },
+    colors: tierColors('Rejected', '#8f201d'),
     nearMeEligible: false,
     nearMeDefault: false,
   },
@@ -61,7 +70,7 @@ export const TIER_METADATA: Record<TierStatus, TierMetadata> = {
     status: 'Gone But Not Forgotten',
     slug: 'gone-but-not-forgotten',
     label: 'Gone But Not Forgotten',
-    colors: { bg: '#71717A', border: '#52525b', text: '#ffffff', pinBg: '#71717A' },
+    colors: tierColors('Gone But Not Forgotten', '#52525b'),
     nearMeEligible: false,
     nearMeDefault: false,
   },
@@ -105,4 +114,14 @@ export function isNearMeEligible(status: TierStatus): boolean {
  */
 export function getTierMetadata(status: TierStatus): TierMetadata {
   return TIER_METADATA[status] || TIER_METADATA['Approved'];
+}
+
+/**
+ * Toggle a tier in the Near Me selection. The last remaining tier cannot be
+ * switched off, so the list and map are never emptied by filters alone.
+ */
+export function toggleNearMeTier(selected: readonly TierStatus[], status: TierStatus): TierStatus[] {
+  if (!selected.includes(status)) return [...selected, status];
+  if (selected.length <= 1) return [...selected];
+  return selected.filter((tier) => tier !== status);
 }

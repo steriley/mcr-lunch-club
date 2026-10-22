@@ -51,6 +51,9 @@ export const TIER_DISPLAY_ORDER: readonly TierStatus[] = [
   'Gone But Not Forgotten',
 ];
 
+/** Tiers selected on the homepage by default (and after Reset Filters) for the widest view of lunching options. */
+export const DEFAULT_HOME_TIERS: readonly TierStatus[] = ['Approved', 'Under Consideration', 'To Be Assessed'];
+
 /** Accent colour for each tier's chip. Matches the banner backgrounds above. */
 export const TIER_COLORS: Record<TierStatus, string> = {
   Approved: '#1E7A4E',

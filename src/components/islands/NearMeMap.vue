@@ -198,24 +198,18 @@
             </div>
           </div>
 
-          <!-- Tier Filter Chips (Inside Panel) -->
+          <!-- Tier Filter Chips (Inside Panel): shared with the homepage filter bar -->
           <div class="near-me-panel-filters">
-            <div class="near-me-tier-chips" role="group" aria-label="Near Me Tier Filters">
-              <button
-                v-for="tier in nearMeTiersList"
-                :key="tier.status"
-                :id="`chip-tier-${tier.slug}`"
-                type="button"
-                class="near-me-chip"
-                :class="{ 'is-active': selectedTiers.includes(tier.status) }"
-                :style="selectedTiers.includes(tier.status) ? { borderColor: tier.colors.border, backgroundColor: tier.colors.bg } : {}"
-                :aria-pressed="selectedTiers.includes(tier.status)"
-                @click="toggleTierFilter(tier.status)"
-              >
-                <span class="near-me-chip-dot" :style="{ backgroundColor: tier.colors.pinBg }"></span>
-                <span>{{ tier.label }}</span>
-              </button>
-            </div>
+            <TierFilterChips
+              class="near-me-tier-chips"
+              :tiers="NEAR_ME_ELIGIBLE_TIERS"
+              :selected="selectedTiers"
+              :counts="tierCounts"
+              :disabled="lastSelectedTier"
+              disabled-reason="At least one tier must stay selected"
+              label="Near Me Tier Filters"
+              @toggle="toggleTierFilter"
+            />
           </div>
 
           <!-- Scrollable Content Body -->
@@ -432,11 +426,14 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $isNearMeOpen, closeNearMe, selectVenue } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
+import { countVenuesByTier } from '@/lib/tier-display';
 import type { TierStatus, Venue } from '@/types';
+import TierFilterChips from '@/components/TierFilterChips.vue';
 import {
   BASE_LAT,
   BASE_LNG,
   DEFAULT_ZOOM,
+  NEAR_ME_DEFAULT_TIERS,
   NEAR_ME_ELIGIBLE_TIERS,
   TIER_METADATA,
   createTileLayer,
@@ -446,6 +443,7 @@ import {
   useGeolocation,
   createUserMarkerLayers,
   rankVenues,
+  toggleNearMeTier,
   hasOriginMovedSignificantly,
   haversineMetres,
   estimateWalkMinutes,
@@ -500,12 +498,17 @@ const DEV_FORCED_STATE = (() => {
   return new URLSearchParams(window.location.search).get('near_me_state');
 })();
 
-// Tier filter state: Approved on by default; others opt-in; Rejected & Gone excluded
-const selectedTiers = ref<TierStatus[]>(['Approved']);
+// Tier filter state: separate from the homepage filters. Approved on by default;
+// other eligible tiers are opt-in; Rejected & Gone But Not Forgotten are never offered.
+const selectedTiers = ref<TierStatus[]>([...NEAR_ME_DEFAULT_TIERS]);
 
-const nearMeTiersList = computed(() =>
-  NEAR_ME_ELIGIBLE_TIERS.map((status) => TIER_METADATA[status])
+// Chip counts only include venues that can be plotted, so they match the pins and list.
+const tierCounts = computed(() =>
+  countVenuesByTier(venuesList.value.filter((v) => v.lat != null && v.lng != null))
 );
+
+// The last selected chip is shown as unavailable; tapping it does nothing.
+const lastSelectedTier = computed(() => (selectedTiers.value.length === 1 ? selectedTiers.value : []));
 
 // Ranking state
 const lastRankedOrigin = ref<LatLng | null>(null);
@@ -622,13 +625,7 @@ function walkLabel(distanceMetres: number): string {
 }
 
 function toggleTierFilter(status: TierStatus) {
-  if (selectedTiers.value.includes(status)) {
-    if (selectedTiers.value.length > 1) {
-      selectedTiers.value = selectedTiers.value.filter((t) => t !== status);
-    }
-  } else {
-    selectedTiers.value = [...selectedTiers.value, status];
-  }
+  selectedTiers.value = toggleNearMeTier(selectedTiers.value, status);
 }
 
 // Anti-flicker venue ranking calculation
@@ -1251,7 +1248,7 @@ watch(isOpen, async (open) => {
     }
     geo.stop();
     isPickingLocation.value = false;
-    selectedTiers.value = ['Approved'];
+    selectedTiers.value = [...NEAR_ME_DEFAULT_TIERS];
     lastRankedOrigin.value = null;
     hasFittedFirstFix.value = false;
     selectedVenueId.value = null;
@@ -1718,57 +1715,18 @@ onUnmounted(() => {
   color: #1a1e24;
 }
 
-/* Tier Filter Chips within Panel */
+/* Tier Filter Chips within Panel (chip styling comes from the shared TierFilterChips) */
 .near-me-panel-filters {
   padding: 8px 14px;
   border-bottom: 1px solid rgba(197, 155, 39, 0.25);
-  overflow-x: auto;
   flex-shrink: 0;
 }
 
+/* Chips scroll horizontally; the fade hints that more tiers sit off-screen. */
 .near-me-tier-chips {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  max-width: 100%;
-}
-
-.near-me-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: transparent;
-  color: #dcd6c8;
-  border: 1px solid rgba(220, 214, 200, 0.25);
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease-in-out;
-  white-space: nowrap;
-}
-
-.near-me-chip:hover {
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.12);
-}
-
-.near-me-chip.is-active {
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-}
-
-.near-me-chip-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 9999px;
-}
-
-.near-me-chip.is-active .near-me-chip-dot {
-  outline: 1px solid var(--ledger-parchment);
-  outline-offset: 1px;
-  box-shadow: 0 0 0 1px var(--ledger-deep);
+  padding-right: 24px;
+  mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
 }
 
 /* Scrollable Container */
@@ -2349,7 +2307,6 @@ onUnmounted(() => {
 .near-me-control-btn:focus-visible,
 .near-me-close-btn:focus-visible,
 .near-me-snap-action-btn:focus-visible,
-.near-me-chip:focus-visible,
 .near-me-snap-btn:focus-visible {
   outline-color: var(--ledger-gold);
 }
@@ -2425,22 +2382,6 @@ onUnmounted(() => {
 
 .near-me-panel-filters {
   border-bottom-color: var(--ledger-border);
-}
-
-.near-me-chip {
-  background-color: var(--ledger-parchment);
-  color: var(--ledger-ink);
-  border-color: var(--ledger-border);
-}
-
-.near-me-chip:hover {
-  background-color: var(--ledger-paper);
-  color: var(--ledger-deep);
-}
-
-.near-me-chip.is-active {
-  color: #ffffff;
-  box-shadow: 0 1px 3px rgb(22 19 15 / 16%);
 }
 
 .near-me-scroll-body {
@@ -2627,7 +2568,6 @@ onUnmounted(() => {
   .near-me-shell-leave-active,
   .near-me-panel,
   .near-me-controls-cluster,
-  .near-me-chip,
   .near-me-control-btn,
   .near-me-close-btn {
     transition-duration: 0.01ms !important;

@@ -20,18 +20,12 @@
       </div>
 
       <div class="ledger-tier-row">
-        <div class="ledger-tier-filters" role="group" aria-label="Filter by verdict">
-          <TierChip
-            v-for="tier in allTiers"
-            :key="tier.name"
-            :name="tier.name"
-            :color="tier.color"
-            :count="tierCounts[tier.name]"
-            :selected="filters.tiers.includes(tier.name)"
-            show-check
-            @click="toggleTier(tier.name)"
-          />
-        </div>
+        <TierFilterChips
+          :tiers="TIER_DISPLAY_ORDER"
+          :selected="filters.tiers"
+          :counts="tierCounts"
+          @toggle="toggleTier"
+        />
 
         <button
           type="button"
@@ -142,8 +136,8 @@ import {
 } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
 import { CUISINES } from '@/lib/cuisines';
-import { TIER_COLORS, TIER_DISPLAY_ORDER, countVenuesByTier } from '@/lib/tier-display';
-import TierChip from '@/components/TierChip.vue';
+import { TIER_DISPLAY_ORDER, countVenuesByTier } from '@/lib/tier-display';
+import TierFilterChips from '@/components/TierFilterChips.vue';
 import type { CostTier } from '@/types';
 
 const filters = useStore($filters);
@@ -159,7 +153,6 @@ const activeSecondaryFilterCount = computed(() => {
     + Number(current.cuisine !== 'all');
 });
 
-const allTiers = TIER_DISPLAY_ORDER.map((name) => ({ name, color: TIER_COLORS[name] }));
 const tierCounts = computed(() => countVenuesByTier(venuesList.value));
 
 const costOptions: { id: CostTier | 'all'; label: string; title: string }[] = [
@@ -319,16 +312,6 @@ function resetAll() {
   }
 }
 
-.ledger-tier-filters {
-  display: flex;
-  flex: 1 1 auto;
-  align-items: center;
-  gap: 7px;
-  overflow-x: auto;
-  padding-block: 1px 3px;
-  scrollbar-width: none;
-}
-
 .ledger-tier-row {
   display: flex;
   align-items: center;
@@ -395,10 +378,6 @@ function resetAll() {
   font-size: 9px;
   font-weight: 700;
   line-height: 1;
-}
-
-.ledger-tier-filters::-webkit-scrollbar {
-  display: none;
 }
 
 .ledger-secondary-filters {
@@ -534,10 +513,6 @@ function resetAll() {
   .ledger-search-input {
     min-height: 38px;
     font-size: 16px;
-  }
-
-  .ledger-tier-filters {
-    margin-inline: -1px;
   }
 
   .ledger-filter-groups {

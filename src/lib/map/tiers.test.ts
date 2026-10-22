@@ -7,7 +7,9 @@ import {
   TIER_METADATA,
   getTierMetadata,
   isNearMeEligible,
+  toggleNearMeTier,
 } from './tiers';
+import { TIER_COLORS } from '@/lib/tier-display';
 import type { TierStatus } from '@/types';
 
 describe('map tiers', () => {
@@ -15,6 +17,13 @@ describe('map tiers', () => {
     for (const [status, metadata] of Object.entries(TIER_METADATA)) {
       assert.equal(metadata.status, status);
       assert.equal(STATUS_COLORS[status as TierStatus], metadata.colors);
+    }
+  });
+
+  it('takes chip and pin fills from TIER_COLORS', () => {
+    for (const [status, metadata] of Object.entries(TIER_METADATA)) {
+      assert.equal(metadata.colors.bg, TIER_COLORS[status as TierStatus]);
+      assert.equal(metadata.colors.pinBg, TIER_COLORS[status as TierStatus]);
     }
   });
 
@@ -36,5 +45,14 @@ describe('map tiers', () => {
   it('getTierMetadata returns metadata, falling back to Approved', () => {
     assert.equal(getTierMetadata('If We Must').slug, 'if-we-must');
     assert.equal(getTierMetadata('Mystery' as TierStatus), TIER_METADATA.Approved);
+  });
+
+  it('toggleNearMeTier adds a tier that is off and removes one that is on', () => {
+    assert.deepEqual(toggleNearMeTier(['Approved'], 'If We Must'), ['Approved', 'If We Must']);
+    assert.deepEqual(toggleNearMeTier(['Approved', 'If We Must'], 'Approved'), ['If We Must']);
+  });
+
+  it('toggleNearMeTier never removes the last selected tier', () => {
+    assert.deepEqual(toggleNearMeTier(['Approved'], 'Approved'), ['Approved']);
   });
 });

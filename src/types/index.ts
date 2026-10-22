@@ -61,7 +61,6 @@ export interface Incident {
 
 export interface FilterState {
   tiers: TierStatus[];
-  showAllTiers: boolean;
   cost: CostTier | 'all';
   maxWalkMinutes: number;
   inspectedDays: number | 'all';
