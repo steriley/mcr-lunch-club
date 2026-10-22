@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { jsonError, jsonResponse, readJson, requireAdmin, serverError, uuidParam, validationError } from '@/lib/admin-api';
 import type { VenueImageRow } from '@/db/schema';
 import { db } from '@/lib/db';
-import { getBlobToken } from '@/lib/env';
+import { getBlobToken, isBlobConfigured } from '@/lib/env';
 import { CAPTION_MAX } from '@/lib/image-upload';
 import { deleteOwnedBlobs } from '@/lib/venue-image-storage';
 import {
@@ -47,8 +47,8 @@ async function context(request: Request, params: Record<string, string | undefin
   const session = await requireAdmin(request);
   if (session instanceof Response) return session;
 
+  if (!isBlobConfigured()) return jsonError(503, 'Image uploads are not configured.');
   const token = getBlobToken();
-  if (!token) return jsonError(503, 'Image uploads are not configured.');
 
   const venueId = uuidParam.safeParse(params.id);
   if (!venueId.success) return jsonError(404, VENUE_IMAGE_ERROR_MESSAGES.venue_not_found);

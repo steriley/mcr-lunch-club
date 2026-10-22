@@ -82,7 +82,7 @@ Environment Variables**. Never commit real values.
 | `BETTER_AUTH_URL` | Main site origin: `http://localhost:4321` locally, `https://mcrlunchclub.com` on Vercel Production. Not needed for Preview, which uses its own Vercel URL. See *Signing in on more than one domain* below. |
 | `BETTER_AUTH_ALLOWED_HOSTS` | Optional, comma-separated: extra hosts the Chairs' Area works on, e.g. the production `mcr-lunch-club.vercel.app` alias. |
 | `PRODUCTION_DATABASE_HOST` | Preview builds: the production Neon host (e.g. `ep-calm-river-123456.eu-west-2.aws.neon.tech`, pooled or direct). Preview builds refuse to migrate a database on that endpoint. See *Preview deployments* below. |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob token for venue photo uploads. Created when you connect a Blob store to the project; without it the photo section is read-only. Server-only: `pnpm check:bundle` fails if it reaches the browser bundle. |
+| `BLOB_READ_WRITE_TOKEN` / `BLOB_STORE_ID` | Vercel Blob credentials for venue photo uploads. Connecting a Blob store to the project adds one or the other: older stores set the token, newer stores set `BLOB_STORE_ID` and authenticate with the deployment's OIDC token (no secret to manage). Either works; without both the photo section is read-only. Server-only: `pnpm check:bundle` fails if it reaches the browser bundle. |
 | `SEED_CHAIR_EMAIL` / `SEED_CHAIR_NAME` / `SEED_CHAIR_PASSWORD` | Only for `pnpm db:seed`. Remove them from your machine afterwards. |
 | `ORS_API_KEY` | [OpenRouteService](https://openrouteservice.org) key, **server-only** (never prefix it with `PUBLIC_`). Powers the admin venue location search and the walking distance and time from HQ. Without it venues still save, but the location must be entered manually and routes stay "pending". `OPENROUTESERVICE_API_KEY` is accepted as an alternative name. Free Standard plan: 2,000 directions a day (40 a minute); Matrix has its own lower daily quota. Visitors never trigger requests, only admin saves and the backfill. |
 | `METOFFICE_API_KEY`, `PUBLIC_MAP_API_KEY` | Optional weather and map tile keys. |
@@ -124,7 +124,7 @@ Use a Neon **branch** so local work never touches production data:
    `vercel.app` address too. For Preview set a different `BETTER_AUTH_SECRET`
    and `PRODUCTION_DATABASE_HOST` (see *Preview deployments* below).
 3. **Blob (optional)**: create a Blob store under **Storage** and connect it to
-   the project, which adds `BLOB_READ_WRITE_TOKEN` (Production and Preview).
+   the project, which adds `BLOB_READ_WRITE_TOKEN` or `BLOB_STORE_ID` (Production and Preview).
    Keys are prefixed `prod/`, `preview/` or `dev/` by environment, so local and
    preview uploads never mix with production. Mind the Hobby plan's Blob limit:
    going over loses access to Blob rather than billing.

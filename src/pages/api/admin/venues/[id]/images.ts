@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { randomUUID } from 'node:crypto';
 import { jsonError, jsonResponse, requireAdmin, serverError, uuidParam } from '@/lib/admin-api';
 import { db } from '@/lib/db';
-import { getBlobToken } from '@/lib/env';
+import { getBlobToken, isBlobConfigured } from '@/lib/env';
 import { FULL_MAX_EDGE, MAX_FULL_BYTES, MAX_IMAGES_PER_VENUE, MAX_THUMB_BYTES, THUMB_MAX_EDGE } from '@/lib/image-upload';
 import { deleteOwnedBlobs, imageBlobKey, putImageBlob } from '@/lib/venue-image-storage';
 import {
@@ -48,8 +48,8 @@ export const POST: APIRoute = async ({ request, params }) => {
   const session = await requireAdmin(request);
   if (session instanceof Response) return session;
 
+  if (!isBlobConfigured()) return jsonError(503, 'Image uploads are not configured.');
   const token = getBlobToken();
-  if (!token) return jsonError(503, 'Image uploads are not configured.');
 
   const id = uuidParam.safeParse(params.id);
   if (!id.success) return jsonError(404, 'Venue not found.');
