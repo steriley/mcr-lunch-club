@@ -34,7 +34,7 @@ export function sortForTier<T extends OrderableVenue>(tier: TierValue, venues: r
   return [...venues].sort(tierComparator(tier));
 }
 
-/** Sorts venues of mixed tiers: by tier (in `TIERS` order), then each tier's own order. */
+/** Sorts venues of mixed tiers: by tier (in `TIERS` display order), then each tier's own order. */
 export function sortForPublic<T extends OrderableVenue>(venues: readonly T[], tierOf: (venue: T) => TierValue): T[] {
   const tierIndex = new Map(TIERS.map((tier, index) => [tier.value, index]));
   return [...venues].sort((a, b) => {

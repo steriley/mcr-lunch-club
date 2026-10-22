@@ -36,13 +36,13 @@ const publicMapApiKey = getPublicMapApiKey();
 const bulletinWeek = londonWeek();
 const bulletin = bulletinText(changesInWeek(recentTierChanges, bulletinWeek));
 // Already in public order: nearest first.
-const approvedVenues = venuesData.filter((venue) => venue.status === 'Approved');
+const approvedVenues = venuesData.filter((venue) => venue.tier === 'approved');
 const { mode, hero, pillars } = buildSovereignBench(goldenCut, venuesData, inspectionsData);
 const isGoldenCut = mode === 'golden-cut';
 // Lists are already nearest first, unknown walking times last.
 const valueShortcut = approvedVenues.find((venue) => venue.cost === '£');
 const swiftShortcut = approvedVenues.find((venue) => venue !== valueShortcut);
-const scrutinyShortcut = venuesData.find((venue) => venue.status === 'Under Consideration');
+const scrutinyShortcut = venuesData.find((venue) => venue.tier === 'under_consideration');
 const latestLedgerEntry = inspectionsData[0];
 const scrutinyAuditCount = scrutinyShortcut
   ? inspectionsData.filter((inspection) => inspection.venueSlug === scrutinyShortcut.slug).length

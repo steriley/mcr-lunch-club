@@ -1,11 +1,42 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { TIERS, TIER_VALUES, isTierValue, parseTier, tierLabel, tierPathSegment } from './tiers';
+import {
+  DEFAULT_HOME_TIERS,
+  NEAR_ME_DEFAULT_TIERS,
+  NEAR_ME_TIERS,
+  TIERS,
+  TIER_VALUES,
+  countVenuesByTier,
+  isTierValue,
+  parseTier,
+  tierFromSlug,
+  tierInfo,
+  tierLabel,
+} from './tiers';
 
 describe('tiers', () => {
-  it('exposes every tier value in order', () => {
-    assert.deepEqual(TIER_VALUES, TIERS.map((tier) => tier.value));
-    assert.equal(TIER_VALUES.length, 6);
+  it('keeps stored values in Postgres enum order', () => {
+    assert.deepEqual(TIER_VALUES, ['approved', 'under_consideration', 'to_be_assessed', 'rejected', 'if_we_must', 'gone_but_not_forgotten']);
+  });
+
+  it('lists every tier once in display order, with If We Must before Rejected', () => {
+    const order = TIERS.map((tier) => tier.value);
+    assert.deepEqual([...order].sort(), [...TIER_VALUES].sort());
+    assert.ok(order.indexOf('if_we_must') < order.indexOf('rejected'));
+  });
+
+  it('gives every tier a colour, banner and motto', () => {
+    for (const tier of TIERS) {
+      for (const colour of [tier.color, tier.border, tier.tint]) assert.match(colour, /^#[0-9A-F]{6}$/i);
+      assert.equal(tier.bannerClass, `bg-[${tier.color}]`);
+      for (const text of [tier.icon, tier.quote, tier.motto, tier.description, tier.rule]) assert.ok(text.trim());
+    }
+  });
+
+  it('only shows Near Me tiers that are allowed there', () => {
+    assert.deepEqual(NEAR_ME_DEFAULT_TIERS, ['approved']);
+    assert.ok(!NEAR_ME_TIERS.includes('rejected') && !NEAR_ME_TIERS.includes('gone_but_not_forgotten'));
+    for (const tier of [...NEAR_ME_DEFAULT_TIERS, ...DEFAULT_HOME_TIERS]) assert.ok(isTierValue(tier));
   });
 
   it('isTierValue accepts stored values only', () => {
@@ -35,8 +66,23 @@ describe('tiers', () => {
     assert.equal(parseTier(undefined), null);
   });
 
-  it('tierPathSegment swaps underscores for hyphens', () => {
-    assert.equal(tierPathSegment('under_consideration'), 'under-consideration');
-    assert.equal(tierPathSegment('approved'), 'approved');
+  it('slugs swap underscores for hyphens and resolve back to their tier', () => {
+    for (const tier of TIERS) {
+      assert.equal(tier.slug, tier.value.replace(/_/g, '-'));
+      assert.equal(tierFromSlug(tier.slug), tierInfo(tier.value));
+    }
+    assert.equal(tierFromSlug('under_consideration'), null);
+    assert.equal(tierFromSlug(undefined), null);
+  });
+
+  it('counts venues per tier, including empty tiers', () => {
+    assert.deepEqual(countVenuesByTier([{ tier: 'approved' }, { tier: 'approved' }, { tier: 'rejected' }]), {
+      approved: 2,
+      under_consideration: 0,
+      to_be_assessed: 0,
+      rejected: 1,
+      if_we_must: 0,
+      gone_but_not_forgotten: 0,
+    });
   });
 });

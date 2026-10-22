@@ -8,6 +8,7 @@ import {
   estimateWalkMinutes,
   resolveRankingOrigin,
   FAR_FROM_BASE_METRES,
+  toggleNearMeTier,
 } from './ranking';
 import { BASE_COORDINATES } from './config';
 import type { Venue } from '@/types';
@@ -18,7 +19,7 @@ function createMockVenue(overrides: Partial<Venue>): Venue {
     id: 'test-venue',
     name: 'Test Venue',
     slug: 'test-venue',
-    status: 'Approved',
+    tier: 'approved',
     lat: 53.4800,
     lng: -2.2500,
     distanceMiles: 0.1,
@@ -116,7 +117,7 @@ describe('rankVenues', () => {
   const venueClose = createMockVenue({
     id: 'close',
     name: 'Close Venue',
-    status: 'Approved',
+    tier: 'approved',
     lat: 53.4802,
     lng: -2.2510, // ~40m away
   });
@@ -124,7 +125,7 @@ describe('rankVenues', () => {
   const venueMedium = createMockVenue({
     id: 'medium',
     name: 'Medium Venue',
-    status: 'Approved',
+    tier: 'approved',
     lat: 53.4830,
     lng: -2.2480, // ~400m away
   });
@@ -132,7 +133,7 @@ describe('rankVenues', () => {
   const venueFar = createMockVenue({
     id: 'far',
     name: 'Far Venue',
-    status: 'Under Consideration',
+    tier: 'under_consideration',
     lat: 53.4890,
     lng: -2.2400, // ~1.2km away
   });
@@ -140,7 +141,7 @@ describe('rankVenues', () => {
   const venueOutsideJurisdiction = createMockVenue({
     id: 'outer',
     name: 'Outer Limits Venue',
-    status: 'Approved',
+    tier: 'approved',
     lat: 53.5500,
     lng: -2.2000, // ~8.5km away (> 4023m)
   });
@@ -148,7 +149,7 @@ describe('rankVenues', () => {
   const venueRejected = createMockVenue({
     id: 'rejected',
     name: 'Rejected Venue',
-    status: 'Rejected',
+    tier: 'rejected',
     lat: 53.4801,
     lng: -2.2510,
   });
@@ -156,7 +157,7 @@ describe('rankVenues', () => {
   const venueGone = createMockVenue({
     id: 'gone',
     name: 'Gone Venue',
-    status: 'Gone But Not Forgotten',
+    tier: 'gone_but_not_forgotten',
     lat: 53.4801,
     lng: -2.2510,
   });
@@ -186,7 +187,7 @@ describe('rankVenues', () => {
     const results = rankVenues({
       origin,
       venues: [venueClose, venueFar],
-      tiers: ['Under Consideration'],
+      tiers: ['under_consideration'],
     });
 
     assert.equal(results.length, 1);
@@ -197,7 +198,7 @@ describe('rankVenues', () => {
     const results = rankVenues({
       origin,
       venues: [venueClose, venueRejected, venueGone],
-      tiers: ['Approved', 'Rejected', 'Gone But Not Forgotten' as any],
+      tiers: ['approved', 'rejected', 'gone_but_not_forgotten' as any],
     });
 
     assert.equal(results.length, 1);
@@ -271,7 +272,7 @@ describe('rankVenues', () => {
     const results = rankVenues({
       origin,
       venues: [venueOutsideJurisdiction],
-      tiers: ['Approved'],
+      tiers: ['approved'],
       nearbyThresholdMetres: 4023,
     });
 
@@ -308,5 +309,16 @@ describe('resolveRankingOrigin', () => {
     const london = { lat: 51.5072, lng: -0.1276 };
     assert.ok(haversineMetres(london, BASE_COORDINATES) > FAR_FROM_BASE_METRES);
     assert.deepEqual(resolveRankingOrigin(london), { origin: { ...BASE_COORDINATES }, fromBase: true });
+  });
+});
+
+describe('toggleNearMeTier', () => {
+  test('adds a tier that is off and removes one that is on', () => {
+    assert.deepEqual(toggleNearMeTier(['approved'], 'if_we_must'), ['approved', 'if_we_must']);
+    assert.deepEqual(toggleNearMeTier(['approved', 'if_we_must'], 'approved'), ['if_we_must']);
+  });
+
+  test('never removes the last selected tier', () => {
+    assert.deepEqual(toggleNearMeTier(['approved'], 'approved'), ['approved']);
   });
 });

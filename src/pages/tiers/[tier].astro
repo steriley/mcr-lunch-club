@@ -4,80 +4,24 @@ import TierChip from '@/components/TierChip.vue';
 import { focalStyle } from '@/lib/image-upload';
 import { getPublicVenues, setPublicCacheHeaders } from '@/lib/public-data';
 import { milesText, walkText } from '@/lib/route-display';
-import { TIERS, tierPathSegment } from '@/lib/tiers';
-import { TIER_COLORS, TIER_DISPLAY_ORDER, countVenuesByTier } from '@/lib/tier-display';
-import type { TierStatus } from '@/types';
+import { TIERS, countVenuesByTier, tierFromSlug } from '@/lib/tiers';
 
 export const prerender = false;
 
-const allTiers: { slug: string; name: TierStatus }[] = TIER_DISPLAY_ORDER.map((name) => {
-  const { value } = TIERS.find((tier) => tier.label === name)!;
-  return { slug: tierPathSegment(value), name };
-});
-
-const tier = allTiers.find((entry) => entry.slug === Astro.params.tier);
+const tier = tierFromSlug(Astro.params.tier);
 if (!tier) {
   // An empty 404 makes Astro render src/pages/404.astro.
   return new Response(null, { status: 404, statusText: 'Not found' });
 }
 
-const tierName = tier.name;
 // getPublicVenues already returns each tier in its public order (src/lib/venue-order.ts).
 const publicVenues = await getPublicVenues();
-const venues = publicVenues.filter((venue) => venue.status === tierName);
+const venues = publicVenues.filter((venue) => venue.tier === tier.value);
 const tierCounts = countVenuesByTier(publicVenues);
 setPublicCacheHeaders(Astro.response.headers);
-const currentTierSlug = Astro.params.tier;
-
-const TIER_METADATA: Record<string, { bannerBg: string; quote: string; description: string; rule: string; icon: string }> = {
-  'Approved': {
-    bannerBg: 'bg-[#1E7A4E]',
-    icon: '🏆',
-    quote: 'The Highest Honour in Manchester Lunching: The Right to be Returned To',
-    description: 'Venue has survived the Chairs’ scrutiny by delivering consistent, good-value, characterful lunches across multiple visits. It has earned the highest honour in Manchester lunching: the right to be returned to.',
-    rule: 'Each must be visited on at least two separate occasions and deliver satisfactory outcomes on both. Consistency is king.',
-  },
-  'Under Consideration': {
-    bannerBg: 'bg-[#C27803]',
-    icon: '⏳',
-    quote: 'The Waiting Chamber of Judgement',
-    description: 'Venue has shown enough promise to warrant serious attention, but has not yet earned a final verdict from the Chairs. It sits in the waiting chamber of judgement, pending further evidence, appetite, and official lunching scrutiny.',
-    rule: 'Pending further evidence, appetite, and official lunching scrutiny.',
-  },
-  'To Be Assessed': {
-    bannerBg: 'bg-[#5A6474]',
-    icon: '📜',
-    quote: 'Entered the Lunch Club’s Field of Vision',
-    description: 'Venue has entered the Lunch Club’s field of vision, but has not yet faced the full judgement of the Chairs. Its fate remains undecided until proper inspection confirms whether it is worthy of approval, rejection, or reluctant tolerance.',
-    rule: 'Fate remains undecided until proper inspection confirms whether it is worthy of approval, rejection, or reluctant tolerance.',
-  },
-  'If We Must': {
-    bannerBg: 'bg-[#7C3A82]',
-    icon: '🌧',
-    quote: 'Not Celebrated, But Tolerated',
-    description: 'Venue is not celebrated, but tolerated: acceptable only when circumstance, convenience, or lack of better options forces the Club’s hand. It remains outside true approval, granted not honour, but reluctant permission.',
-    rule: 'Acceptable only when circumstance, convenience, or lack of better options forces the Club’s hand.',
-  },
-  'Rejected': {
-    bannerBg: 'bg-[#B92B27]',
-    icon: '⛔',
-    quote: 'Removed from the Sacred Lunch Rotation',
-    description: 'Venue has failed to meet the standards of the Chairs, whether through poor value, weak quality, lack of character, or the unforgivable sin of inconsistency. It is removed from the sacred lunch rotation and may only return through exceptional redemption.',
-    rule: 'Removed from the sacred lunch rotation and may only return through exceptional redemption.',
-  },
-  'Gone But Not Forgotten': {
-    bannerBg: 'bg-[#71717A]',
-    icon: '🕊',
-    quote: 'Legend Remains in the Lunching Annals',
-    description: 'Venue once held a place in the Club’s affections, but is no longer available to be judged, revisited, or relied upon. Its doors may be closed, but its legend remains in the lunching annals.',
-    rule: 'Preserved in the lunching annals in perpetuity.',
-  },
-};
-
-const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
 ---
 
-<Layout title={`${tierName} Tier — The Official Ledger Registry`}>
+<Layout title={`${tier.label} Tier — The Official Ledger Registry`}>
   <div class="max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
     <!-- Breadcrumbs & Manifesto Link -->
     <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -93,46 +37,46 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
 
     <!-- Tier Navigation Tabs -->
     <nav class="flex items-center gap-[7px] overflow-x-auto pb-2 border-b border-[#dcd6c8]" aria-label="Browse by verdict">
-      {allTiers.map((t) => (
+      {TIERS.map((t) => (
         <TierChip
           href={`/tiers/${t.slug}`}
-          name={t.name}
-          color={TIER_COLORS[t.name]}
-          count={tierCounts[t.name]}
-          selected={t.slug === currentTierSlug}
+          name={t.label}
+          color={t.color}
+          count={tierCounts[t.value]}
+          selected={t.value === tier.value}
         />
       ))}
     </nav>
 
     <!-- Tier Header Hero Card -->
-    <div class={`${meta.bannerBg} tier-header-gradient text-white p-6 sm:p-8 rounded-2xl border-2 border-[#c59b27] shadow-xl space-y-4`}>
+    <div class={`${tier.bannerClass} tier-header-gradient text-white p-6 sm:p-8 rounded-2xl border-2 border-[#c59b27] shadow-xl space-y-4`}>
       <div class="flex items-center gap-3">
-        <span class="text-3xl sm:text-4xl">{meta.icon}</span>
+        <span class="text-3xl sm:text-4xl">{tier.icon}</span>
         <div>
           <span class="text-xs uppercase tracking-widest text-[#f9f7f1] font-bold font-mono">
             Official Tier Classification
           </span>
           <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-            {tierName}
+            {tier.label}
           </h1>
         </div>
       </div>
 
       <p class="text-base sm:text-lg italic text-[#f9f7f1] pt-1">
-        “{meta.quote}”
+        “{tier.motto}”
       </p>
 
       <p class="text-xs sm:text-sm text-stone-200 font-sans max-w-3xl leading-relaxed pt-2 border-t border-white/20">
-        {meta.description}
+        {tier.description}
       </p>
 
       <div class="flex flex-wrap items-center gap-3 pt-1">
         <div class="inline-flex items-center gap-2 bg-black/30 border border-white/20 px-3 py-1.5 rounded-lg text-xs font-sans text-amber-200">
           <strong>Constitutional Standard:</strong>
-          <span class="text-base">{meta.rule}</span>
+          <span class="text-base">{tier.rule}</span>
         </div>
 
-        {tierName === 'Approved' && (
+        {tier.value === 'approved' && (
           <div class="inline-flex items-center gap-2 bg-black/30 border border-white/20 px-3 py-1.5 rounded-lg text-xs font-sans text-stone-200">
             <strong class="text-[#c59b27] font-mono">Cost Key:</strong>
             <span>£ (under £10) &bull; ££ (above £10) &bull; £££ (payday treat)</span>
@@ -142,7 +86,7 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
     </div>
 
     <!-- Approved Tier Michelin Star Style Prize Banner -->
-    {tierName === 'Approved' && (
+    {tier.value === 'approved' && (
       <div class="bg-[#1a1e24] text-[#f9f7f1] border-2 border-[#c59b27] p-6 sm:p-7 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-6 font-serif-header relative overflow-hidden">
         <div class="relative z-10 shrink-0">
           <img
@@ -209,7 +153,7 @@ const meta = TIER_METADATA[tierName] || TIER_METADATA['Approved'];
                     <h3 class="font-bold text-base text-[#1a1e24] leading-snug">
                       {venue.name}
                     </h3>
-                    {venue.status === 'Approved' && (
+                    {venue.tier === 'approved' && (
                       <img
                         src="/brand/approved-sticker.png"
                         alt="Approved Sticker Awarded"

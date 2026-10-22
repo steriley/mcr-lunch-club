@@ -90,7 +90,7 @@ function toCard(pick: Pick, inspections: Inspection[]): BenchCard {
 export function buildSovereignBench(goldenCut: GoldenCutVenue[], venues: PublicVenue[], inspections: Inspection[]): SovereignBench {
   const mode = goldenCut.length > 0 ? 'golden-cut' : 'nearest';
   const picks: Pick[] =
-    mode === 'golden-cut' ? goldenCut : venues.filter((venue) => venue.status === 'Approved').map((venue) => ({ venue }));
+    mode === 'golden-cut' ? goldenCut : venues.filter((venue) => venue.tier === 'approved').map((venue) => ({ venue }));
   const [hero = null, ...pillars] = picks.slice(0, BENCH_SIZE).map((pick) => toCard(pick, inspections));
   return { mode, hero, pillars };
 }

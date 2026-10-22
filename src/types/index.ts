@@ -1,10 +1,4 @@
-export type TierStatus =
-  | 'Approved'
-  | 'Under Consideration'
-  | 'To Be Assessed'
-  | 'Rejected'
-  | 'If We Must'
-  | 'Gone But Not Forgotten';
+import type { TierValue } from '@/lib/tiers';
 
 export type CostTier = '£' | '££' | '£££';
 
@@ -28,7 +22,7 @@ export interface Venue {
   id: string;
   name: string;
   slug: string;
-  status: TierStatus;
+  tier: TierValue;
   lat: number | null;
   lng: number | null;
   /** Walking route from HQ; null while the route is pending. */
@@ -78,7 +72,7 @@ export interface Incident {
 }
 
 export interface FilterState {
-  tiers: TierStatus[];
+  tiers: TierValue[];
   cost: CostTier | 'all';
   maxWalkMinutes: number;
   inspectedDays: number | 'all';

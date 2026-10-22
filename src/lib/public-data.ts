@@ -3,7 +3,7 @@ import { briberyRecords, goldenCut, inspections, venueImages, venues, type Bribe
 import { cuisineLabel } from '@/lib/cuisines';
 import { formatDateTime } from '@/lib/dates';
 import { db } from '@/lib/db';
-import { parseTier, tierLabel, type TierValue } from '@/lib/tiers';
+import type { TierValue } from '@/lib/tiers';
 import type { CostBand } from '@/lib/venue-schema';
 import { sortForPublic } from '@/lib/venue-order';
 import { isMappable, isPubliclyVisible, publicVenueCondition } from '@/lib/visibility';
@@ -65,7 +65,7 @@ export function toPublicVenue(row: PublicRow, image: VenueImageRow | null = null
     id: row.slug,
     name: row.name,
     slug: row.slug,
-    status: tierLabel(row.tier),
+    tier: row.tier,
     lat,
     lng,
     distanceMiles: row.distanceMiles === null ? null : Number(row.distanceMiles),
@@ -108,7 +108,7 @@ const toPublic = ({ venue, image }: VenueWithImage) => toPublicVenue(venue as Pu
 /** Every public venue, grouped by tier and in each tier's public order (src/lib/venue-order.ts). */
 export async function getPublicVenues(): Promise<PublicVenue[]> {
   const rows: VenueWithImage[] = await publicVenueRows().where(publicVenueCondition()).orderBy(asc(venues.name));
-  return sortForPublic(rows.filter(({ venue }) => isPublicRow(venue)).map(toPublic), (venue) => parseTier(venue.status)!);
+  return sortForPublic(rows.filter(({ venue }) => isPublicRow(venue)).map(toPublic), (venue) => venue.tier);
 }
 
 /**
@@ -119,7 +119,7 @@ export async function getMapVenues(): Promise<PublicVenue[]> {
   const rows: VenueWithImage[] = await publicVenueRows().where(publicVenueCondition()).orderBy(asc(venues.name));
   return sortForPublic(
     rows.filter(({ venue }) => isPublicRow(venue) && isMappable(venue)).map(toPublic),
-    (venue) => parseTier(venue.status)!
+    (venue) => venue.tier
   );
 }
 

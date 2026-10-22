@@ -137,7 +137,7 @@ describe('tier proposals (database)', { skip: skipIntegration }, () => {
     try {
       assert.equal(await getPublicVenue('new-place'), null);
       unwrap(await approveProposal(db, proposal!.id, alex));
-      assert.equal((await getPublicVenue('new-place'))?.status, 'To Be Assessed');
+      assert.equal((await getPublicVenue('new-place'))?.tier, 'to_be_assessed');
     } finally {
       (appDb as any).select = original;
     }

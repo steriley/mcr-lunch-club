@@ -3,8 +3,8 @@
     <TierChip
       v-for="tier in tiers"
       :key="tier"
-      :name="tier"
-      :color="TIER_COLORS[tier]"
+      :name="tierInfo(tier).label"
+      :color="tierInfo(tier).color"
       :count="counts[tier] ?? 0"
       :selected="selected.includes(tier)"
       :disabled="disabled.includes(tier)"
@@ -17,24 +17,23 @@
 
 <script setup lang="ts">
 import TierChip from '@/components/TierChip.vue';
-import { TIER_COLORS } from '@/lib/tier-display';
-import type { TierStatus } from '@/types';
+import { tierInfo, type TierValue } from '@/lib/tiers';
 
 withDefaults(
   defineProps<{
     /** Tiers to show, in display order. */
-    tiers: readonly TierStatus[];
-    selected: readonly TierStatus[];
-    counts: Partial<Record<TierStatus, number>>;
+    tiers: readonly TierValue[];
+    selected: readonly TierValue[];
+    counts: Partial<Record<TierValue, number>>;
     /** Tiers shown as unavailable (still clickable; the parent decides what a click does). */
-    disabled?: readonly TierStatus[];
+    disabled?: readonly TierValue[];
     disabledReason?: string;
     label?: string;
   }>(),
   { disabled: () => [], disabledReason: undefined, label: 'Filter by verdict' },
 );
 
-const emit = defineEmits<{ toggle: [tier: TierStatus] }>();
+const emit = defineEmits<{ toggle: [tier: TierValue] }>();
 </script>
 
 <style>

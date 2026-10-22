@@ -132,7 +132,7 @@
               {{ pickedVenue.name }}
             </h3>
             <img
-              v-if="pickedVenue.status === 'Approved'"
+              v-if="pickedVenue.tier === 'approved'"
               src="/brand/approved-sticker.png"
               alt="MCR Lunch Club Approved"
               class="w-6 h-6 object-contain inline-block shrink-0"
@@ -196,7 +196,7 @@ const OVERDUE_AFTER_DAYS = 120;
 const overdueVenues = computed(() => {
   const cutoff = Date.now() - OVERDUE_AFTER_DAYS * 24 * 60 * 60 * 1000;
   return venuesList.value
-    .filter((venue) => venue.status === 'Approved')
+    .filter((venue) => venue.tier === 'approved')
     .map((venue) => ({ venue, inspected: Date.parse(venue.lastInspectionDate) }))
     .filter(({ inspected }) => !Number.isNaN(inspected) && inspected < cutoff)
     .sort((a, b) => a.inspected - b.inspected)
@@ -268,7 +268,7 @@ function consultOracle() {
 
   setTimeout(() => {
     // Filter approved venues based on selected criteria
-    const approved = venuesList.value.filter((v) => v.status === 'Approved');
+    const approved = venuesList.value.filter((v) => v.tier === 'approved');
     const withinWalk = (v: Venue) => v.walkingTimeMin !== null && v.walkingTimeMin <= selectedTime.value;
     let pool = approved.filter(withinWalk);
 

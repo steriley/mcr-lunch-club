@@ -1,6 +1,6 @@
-import type { Venue, TierStatus } from '@/types';
+import type { Venue } from '@/types';
 import { BASE_COORDINATES, WALKING_METRES_PER_MINUTE } from './config';
-import { NEAR_ME_ELIGIBLE_TIERS } from './tiers';
+import { NEAR_ME_TIERS, type TierValue } from '@/lib/tiers';
 
 export interface LatLng {
   lat: number;
@@ -17,7 +17,7 @@ export interface RankedVenue {
 export interface RankVenuesOptions {
   origin: LatLng;
   venues: Venue[];
-  tiers?: TierStatus[];
+  tiers?: readonly TierValue[];
   limit?: number;
   nearbyThresholdMetres?: number;
 }
@@ -139,9 +139,9 @@ export function rankVenues({
   }
 
   // 1. Determine active tiers (intersect requested tiers with eligible Near Me tiers)
-  const allowedTierSet = new Set(NEAR_ME_ELIGIBLE_TIERS);
+  const allowedTierSet = new Set(NEAR_ME_TIERS);
   const activeTiers = tiers === undefined
-    ? NEAR_ME_ELIGIBLE_TIERS
+    ? NEAR_ME_TIERS
     : tiers.filter((t) => allowedTierSet.has(t));
 
   if (activeTiers.length === 0) {
@@ -152,7 +152,7 @@ export function rankVenues({
 
   // 2. Filter venues with valid coords in the selected tiers
   const validVenues = venues.filter(
-    (v) => v.lat != null && v.lng != null && activeTierSet.has(v.status)
+    (v) => v.lat != null && v.lng != null && activeTierSet.has(v.tier)
   );
 
   if (validVenues.length === 0) {
@@ -196,4 +196,14 @@ export function rankVenues({
   }
 
   return calculated;
+}
+
+/**
+ * Toggle a tier in the Near Me selection. The last remaining tier cannot be
+ * switched off, so the list and map are never emptied by filters alone.
+ */
+export function toggleNearMeTier(selected: readonly TierValue[], tier: TierValue): TierValue[] {
+  if (!selected.includes(tier)) return [...selected, tier];
+  if (selected.length <= 1) return [...selected];
+  return selected.filter((value) => value !== tier);
 }

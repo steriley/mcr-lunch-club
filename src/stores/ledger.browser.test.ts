@@ -15,7 +15,7 @@ function venue(slug: string): Venue {
     id: slug,
     name: slug,
     slug,
-    status: 'Approved',
+    tier: 'approved',
     lat: 1,
     lng: 2,
     distanceMiles: 1,

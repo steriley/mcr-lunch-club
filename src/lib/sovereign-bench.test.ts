@@ -9,7 +9,7 @@ function venue(slug: string, overrides: Partial<PublicVenue> = {}): PublicVenue 
     id: slug,
     name: `Venue ${slug}`,
     slug,
-    status: 'Approved',
+    tier: 'approved',
     lat: 53.48,
     lng: -2.25,
     distanceMiles: 0.4,
@@ -62,10 +62,10 @@ describe('buildSovereignBench: fallback mode', () => {
   it('uses the five nearest Approved venues in order, skipping the rest', () => {
     const venues = [
       venue('a'),
-      venue('x', { status: 'Under Consideration' }),
+      venue('x', { tier: 'under_consideration' }),
       venue('b'),
       venue('c'),
-      venue('y', { status: 'Rejected' }),
+      venue('y', { tier: 'rejected' }),
       venue('d'),
       venue('e'),
       venue('f'),
@@ -77,13 +77,13 @@ describe('buildSovereignBench: fallback mode', () => {
   });
 
   it('shows only what there is when fewer than five are Approved', () => {
-    const bench = buildSovereignBench([], [venue('a'), venue('x', { status: 'Rejected' }), venue('b')], []);
+    const bench = buildSovereignBench([], [venue('a'), venue('x', { tier: 'rejected' }), venue('b')], []);
     assert.equal(bench.hero?.slug, 'a');
     assert.deepEqual(bench.pillars.map((card) => card.slug), ['b']);
   });
 
   it('has no hero and no pillars, and does not throw, when nothing is Approved', () => {
-    for (const venues of [[], [venue('x', { status: 'Rejected' })]]) {
+    for (const venues of [[], [venue('x', { tier: 'rejected' })]]) {
       const bench = buildSovereignBench([], venues, []);
       assert.equal(bench.mode, 'nearest');
       assert.equal(bench.hero, null);

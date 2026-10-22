@@ -98,7 +98,7 @@ describe('toPublicVenue', () => {
   it('maps a fully populated row', () => {
     const venue = toPublicVenue(venueRow());
     assert.equal(venue.id, 'chip-shop');
-    assert.equal(venue.status, 'Approved');
+    assert.equal(venue.tier, 'approved');
     assert.equal(venue.lat, 53.48);
     assert.equal(venue.distanceMiles, 0.4);
     assert.equal(venue.walkingTimeMin, 9);
@@ -126,7 +126,7 @@ describe('toPublicVenue', () => {
         tier: 'under_consideration',
       })
     );
-    assert.equal(venue.status, 'Under Consideration');
+    assert.equal(venue.tier, 'under_consideration');
     assert.equal(venue.lat, null);
     assert.equal(venue.distanceMiles, null);
     assert.equal(venue.walkingTimeMin, null);
@@ -251,7 +251,7 @@ describe('public venue queries', () => {
     ]);
     const venues = await getPublicVenues();
     assert.deepEqual(venues.map((venue) => venue.slug), ['near', 'far', 'a-reject', 'z-reject']);
-    assert.equal(venues[2].status, 'Rejected');
+    assert.equal(venues[2].tier, 'rejected');
   });
 
   it('getMapVenues leaves closed venues off the map, even Gone But Not Forgotten ones', async () => {
@@ -268,7 +268,7 @@ describe('public venue queries', () => {
     stubDb('select', [joined(venueRow({ slug: 'closed-gone', tier: 'gone_but_not_forgotten', closedAt: new Date() }))]);
     const [venue] = await getPublicVenues();
     assert.equal(venue.closed, true);
-    assert.equal(venue.status, 'Gone But Not Forgotten');
+    assert.equal(venue.tier, 'gone_but_not_forgotten');
   });
 
   it('getPublicVenue checks visibility and returns the detail fields, or null when hidden or missing', async () => {

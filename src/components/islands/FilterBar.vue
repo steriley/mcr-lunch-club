@@ -21,7 +21,7 @@
 
       <div class="ledger-tier-row">
         <TierFilterChips
-          :tiers="TIER_DISPLAY_ORDER"
+          :tiers="ALL_TIERS"
           :selected="filters.tiers"
           :counts="tierCounts"
           @toggle="toggleTier"
@@ -137,7 +137,7 @@ import {
 } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
 import { CUISINES } from '@/lib/cuisines';
-import { TIER_DISPLAY_ORDER, countVenuesByTier } from '@/lib/tier-display';
+import { TIERS, countVenuesByTier } from '@/lib/tiers';
 import TierFilterChips from '@/components/TierFilterChips.vue';
 import type { CostTier } from '@/types';
 
@@ -154,6 +154,7 @@ const activeSecondaryFilterCount = computed(() => {
     + Number(current.cuisine !== 'all');
 });
 
+const ALL_TIERS = TIERS.map((tier) => tier.value);
 const tierCounts = computed(() => countVenuesByTier(venuesList.value));
 
 const costOptions: { id: CostTier | 'all'; label: string; title: string }[] = [

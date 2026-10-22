@@ -14,25 +14,25 @@
     >
       <!-- Header Bar / Manifesto Status Banner -->
       <div
-        :class="statusBannerStyle.bg"
+        :class="tier?.bannerClass"
         class="tier-header-gradient p-4 border-b text-white flex items-center justify-between transition-colors"
       >
         <div class="flex items-center gap-2.5">
           <img
-            v-if="venue.status === 'Approved'"
+            v-if="venue.tier === 'approved'"
             src="/brand/approved-sticker.png"
             alt="MCR Lunch Club Approved"
             class="w-9 h-9 object-contain drop-shadow shrink-0"
           />
-          <span v-else class="text-xl">{{ statusBannerStyle.icon }}</span>
+          <span v-else class="text-xl">{{ tier?.icon }}</span>
           <div>
             <div class="flex items-center gap-2">
               <span class="text-xs uppercase tracking-widest font-bold font-serif-header">
-                {{ venue.status }}
+                {{ tier?.label }}
               </span>
             </div>
             <p class="text-xs text-stone-200 italic font-serif-header">
-              “{{ statusBannerStyle.quote }}”
+              “{{ tier?.quote }}”
             </p>
           </div>
         </div>
@@ -61,7 +61,7 @@
           class="aspect-[3/2] max-h-56 h-auto w-full rounded-xl border border-[#dcd6c8] object-cover"
         />
         <!-- Approved Prize Award Callout -->
-        <div v-if="venue.status === 'Approved'" class="bg-[#1a1e24] text-[#f9f7f1] border border-[#c59b27] p-3 rounded-xl flex items-center gap-3 shadow-xs">
+        <div v-if="venue.tier === 'approved'" class="bg-[#1a1e24] text-[#f9f7f1] border border-[#c59b27] p-3 rounded-xl flex items-center gap-3 shadow-xs">
           <img
             src="/brand/approved-sticker.png"
             alt="Official Approved Sticker"
@@ -208,7 +208,8 @@ import { $inspectionsList } from '@/stores/ledger';
 import { formatDate } from '@/lib/dates';
 import { focalStyle } from '@/lib/image-upload';
 import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
-import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
+import { COST_LABELS } from '@/lib/cost-display';
+import { tierInfo } from '@/lib/tiers';
 import { milesText, walkText } from '@/lib/route-display';
 
 const venue = useStore($activeVenue);
@@ -218,11 +219,7 @@ const copied = ref(false);
 const dialogRef = ref<HTMLElement | null>(null);
 let previouslyFocused: HTMLElement | null = null;
 
-const statusBannerStyle = computed(() => (venue.value && TIER_BANNERS[venue.value.status]) || {
-  bg: 'bg-stone-800',
-  icon: '🏛',
-  quote: 'Official Ledger of the Manchester Lunch Club',
-});
+const tier = computed(() => (venue.value ? tierInfo(venue.value.tier) : null));
 
 const venueInspections = computed(() => {
   if (!venue.value) return [];
