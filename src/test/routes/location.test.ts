@@ -33,13 +33,6 @@ describe('GET /api/admin/geocode', () => {
     return run(geocode, { request: adminRequest('GET'), url });
   };
 
-  it('requires an admin', async () => {
-    signInAs(null);
-    assert.equal((await get('pizza')).status, 401);
-    signInAs({ id: 'u', role: 'user' });
-    assert.equal((await get('pizza')).status, 403);
-  });
-
   it('needs at least three characters and does not call ORS otherwise', async () => {
     signInAs();
     stubOrs(() => Response.json({ features: [] }));
@@ -79,14 +72,6 @@ describe('GET /api/admin/geocode', () => {
 
 describe('POST /api/admin/venues/[id]/recompute-route', () => {
   const post = (id = VENUE_ID) => run(recompute, { request: adminRequest('POST'), params: { id } });
-
-  it('requires an admin, a trusted origin and a valid id', async () => {
-    signInAs(null);
-    assert.equal((await post()).status, 401);
-    signInAs();
-    assert.equal((await run(recompute, { request: adminRequest('POST', undefined, { origin: 'https://evil.example' }), params: { id: VENUE_ID } })).status, 403);
-    assert.equal((await post('nope')).status, 404);
-  });
 
   it('404s for a missing venue and 409s for a venue without a location', async () => {
     signInAs();

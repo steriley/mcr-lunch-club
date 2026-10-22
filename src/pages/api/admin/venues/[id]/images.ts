@@ -1,6 +1,5 @@
-import type { APIRoute } from 'astro';
 import { randomUUID } from 'node:crypto';
-import { jsonError, jsonResponse, requireAdmin, serverError, uuidParam } from '@/lib/admin-api';
+import { adminRoute, jsonError, jsonResponse } from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { getBlobToken, isBlobConfigured } from '@/lib/env';
 import { FULL_MAX_EDGE, MAX_FULL_BYTES, MAX_IMAGES_PER_VENUE, MAX_THUMB_BYTES, THUMB_MAX_EDGE } from '@/lib/image-upload';
@@ -44,16 +43,10 @@ const positiveInt = (value: FormDataEntryValue | null) => (typeof value === 'str
  * photo becomes primary). If anything fails after a blob was written, the
  * blobs written so far are deleted.
  */
-export const POST: APIRoute = async ({ request, params }) => {
-  const session = await requireAdmin(request);
-  if (session instanceof Response) return session;
-
+export const POST = adminRoute({ action: 'Add venue image', params: { id: 'Venue not found.' } }, async ({ request, params, actor }) => {
   if (!isBlobConfigured()) return jsonError(503, 'Image uploads are not configured.');
   const token = getBlobToken();
-
-  const id = uuidParam.safeParse(params.id);
-  if (!id.success) return jsonError(404, 'Venue not found.');
-  const venueId = id.data;
+  const venueId = params.id;
 
   let form: FormData;
   try {
@@ -76,7 +69,6 @@ export const POST: APIRoute = async ({ request, params }) => {
     return jsonError(400, 'The width and height do not match the full-size image.');
   }
 
-  const actor = { id: session.user.id, name: session.user.name, email: session.user.email };
   const written: string[] = [];
   try {
     // Pre-check before writing anything; addVenueImage re-checks under a lock.
@@ -103,6 +95,6 @@ export const POST: APIRoute = async ({ request, params }) => {
     return jsonResponse({ image: serializeVenueImage(result.value) }, 201);
   } catch (error) {
     await deleteOwnedBlobs(token, written, 'Add venue image');
-    return serverError('Add venue image', error);
+    throw error;
   }
-};
+});

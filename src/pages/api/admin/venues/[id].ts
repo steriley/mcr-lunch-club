@@ -1,7 +1,6 @@
-import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import { venueImages, venues } from '@/db/schema';
-import { isUniqueViolation, jsonError, jsonResponse, readJson, requireAdmin, serverError, uuidParam, validationError } from '@/lib/admin-api';
+import { adminRoute, isUniqueViolation, jsonError, jsonResponse, slugTaken } from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { getBlobToken } from '@/lib/env';
 import { deleteOwnedBlobs } from '@/lib/venue-image-storage';
@@ -11,36 +10,23 @@ import { isSlugTaken, recordVenueRevision, serializeVenue, venueValues } from '@
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ request, params }) => {
-  const session = await requireAdmin(request);
-  if (session instanceof Response) return session;
+const NOT_FOUND = 'Venue not found.';
+const notFound = () => jsonError(404, NOT_FOUND);
 
-  const id = uuidParam.safeParse(params.id);
-  if (!id.success) return jsonError(404, 'Venue not found.');
+export const GET = adminRoute({ action: 'Load venue', params: { id: NOT_FOUND } }, async ({ params }) => {
+  const [row] = await db.select().from(venues).where(eq(venues.id, params.id)).limit(1);
+  return row ? jsonResponse({ venue: serializeVenue(row) }) : notFound();
+});
 
-  try {
-    const [row] = await db.select().from(venues).where(eq(venues.id, id.data)).limit(1);
-    if (!row) return jsonError(404, 'Venue not found.');
-    return jsonResponse({ venue: serializeVenue(row) });
-  } catch (error) {
-    return serverError('Load venue', error);
-  }
-};
-
-export const PUT: APIRoute = async ({ request, params }) => {
-  const session = await requireAdmin(request);
-  if (session instanceof Response) return session;
-
-  const id = uuidParam.safeParse(params.id);
-  if (!id.success) return jsonError(404, 'Venue not found.');
-
-  const parsed = venueInputSchema.safeParse(await readJson(request));
-  if (!parsed.success) return validationError(parsed.error);
-
-  try {
-    if (await isSlugTaken(db, parsed.data.slug, id.data)) {
-      return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });
-    }
+export const PUT = adminRoute(
+  {
+    action: 'Update venue',
+    params: { id: NOT_FOUND },
+    body: venueInputSchema,
+    onError: (error) => (isUniqueViolation(error) ? slugTaken() : undefined),
+  },
+  async ({ params, body, actor }) => {
+    if (await isSlugTaken(db, body.slug, params.id)) return slugTaken();
 
     const [existing] = await db
       .select({
@@ -51,44 +37,29 @@ export const PUT: APIRoute = async ({ request, params }) => {
         routeUpdatedAt: venues.routeUpdatedAt,
       })
       .from(venues)
-      .where(eq(venues.id, id.data))
+      .where(eq(venues.id, params.id))
       .limit(1);
-    if (!existing) return jsonError(404, 'Venue not found.');
+    if (!existing) return notFound();
 
     // Only calls ORS when the coordinates changed or the route is missing; failures leave it pending.
-    const route = await resolveRoute(parsed.data, existing);
+    const route = await resolveRoute(body, existing);
     const [row] = await db
       .update(venues)
-      .set(venueValues(parsed.data, session.user.id, route))
-      .where(eq(venues.id, id.data))
+      .set(venueValues(body, actor.id, route))
+      .where(eq(venues.id, params.id))
       .returning();
-    if (!row) return jsonError(404, 'Venue not found.');
+    if (!row) return notFound();
 
-    await recordVenueRevision(db, row, session.user.id);
+    await recordVenueRevision(db, row, actor.id);
     return jsonResponse({ venue: serializeVenue(row), routeWarning: routeWarning(route) });
-  } catch (error) {
-    if (isUniqueViolation(error)) {
-      return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });
-    }
-    return serverError('Update venue', error);
   }
-};
+);
 
-export const DELETE: APIRoute = async ({ request, params }) => {
-  const session = await requireAdmin(request);
-  if (session instanceof Response) return session;
-
-  const id = uuidParam.safeParse(params.id);
-  if (!id.success) return jsonError(404, 'Venue not found.');
-
-  try {
-    // Collect the photos first: deleting the venue cascades to their rows.
-    const images = await db.select({ fullUrl: venueImages.fullUrl, thumbUrl: venueImages.thumbUrl }).from(venueImages).where(eq(venueImages.venueId, id.data));
-    const [row] = await db.delete(venues).where(eq(venues.id, id.data)).returning({ id: venues.id });
-    if (!row) return jsonError(404, 'Venue not found.');
-    await deleteOwnedBlobs(getBlobToken(), images.flatMap((image) => [image.fullUrl, image.thumbUrl]), 'Delete venue');
-    return jsonResponse({ ok: true });
-  } catch (error) {
-    return serverError('Delete venue', error);
-  }
-};
+export const DELETE = adminRoute({ action: 'Delete venue', params: { id: NOT_FOUND } }, async ({ params }) => {
+  // Collect the photos first: deleting the venue cascades to their rows.
+  const images = await db.select({ fullUrl: venueImages.fullUrl, thumbUrl: venueImages.thumbUrl }).from(venueImages).where(eq(venueImages.venueId, params.id));
+  const [row] = await db.delete(venues).where(eq(venues.id, params.id)).returning({ id: venues.id });
+  if (!row) return notFound();
+  await deleteOwnedBlobs(getBlobToken(), images.flatMap((image) => [image.fullUrl, image.thumbUrl]), 'Delete venue');
+  return jsonResponse({ ok: true });
+});

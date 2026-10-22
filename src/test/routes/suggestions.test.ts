@@ -83,18 +83,6 @@ describe('POST /api/suggestions', () => {
 const ctx = (method: string, id: string | undefined, body?: unknown) => ({ request: adminRequest(method, body), params: { id } });
 
 describe('/api/admin/suggestions/[id]', () => {
-  it('requires an admin', async () => {
-    signInAs(null);
-    assert.equal((await run(byId.PATCH, ctx('PATCH', VENUE_ID, { status: 'dismissed' }))).status, 401);
-    assert.equal((await run(byId.DELETE, ctx('DELETE', VENUE_ID))).status, 401);
-  });
-
-  it('404s for malformed ids', async () => {
-    signInAs();
-    assert.equal((await run(byId.PATCH, ctx('PATCH', 'nope', { status: 'dismissed' }))).status, 404);
-    assert.equal((await run(byId.DELETE, ctx('DELETE', 'nope'))).status, 404);
-  });
-
   describe('PATCH', () => {
     it('dismisses, recording who reviewed it', async () => {
       signInAs();

@@ -1,85 +1,45 @@
-import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
 import { briberyRecords } from '@/db/schema';
-import { jsonError, jsonResponse, readJson, requireAdmin, serverError, uuidParam, validationError } from '@/lib/admin-api';
+import { adminRoute, jsonError, jsonResponse } from '@/lib/admin-api';
 import { briberyInputSchema, briberyPublishSchema } from '@/lib/bribery-schema';
 import { briberyValues, serializeBribery } from '@/lib/bribery';
 import { db } from '@/lib/db';
 
 export const prerender = false;
 
-const notFound = () => jsonError(404, 'Bribery record not found.');
+const NOT_FOUND = 'Bribery record not found.';
+const notFound = () => jsonError(404, NOT_FOUND);
 
-export const GET: APIRoute = async ({ request, params }) => {
-  const session = await requireAdmin(request);
-  if (session instanceof Response) return session;
+export const GET = adminRoute({ action: 'Load bribery record', params: { id: NOT_FOUND } }, async ({ params }) => {
+  const [row] = await db.select().from(briberyRecords).where(eq(briberyRecords.id, params.id)).limit(1);
+  return row ? jsonResponse({ record: serializeBribery(row) }) : notFound();
+});
 
-  const id = uuidParam.safeParse(params.id);
-  if (!id.success) return notFound();
-
-  try {
-    const [row] = await db.select().from(briberyRecords).where(eq(briberyRecords.id, id.data)).limit(1);
-    return row ? jsonResponse({ record: serializeBribery(row) }) : notFound();
-  } catch (error) {
-    return serverError('Load bribery record', error);
-  }
-};
-
-export const PUT: APIRoute = async ({ request, params }) => {
-  const session = await requireAdmin(request);
-  if (session instanceof Response) return session;
-
-  const id = uuidParam.safeParse(params.id);
-  if (!id.success) return notFound();
-
-  const parsed = briberyInputSchema.safeParse(await readJson(request));
-  if (!parsed.success) return validationError(parsed.error);
-
-  try {
-    const result = await briberyValues(db, parsed.data);
+export const PUT = adminRoute(
+  { action: 'Update bribery record', params: { id: NOT_FOUND }, body: briberyInputSchema },
+  async ({ params, body }) => {
+    const result = await briberyValues(db, body);
     if (!result.ok) return jsonError(400, 'Please correct the highlighted fields.', { venueId: result.error });
 
-    const [row] = await db.update(briberyRecords).set(result.values).where(eq(briberyRecords.id, id.data)).returning();
+    const [row] = await db.update(briberyRecords).set(result.values).where(eq(briberyRecords.id, params.id)).returning();
     return row ? jsonResponse({ record: serializeBribery(row) }) : notFound();
-  } catch (error) {
-    return serverError('Update bribery record', error);
   }
-};
+);
 
 /** Publish or unpublish without resending the whole record. */
-export const PATCH: APIRoute = async ({ request, params }) => {
-  const session = await requireAdmin(request);
-  if (session instanceof Response) return session;
-
-  const id = uuidParam.safeParse(params.id);
-  if (!id.success) return notFound();
-
-  const parsed = briberyPublishSchema.safeParse(await readJson(request));
-  if (!parsed.success) return validationError(parsed.error);
-
-  try {
+export const PATCH = adminRoute(
+  { action: 'Publish bribery record', params: { id: NOT_FOUND }, body: briberyPublishSchema },
+  async ({ params, body }) => {
     const [row] = await db
       .update(briberyRecords)
-      .set({ published: parsed.data.published, updatedAt: new Date() })
-      .where(eq(briberyRecords.id, id.data))
+      .set({ published: body.published, updatedAt: new Date() })
+      .where(eq(briberyRecords.id, params.id))
       .returning();
     return row ? jsonResponse({ record: serializeBribery(row) }) : notFound();
-  } catch (error) {
-    return serverError('Publish bribery record', error);
   }
-};
+);
 
-export const DELETE: APIRoute = async ({ request, params }) => {
-  const session = await requireAdmin(request);
-  if (session instanceof Response) return session;
-
-  const id = uuidParam.safeParse(params.id);
-  if (!id.success) return notFound();
-
-  try {
-    const [row] = await db.delete(briberyRecords).where(eq(briberyRecords.id, id.data)).returning({ id: briberyRecords.id });
-    return row ? jsonResponse({ ok: true }) : notFound();
-  } catch (error) {
-    return serverError('Delete bribery record', error);
-  }
-};
+export const DELETE = adminRoute({ action: 'Delete bribery record', params: { id: NOT_FOUND } }, async ({ params }) => {
+  const [row] = await db.delete(briberyRecords).where(eq(briberyRecords.id, params.id)).returning({ id: briberyRecords.id });
+  return row ? jsonResponse({ ok: true }) : notFound();
+});

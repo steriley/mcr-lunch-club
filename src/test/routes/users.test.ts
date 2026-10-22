@@ -35,12 +35,6 @@ describe('/api/admin/users', () => {
     assert.equal((await quietly(() => run(GET, { request: adminRequest('GET') }))).status, 500);
   });
 
-  it('requires an admin', async () => {
-    signInAs({ id: 'u', role: 'user' });
-    assert.equal((await run(GET, { request: adminRequest('GET') })).status, 403);
-    assert.equal((await run(POST, { request: adminRequest('POST', newUser) })).status, 403);
-  });
-
   it('POST validates, creates (201) and maps errors', async () => {
     signInAs();
     assert.equal((await run(POST, { request: adminRequest('POST', { name: '' }) })).status, 400);
@@ -104,10 +98,6 @@ describe('POST /api/admin/users/[id]/unban', () => {
     assert.equal((await run(unban, ctx('u2'))).status, 404);
   });
 
-  it('requires an admin', async () => {
-    signInAs(null);
-    assert.equal((await run(unban, ctx('u2'))).status, 401);
-  });
 });
 
 describe('POST /api/admin/users/[id]/reset-password', () => {

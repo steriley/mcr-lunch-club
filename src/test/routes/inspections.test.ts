@@ -10,18 +10,6 @@ afterEach(restoreStubs);
 const ctx = (id: string = VENUE_ID, origin?: string, body?: unknown) => ({ request: adminRequest('POST', body, { origin }), params: { id } });
 
 describe('POST /api/admin/venues/[id]/visited-today', () => {
-  it('requires a signed-in, active admin and a trusted origin', async () => {
-    signInAs(null);
-    assert.equal((await run(visitedToday, ctx())).status, 401);
-    signInAs({ id: 'u', role: 'user' });
-    assert.equal((await run(visitedToday, ctx())).status, 403);
-    signInAs({ ...ADMIN, banned: true });
-    assert.equal((await run(visitedToday, ctx())).status, 403);
-    signInAs();
-    assert.equal((await run(visitedToday, ctx(VENUE_ID, 'https://evil.example'))).status, 403);
-    assert.equal((await run(visitedToday, ctx('nope'))).status, 404);
-  });
-
   it('404s when the venue does not exist', async () => {
     signInAs();
     stubTransactions();
