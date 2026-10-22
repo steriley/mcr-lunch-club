@@ -7,7 +7,6 @@ import type { RouteValues } from '@/lib/walking-route';
 import type { VenueInput } from '@/lib/venue-schema';
 import { recordVenueRevision, venueValues } from '@/lib/venues';
 
-
 export class ProposalFailed extends Error {
   constructor(readonly error: ProposalError) {
     super(error);

@@ -187,7 +187,7 @@ function applySavedVenue(venue: SerializedVenue) {
 async function retryRoute() {
   routeMessage.value = '';
   isRetrying.value = true;
-  const result = await apiFetch(`/api/admin/venues/${venueId.value}/recompute-route`, {
+  const result = await apiFetch<{ venue: SerializedVenue }>(`/api/admin/venues/${venueId.value}/recompute-route`, {
     method: 'POST',
     fallback: 'Could not work out the walking route. Try again later.',
   });
@@ -305,7 +305,7 @@ async function save() {
   try {
     const changes = changedFields();
     const isNew = props.mode === 'create' && !venueId.value;
-    const response = await apiFetch(isNew ? '/api/admin/venues' : `/api/admin/venues/${venueId.value}`, {
+    const response = await apiFetch<{ venue: SerializedVenue; routeWarning?: string | null }>(isNew ? '/api/admin/venues' : `/api/admin/venues/${venueId.value}`, {
       method: isNew ? 'POST' : 'PUT',
       body,
       fallback: 'Unable to save this venue right now.',

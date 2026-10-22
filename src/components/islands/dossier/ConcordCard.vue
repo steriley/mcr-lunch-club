@@ -39,7 +39,7 @@ const canPress = computed(() => !busy.value && (state.value === 'confirm_other' 
 async function press() {
   errorMessage.value = '';
   busy.value = true;
-  const result = await apiFetch(`/api/admin/venues/${props.venueId}/visited-today`, {
+  const result = await apiFetch<{ status: VisitStatus; confirmedNow?: boolean }>(`/api/admin/venues/${props.venueId}/visited-today`, {
     method: 'POST',
     // A cosigner sends nothing: they affirm the outcome the first Chair recorded.
     body: state.value === 'none' ? { outcome: chosenOutcome.value } : {},
