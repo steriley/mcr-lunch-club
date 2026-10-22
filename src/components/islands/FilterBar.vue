@@ -73,12 +73,12 @@
               class="ledger-select"
               @change="onWalkChange"
             >
-              <option :value="25">🗺 25 min (2.5 mi Max Bound)</option>
+              <option :value="60">🗺 All within 2.5 mi</option>
+              <option :value="25">🚶 25 min (1.25 mi)</option>
               <option :value="20">🚶 20 min (1.00 mi)</option>
               <option :value="15">🚶 15 min (0.75 mi)</option>
               <option :value="10">🏃 10 min (0.50 mi)</option>
               <option :value="5">⚡ 5 min (0.25 mi)</option>
-              <option :value="60">All within 2.5 mi</option>
             </select>
           </label>
 
@@ -124,6 +124,7 @@ import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useStore } from '@nanostores/vue';
 import {
   $filters,
+  initialFilterState,
   toggleTier,
   setCost,
   setMaxWalkMinutes,
@@ -148,7 +149,7 @@ const isSecondaryFiltersOpen = ref(false);
 const activeSecondaryFilterCount = computed(() => {
   const current = filters.value;
   return Number(current.cost !== 'all')
-    + Number(current.maxWalkMinutes !== 25)
+    + Number(current.maxWalkMinutes !== initialFilterState.maxWalkMinutes)
     + Number(current.inspectedDays !== 'all')
     + Number(current.cuisine !== 'all');
 });

@@ -5,7 +5,8 @@ import { DEFAULT_HOME_TIERS } from '@/lib/tier-display';
 export const initialFilterState: FilterState = {
   tiers: [...DEFAULT_HOME_TIERS],
   cost: 'all',
-  maxWalkMinutes: 25,
+  // Everything within the 2.5 mi bound, so far-flung venues are not hidden on first load.
+  maxWalkMinutes: 60,
   inspectedDays: 'all',
   cuisine: 'all',
   searchQuery: '',
