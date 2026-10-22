@@ -23,7 +23,7 @@ import {
   setTiers,
   toggleTier,
 } from './filters';
-import { DEFAULT_HOME_TIERS } from '@/lib/tier-display';
+import { DEFAULT_HOME_TIERS } from '@/lib/tiers';
 import type { Venue } from '@/types';
 
 const venue = { id: 'v', slug: 'v', name: 'V' } as Venue;
@@ -35,22 +35,22 @@ beforeEach(() => {
 describe('filter state', () => {
   it('starts on Approved, Under Consideration and To Be Assessed', () => {
     assert.deepEqual($filters.get(), initialFilterState);
-    assert.deepEqual($filters.get().tiers, ['Approved', 'Under Consideration', 'To Be Assessed']);
+    assert.deepEqual($filters.get().tiers, ['approved', 'under_consideration', 'to_be_assessed']);
     assert.deepEqual($filters.get().tiers, [...DEFAULT_HOME_TIERS]);
   });
 
   it('setTiers replaces the selected tiers', () => {
-    setTiers(['Approved', 'Rejected']);
-    assert.deepEqual($filters.get().tiers, ['Approved', 'Rejected']);
-    setTiers(['Rejected']);
-    assert.deepEqual($filters.get().tiers, ['Rejected']);
+    setTiers(['approved', 'rejected']);
+    assert.deepEqual($filters.get().tiers, ['approved', 'rejected']);
+    setTiers(['rejected']);
+    assert.deepEqual($filters.get().tiers, ['rejected']);
   });
 
   it('toggleTier adds and removes tiers', () => {
-    toggleTier('Rejected');
-    assert.deepEqual($filters.get().tiers, ['Approved', 'Under Consideration', 'To Be Assessed', 'Rejected']);
-    toggleTier('Approved');
-    assert.deepEqual($filters.get().tiers, ['Under Consideration', 'To Be Assessed', 'Rejected']);
+    toggleTier('rejected');
+    assert.deepEqual($filters.get().tiers, ['approved', 'under_consideration', 'to_be_assessed', 'rejected']);
+    toggleTier('approved');
+    assert.deepEqual($filters.get().tiers, ['under_consideration', 'to_be_assessed', 'rejected']);
   });
 
   it('toggleTier can switch every tier off on the homepage', () => {
@@ -77,7 +77,7 @@ describe('filter state', () => {
   it('resetFilters restores the defaults, including the three default tiers', () => {
     setCost('£££');
     setSearchQuery('x');
-    setTiers(['Rejected']);
+    setTiers(['rejected']);
     resetFilters();
     assert.deepEqual($filters.get(), initialFilterState);
     assert.deepEqual($filters.get().tiers, [...DEFAULT_HOME_TIERS]);

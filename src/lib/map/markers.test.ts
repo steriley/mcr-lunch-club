@@ -17,7 +17,7 @@ function venue(overrides: Partial<Venue> = {}): Venue {
     id: 'v',
     name: 'Chip Shop',
     slug: 'chip-shop',
-    status: 'Approved',
+    tier: 'approved',
     lat: 53.48,
     lng: -2.25,
     distanceMiles: 0.3,
@@ -48,15 +48,15 @@ const L = {
 describe('createVenueIconHtml', () => {
   it('shows the cost band on every pin', () => {
     assert.ok(createVenueIconHtml(venue()).includes('<span>££</span>'));
-    assert.ok(createVenueIconHtml(venue({ status: 'Rejected' })).includes('<span>££</span>'));
+    assert.ok(createVenueIconHtml(venue({ tier: 'rejected' })).includes('<span>££</span>'));
   });
 
   it('uses the tier colour for the pin', () => {
-    assert.ok(createVenueIconHtml(venue({ status: 'Rejected' })).includes('#B92B27'));
+    assert.ok(createVenueIconHtml(venue({ tier: 'rejected' })).includes('#B92B27'));
   });
 
   it('escapes the badge text', () => {
-    const html = createVenueIconHtml(venue({ status: 'To Be Assessed', cost: '<b>£</b>' as Venue['cost'] }));
+    const html = createVenueIconHtml(venue({ tier: 'to_be_assessed', cost: '<b>£</b>' as Venue['cost'] }));
     assert.ok(html.includes('&lt;b&gt;£&lt;/b&gt;'));
     assert.ok(!html.includes('<b>'));
   });

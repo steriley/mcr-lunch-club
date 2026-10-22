@@ -1,6 +1,6 @@
 import type { Venue } from '@/types';
 import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES } from './config';
-import { getTierMetadata } from './tiers';
+import { tierInfo } from '@/lib/tiers';
 import { milesText, walkText } from '@/lib/route-display';
 import { focalStyle } from '@/lib/image-upload';
 
@@ -8,14 +8,13 @@ import { focalStyle } from '@/lib/image-upload';
  * Generate the HTML string for a venue marker pin.
  */
 export function createVenueIconHtml(venue: Venue): string {
-  const metadata = getTierMetadata(venue.status);
-  const styling = metadata.colors;
+  const tier = tierInfo(venue.tier);
   const badgeText = venue.cost;
 
   return `
     <div class="group relative cursor-pointer transform transition-transform duration-200 hover:scale-125 hover:z-[9999]" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));">
       <div class="flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shadow-md border-2"
-           style="background-color: ${styling.pinBg}; border-color: ${styling.border}; color: ${styling.text};">
+           style="background-color: ${tier.color}; border-color: ${tier.border}; color: #ffffff;">
         <span>${escapeHtml(badgeText)}</span>
       </div>
       <div class="w-1.5 h-1.5 mx-auto bg-stone-900 rounded-full mt-[-1px]"></div>
@@ -110,8 +109,7 @@ export function escapeHtml(value: unknown): string {
  * popup's dossier button is pressed.
  */
 export function createVenuePopupContent(venue: Venue, onViewDossier?: () => void): HTMLElement {
-  const metadata = getTierMetadata(venue.status);
-  const styling = metadata.colors;
+  const tier = tierInfo(venue.tier);
 
   const popupContent = document.createElement('div');
   popupContent.className = 'p-3 font-serif-header text-[#1a1e24] max-w-[260px]';
@@ -123,8 +121,8 @@ export function createVenuePopupContent(venue: Venue, onViewDossier?: () => void
     ${image}
     <div class="flex items-center justify-between gap-2 border-b border-stone-200 pb-1.5 mb-2">
       <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded"
-            style="background-color: ${styling.bg}20; color: ${styling.bg}; border: 1px solid ${styling.bg}40;">
-        ${escapeHtml(venue.status)}
+            style="background-color: ${tier.color}20; color: ${tier.color}; border: 1px solid ${tier.color}40;">
+        ${escapeHtml(tier.label)}
       </span>
       <span class="text-xs font-mono font-bold text-amber-900">${escapeHtml(venue.cost)}</span>
     </div>

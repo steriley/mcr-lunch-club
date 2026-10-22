@@ -202,7 +202,7 @@
           <div class="near-me-panel-filters">
             <TierFilterChips
               class="near-me-tier-chips"
-              :tiers="NEAR_ME_ELIGIBLE_TIERS"
+              :tiers="NEAR_ME_TIERS"
               :selected="selectedTiers"
               :counts="tierCounts"
               :disabled="lastSelectedTier"
@@ -258,17 +258,13 @@
                   <h2 class="near-me-hero-title">{{ nearestVenue.venue.name }}</h2>
                   <span
                     class="near-me-tier-pill"
-                    :style="{
-                      backgroundColor: TIER_METADATA[nearestVenue.venue.status].colors.bg,
-                      borderColor: TIER_METADATA[nearestVenue.venue.status].colors.border,
-                      color: TIER_METADATA[nearestVenue.venue.status].colors.text
-                    }"
+                    :style="tierPillStyle(nearestVenue.venue.tier)"
                   >
                     <span
                       class="near-me-tier-pill-dot"
-                      :style="{ backgroundColor: TIER_METADATA[nearestVenue.venue.status].colors.pinBg }"
+                      :style="{ backgroundColor: tierInfo(nearestVenue.venue.tier).color }"
                     ></span>
-                    {{ TIER_METADATA[nearestVenue.venue.status].label }}
+                    {{ tierInfo(nearestVenue.venue.tier).label }}
                   </span>
                 </div>
 
@@ -334,7 +330,7 @@
                   :class="{ 'is-selected': selectedVenueId === rv.venue.id }"
                   tabindex="0"
                   role="listitem"
-                  :aria-label="`${rv.venue.name}, ${rv.formattedDistance}, ${rv.venue.status}`"
+                  :aria-label="`${rv.venue.name}, ${rv.formattedDistance}, ${tierInfo(rv.venue.tier).label}`"
                   @click="selectVenueItem(rv.venue, false)"
                   @keydown.enter="selectVenueItem(rv.venue, false)"
                   @keydown.space.prevent="selectVenueItem(rv.venue, false)"
@@ -359,17 +355,13 @@
                       <span class="near-me-dist-pill">{{ rv.formattedDistance }}</span>
                       <span
                         class="near-me-tier-pill"
-                        :style="{
-                          backgroundColor: TIER_METADATA[rv.venue.status].colors.bg,
-                          borderColor: TIER_METADATA[rv.venue.status].colors.border,
-                          color: TIER_METADATA[rv.venue.status].colors.text
-                        }"
+                        :style="tierPillStyle(rv.venue.tier)"
                       >
                         <span
                           class="near-me-tier-pill-dot"
-                          :style="{ backgroundColor: TIER_METADATA[rv.venue.status].colors.pinBg }"
+                          :style="{ backgroundColor: tierInfo(rv.venue.tier).color }"
                         ></span>
-                        <span>{{ TIER_METADATA[rv.venue.status].label }}</span>
+                        <span>{{ tierInfo(rv.venue.tier).label }}</span>
                       </span>
                     </div>
                   </div>
@@ -437,17 +429,14 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $isNearMeOpen, closeNearMe, selectVenue } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
-import { countVenuesByTier } from '@/lib/tier-display';
-import type { TierStatus, Venue } from '@/types';
+import { NEAR_ME_DEFAULT_TIERS, NEAR_ME_TIERS, countVenuesByTier, tierInfo, type TierValue } from '@/lib/tiers';
+import type { Venue } from '@/types';
 import TierFilterChips from '@/components/TierFilterChips.vue';
 import { focalStyle } from '@/lib/image-upload';
 import {
   BASE_LAT,
   BASE_LNG,
   DEFAULT_ZOOM,
-  NEAR_ME_DEFAULT_TIERS,
-  NEAR_ME_ELIGIBLE_TIERS,
-  TIER_METADATA,
   createTileLayer,
   createBaseMarker,
   createVenueMarker,
@@ -512,7 +501,7 @@ const DEV_FORCED_STATE = (() => {
 
 // Tier filter state: separate from the homepage filters. Approved on by default;
 // other eligible tiers are opt-in; Rejected & Gone But Not Forgotten are never offered.
-const selectedTiers = ref<TierStatus[]>([...NEAR_ME_DEFAULT_TIERS]);
+const selectedTiers = ref<TierValue[]>([...NEAR_ME_DEFAULT_TIERS]);
 
 // Chip counts only include venues that can be plotted, so they match the pins and list.
 const tierCounts = computed(() =>
@@ -636,8 +625,13 @@ function walkLabel(distanceMetres: number): string {
   return `${estimateWalkMinutes(distanceMetres)} min walk${isRankedFromBase.value ? ' from Base' : ''}`;
 }
 
-function toggleTierFilter(status: TierStatus) {
-  selectedTiers.value = toggleNearMeTier(selectedTiers.value, status);
+function tierPillStyle(value: TierValue) {
+  const { color, border } = tierInfo(value);
+  return { backgroundColor: color, borderColor: border, color: '#ffffff' };
+}
+
+function toggleTierFilter(tier: TierValue) {
+  selectedTiers.value = toggleNearMeTier(selectedTiers.value, tier);
 }
 
 // Anti-flicker venue ranking calculation
@@ -966,7 +960,7 @@ function renderVenueMarkers() {
   venueMarkersMap.clear();
 
   const eligibleVenues = venuesList.value.filter(
-    (v) => selectedTiers.value.includes(v.status) && v.lat != null && v.lng != null
+    (v) => selectedTiers.value.includes(v.tier) && v.lat != null && v.lng != null
   );
 
   eligibleVenues.forEach((venue) => {

@@ -53,7 +53,7 @@ describe('public code never touches tier proposals', () => {
     } as unknown as VenueRow & { tier: 'approved' };
     assert.deepEqual(Object.keys(toPublicVenue(row)).sort(), [
       'address', 'closed', 'cost', 'cuisine', 'distanceMiles', 'eatLikeUs', 'id', 'image', 'lastInspectionDate', 'lat', 'lng',
-      'mapSearchLink', 'name', 'slug', 'status', 'walkingTimeMin',
+      'mapSearchLink', 'name', 'slug', 'tier', 'walkingTimeMin',
     ]);
   });
 });

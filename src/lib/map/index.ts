@@ -1,5 +1,4 @@
 export * from './config';
-export * from './tiers';
 export * from './markers';
 export * from './useGeolocation';
 export * from './userMarker';

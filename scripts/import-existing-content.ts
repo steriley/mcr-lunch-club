@@ -28,7 +28,10 @@ function readJson<T>(relativePath: string): T {
   return JSON.parse(fs.readFileSync(path.resolve(relativePath), 'utf8')) as T;
 }
 
-function toVenueInput(venue: Venue): VenueInput {
+/** A venue as the old static JSON stored it, with the tier as a display label. */
+type LegacyVenue = Omit<Venue, 'tier'> & { status: string };
+
+function toVenueInput(venue: LegacyVenue): VenueInput {
   const tier = parseTier(venue.status);
   if (!tier) throw new Error(`${venue.slug}: unknown tier "${venue.status}"`);
 
@@ -54,7 +57,7 @@ function toVenueInput(venue: Venue): VenueInput {
   return parsed.data;
 }
 
-const sourceVenues = readJson<Venue[]>('src/data/venues.json');
+const sourceVenues = readJson<LegacyVenue[]>('src/data/venues.json');
 const sourceIncidents = readJson<Incident[]>('src/data/incidents.json');
 
 // Validate everything before touching the database.

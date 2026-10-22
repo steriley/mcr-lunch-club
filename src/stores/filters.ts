@@ -1,6 +1,6 @@
 import { atom } from 'nanostores';
-import type { FilterState, TierStatus, CostTier, Venue } from '@/types';
-import { DEFAULT_HOME_TIERS } from '@/lib/tier-display';
+import type { FilterState, CostTier, Venue } from '@/types';
+import { DEFAULT_HOME_TIERS, type TierValue } from '@/lib/tiers';
 
 export const initialFilterState: FilterState = {
   tiers: [...DEFAULT_HOME_TIERS],
@@ -23,13 +23,13 @@ export const $isSuggestModalOpen = atom<boolean>(false);
 export const $isNearMeOpen = atom<boolean>(false);
 
 // Filter Actions
-export function setTiers(tiers: TierStatus[]) {
+export function setTiers(tiers: TierValue[]) {
   $filters.set({ ...$filters.get(), tiers });
 }
 
-export function toggleTier(tier: TierStatus) {
+export function toggleTier(tier: TierValue) {
   const current = $filters.get();
-  let updated: TierStatus[];
+  let updated: TierValue[];
   if (current.tiers.includes(tier)) {
     updated = current.tiers.filter((t) => t !== tier);
   } else {

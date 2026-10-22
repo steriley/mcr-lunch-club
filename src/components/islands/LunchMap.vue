@@ -102,7 +102,7 @@ const filteredVenues = computed(() => {
     if (!venue.lat || !venue.lng) return false;
 
     // Tier filter
-    if (!currentFilters.tiers.includes(venue.status)) return false;
+    if (!currentFilters.tiers.includes(venue.tier)) return false;
 
     // Cost filter
     if (currentFilters.cost !== 'all' && venue.cost !== currentFilters.cost) return false;
@@ -186,8 +186,8 @@ function focusLinkedVenue() {
   const venue = venuesList.value.find((candidate) => candidate.slug === slug);
   if (!venue) return;
 
-  if (!filters.value.tiers.includes(venue.status)) {
-    toggleTier(venue.status);
+  if (!filters.value.tiers.includes(venue.tier)) {
+    toggleTier(venue.tier);
   }
   if (venue.lat != null && venue.lng != null) {
     mapInstance.setView([venue.lat, venue.lng], Math.max(mapInstance.getZoom(), 16));
