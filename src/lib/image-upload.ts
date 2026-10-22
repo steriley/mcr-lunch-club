@@ -1,3 +1,40 @@
+/**
+ * Shared venue image settings (#35). Browser-safe: no server imports, so the
+ * admin optimiser, the server routes and the public pages all read the same
+ * numbers. Tune the sizes and qualities here.
+ */
+
+/** Server-enforced cap on photos per venue. */
+export const MAX_IMAGES_PER_VENUE = 5;
+
+/** Longest edge, in pixels, of each WebP variant. Both are uncropped. */
+export const FULL_MAX_EDGE = 1600;
+export const THUMB_MAX_EDGE = 640;
+
+/** WebP encoder quality (0 to 100) for each variant. */
+export const FULL_QUALITY = 80;
+export const THUMB_QUALITY = 75;
+
+/** Largest accepted upload for each variant. */
+export const MAX_FULL_BYTES = 800 * 1024;
+export const MAX_THUMB_BYTES = 150 * 1024;
+
+/** Caption length; the caption doubles as alt text. */
+export const CAPTION_MAX = 200;
+
+export interface FocalPoint {
+  focalX: number | null;
+  focalY: number | null;
+}
+
+/** CSS `object-position` for an image cropped with `object-cover`; centre when unset. */
+export function focalStyle(image: FocalPoint): string {
+  if (image.focalX === null || image.focalY === null) return '50% 50%';
+  return `${image.focalX}% ${image.focalY}%`;
+}
+
+// --- Legacy single-image upload (ImageUpload.vue, /api/admin/upload). Removed in Phase 5 of #35. ---
+
 /** Shared limits for venue image uploads (client check + server token). */
 export const IMAGE_CONTENT_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif'];
 export const MAX_IMAGE_BYTES = 4 * 1024 * 1024;

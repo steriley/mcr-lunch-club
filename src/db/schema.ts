@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { boolean, check, date, decimal, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { boolean, check, date, decimal, index, integer, jsonb, pgEnum, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
 import { user } from './auth-schema';
 import { CUISINE_VALUES } from '../lib/cuisines';
 import { GOLDEN_CUT_SIZE } from '../lib/golden-cut-schema';
@@ -188,6 +188,42 @@ export const goldenCut = pgTable(
   ]
 );
 
+/**
+ * Venue photos (#35). Each has a full (~1600px) and a thumbnail (~640px) WebP
+ * variant, both uncropped. Exactly one per venue is primary. The caption
+ * doubles as alt text. Focal point is a percentage (centre when null). Rows
+ * migrated from the old venues.image_url have no thumbnail, size or uploader.
+ */
+export const venueImages = pgTable(
+  'venue_images',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    venueId: uuid('venue_id').notNull().references(() => venues.id, { onDelete: 'cascade' }),
+    fullUrl: text('full_url').notNull(),
+    // Null for migrated rows.
+    thumbUrl: text('thumb_url'),
+    // Of the full variant; null for migrated rows.
+    width: integer('width'),
+    height: integer('height'),
+    caption: text('caption'),
+    isPrimary: boolean('is_primary').notNull().default(false),
+    focalX: smallint('focal_x'),
+    focalY: smallint('focal_y'),
+    uploadedBy: text('uploaded_by').references(() => user.id, { onDelete: 'set null' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('venue_images_one_primary_per_venue').on(table.venueId).where(sql`${table.isPrimary}`),
+    index('venue_images_venue_idx').on(table.venueId, table.createdAt),
+    // Both or neither. The NOT NULL tests matter: with one side null the range test
+    // is NULL, which a CHECK treats as passing.
+    check(
+      'venue_images_focal_range',
+      sql`(${table.focalX} is null and ${table.focalY} is null) or (${table.focalX} is not null and ${table.focalY} is not null and ${table.focalX} between 0 and 100 and ${table.focalY} between 0 and 100)`
+    ),
+  ]
+);
+
 export const suggestionStatusEnum = pgEnum('suggestion_status', ['new', 'accepted', 'dismissed']);
 
 /** Venue suggestions sent in by members from the public "Suggest a Venue" form. */
@@ -217,6 +253,7 @@ export type VenueEventRow = typeof venueEvents.$inferSelect;
 export type InspectionRow = typeof inspections.$inferSelect;
 export type TierProposalRow = typeof tierProposals.$inferSelect;
 export type GoldenCutRow = typeof goldenCut.$inferSelect;
+export type VenueImageRow = typeof venueImages.$inferSelect;
 
 export const schema = {
   venues,

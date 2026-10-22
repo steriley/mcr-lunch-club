@@ -159,6 +159,19 @@ export function getBlobToken(): string | undefined {
   return optional('BLOB_READ_WRITE_TOKEN');
 }
 
+export type BlobEnvPrefix = 'prod' | 'preview' | 'dev';
+
+/**
+ * First segment of every Vercel Blob key, so production, preview and local
+ * uploads never share a path: `prod` / `preview` from VERCEL_ENV, `dev`
+ * everywhere else (including when it is unset).
+ */
+export function blobEnvPrefix(): BlobEnvPrefix {
+  if (env.VERCEL_ENV === 'production') return 'prod';
+  if (env.VERCEL_ENV === 'preview') return 'preview';
+  return 'dev';
+}
+
 /**
  * OpenRouteService key for geocoding and walking routes. Server-only: never
  * expose it to islands. OPENROUTESERVICE_API_KEY (the name used in issue #5)
