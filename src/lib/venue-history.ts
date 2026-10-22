@@ -73,7 +73,8 @@ export function revisionEntries(revisions: RevisionRow[], editorNames: Map<strin
           .filter((key) => !IGNORED.has(key) && JSON.stringify(snapshot[key]) !== JSON.stringify(previous[key]))
           .map((key) => ({ field: LABELS[key] ?? key, from: formatValue(previous[key], key), to: formatValue(snapshot[key], key) }))
       : [];
-    const who = revision.changedBy ? editorNames.get(revision.changedBy) ?? 'Former user' : 'Import script';
+    // No editor means a script: the content import made the first version; later ones are e.g. the route backfill.
+    const who = revision.changedBy ? editorNames.get(revision.changedBy) ?? 'Former user' : previous ? 'a script' : 'Import script';
     const text = !previous
       ? `Earliest recorded version, by ${who}`
       : changes.length

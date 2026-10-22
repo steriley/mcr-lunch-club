@@ -4,7 +4,9 @@ import {
   isSlugTaken,
   listVenueRevisions,
   recordVenueRevision,
+  routeColumns,
   serializeVenue,
+  updateVenue,
   venueValues,
 } from './venues';
 import type { Database } from './db-client';
@@ -131,5 +133,59 @@ describe('listVenueRevisions', () => {
     const { db, calls } = fakeDb(revisions);
     assert.equal(await listVenueRevisions(db, 'venue-1'), revisions);
     assert.deepEqual(calls.find((call) => call.method === 'limit')!.args, [100]);
+  });
+});
+
+describe('routeColumns', () => {
+  it('rounds distance to two places and only touches routeUpdatedAt when given', () => {
+    const at = new Date('2026-10-22T09:00:00Z');
+    assert.deepEqual(routeColumns({ distanceMiles: 0.4567, walkingTimeMin: 9, routeUpdatedAt: at }), { distanceMiles: '0.46', walkingTimeMin: 9, routeUpdatedAt: at });
+    assert.deepEqual(routeColumns({ distanceMiles: null, walkingTimeMin: null, routeUpdatedAt: null }), { distanceMiles: null, walkingTimeMin: null, routeUpdatedAt: null });
+    assert.deepEqual(routeColumns({ distanceMiles: 1, walkingTimeMin: 20 }), { distanceMiles: '1.00', walkingTimeMin: 20 });
+  });
+});
+
+describe('updateVenue', () => {
+  /** A db whose transaction runs on a recorder: update(...).returning() resolves to `rows`. */
+  function transactionalDb(rows: unknown[]) {
+    const calls: { method: string; args: unknown[] }[] = [];
+    let transactions = 0;
+    const chain: any = new Proxy(
+      {},
+      {
+        get: (_target, method: string) => {
+          if (method === 'then') return undefined;
+          return (...args: unknown[]) => {
+            calls.push({ method, args });
+            return method === 'returning' ? Promise.resolve(rows) : method === 'values' ? Promise.resolve([]) : chain;
+          };
+        },
+      }
+    );
+    const db = { transaction: async (fn: (tx: unknown) => unknown) => (transactions += 1, fn(chain)) } as unknown as Database;
+    return { db, calls, transactions: () => transactions };
+  }
+  const row = { id: 'venue-1', latitude: null, longitude: null, distanceMiles: '0.40', createdAt: new Date(), updatedAt: new Date() } as unknown as VenueRow;
+
+  it("stamps a Chair's change and records the revision as theirs, in one transaction", async () => {
+    const { db, calls, transactions } = transactionalDb([row]);
+    const now = new Date('2026-10-22T09:00:00Z');
+    assert.equal(await updateVenue(db, 'venue-1', { tier: 'approved' }, { id: 'user-1' }, now), row);
+    assert.deepEqual(calls.find((call) => call.method === 'set')!.args[0], { tier: 'approved', updatedBy: 'user-1', updatedAt: now });
+    assert.equal((calls.find((call) => call.method === 'values')!.args[0] as any).changedBy, 'user-1');
+    assert.equal(transactions(), 1);
+  });
+
+  it("leaves the editor stamp alone for a script's change", async () => {
+    const { db, calls } = transactionalDb([row]);
+    await updateVenue(db, 'venue-1', { walkingTimeMin: 9 }, null);
+    assert.deepEqual(calls.find((call) => call.method === 'set')!.args[0], { walkingTimeMin: 9 });
+    assert.equal((calls.find((call) => call.method === 'values')!.args[0] as any).changedBy, null);
+  });
+
+  it('returns null and records nothing when the venue does not exist', async () => {
+    const { db, calls } = transactionalDb([]);
+    assert.equal(await updateVenue(db, 'gone', { walkingTimeMin: 9 }, { id: 'user-1' }), null);
+    assert.ok(!calls.some((call) => call.method === 'values'));
   });
 });

@@ -1,7 +1,7 @@
 import '../setup-env';
 import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { GET, POST } from '@/pages/api/admin/bribery';
+import { POST } from '@/pages/api/admin/bribery';
 import * as byId from '@/pages/api/admin/bribery/[id]';
 import { ADMIN, VENUE_ID, adminRequest, quietly, restoreStubs, run, signInAs, stubDb, stubDbSequence } from '../route-helpers';
 
@@ -14,17 +14,6 @@ afterEach(restoreStubs);
 const ctx = (method: string, id: string | undefined, body?: unknown) => ({ request: adminRequest(method, body), params: { id } });
 
 describe('/api/admin/bribery', () => {
-  it('GET lists serialised records, and 500s on errors', async () => {
-    signInAs();
-    stubDb('select', [row]);
-    const response = await run(GET, { request: adminRequest('GET') });
-    assert.equal(response.status, 200);
-    assert.equal((await response.json()).records[0].createdAt, now.toISOString());
-
-    stubDb('select', new Error('db down'));
-    assert.equal((await quietly(() => run(GET, { request: adminRequest('GET') }))).status, 500);
-  });
-
   describe('POST', () => {
     const post = (body: unknown) => run(POST, { request: adminRequest('POST', body) });
 
@@ -60,18 +49,6 @@ describe('/api/admin/bribery', () => {
 });
 
 describe('/api/admin/bribery/[id]', () => {
-  it('GET returns the record, 404, or 500', async () => {
-    signInAs();
-    stubDb('select', [row]);
-    assert.equal((await (await run(byId.GET, ctx('GET', VENUE_ID))).json()).record.id, VENUE_ID);
-
-    stubDb('select', []);
-    assert.equal((await run(byId.GET, ctx('GET', VENUE_ID))).status, 404);
-
-    stubDb('select', new Error('db down'));
-    assert.equal((await quietly(() => run(byId.GET, ctx('GET', VENUE_ID)))).status, 500);
-  });
-
   describe('PUT', () => {
     it('validates the body and the linked venue', async () => {
       signInAs();

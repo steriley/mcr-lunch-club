@@ -1,7 +1,7 @@
 import '../setup-env';
-import { afterEach, describe, it } from 'node:test';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { GET, POST } from '@/pages/api/admin/venues';
+import { POST } from '@/pages/api/admin/venues';
 import * as byId from '@/pages/api/admin/venues/[id]';
 import { db } from '@/lib/db';
 import { blobClient } from '@/lib/venue-image-storage';
@@ -35,43 +35,6 @@ const row = {
 const input = { name: 'Chip Shop', slug: 'chip-shop', tier: 'approved', cost: '££' };
 
 afterEach(restoreStubs);
-
-describe('GET /api/admin/venues', () => {
-  it('lists serialised venues and applies filters', async () => {
-    signInAs();
-    const calls = stubDb('select', [row]);
-    const url = new URL('https://x.test/?query=100%25_chips&tier=Approved&status=public');
-    const response = await run(GET, { request: adminRequest('GET'), url });
-    assert.equal(response.status, 200);
-    const body = await response.json();
-    assert.equal(body.venues.length, 1);
-    assert.equal(body.venues[0].latitude, 53.48);
-    assert.equal(body.venues[0].createdAt, now.toISOString());
-    const { sql, params } = renderSql(calls.find((call) => call.method === 'where')!.args[0]);
-    assert.match(sql, /ilike/i);
-    assert.match(sql, /"tier" = /);
-    assert.match(sql, /"tier" is not null and "venues"\."latitude" is not null and "venues"\."longitude" is not null and \("venues"\."closed_at" is null/);
-    assert.deepEqual(params, ['%100\\%\\_chips%', '%100\\%\\_chips%', 'approved', 'gone_but_not_forgotten']);
-  });
-
-  it('supports the hidden filter and no filters at all', async () => {
-    signInAs();
-    let calls = stubDb('select', []);
-    await run(GET, { request: adminRequest('GET'), url: new URL('https://x.test/?status=hidden') });
-    assert.match(renderSql(calls.find((call) => call.method === 'where')!.args[0]).sql, /^not \(/);
-
-    calls = stubDb('select', []);
-    await run(GET, { request: adminRequest('GET'), url: new URL('https://x.test/') });
-    assert.ok(calls.some((call) => call.method === 'where' && call.args[0] === undefined));
-  });
-
-  it('returns 500 on database errors', async () => {
-    signInAs();
-    stubDb('select', new Error('db down'));
-    const response = await quietly(() => run(GET, { request: adminRequest('GET'), url: new URL('https://x.test/') }));
-    assert.equal(response.status, 500);
-  });
-});
 
 describe('POST /api/admin/venues', () => {
   const post = (body: unknown) => run(POST, { request: adminRequest('POST', body) });
@@ -156,23 +119,12 @@ describe('/api/admin/venues/[id]', () => {
     params: { id },
   });
 
-  describe('GET', () => {
-    it('returns the venue, 404, or 500', async () => {
-      signInAs();
-      stubDb('select', [row]);
-      const found = await run(byId.GET, ctx('GET', VENUE_ID));
-      assert.equal(found.status, 200);
-      assert.equal((await found.json()).venue.id, VENUE_ID);
-
-      stubDb('select', []);
-      assert.equal((await run(byId.GET, ctx('GET', VENUE_ID))).status, 404);
-
-      stubDb('select', new Error('db down'));
-      assert.equal((await quietly(() => run(byId.GET, ctx('GET', VENUE_ID)))).status, 500);
-    });
-  });
-
   describe('PUT', () => {
+    let transactions: { count: number };
+    beforeEach(() => {
+      transactions = stubTransactions();
+    });
+
     it('validates the body', async () => {
       signInAs();
       assert.equal((await run(byId.PUT, ctx('PUT', VENUE_ID, { name: '' }))).status, 400);
@@ -206,6 +158,7 @@ describe('/api/admin/venues/[id]', () => {
       assert.equal(response.status, 200);
       assert.equal((await response.json()).venue.name, 'Chip Shop');
       assert.ok(inserts.some((call) => call.method === 'values'));
+      assert.equal(transactions.count, 1, 'the row and its revision are written together');
     });
 
     it('returns 404 when the venue no longer exists', async () => {

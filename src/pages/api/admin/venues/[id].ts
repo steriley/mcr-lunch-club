@@ -5,18 +5,13 @@ import { db } from '@/lib/db';
 import { getBlobToken } from '@/lib/env';
 import { deleteOwnedBlobs } from '@/lib/venue-image-storage';
 import { venueInputSchema } from '@/lib/venue-schema';
-import { resolveRoute, routeWarning } from '@/lib/walking-route';
-import { isSlugTaken, recordVenueRevision, serializeVenue, venueValues } from '@/lib/venues';
+import { routeWarning } from '@/lib/walking-route';
+import { saveVenue, serializeVenue } from '@/lib/venues';
 
 export const prerender = false;
 
 const NOT_FOUND = 'Venue not found.';
 const notFound = () => jsonError(404, NOT_FOUND);
-
-export const GET = adminRoute({ action: 'Load venue', params: { id: NOT_FOUND } }, async ({ params }) => {
-  const [row] = await db.select().from(venues).where(eq(venues.id, params.id)).limit(1);
-  return row ? jsonResponse({ venue: serializeVenue(row) }) : notFound();
-});
 
 export const PUT = adminRoute(
   {
@@ -26,32 +21,9 @@ export const PUT = adminRoute(
     onError: (error) => (isUniqueViolation(error) ? slugTaken() : undefined),
   },
   async ({ params, body, actor }) => {
-    if (await isSlugTaken(db, body.slug, params.id)) return slugTaken();
-
-    const [existing] = await db
-      .select({
-        latitude: venues.latitude,
-        longitude: venues.longitude,
-        distanceMiles: venues.distanceMiles,
-        walkingTimeMin: venues.walkingTimeMin,
-        routeUpdatedAt: venues.routeUpdatedAt,
-      })
-      .from(venues)
-      .where(eq(venues.id, params.id))
-      .limit(1);
-    if (!existing) return notFound();
-
-    // Only calls ORS when the coordinates changed or the route is missing; failures leave it pending.
-    const route = await resolveRoute(body, existing);
-    const [row] = await db
-      .update(venues)
-      .set(venueValues(body, actor.id, route))
-      .where(eq(venues.id, params.id))
-      .returning();
-    if (!row) return notFound();
-
-    await recordVenueRevision(db, row, actor.id);
-    return jsonResponse({ venue: serializeVenue(row), routeWarning: routeWarning(route) });
+    const result = await saveVenue(db, params.id, body, actor);
+    if (!result.ok) return result.error === 'slug_taken' ? slugTaken() : notFound();
+    return jsonResponse({ venue: serializeVenue(result.venue), routeWarning: routeWarning(result.route) });
   }
 );
 

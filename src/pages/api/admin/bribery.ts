@@ -1,4 +1,3 @@
-import { desc } from 'drizzle-orm';
 import { briberyRecords } from '@/db/schema';
 import { adminRoute, jsonError, jsonResponse } from '@/lib/admin-api';
 import { briberyInputSchema } from '@/lib/bribery-schema';
@@ -6,11 +5,6 @@ import { briberyValues, serializeBribery } from '@/lib/bribery';
 import { db } from '@/lib/db';
 
 export const prerender = false;
-
-export const GET = adminRoute({ action: 'List bribery records' }, async () => {
-  const rows = await db.select().from(briberyRecords).orderBy(desc(briberyRecords.incidentDate), desc(briberyRecords.createdAt));
-  return jsonResponse({ records: rows.map(serializeBribery) });
-});
 
 export const POST = adminRoute({ action: 'Create bribery record', body: briberyInputSchema }, async ({ body, actor }) => {
   const result = await briberyValues(db, body);

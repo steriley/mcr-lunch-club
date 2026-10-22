@@ -1,9 +1,9 @@
 import '../setup-env';
-import { afterEach, describe, it } from 'node:test';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { GET as geocode } from '@/pages/api/admin/geocode';
 import { POST as recompute } from '@/pages/api/admin/venues/[id]/recompute-route';
-import { VENUE_ID, adminRequest, quietly, restoreStubs, run, signInAs, stubDb } from '../route-helpers';
+import { VENUE_ID, adminRequest, quietly, restoreStubs, run, signInAs, stubDb, stubTransactions } from '../route-helpers';
 
 const originalFetch = globalThis.fetch;
 const fetchCalls: string[] = [];
@@ -72,6 +72,7 @@ describe('GET /api/admin/geocode', () => {
 
 describe('POST /api/admin/venues/[id]/recompute-route', () => {
   const post = (id = VENUE_ID) => run(recompute, { request: adminRequest('POST'), params: { id } });
+  beforeEach(() => stubTransactions());
 
   it('404s for a missing venue and 409s for a venue without a location', async () => {
     signInAs();

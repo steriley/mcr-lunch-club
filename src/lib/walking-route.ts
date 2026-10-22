@@ -78,8 +78,12 @@ export async function resolveRoute(
   return computeRoute({ lat: input.latitude, lng: input.longitude }, lookup);
 }
 
-/** Admin-facing note when a save could not fetch the route; null when nothing went wrong. */
-export function routeWarning(route: ResolvedRoute): string | null {
+/**
+ * Admin-facing note when ORS could not supply the route; null when nothing
+ * went wrong. `save` words it as the outcome of a save; `reroute` as the
+ * outcome of a retry, which saves nothing.
+ */
+export function routeWarning(route: ResolvedRoute, context: 'save' | 'reroute' = 'save'): string | null {
   if (!route.error) return null;
   const reason =
     route.error.kind === 'rate_limited'
@@ -89,6 +93,7 @@ export function routeWarning(route: ResolvedRoute): string | null {
         : route.error.kind === 'no_result'
           ? 'no walking route was found'
           : 'the route service is unavailable';
+  if (context === 'reroute') return `The walking route is pending because ${reason}. Use Retry later.`;
   if (route.distanceMiles !== null) return `Saved. The walk is still a straight-line estimate because ${reason}. Use Re-route later.`;
   return `Saved, but the walking route is pending because ${reason}. Use Retry later.`;
 }

@@ -4,14 +4,6 @@ import { createUserSchema } from '@/lib/user-schema';
 
 export const prerender = false;
 
-export const GET = adminRoute({ action: 'List users', onError: (error) => authApiError('List users', error) }, async ({ request }) => {
-  const result = await auth.api.listUsers({
-    headers: request.headers,
-    query: { limit: 200, sortBy: 'createdAt', sortDirection: 'desc' },
-  });
-  return jsonResponse(result);
-});
-
 export const POST = adminRoute(
   { action: 'Create user', body: createUserSchema, onError: (error) => authApiError('Create user', error) },
   async ({ request, body }) => {

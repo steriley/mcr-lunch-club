@@ -1,7 +1,7 @@
 import { and, desc, eq, lt, max, sql } from 'drizzle-orm';
 import { inspections, venues, type InspectionRow } from '@/db/schema';
 import { isUniqueViolation } from '@/lib/admin-api';
-import type { Database } from '@/lib/db-client';
+import type { Database, Tx } from '@/lib/db-client';
 import { INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import { londonDate } from '@/lib/london-date';
 import { actorName, type Actor } from '@/lib/venue-events';
@@ -22,7 +22,6 @@ import type { InspectionOutcome } from '@/types';
  * cosigner affirms that outcome and cannot choose a different one.
  */
 
-type Tx = Parameters<Parameters<Database['transaction']>[0]>[0];
 type Executor = Database | Tx;
 
 export type VisitOutcome =

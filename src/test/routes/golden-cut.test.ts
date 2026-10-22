@@ -1,7 +1,7 @@
 import '../setup-env';
 import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { GET, PUT } from '@/pages/api/admin/golden-cut';
+import { PUT } from '@/pages/api/admin/golden-cut';
 import { ADMIN, VENUE_ID, adminRequest, quietly, restoreStubs, run, signInAs, stubDb, stubDbSequence, stubExecute, stubTransactions } from '../route-helpers';
 
 afterEach(restoreStubs);
@@ -11,16 +11,6 @@ const put = (body: unknown, origin?: string) => run(PUT, { request: adminRequest
 const listed = { entry: { venueId: VENUE_ID, position: 1, puffPiece: 'The best.', anchorDish: null }, venue: { name: 'Chip Shop', tier: 'approved', latitude: '53.48', longitude: '-2.25', closedAt: null } };
 
 describe('/api/admin/golden-cut', () => {
-  it('GET lists the entries in order, flagging any the home page skips', async () => {
-    signInAs();
-    stubDb('select', [listed, { ...listed, entry: { ...listed.entry, venueId: OTHER_ID, position: 2 }, venue: { ...listed.venue, tier: 'rejected' } }]);
-    const body = await (await run(GET, { request: adminRequest('GET') })).json();
-    assert.deepEqual(body.entries.map((entry: any) => [entry.position, entry.notShownReason]), [[1, null], [2, 'No longer Approved']]);
-
-    stubDb('select', new Error('db down'));
-    assert.equal((await quietly(() => run(GET, { request: adminRequest('GET') }))).status, 500);
-  });
-
   it('PUT validates the body', async () => {
     signInAs();
     assert.equal((await put({ entries: [{ venueId: VENUE_ID }, { venueId: VENUE_ID }] })).status, 400);

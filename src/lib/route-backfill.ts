@@ -1,8 +1,8 @@
-import { and, asc, eq, isNotNull, isNull } from 'drizzle-orm';
+import { and, asc, isNotNull, isNull } from 'drizzle-orm';
 import { venues } from '@/db/schema';
 import type { Database } from '@/lib/db-client';
 import { MATRIX_BATCH_SIZE, OrsError, routeToVenueValues, walkingMatrixFromBase, walkingRouteFromBase, type LatLng, type WalkingRoute } from '@/lib/ors';
-import { recordVenueRevision } from '@/lib/venues';
+import { routeColumns, updateVenue } from '@/lib/venues';
 
 /**
  * Replaces the stored distance and walking time of venues with coordinates
@@ -65,12 +65,8 @@ export async function backfillRoutes(db: Database, options: BackfillOptions = {}
 
   const save = async (venue: (typeof todo)[number], walk: WalkingRoute) => {
     const values = routeToVenueValues(walk);
-    const [row] = await db
-      .update(venues)
-      .set({ distanceMiles: values.distanceMiles.toFixed(2), walkingTimeMin: values.walkingTimeMin, routeUpdatedAt: new Date() })
-      .where(eq(venues.id, venue.id))
-      .returning();
-    if (row) await recordVenueRevision(db, row, null);
+    // A script's change: no Chair is stamped as the editor.
+    await updateVenue(db, venue.id, routeColumns({ ...values, routeUpdatedAt: new Date() }), null);
     result.routed += 1;
     result.remaining -= 1;
     log(`  ${venue.name}: ${values.distanceMiles.toFixed(2)} mi, ${values.walkingTimeMin} min`);
