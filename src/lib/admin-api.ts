@@ -3,10 +3,10 @@ import { isAPIError } from 'better-auth/api';
 import { z } from 'zod';
 import { auth, type AuthSession } from '@/lib/auth';
 import { getAuthEnvironment } from '@/lib/env';
+import { hasAdminRole, isBanned } from '@/lib/roles';
 import type { Actor } from '@/lib/venue-events';
 
-/** The roles allowed into the Chairs' Area. */
-export const ADMIN_ROLES = ['admin'];
+export { ADMIN_ROLES, hasAdminRole, isBanned } from '@/lib/roles';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
@@ -37,20 +37,6 @@ export function validationError(error: z.ZodError): Response {
 export function serverError(context: string, error: unknown): Response {
   console.error(`[admin] ${context} failed:`, error instanceof Error ? error.message : 'Unknown error');
   return jsonError(500, 'Something went wrong. Please try again.');
-}
-
-/** Deactivated (banned) accounts may not act, even with a session that outlived the ban. */
-export function isBanned(user: { banned?: boolean | null; banExpires?: Date | string | null }, now: Date = new Date()): boolean {
-  if (!user.banned) return false;
-  if (!user.banExpires) return true;
-  return new Date(user.banExpires).getTime() > now.getTime();
-}
-
-export function hasAdminRole(role: string | null | undefined): boolean {
-  return String(role ?? '')
-    .split(',')
-    .map((value) => value.trim())
-    .some((value) => ADMIN_ROLES.includes(value));
 }
 
 export function isMutatingMethod(method: string): boolean {

@@ -1,9 +1,9 @@
-import { and, count, desc, eq, inArray, isNull, ne, or, sql } from 'drizzle-orm';
+import { and, desc, eq, ne, sql } from 'drizzle-orm';
 import { user } from '@/db/auth-schema';
 import { tierProposals, venues, type TierProposalRow, type VenueRow } from '@/db/schema';
-import { ADMIN_ROLES } from '@/lib/admin-api';
 import type { Database, Tx } from '@/lib/db-client';
 import { latestVerifiedInspection } from '@/lib/inspections';
+import { isActiveChair } from '@/lib/roles';
 import { tierLabel, type TierValue } from '@/lib/tiers';
 import { actorName, type Actor } from '@/lib/venue-events';
 import { updateVenue } from '@/lib/venues';
@@ -207,13 +207,14 @@ export function withdrawProposal(db: Database, proposalId: string, actor: Actor,
   });
 }
 
-/** Admins who can sign things off: admin role, not deactivated. */
-export async function countActiveAdmins(db: Database): Promise<number> {
-  const [row] = await db
-    .select({ total: count() })
-    .from(user)
-    .where(and(inArray(user.role, ADMIN_ROLES), or(isNull(user.banned), eq(user.banned, false))));
-  return row?.total ?? 0;
+/**
+ * Chairs who can sign things off (see isActiveChair in src/lib/roles.ts).
+ * Filtered in code, not SQL, so comma-separated roles and expired bans count
+ * exactly as they do at sign-in. There are only ever a handful of accounts.
+ */
+export async function countActiveAdmins(db: Database, now: Date = new Date()): Promise<number> {
+  const accounts = await db.select({ role: user.role, banned: user.banned, banExpires: user.banExpires }).from(user);
+  return accounts.filter((account) => isActiveChair(account, now)).length;
 }
 
 export async function pendingProposalForVenue(db: Database, venueId: string): Promise<TierProposalRow | null> {

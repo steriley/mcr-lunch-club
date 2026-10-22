@@ -6,6 +6,7 @@ import { user } from '@/db/auth-schema';
 import { briberyRecords, tierProposals, venueSuggestions, venues } from '@/db/schema';
 import { formatDateTime } from '@/lib/dates';
 import { db } from '@/lib/db';
+import { countActiveAdmins } from '@/lib/tier-proposals';
 import { TIERS } from '@/lib/tiers';
 import { isPubliclyVisible } from '@/lib/visibility';
 import { publicVenueCondition } from '@/lib/visibility-sql';
@@ -14,7 +15,7 @@ export const prerender = false;
 
 const currentUser = Astro.locals.user;
 
-const [tierCounts, hiddenVenues, recent, [bribery], [chairs], [suggestions], [pendingChanges]] = await Promise.all([
+const [tierCounts, hiddenVenues, recent, [bribery], activeChairs, [suggestions], [pendingChanges]] = await Promise.all([
   db
     .select({
       tier: venues.tier,
@@ -45,7 +46,7 @@ const [tierCounts, hiddenVenues, recent, [bribery], [chairs], [suggestions], [pe
     .orderBy(desc(venues.updatedAt))
     .limit(8),
   db.select({ total: count() }).from(briberyRecords),
-  db.select({ total: count() }).from(user).where(eq(user.role, 'admin')),
+  countActiveAdmins(db),
   db.select({ total: count() }).from(venueSuggestions).where(eq(venueSuggestions.status, 'new')),
   db.select({ total: count() }).from(tierProposals).where(eq(tierProposals.status, 'pending')),
 ]);
@@ -65,7 +66,7 @@ const stats = [
   { label: 'Pending tier changes', value: pendingChanges.total, href: '/admin/pending', tone: 'bg-[#fff4df] text-[#8a5100]' },
   { label: 'New suggestions', value: suggestions.total, href: '/admin/suggestions', tone: 'bg-[#f1e8f3] text-[#7C3A82]' },
   { label: 'Bribery records', value: bribery.total, href: '/admin/bribery', tone: 'bg-[#FDECEC] text-[#B92B27]' },
-  { label: 'Chairs', value: chairs.total, href: '/admin/users', tone: 'bg-[#edf3ff] text-[#1B2F6B]' },
+  { label: 'Active Chairs', value: activeChairs, href: '/admin/users', tone: 'bg-[#edf3ff] text-[#1B2F6B]' },
 ];
 ---
 
