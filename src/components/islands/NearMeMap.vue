@@ -2629,4 +2629,18 @@ onUnmounted(() => {
   width: 44px;
   height: 44px;
 }
+
+.near-me-status-action {
+  flex-shrink: 0;
+  white-space: nowrap;
+  min-height: 32px;
+  padding-inline: 12px;
+}
+
+/* Pinch-zoom covers phones, and the buttons would sit under the status banner. */
+@media (max-width: 1023px) {
+  :deep(.leaflet-control-zoom) {
+    display: none;
+  }
+}
 </style>
