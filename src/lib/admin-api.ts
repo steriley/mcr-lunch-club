@@ -7,6 +7,7 @@ import { hasAdminRole, isBanned } from '@/lib/roles';
 import type { Actor } from '@/lib/venue-events';
 
 export { ADMIN_ROLES, hasAdminRole, isBanned } from '@/lib/roles';
+export { isUniqueViolation } from '@/lib/db-errors';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
@@ -84,16 +85,6 @@ export async function readJson(request: Request): Promise<unknown> {
 }
 
 export const uuidParam = z.uuid();
-
-/** True for Postgres unique-constraint violations, including when wrapped by Drizzle. */
-export function isUniqueViolation(error: unknown): boolean {
-  let current: unknown = error;
-  for (let depth = 0; current && depth < 4; depth += 1) {
-    if ((current as { code?: unknown }).code === '23505') return true;
-    current = (current as { cause?: unknown }).cause;
-  }
-  return false;
-}
 
 /** Maps a Better Auth API error to the admin error shape; anything else becomes a 500. */
 export function authApiError(context: string, error: unknown): Response {

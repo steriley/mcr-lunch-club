@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { runtimeImports } from './imports';
 
 /**
  * Islands are bundled for the browser, so nothing they import (directly or
@@ -30,13 +31,6 @@ function resolveImport(from: string, specifier: string): string | null {
     if (existsSync(candidate) && !candidate.endsWith(path.sep) && /\.(ts|vue|json)$/.test(candidate)) return candidate;
   }
   return null;
-}
-
-/** Runtime import specifiers in a source file; `import type` and `export type` are skipped. */
-export function runtimeImports(source: string): string[] {
-  return [...source.matchAll(/(?:import|export)\s(?!type\s)[^'"]*?from\s+['"]([^'"]+)['"]|import\(\s*['"]([^'"]+)['"]\s*\)|import\s+['"]([^'"]+)['"]/g)].map(
-    (match) => match[1] ?? match[2] ?? match[3]
-  );
 }
 
 function importsOf(file: string): string[] {

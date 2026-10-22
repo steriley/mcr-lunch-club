@@ -1,6 +1,6 @@
 import { and, desc, eq, lt, max, sql } from 'drizzle-orm';
 import { inspections, venues, type InspectionRow } from '@/db/schema';
-import { isUniqueViolation } from '@/lib/admin-api';
+import { isUniqueViolation } from '@/lib/db-errors';
 import type { Database, Tx } from '@/lib/db-client';
 import { INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import { londonDate } from '@/lib/london-date';
