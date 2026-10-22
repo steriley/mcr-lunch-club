@@ -64,7 +64,6 @@ export function isValidFocal(focal: Focal): boolean {
   return [focal.focalX, focal.focalY].every((value) => Number.isInteger(value) && (value as number) >= 0 && (value as number) <= 100);
 }
 
-/** Oldest first, matching the order photos were added. */
 /** How many photos the venue has, or null when the venue does not exist. Unlocked: a pre-check only. */
 export async function countVenueImages(db: Database, venueId: string): Promise<number | null> {
   const [venue] = await db.select({ id: venues.id }).from(venues).where(eq(venues.id, venueId)).limit(1);
@@ -76,6 +75,7 @@ export async function countVenueImages(db: Database, venueId: string): Promise<n
 /** What venue_events keeps about a photo: never enough to render a removed one, just which it was. */
 const eventDetail = (image: VenueImageRow, extra: Record<string, unknown> = {}) => ({ imageId: image.id, thumbUrl: image.thumbUrl, ...extra });
 
+/** Oldest first, matching the order photos were added. */
 export async function listVenueImages(db: Database, venueId: string): Promise<VenueImageRow[]> {
   return db
     .select()

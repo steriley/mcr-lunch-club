@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { jsonError, jsonResponse, readJson, requireAdmin, serverError, uuidParam, validationError } from '@/lib/admin-api';
+import type { VenueImageRow } from '@/db/schema';
 import { db } from '@/lib/db';
 import { getBlobToken } from '@/lib/env';
 import { CAPTION_MAX } from '@/lib/image-upload';
@@ -67,18 +68,22 @@ export const PATCH: APIRoute = async ({ request, params }) => {
   const body = parsed.data;
 
   try {
+    // Primary first: it is the one change that can fail on a stale image, so nothing is half-written.
+    let primaryImage: VenueImageRow | null = null;
+    if (body.isPrimary) {
+      const primary = await setPrimary(db, ctx.venueId, ctx.imageId, ctx.actor);
+      if (!primary.ok) return failure(primary.error);
+      primaryImage = primary.value.image;
+    }
+
     const changes: ImageMetaChanges = {};
     if (body.caption !== undefined) changes.caption = body.caption;
     if (body.focalX !== undefined && body.focalY !== undefined) changes.focal = { focalX: body.focalX, focalY: body.focalY };
 
-    let meta = await updateImageMeta(db, ctx.venueId, ctx.imageId, changes);
-    if (!meta.ok) return failure(meta.error);
+    if (primaryImage && Object.keys(changes).length === 0) return jsonResponse({ image: serializeVenueImage(primaryImage) });
 
-    if (body.isPrimary) {
-      const primary = await setPrimary(db, ctx.venueId, ctx.imageId, ctx.actor);
-      if (!primary.ok) return failure(primary.error);
-      meta = { ok: true, value: primary.value.image };
-    }
+    const meta = await updateImageMeta(db, ctx.venueId, ctx.imageId, changes);
+    if (!meta.ok) return failure(meta.error);
     return jsonResponse({ image: serializeVenueImage(meta.value) });
   } catch (error) {
     return serverError('Update venue image', error);

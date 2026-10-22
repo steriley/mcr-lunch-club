@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   CAPTION_MAX,
   FULL_MAX_EDGE,
-  FULL_QUALITY,
+  FULL_QUALITIES,
   MAX_FULL_BYTES,
   MAX_IMAGES_PER_VENUE,
   MAX_THUMB_BYTES,
@@ -15,12 +15,12 @@ import {
 describe('venue image settings', () => {
   it('match the agreed starting values', () => {
     assert.deepEqual(
-      { MAX_IMAGES_PER_VENUE, FULL_MAX_EDGE, THUMB_MAX_EDGE, FULL_QUALITY, THUMB_QUALITY, MAX_FULL_BYTES, MAX_THUMB_BYTES, CAPTION_MAX },
+      { MAX_IMAGES_PER_VENUE, FULL_MAX_EDGE, THUMB_MAX_EDGE, FULL_QUALITIES, THUMB_QUALITY, MAX_FULL_BYTES, MAX_THUMB_BYTES, CAPTION_MAX },
       {
         MAX_IMAGES_PER_VENUE: 5,
         FULL_MAX_EDGE: 1600,
         THUMB_MAX_EDGE: 640,
-        FULL_QUALITY: 80,
+        FULL_QUALITIES: [80, 65, 50],
         THUMB_QUALITY: 75,
         MAX_FULL_BYTES: 800 * 1024,
         MAX_THUMB_BYTES: 150 * 1024,

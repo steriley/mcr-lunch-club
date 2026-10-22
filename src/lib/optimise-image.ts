@@ -1,4 +1,4 @@
-import { FULL_MAX_EDGE, FULL_QUALITY, THUMB_MAX_EDGE, THUMB_QUALITY } from '@/lib/image-upload';
+import { FULL_MAX_EDGE, FULL_QUALITIES, MAX_FULL_BYTES, THUMB_MAX_EDGE, THUMB_QUALITY } from '@/lib/image-upload';
 
 /**
  * Browser only (#35): turns a photo the admin picked into the two WebP
@@ -69,7 +69,13 @@ export async function optimiseImage(file: Blob): Promise<OptimisedImage> {
     const thumbSize = fitWithin(bitmap.width, bitmap.height, THUMB_MAX_EDGE);
     try {
       // Both from the original bitmap: the thumbnail is never a shrunk copy of the full variant.
-      const full = await encode(pixels(bitmap, fullSize), { quality: FULL_QUALITY });
+      const fullPixels = pixels(bitmap, fullSize);
+      let full = await encode(fullPixels, { quality: FULL_QUALITIES[0] });
+      // Step the quality down until it fits; the last attempt is kept, and the server rejects it if still too big.
+      for (const quality of FULL_QUALITIES.slice(1)) {
+        if (full.byteLength <= MAX_FULL_BYTES) break;
+        full = await encode(fullPixels, { quality });
+      }
       const thumb = await encode(pixels(bitmap, thumbSize), { quality: THUMB_QUALITY });
       return {
         full: new Blob([full], { type: 'image/webp' }),
