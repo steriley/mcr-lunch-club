@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { ANCHOR_DISH_MAX, GOLDEN_CUT_SIZE, PUFF_PIECE_MAX } from '@/lib/golden-cut-schema';
+import { apiFetch, failureText } from '@/lib/api-fetch';
 
 interface Entry {
   venueId: string;
@@ -72,28 +73,19 @@ async function save() {
   message.value = '';
   errorMessage.value = '';
   busy.value = true;
-  try {
-    const response = await fetch('/api/admin/golden-cut', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        entries: rows.value.map(({ venueId, puffPiece, anchorDish }) => ({ venueId, puffPiece, anchorDish })),
-      }),
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      const fieldErrors = result.fields ? Object.values(result.fields).join(' ') : '';
-      errorMessage.value = fieldErrors || result.error || 'That did not save. Try again.';
-      return;
-    }
-    rows.value = (result.entries as Entry[]).map(toRow);
-    savedSnapshot.value = JSON.stringify(rows.value);
-    message.value = 'Saved. The home page shows the new order within about a minute.';
-  } catch {
-    errorMessage.value = 'That did not save. Try again.';
-  } finally {
-    busy.value = false;
+  const result = await apiFetch<{ entries: Entry[] }>('/api/admin/golden-cut', {
+    method: 'PUT',
+    body: { entries: rows.value.map(({ venueId, puffPiece, anchorDish }) => ({ venueId, puffPiece, anchorDish })) },
+    fallback: 'That did not save. Try again.',
+  });
+  busy.value = false;
+  if (!result.ok) {
+    errorMessage.value = failureText(result);
+    return;
   }
+  rows.value = result.data.entries.map(toRow);
+  savedSnapshot.value = JSON.stringify(rows.value);
+  message.value = 'Saved. The home page shows the new order within about a minute.';
 }
 
 function discard() {

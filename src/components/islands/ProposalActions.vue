@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { apiFetch } from '@/lib/api-fetch';
 
 /**
  * Approve / Decline (with a required, internal reason) for admins other than
@@ -20,23 +21,17 @@ async function act(action: 'approve' | 'decline' | 'withdraw') {
     return;
   }
   busy.value = true;
-  try {
-    const response = await fetch(`/api/admin/proposals/${props.proposalId}/${action}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: action === 'decline' ? JSON.stringify({ reason: reason.value }) : '{}',
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      errorMessage.value = result.fields?.reason ?? result.error ?? 'That did not work. Try again.';
-      return;
-    }
-    window.location.reload();
-  } catch {
-    errorMessage.value = 'That did not work. Try again.';
-  } finally {
-    busy.value = false;
+  const result = await apiFetch(`/api/admin/proposals/${props.proposalId}/${action}`, {
+    method: 'POST',
+    body: action === 'decline' ? { reason: reason.value } : {},
+    fallback: 'That did not work. Try again.',
+  });
+  busy.value = false;
+  if (!result.ok) {
+    errorMessage.value = result.fields.reason ?? result.error;
+    return;
   }
+  window.location.reload();
 }
 
 const primary = 'rounded-lg bg-[#1E7A4E] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#17603d] disabled:opacity-60';

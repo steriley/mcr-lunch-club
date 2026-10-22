@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-policy';
 import { USER_ROLES, createUserSchema, resetPasswordSchema } from '@/lib/user-schema';
+import { apiFetch } from '@/lib/api-fetch';
 
 interface UserRow {
   id: string;
@@ -48,33 +49,24 @@ async function createUser() {
   }
 
   isCreating.value = true;
-  try {
-    const response = await fetch('/api/admin/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(checked.data),
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      Object.assign(errors, result.fields ?? {});
-      formError.value = result.error ?? 'Unable to create this account.';
-      return;
-    }
-    rows.value.unshift({
-      id: result.user.id,
-      email: result.user.email,
-      name: result.user.name,
-      role: result.user.role ?? checked.data.role,
-      banned: false,
-      createdAt: result.user.createdAt ?? null,
-    });
-    message.value = `Account created for ${result.user.email}. Share the password with them securely; they can change it under Account.`;
-    Object.assign(form, { name: '', email: '', password: '', role: 'admin' });
-  } catch {
-    formError.value = 'Unable to create this account.';
-  } finally {
-    isCreating.value = false;
+  const result = await apiFetch('/api/admin/users', { method: 'POST', body: checked.data, fallback: 'Unable to create this account.' });
+  isCreating.value = false;
+  if (!result.ok) {
+    Object.assign(errors, result.fields);
+    formError.value = result.error;
+    return;
   }
+  const { user } = result.data;
+  rows.value.unshift({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role ?? checked.data.role,
+    banned: false,
+    createdAt: user.createdAt ?? null,
+  });
+  message.value = `Account created for ${user.email}. Share the password with them securely; they can change it under Account.`;
+  Object.assign(form, { name: '', email: '', password: '', role: 'admin' });
 }
 
 async function performAction() {
@@ -85,20 +77,17 @@ async function performAction() {
   message.value = '';
   errorMessage.value = '';
   busy.value[target.user.id] = true;
-  try {
-    const response = await fetch(`/api/admin/users/${encodeURIComponent(target.user.id)}/${target.action}`, { method: 'POST' });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      errorMessage.value = result.error ?? 'Unable to update this account.';
-      return;
-    }
-    target.user.banned = target.action === 'ban';
-    message.value = `${target.user.email} has been ${target.action === 'ban' ? 'deactivated and signed out' : 'reactivated'}.`;
-  } catch {
-    errorMessage.value = 'Unable to update this account.';
-  } finally {
-    busy.value[target.user.id] = false;
+  const result = await apiFetch(`/api/admin/users/${encodeURIComponent(target.user.id)}/${target.action}`, {
+    method: 'POST',
+    fallback: 'Unable to update this account.',
+  });
+  busy.value[target.user.id] = false;
+  if (!result.ok) {
+    errorMessage.value = result.error;
+    return;
   }
+  target.user.banned = target.action === 'ban';
+  message.value = `${target.user.email} has been ${target.action === 'ban' ? 'deactivated and signed out' : 'reactivated'}.`;
 }
 
 function openReset(user: UserRow) {
@@ -118,24 +107,18 @@ async function submitReset() {
   }
 
   busy.value[user.id] = true;
-  try {
-    const response = await fetch(`/api/admin/users/${encodeURIComponent(user.id)}/reset-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(checked.data),
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      resetError.value = result.fields?.password ?? result.error ?? 'Unable to reset this password.';
-      return;
-    }
-    resetTarget.value = null;
-    message.value = `Temporary password set for ${user.email}. They have been signed out everywhere.`;
-  } catch {
-    resetError.value = 'Unable to reset this password.';
-  } finally {
-    busy.value[user.id] = false;
+  const result = await apiFetch(`/api/admin/users/${encodeURIComponent(user.id)}/reset-password`, {
+    method: 'POST',
+    body: checked.data,
+    fallback: 'Unable to reset this password.',
+  });
+  busy.value[user.id] = false;
+  if (!result.ok) {
+    resetError.value = result.fields.password ?? result.error;
+    return;
   }
+  resetTarget.value = null;
+  message.value = `Temporary password set for ${user.email}. They have been signed out everywhere.`;
 }
 
 const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2F6B]/30';

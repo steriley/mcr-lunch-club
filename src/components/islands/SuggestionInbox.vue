@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import { formatDateTime } from '@/lib/dates';
 import type { SuggestionStatus } from '@/lib/suggestion-schema';
+import { apiFetch, type ApiFetchOptions } from '@/lib/api-fetch';
 
 interface SuggestionItem {
   id: string;
@@ -26,38 +27,18 @@ const pendingDelete = ref<SuggestionItem | null>(null);
 const message = ref('');
 const errorMessage = ref('');
 
-async function run(suggestion: SuggestionItem, action: () => Promise<Response>, failure: string) {
+async function run(suggestion: SuggestionItem, options: ApiFetchOptions): Promise<boolean> {
   message.value = '';
   errorMessage.value = '';
   busy.value[suggestion.id] = true;
-  try {
-    const response = await action();
-    if (!response.ok) {
-      const body = await response.json().catch(() => null);
-      errorMessage.value = body?.error || failure;
-      return null;
-    }
-    return response;
-  } catch {
-    errorMessage.value = failure;
-    return null;
-  } finally {
-    busy.value[suggestion.id] = false;
-  }
+  const result = await apiFetch(`/api/admin/suggestions/${suggestion.id}`, options);
+  busy.value[suggestion.id] = false;
+  if (!result.ok) errorMessage.value = result.error;
+  return result.ok;
 }
 
 async function setStatus(suggestion: SuggestionItem, status: 'new' | 'dismissed') {
-  const response = await run(
-    suggestion,
-    () =>
-      fetch(`/api/admin/suggestions/${suggestion.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      }),
-    'Could not update the suggestion.'
-  );
-  if (!response) return;
+  if (!(await run(suggestion, { method: 'PATCH', body: { status }, fallback: 'Could not update the suggestion.' }))) return;
   rows.value = rows.value.filter((row) => row.id !== suggestion.id);
   message.value = status === 'dismissed' ? `“${suggestion.name}” dismissed.` : `“${suggestion.name}” moved back to the inbox.`;
 }
@@ -66,12 +47,7 @@ async function performDelete() {
   const suggestion = pendingDelete.value;
   pendingDelete.value = null;
   if (!suggestion) return;
-  const response = await run(
-    suggestion,
-    () => fetch(`/api/admin/suggestions/${suggestion.id}`, { method: 'DELETE' }),
-    'Could not delete the suggestion.'
-  );
-  if (!response) return;
+  if (!(await run(suggestion, { method: 'DELETE', fallback: 'Could not delete the suggestion.' }))) return;
   rows.value = rows.value.filter((row) => row.id !== suggestion.id);
   message.value = 'Suggestion deleted.';
 }

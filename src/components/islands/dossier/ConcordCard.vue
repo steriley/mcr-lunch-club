@@ -15,6 +15,7 @@ import DossierCard from './DossierCard.vue';
 import DossierIcon from './DossierIcon.vue';
 import { formatDate, formatDateTime } from '@/lib/dates';
 import { INSPECTION_OUTCOMES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
+import { apiFetch } from '@/lib/api-fetch';
 
 /**
  * "Visited today" as a two-signature concord. A press records this Chair's
@@ -47,30 +48,25 @@ const canPress = computed(() => !busy.value && (state.value === 'confirm_other' 
 async function press() {
   errorMessage.value = '';
   busy.value = true;
-  try {
-    const response = await fetch(`/api/admin/venues/${props.venueId}/visited-today`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      // A cosigner sends nothing: they affirm the outcome the first Chair recorded.
-      body: JSON.stringify(state.value === 'none' ? { outcome: chosenOutcome.value } : {}),
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      errorMessage.value = result.error ?? 'Could not record your visit. Try again.';
-      return;
-    }
-    status.value = result.status;
-    justConfirmed.value = Boolean(result.confirmedNow);
-    if (result.confirmedNow && result.status.confirmed) {
-      const { firstAdminName, secondAdminName } = result.status.confirmed;
-      const outcomeLabel = result.status.confirmed.outcome ? `, ${INSPECTION_OUTCOME_LABELS[result.status.confirmed.outcome as InspectionOutcome].toLowerCase()}` : '';
-      latest.value = `${formatDate(result.status.today)}, verified by ${firstAdminName} and ${secondAdminName}${outcomeLabel}`;
-      emit('confirmed', result.status);
-    }
-  } catch {
-    errorMessage.value = 'Could not record your visit. Try again.';
-  } finally {
-    busy.value = false;
+  const result = await apiFetch(`/api/admin/venues/${props.venueId}/visited-today`, {
+    method: 'POST',
+    // A cosigner sends nothing: they affirm the outcome the first Chair recorded.
+    body: state.value === 'none' ? { outcome: chosenOutcome.value } : {},
+    fallback: 'Could not record your visit. Try again.',
+  });
+  busy.value = false;
+  if (!result.ok) {
+    errorMessage.value = result.error;
+    return;
+  }
+  const { status: visit, confirmedNow } = result.data;
+  status.value = visit;
+  justConfirmed.value = Boolean(confirmedNow);
+  if (confirmedNow && visit.confirmed) {
+    const { firstAdminName, secondAdminName } = visit.confirmed;
+    const outcomeLabel = visit.confirmed.outcome ? `, ${INSPECTION_OUTCOME_LABELS[visit.confirmed.outcome as InspectionOutcome].toLowerCase()}` : '';
+    latest.value = `${formatDate(visit.today)}, verified by ${firstAdminName} and ${secondAdminName}${outcomeLabel}`;
+    emit('confirmed', visit);
   }
 }
 </script>

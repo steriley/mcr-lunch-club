@@ -129,6 +129,7 @@ import { nextTick, onUnmounted, reactive, ref, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $isSuggestModalOpen, closeSuggestModal } from '@/stores/filters';
 import type { CostTier } from '@/types';
+import { apiFetch } from '@/lib/api-fetch';
 
 const isOpen = useStore($isSuggestModalOpen);
 
@@ -188,27 +189,22 @@ async function submitPetition() {
   errors.value = {};
   formError.value = '';
   submitting.value = true;
-  try {
-    const response = await fetch('/api/suggestions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    if (!response.ok) {
-      const body = await response.json().catch(() => null);
-      errors.value = body?.fields ?? {};
-      formError.value = body?.error ?? 'The petition could not be sent. Please try again.';
-      return;
-    }
-    sentName.value = form.name.trim();
-    sent.value = true;
-    await nextTick();
-    doneButton.value?.focus();
-  } catch {
-    formError.value = 'The petition could not be sent. Check your connection and try again.';
-  } finally {
-    submitting.value = false;
+  const result = await apiFetch('/api/suggestions', {
+    method: 'POST',
+    body: form,
+    fallback: 'The petition could not be sent. Please try again.',
+    offline: 'The petition could not be sent. Check your connection and try again.',
+  });
+  submitting.value = false;
+  if (!result.ok) {
+    errors.value = result.fields;
+    formError.value = result.error;
+    return;
   }
+  sentName.value = form.name.trim();
+  sent.value = true;
+  await nextTick();
+  doneButton.value?.focus();
 }
 </script>
 

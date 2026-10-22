@@ -19,6 +19,7 @@ import { routeStatus, type RouteStatus } from '@/lib/route-status';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
 import { COST_BANDS, COST_BAND_LABELS, isOutsideUk, slugify, venueCreateSchema, venueInputSchema } from '@/lib/venue-schema';
 import type { SerializedVenueImage } from '@/lib/image-upload';
+import { apiFetch } from '@/lib/api-fetch';
 
 /**
  * The venue dossier: the Chairs' edit page for one venue (and the new-venue
@@ -223,23 +224,21 @@ function applySavedVenue(venue: VenueData) {
 async function retryRoute() {
   routeMessage.value = '';
   isRetrying.value = true;
-  try {
-    const response = await fetch(`/api/admin/venues/${venueId.value}/recompute-route`, { method: 'POST' });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      routeMessage.value = result.error ?? 'Could not work out the walking route. Try again later.';
-      return;
-    }
-    route.distanceMiles = result.venue.distanceMiles;
-    route.walkingTimeMin = result.venue.walkingTimeMin;
-    route.routeUpdatedAt = result.venue.routeUpdatedAt;
-    updatedAt.value = result.venue.updatedAt;
-    routeMessage.value = 'Walking route updated.';
-  } catch {
-    routeMessage.value = 'Could not work out the walking route. Try again later.';
-  } finally {
-    isRetrying.value = false;
+  const result = await apiFetch(`/api/admin/venues/${venueId.value}/recompute-route`, {
+    method: 'POST',
+    fallback: 'Could not work out the walking route. Try again later.',
+  });
+  isRetrying.value = false;
+  if (!result.ok) {
+    routeMessage.value = result.error;
+    return;
   }
+  const { venue } = result.data;
+  route.distanceMiles = venue.distanceMiles;
+  route.walkingTimeMin = venue.walkingTimeMin;
+  route.routeUpdatedAt = venue.routeUpdatedAt;
+  updatedAt.value = venue.updatedAt;
+  routeMessage.value = 'Walking route updated.';
 }
 
 // New venues only: the tier to propose. It takes effect once a different admin approves it.
@@ -333,19 +332,20 @@ async function save() {
   isSubmitting.value = true;
   try {
     const changes = changedFields();
-    const response = await fetch(props.mode === 'create' && !venueId.value ? '/api/admin/venues' : `/api/admin/venues/${venueId.value}`, {
-      method: props.mode === 'create' && !venueId.value ? 'POST' : 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+    const isNew = props.mode === 'create' && !venueId.value;
+    const response = await apiFetch(isNew ? '/api/admin/venues' : `/api/admin/venues/${venueId.value}`, {
+      method: isNew ? 'POST' : 'PUT',
+      body,
+      fallback: 'Unable to save this venue right now.',
     });
-    const result = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      Object.assign(errors, result.fields ?? {});
-      notify('error', result.error ?? 'Unable to save this venue right now.');
+      Object.assign(errors, response.fields);
+      notify('error', response.error);
       return;
     }
 
+    const result = response.data;
     updatedAt.value = result.venue.updatedAt;
     applySavedVenue(result.venue);
     savedSnapshot.value = JSON.stringify(form);

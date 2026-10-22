@@ -6,6 +6,7 @@ import DossierCard from './dossier/DossierCard.vue';
 import DossierIcon from './dossier/DossierIcon.vue';
 import { formatDateTime } from '@/lib/dates';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
+import { apiFetch } from '@/lib/api-fetch';
 
 interface PendingProposal {
   id: string;
@@ -39,23 +40,17 @@ async function propose() {
     return;
   }
   busy.value = true;
-  try {
-    const response = await fetch(`/api/admin/venues/${props.venueId}/proposals`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ proposedTier: proposedTier.value }),
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      errorMessage.value = result.error ?? 'Could not propose that change.';
-      return;
-    }
-    window.location.reload();
-  } catch {
-    errorMessage.value = 'Could not propose that change.';
-  } finally {
-    busy.value = false;
+  const result = await apiFetch(`/api/admin/venues/${props.venueId}/proposals`, {
+    method: 'POST',
+    body: { proposedTier: proposedTier.value },
+    fallback: 'Could not propose that change.',
+  });
+  busy.value = false;
+  if (!result.ok) {
+    errorMessage.value = result.error;
+    return;
   }
+  window.location.reload();
 }
 </script>
 

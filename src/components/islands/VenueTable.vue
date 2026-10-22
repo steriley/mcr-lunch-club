@@ -5,6 +5,7 @@ import TierBadge from './TierBadge.vue';
 import { formatDate } from '@/lib/dates';
 import { ROUTE_STATUS_LABELS, type RouteStatus } from '@/lib/route-status';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
+import { apiFetch } from '@/lib/api-fetch';
 
 interface VenueRow {
   id: string;
@@ -91,20 +92,14 @@ async function performDelete() {
   message.value = '';
   errorMessage.value = '';
   busy.value[venue.id] = true;
-  try {
-    const response = await fetch(`/api/admin/venues/${venue.id}`, { method: 'DELETE' });
-    if (!response.ok) {
-      const result = await response.json().catch(() => ({}));
-      errorMessage.value = result.error ?? 'Could not delete the venue.';
-      return;
-    }
-    rows.value = rows.value.filter((row) => row.id !== venue.id);
-    message.value = `${venue.name} was deleted.`;
-  } catch {
-    errorMessage.value = 'Could not delete the venue.';
-  } finally {
-    busy.value[venue.id] = false;
+  const result = await apiFetch(`/api/admin/venues/${venue.id}`, { method: 'DELETE', fallback: 'Could not delete the venue.' });
+  busy.value[venue.id] = false;
+  if (!result.ok) {
+    errorMessage.value = result.error;
+    return;
   }
+  rows.value = rows.value.filter((row) => row.id !== venue.id);
+  message.value = `${venue.name} was deleted.`;
 }
 
 // Keep filters in the URL so a filtered list can be bookmarked or shared.
