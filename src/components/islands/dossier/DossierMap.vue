@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { CircleMarker, Map as LeafletMap, Polyline } from 'leaflet';
 import DossierIcon from './DossierIcon.vue';
-import { BASE_LAT_LNG, CARTO_VOYAGER_TILE_CONFIG } from '@/lib/map/config';
+import { BASE_LAT_LNG, createTileLayer } from '@/lib/map/config';
 
 /**
  * A small, static map from HQ (Crown Square, Spinningfields) to the venue.
@@ -45,13 +45,7 @@ onMounted(async () => {
     keyboard: false,
     touchZoom: false,
   });
-  leaflet
-    .tileLayer(CARTO_VOYAGER_TILE_CONFIG.getUrl(props.apiKey), {
-      attribution: CARTO_VOYAGER_TILE_CONFIG.attribution,
-      subdomains: CARTO_VOYAGER_TILE_CONFIG.subdomains,
-      maxZoom: CARTO_VOYAGER_TILE_CONFIG.maxZoom,
-    })
-    .addTo(map);
+  createTileLayer(leaflet, props.apiKey).addTo(map);
   leaflet.circleMarker(BASE_LAT_LNG, { radius: 7, color: '#FBF6EA', weight: 2, fillColor: '#1B2F6B', fillOpacity: 1 }).addTo(map);
   draw();
 });

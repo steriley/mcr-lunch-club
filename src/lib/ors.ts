@@ -1,5 +1,6 @@
 import { getOrsApiKey } from '@/lib/env';
 import { BASE_COORDINATES } from '@/lib/map/config';
+import type { LatLng } from '@/lib/map/ranking';
 
 /**
  * Server-only client for OpenRouteService (https://openrouteservice.org).
@@ -39,10 +40,7 @@ export class OrsError extends Error {
   }
 }
 
-export interface LatLng {
-  lat: number;
-  lng: number;
-}
+export type { LatLng };
 
 export interface PlaceCandidate extends LatLng {
   label: string;
