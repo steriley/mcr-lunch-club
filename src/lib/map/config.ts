@@ -3,8 +3,8 @@
  * Base coordinates, default zoom levels, tile layer specifications, and walking isochrones.
  */
 
-export const BASE_LAT = 53.47985;
-export const BASE_LNG = -2.25105;
+export const BASE_LAT = 53.478997;
+export const BASE_LNG = -2.252024;
 
 export const BASE_COORDINATES = {
   lat: BASE_LAT,

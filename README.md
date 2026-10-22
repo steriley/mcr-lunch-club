@@ -8,7 +8,7 @@ Welcome to the official repository of the **Manchester Lunch Club Map App**.
 
 ## 🏛️ Concept & Articles of Governance
 
-- **The Base Datum**: Crown Square / Hardman Square, Spinningfields (`53.47985°N, -2.25105°W`).
+- **The Base Datum**: Crown Square / Hardman Square, Spinningfields (`53.478997°N, -2.252024°W`).
 - **Walking-Time Rings**: 5, 10, 15, 20, and 25-minute pedestrian isochrones.
 - **The 2.5-Mile Boundary**: Delineates the maximum authorized perimeter for civilized municipal dining (with Butty's Booth and Rusholme Chippy marking the frontier at 2.2 miles).
 - **The Sacred Two-Visit Rule**: No venue may enter **Approved** on a single visit. Two distinct, satisfactory audits conducted under peak duress are required.

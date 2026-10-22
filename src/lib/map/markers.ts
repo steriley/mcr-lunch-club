@@ -46,9 +46,13 @@ export function createVenueMarker(L: any, venue: Venue): any {
  */
 export function createBaseMarker(L: any): any {
   const baseIconHtml = `
-    <div class="relative flex items-center justify-center w-8 h-8 rounded-full bg-[#1a1e24] text-[#c59b27] border-2 border-[#c59b27] shadow-2xl">
-      <div class="w-3 h-3 rounded-full bg-[#c59b27] animate-ping opacity-75"></div>
-      <div class="absolute text-[13px] font-bold">🏛</div>
+    <div class="hq-hotspot">
+      <span class="hq-hotspot-wave" aria-hidden="true"></span>
+      <span class="hq-hotspot-wave" aria-hidden="true"></span>
+      <span class="hq-hotspot-wave" aria-hidden="true"></span>
+      <div class="hq-hotspot-core">
+        <div class="absolute text-[13px] font-bold">🏛</div>
+      </div>
     </div>
   `;
 
@@ -62,10 +66,14 @@ export function createBaseMarker(L: any): any {
     zIndexOffset: 1000,
   });
 
-  baseMarker.bindTooltip('<b>The Chairs’ Seat</b><br/>Spinningfields Base Quorum', {
-    direction: 'top',
-    className: 'ring-label',
-  });
+  baseMarker.bindTooltip(
+    '<span class="hq-label-kicker">Lunch Club HQ</span><span class="hq-label-title">The Chairs’ Seat</span><span class="hq-label-sub">Spinningfields Base Quorum</span>',
+    {
+      direction: 'top',
+      offset: [0, -14],
+      className: 'hq-label',
+    },
+  );
 
   return baseMarker;
 }
