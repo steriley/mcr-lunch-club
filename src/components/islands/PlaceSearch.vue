@@ -10,6 +10,7 @@ export interface PlaceCandidate {
 
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue';
+import { apiFetch } from '@/lib/api-fetch';
 
 const props = defineProps<{ initialQuery?: string }>();
 const emit = defineEmits<{ pick: [candidate: PlaceCandidate] }>();
@@ -29,23 +30,23 @@ async function search(text: string) {
   controller = new AbortController();
   status.value = 'loading';
   errorMessage.value = '';
+  let result;
   try {
-    const response = await fetch(`/api/admin/geocode?q=${encodeURIComponent(text)}`, { signal: controller.signal });
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      results.value = [];
-      status.value = 'error';
-      errorMessage.value = body.error ?? 'Location search failed. Enter the location manually instead.';
-      return;
-    }
-    results.value = body.results ?? [];
-    status.value = 'done';
-  } catch (error) {
-    if ((error as Error).name === 'AbortError') return;
+    result = await apiFetch<{ results?: PlaceCandidate[] }>(`/api/admin/geocode?q=${encodeURIComponent(text)}`, {
+      signal: controller.signal,
+      fallback: 'Location search failed. Enter the location manually instead.',
+    });
+  } catch {
+    return; // Aborted: a newer search replaced this one.
+  }
+  if (!result.ok) {
     results.value = [];
     status.value = 'error';
-    errorMessage.value = 'Location search failed. Enter the location manually instead.';
+    errorMessage.value = result.error;
+    return;
   }
+  results.value = result.data.results ?? [];
+  status.value = 'done';
 }
 
 watch(

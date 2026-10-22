@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import { briberyInputSchema } from '@/lib/bribery-schema';
+import { apiFetch } from '@/lib/api-fetch';
 
 interface BriberyData {
   id: string;
@@ -64,41 +65,32 @@ async function submit() {
   }
 
   isSubmitting.value = true;
-  try {
-    const response = await fetch(props.mode === 'create' ? '/api/admin/bribery' : `/api/admin/bribery/${props.record!.id}`, {
-      method: props.mode === 'create' ? 'POST' : 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...form }),
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      Object.assign(errors, result.fields ?? {});
-      formError.value = result.error ?? 'Unable to save this record right now.';
-      return;
-    }
-    savedSnapshot.value = JSON.stringify(form);
-    window.location.assign('/admin/bribery?saved=1');
-  } catch {
-    formError.value = 'Unable to save this record right now.';
-  } finally {
-    isSubmitting.value = false;
+  const result = await apiFetch(props.mode === 'create' ? '/api/admin/bribery' : `/api/admin/bribery/${props.record!.id}`, {
+    method: props.mode === 'create' ? 'POST' : 'PUT',
+    body: { ...form },
+    fallback: 'Unable to save this record right now.',
+  });
+  isSubmitting.value = false;
+  if (!result.ok) {
+    Object.assign(errors, result.fields);
+    formError.value = result.error;
+    return;
   }
+  savedSnapshot.value = JSON.stringify(form);
+  window.location.assign('/admin/bribery?saved=1');
 }
 
 async function performDelete() {
   showDeleteDialog.value = false;
   isSubmitting.value = true;
-  try {
-    const response = await fetch(`/api/admin/bribery/${props.record!.id}`, { method: 'DELETE' });
-    if (!response.ok) {
-      formError.value = 'Unable to delete this record right now.';
-      return;
-    }
-    savedSnapshot.value = JSON.stringify(form);
-    window.location.assign('/admin/bribery?deleted=1');
-  } finally {
-    isSubmitting.value = false;
+  const result = await apiFetch(`/api/admin/bribery/${props.record!.id}`, { method: 'DELETE', fallback: 'Unable to delete this record right now.' });
+  isSubmitting.value = false;
+  if (!result.ok) {
+    formError.value = result.error;
+    return;
   }
+  savedSnapshot.value = JSON.stringify(form);
+  window.location.assign('/admin/bribery?deleted=1');
 }
 
 function onBeforeUnload(event: BeforeUnloadEvent) {

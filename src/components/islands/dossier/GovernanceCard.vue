@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import ConfirmDialog from '../ConfirmDialog.vue';
 import DossierCard from './DossierCard.vue';
 import ExpungeDialog from './ExpungeDialog.vue';
+import { apiFetch } from '@/lib/api-fetch';
 
 /**
  * Administrative governance: mark permanently closed / reopen (any Chair, no
@@ -20,39 +21,26 @@ async function setClosed(action: 'close' | 'reopen') {
   showClose.value = false;
   errorMessage.value = '';
   busy.value = true;
-  try {
-    const response = await fetch(`/api/admin/venues/${props.venueId}/${action}`, { method: 'POST' });
-    if (!response.ok) {
-      const result = await response.json().catch(() => ({}));
-      errorMessage.value = result.error ?? 'That did not work. Try again.';
-      return;
-    }
-    window.location.reload();
-  } catch {
-    errorMessage.value = 'That did not work. Try again.';
-  } finally {
-    busy.value = false;
+  const result = await apiFetch(`/api/admin/venues/${props.venueId}/${action}`, { method: 'POST', fallback: 'That did not work. Try again.' });
+  busy.value = false;
+  if (!result.ok) {
+    errorMessage.value = result.error;
+    return;
   }
+  window.location.reload();
 }
 
 async function expunge() {
   errorMessage.value = '';
   busy.value = true;
-  try {
-    const response = await fetch(`/api/admin/venues/${props.venueId}`, { method: 'DELETE' });
-    if (!response.ok) {
-      const result = await response.json().catch(() => ({}));
-      errorMessage.value = result.error ?? 'Unable to expunge this venue right now.';
-      showExpunge.value = false;
-      return;
-    }
-    emit('expunged');
-  } catch {
-    errorMessage.value = 'Unable to expunge this venue right now.';
+  const result = await apiFetch(`/api/admin/venues/${props.venueId}`, { method: 'DELETE', fallback: 'Unable to expunge this venue right now.' });
+  busy.value = false;
+  if (!result.ok) {
+    errorMessage.value = result.error;
     showExpunge.value = false;
-  } finally {
-    busy.value = false;
+    return;
   }
+  emit('expunged');
 }
 
 /** The masthead's "Mark permanently closed" opens the same confirmation. */

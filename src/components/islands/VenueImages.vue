@@ -5,6 +5,7 @@ import DossierIcon from './dossier/DossierIcon.vue';
 import { CAPTION_MAX, MAX_IMAGES_PER_VENUE, focalStyle } from '@/lib/image-upload';
 import { OptimiseError, optimiseImage } from '@/lib/optimise-image';
 import type { SerializedVenueImage } from '@/lib/image-upload';
+import { apiFetch, failureText } from '@/lib/api-fetch';
 
 /**
  * Venue photos on the edit page (#35). Every change here applies at once
@@ -90,14 +91,18 @@ async function handle(item: QueueItem) {
     form.set('thumb', optimised.thumb, 'thumb.webp');
     form.set('width', String(optimised.width));
     form.set('height', String(optimised.height));
-    const response = await fetch(base.value, { method: 'POST', body: form });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
+    const result = await apiFetch(base.value, {
+      method: 'POST',
+      body: form,
+      fallback: 'Upload failed. Please try again.',
+      offline: 'Upload failed. Check your connection and try again.',
+    });
+    if (!result.ok) {
       item.status = 'failed';
-      item.message = result.error ?? 'Upload failed. Please try again.';
+      item.message = result.error;
       return;
     }
-    images.value = [...images.value, result.image];
+    images.value = [...images.value, result.data.image];
     item.status = 'done';
   } catch (cause) {
     console.error('Photo upload failed', cause);
@@ -132,24 +137,18 @@ function dismiss(item: QueueItem) {
 async function send(image: SerializedVenueImage, method: 'PATCH' | 'DELETE', body?: unknown) {
   error.value = '';
   busy[image.id] = true;
-  try {
-    const response = await fetch(`${base.value}/${image.id}`, {
-      method,
-      headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
-    const result = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      error.value = result.fields ? Object.values(result.fields).join(' ') : result.error ?? 'That did not save. Please try again.';
-      return null;
-    }
-    return result;
-  } catch {
-    error.value = 'That did not save. Check your connection and try again.';
+  const result = await apiFetch(`${base.value}/${image.id}`, {
+    method,
+    body,
+    fallback: 'That did not save. Please try again.',
+    offline: 'That did not save. Check your connection and try again.',
+  });
+  busy[image.id] = false;
+  if (!result.ok) {
+    error.value = failureText(result);
     return null;
-  } finally {
-    busy[image.id] = false;
   }
+  return result.data;
 }
 
 async function makePrimary(image: SerializedVenueImage) {

@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import { formatDate } from '@/lib/dates';
+import { apiFetch } from '@/lib/api-fetch';
 
 interface RecordRow {
   id: string;
@@ -24,22 +25,17 @@ async function togglePublished(record: RecordRow) {
   message.value = '';
   errorMessage.value = '';
   busy.value[record.id] = true;
-  try {
-    const response = await fetch(`/api/admin/bribery/${record.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ published: !record.published }),
-    });
-    if (!response.ok) {
-      errorMessage.value = 'Could not update the publish state.';
-      return;
-    }
-    record.published = !record.published;
-  } catch {
-    errorMessage.value = 'Could not update the publish state.';
-  } finally {
-    busy.value[record.id] = false;
+  const result = await apiFetch(`/api/admin/bribery/${record.id}`, {
+    method: 'PATCH',
+    body: { published: !record.published },
+    fallback: 'Could not update the publish state.',
+  });
+  busy.value[record.id] = false;
+  if (!result.ok) {
+    errorMessage.value = result.error;
+    return;
   }
+  record.published = !record.published;
 }
 
 async function performDelete() {
@@ -48,19 +44,14 @@ async function performDelete() {
   if (!record) return;
 
   busy.value[record.id] = true;
-  try {
-    const response = await fetch(`/api/admin/bribery/${record.id}`, { method: 'DELETE' });
-    if (!response.ok) {
-      errorMessage.value = 'Could not delete the record.';
-      return;
-    }
-    rows.value = rows.value.filter((row) => row.id !== record.id);
-    message.value = 'Record deleted.';
-  } catch {
-    errorMessage.value = 'Could not delete the record.';
-  } finally {
-    busy.value[record.id] = false;
+  const result = await apiFetch(`/api/admin/bribery/${record.id}`, { method: 'DELETE', fallback: 'Could not delete the record.' });
+  busy.value[record.id] = false;
+  if (!result.ok) {
+    errorMessage.value = result.error;
+    return;
   }
+  rows.value = rows.value.filter((row) => row.id !== record.id);
+  message.value = 'Record deleted.';
 }
 
 onMounted(() => {
