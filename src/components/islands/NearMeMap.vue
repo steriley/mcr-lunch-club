@@ -334,17 +334,24 @@
                   @keydown.enter="selectVenueItem(rv.venue, false)"
                   @keydown.space.prevent="selectVenueItem(rv.venue, false)"
                 >
-                  <img
-                    v-if="rv.venue.image"
-                    :src="rv.venue.image.thumbUrl"
-                    :alt="rv.venue.image.alt"
-                    width="640"
-                    height="427"
-                    :style="{ objectPosition: focalStyle(rv.venue.image) }"
-                    loading="lazy"
-                    decoding="async"
-                    class="mb-2 block aspect-[3/2] max-h-36 h-auto w-full rounded-md object-cover"
-                  />
+                  <div class="bench-thumb near-me-card-thumb">
+                    <span class="bench-placeholder" aria-hidden="true">
+                      <img src="/brand/approved-sticker.png" alt="" />
+                    </span>
+                    <img
+                      v-if="rv.venue.image"
+                      class="bench-image"
+                      :src="rv.venue.image.thumbUrl"
+                      alt=""
+                      width="64"
+                      height="64"
+                      :style="{ objectPosition: focalStyle(rv.venue.image) }"
+                      loading="lazy"
+                      decoding="async"
+                      @error="($event.target as HTMLElement).parentElement?.classList.add('is-placeholder')"
+                    />
+                  </div>
+                  <div class="near-me-card-body">
                   <div class="near-me-card-header">
                     <div class="near-me-card-meta">
                       <span class="near-me-card-index">#{{ index + 1 }}</span>
@@ -402,6 +409,7 @@
                         <span>Dossier</span>
                       </a>
                     </div>
+                  </div>
                   </div>
                 </article>
               </div>
@@ -2563,5 +2571,117 @@ onUnmounted(() => {
   .near-me-close-btn {
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Small-screen polish: readable type, 44px tap targets, thumbnails with fallback. */
+.near-me-venue-card {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.near-me-card-thumb {
+  width: 64px;
+  height: 64px;
+}
+
+.near-me-card-thumb.bench-thumb .bench-placeholder img {
+  width: 40px;
+  height: 40px;
+}
+
+.near-me-card-body {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.near-me-card-header {
+  flex-wrap: wrap;
+}
+
+.near-me-card-verdict {
+  -webkit-line-clamp: 2;
+}
+
+.near-me-hero-subinfo,
+.near-me-card-subinfo,
+.near-me-list-caption {
+  font-size: 0.8rem;
+}
+
+.near-me-card-verdict,
+.near-me-hero-verdict {
+  font-size: 0.85rem;
+}
+
+.near-me-tier-pill,
+.near-me-hero-tag,
+.near-me-dist-pill {
+  font-size: 0.75rem;
+}
+
+.near-me-list-title {
+  font-size: 0.8rem;
+}
+
+.near-me-subtitle {
+  font-size: 0.75rem;
+}
+
+.near-me-hero-btn-row,
+.near-me-hero-actions-row {
+  flex-wrap: wrap;
+}
+
+.near-me-hero-subinfo {
+  flex-wrap: wrap;
+}
+
+.near-me-hero-buttons {
+  flex: 1 1 100%;
+}
+
+.near-me-hero-walk-btn,
+.near-me-hero-dossier-btn,
+.near-me-btn-walk,
+.near-me-btn-dossier {
+  min-height: 44px;
+  justify-content: center;
+  padding-inline: 14px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.near-me-hero-walk-btn {
+  flex: 1;
+}
+
+.near-me-card-footer {
+  flex-wrap: wrap;
+}
+
+.near-me-card-actions {
+  flex: 1 1 100%;
+}
+
+.near-me-card-actions > a {
+  flex: 1;
+}
+
+.near-me-snap-action-btn {
+  width: 40px;
+  height: 40px;
+}
+
+.near-me-snap-btn {
+  min-height: 40px;
+}
+
+.near-me-control-btn {
+  width: 44px;
+  height: 44px;
 }
 </style>
