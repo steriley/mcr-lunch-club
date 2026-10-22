@@ -10,7 +10,8 @@ export interface DocketPreview {
   distanceMiles: number | null;
   pullQuote: string;
   lunchSpecial: string;
-  imageUrl: string;
+  /** The primary photo, cropped as the public pages crop it. */
+  image: { url: string; alt: string; focalX: number | null; focalY: number | null } | null;
   lastInspection: string;
   /** Public page URL, or null while the venue is hidden. */
   publicUrl: string | null;
@@ -22,6 +23,7 @@ export interface DocketPreview {
 import { nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import DossierIcon from './DossierIcon.vue';
 import { milesText, walkText } from '@/lib/route-display';
+import { focalStyle } from '@/lib/image-upload';
 
 /** Ceremonial broadsheet preview of the venue's public docket, with a print button. */
 const props = defineProps<{ open: boolean; preview: DocketPreview; unsaved: boolean }>();
@@ -81,8 +83,8 @@ onBeforeUnmount(() => {
         {{ unsaved ? 'Preview includes unsaved edits. ' : '' }}{{ preview.hiddenText ?? '' }}
       </p>
 
-      <div v-if="preview.imageUrl && /^https?:\/\//.test(preview.imageUrl)" class="relative aspect-[3/2] bg-[var(--dossier-card)]">
-        <img :src="preview.imageUrl" :alt="preview.name" class="h-full w-full object-cover" />
+      <div v-if="preview.image" class="relative aspect-[3/2] bg-[var(--dossier-card)]">
+        <img :src="preview.image.url" :alt="preview.image.alt" :style="{ objectPosition: focalStyle(preview.image) }" class="h-full w-full object-cover" decoding="async" />
       </div>
 
       <div class="space-y-4 p-6">

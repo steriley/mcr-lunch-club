@@ -1,6 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import { formatDate } from '@/lib/dates';
+import { focalStyle } from '@/lib/image-upload';
 import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
 import { getPublicInspections, getPublicVenue, setPublicCacheHeaders } from '@/lib/public-data';
 import { milesText, walkText } from '@/lib/route-display';
@@ -88,11 +89,15 @@ const statusInfo = TIER_BANNERS[venue.status];
           </p>
         </div>
 
-        {venue.imageUrl && (
+        {venue.image && (
           <img
-            src={venue.imageUrl}
-            alt={venue.name}
+            src={venue.image.url}
+            alt={venue.image.alt}
+            width={venue.image.width ?? undefined}
+            height={venue.image.height ?? undefined}
+            style={{ objectPosition: focalStyle(venue.image) }}
             loading="lazy"
+            decoding="async"
             class="w-full max-h-96 object-cover rounded-xl border border-[#dcd6c8]"
           />
         )}

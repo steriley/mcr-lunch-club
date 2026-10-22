@@ -109,6 +109,20 @@ describe('createVenuePopupContent', () => {
     assert.ok(element.innerHTML.includes('data-view-dossier'));
   });
 
+  it('shows the thumbnail with the focal crop and alt text, and no image area without a photo', () => {
+    const element: any = {};
+    (globalThis as any).document = { createElement: () => element };
+    createVenuePopupContent(venue());
+    assert.ok(!element.innerHTML.includes('<img'));
+
+    createVenuePopupContent(
+      venue({ image: { url: 'https://x.example/full.webp', thumbUrl: 'https://x.example/thumb.webp', width: 1600, height: 1067, alt: 'Chips "large"', focalX: 20, focalY: 80 } })
+    );
+    assert.match(element.innerHTML, /<img src="https:\/\/x\.example\/thumb\.webp" alt="Chips &quot;large&quot;"/);
+    assert.match(element.innerHTML, /object-position: 20% 80%/);
+    assert.match(element.innerHTML, /loading="lazy" decoding="async"/);
+  });
+
   it('escapes venue fields so admin-entered markup renders as text', () => {
     const element: any = {};
     (globalThis as any).document = { createElement: () => element };

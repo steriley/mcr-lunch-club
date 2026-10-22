@@ -278,7 +278,9 @@ const docketPreview = computed<DocketPreview>(() => ({
   distanceMiles: route.distanceMiles,
   pullQuote: form.pullQuote,
   lunchSpecial: form.lunchSpecial,
-  imageUrl: primaryImage.value?.fullUrl ?? '',
+  image: primaryImage.value
+    ? { url: primaryImage.value.fullUrl, alt: primaryImage.value.caption || form.name, focalX: primaryImage.value.focalX, focalY: primaryImage.value.focalY }
+    : null,
   lastInspection: formatDate(lastInspection.value, { fallback: 'Awaiting assessment' }),
   publicUrl: isPublic.value ? `/venues/${saved.slug}` : null,
   hiddenText: isPublic.value ? null : visibilityText.value,

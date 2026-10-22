@@ -152,12 +152,18 @@ const fieldShortcuts = [
               <span class="bench-placeholder" aria-hidden="true">
                 <img src="/brand/approved-sticker.png" alt="" />
               </span>
-              <img
-                class="bench-image"
-                src={hero.imageUrl}
-                alt={hero.name}
-                onerror="this.onerror=null;this.parentElement.classList.add('is-placeholder')"
-              />
+              {hero.image && (
+                <img
+                  class="bench-image"
+                  src={hero.image.url}
+                  alt={hero.image.alt}
+                  width={hero.image.width ?? undefined}
+                  height={hero.image.height ?? undefined}
+                  style={{ objectPosition: focalStyle(hero.image) }}
+                  decoding="async"
+                  onerror="this.onerror=null;this.parentElement.classList.add('is-placeholder')"
+                />
+              )}
               <a class="bench-seal" href={hero.href} aria-label={`View ${hero.name}'s audit`}>
                 <img src="/brand/approved-sticker.png" alt="" />
               </a>
@@ -212,16 +218,19 @@ const fieldShortcuts = [
                       <span class="bench-placeholder" aria-hidden="true">
                         <img src="/brand/approved-sticker.png" alt="" />
                       </span>
-                      <img
-                        class="bench-image"
-                        src={pillar.imageUrl}
-                        alt=""
-                        width="80"
-                        height="80"
-                        loading="lazy"
-                        decoding="async"
-                        onerror="this.onerror=null;this.parentElement.classList.add('is-placeholder')"
-                      />
+                      {pillar.image && (
+                        <img
+                          class="bench-image"
+                          src={pillar.image.thumbUrl}
+                          alt=""
+                          width="80"
+                          height="80"
+                          style={{ objectPosition: focalStyle(pillar.image) }}
+                          loading="lazy"
+                          decoding="async"
+                          onerror="this.onerror=null;this.parentElement.classList.add('is-placeholder')"
+                        />
+                      )}
                     </div>
                     <div class="bench-pillar-copy">
                       <div class="bench-pillar-title-row">

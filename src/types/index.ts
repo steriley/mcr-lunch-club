@@ -8,6 +8,22 @@ export type TierStatus =
 
 export type CostTier = '£' | '££' | '£££';
 
+/**
+ * A venue's primary photo as shown publicly (#35). `thumbUrl` falls back to
+ * the full image for photos migrated from the old single image link; `alt`
+ * is the caption, or the venue name when there is none. Crop with
+ * `object-position: focalX% focalY%` (centre when null).
+ */
+export interface PublicImage {
+  url: string;
+  thumbUrl: string;
+  width: number | null;
+  height: number | null;
+  alt: string;
+  focalX: number | null;
+  focalY: number | null;
+}
+
 export interface Venue {
   id: string;
   name: string;
@@ -24,6 +40,8 @@ export interface Venue {
   lastInspectionDate: string;
   address: string;
   mapSearchLink: string;
+  /** The primary photo; null or absent when the venue has none. */
+  image?: PublicImage | null;
 }
 
 /** How an inspection went. */

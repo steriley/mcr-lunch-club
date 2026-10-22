@@ -47,12 +47,12 @@ describe('public code never touches tier proposals', () => {
   it('the public venue serializer outputs only public fields', () => {
     const row = {
       id: 'uuid', slug: 'chip-shop', name: 'Chip Shop', tier: 'approved', address: '1 High St', latitude: '53.48', longitude: '-2.25',
-      pullQuote: null, lunchSpecial: 'Chips', websiteUrl: null, imageUrl: null, cost: '££', cuisine: 'fish_and_chips',
+      pullQuote: null, lunchSpecial: 'Chips', websiteUrl: null, cost: '££', cuisine: 'fish_and_chips',
       distanceMiles: '0.40', walkingTimeMin: 9, routeUpdatedAt: null, lastInspectionDate: '2026-09-01', mapSearchLink: null,
       closedAt: null, closedBy: 'admin-1', createdAt: new Date(), updatedAt: new Date(), updatedBy: 'admin-1',
     } as unknown as VenueRow & { tier: 'approved' };
     assert.deepEqual(Object.keys(toPublicVenue(row)).sort(), [
-      'address', 'closed', 'cost', 'cuisine', 'distanceMiles', 'eatLikeUs', 'id', 'imageUrl', 'lastInspectionDate', 'lat', 'lng',
+      'address', 'closed', 'cost', 'cuisine', 'distanceMiles', 'eatLikeUs', 'id', 'image', 'lastInspectionDate', 'lat', 'lng',
       'mapSearchLink', 'name', 'slug', 'status', 'walkingTimeMin',
     ]);
   });
