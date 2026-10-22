@@ -21,9 +21,9 @@ import {
   setMaxWalkMinutes,
   setSearchQuery,
   setTiers,
-  toggleAllTiers,
   toggleTier,
 } from './filters';
+import { DEFAULT_HOME_TIERS } from '@/lib/tier-display';
 import type { Venue } from '@/types';
 
 const venue = { id: 'v', slug: 'v', name: 'V' } as Venue;
@@ -33,39 +33,29 @@ beforeEach(() => {
 });
 
 describe('filter state', () => {
-  it('starts on Approved only', () => {
+  it('starts on Approved, Under Consideration and To Be Assessed', () => {
     assert.deepEqual($filters.get(), initialFilterState);
-    assert.deepEqual($filters.get().tiers, ['Approved']);
+    assert.deepEqual($filters.get().tiers, ['Approved', 'Under Consideration', 'To Be Assessed']);
+    assert.deepEqual($filters.get().tiers, [...DEFAULT_HOME_TIERS]);
   });
 
-  it('setTiers flags showAllTiers when more than one tier is chosen', () => {
+  it('setTiers replaces the selected tiers', () => {
     setTiers(['Approved', 'Rejected']);
-    assert.equal($filters.get().showAllTiers, true);
-    setTiers(['Rejected']);
-    assert.equal($filters.get().showAllTiers, false);
-    assert.deepEqual($filters.get().tiers, ['Rejected']);
-  });
-
-  it('toggleAllTiers switches between all six tiers and Approved only', () => {
-    toggleAllTiers();
-    assert.equal($filters.get().tiers.length, 6);
-    assert.equal($filters.get().showAllTiers, true);
-    toggleAllTiers();
-    assert.deepEqual($filters.get().tiers, ['Approved']);
-    assert.equal($filters.get().showAllTiers, false);
-  });
-
-  it('toggleTier adds and removes tiers and tracks when all six are on', () => {
-    toggleTier('Rejected');
     assert.deepEqual($filters.get().tiers, ['Approved', 'Rejected']);
-    toggleTier('Approved');
+    setTiers(['Rejected']);
     assert.deepEqual($filters.get().tiers, ['Rejected']);
+  });
 
-    setTiers(['Approved', 'Under Consideration', 'To Be Assessed', 'Rejected', 'If We Must']);
-    toggleTier('Gone But Not Forgotten');
-    assert.equal($filters.get().showAllTiers, true);
-    toggleTier('Gone But Not Forgotten');
-    assert.equal($filters.get().showAllTiers, false);
+  it('toggleTier adds and removes tiers', () => {
+    toggleTier('Rejected');
+    assert.deepEqual($filters.get().tiers, ['Approved', 'Under Consideration', 'To Be Assessed', 'Rejected']);
+    toggleTier('Approved');
+    assert.deepEqual($filters.get().tiers, ['Under Consideration', 'To Be Assessed', 'Rejected']);
+  });
+
+  it('toggleTier can switch every tier off on the homepage', () => {
+    for (const tier of DEFAULT_HOME_TIERS) toggleTier(tier);
+    assert.deepEqual($filters.get().tiers, []);
   });
 
   it('simple setters update one field and leave the rest alone', () => {
@@ -84,11 +74,13 @@ describe('filter state', () => {
     });
   });
 
-  it('resetFilters restores the defaults', () => {
+  it('resetFilters restores the defaults, including the three default tiers', () => {
     setCost('£££');
     setSearchQuery('x');
+    setTiers(['Rejected']);
     resetFilters();
     assert.deepEqual($filters.get(), initialFilterState);
+    assert.deepEqual($filters.get().tiers, [...DEFAULT_HOME_TIERS]);
   });
 });
 

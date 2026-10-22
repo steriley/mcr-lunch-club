@@ -5,7 +5,9 @@
     :type="href ? undefined : 'button'"
     :aria-pressed="href ? undefined : selected"
     :aria-current="href && selected ? 'page' : undefined"
-    :class="['ledger-tier-chip', selected && 'is-selected']"
+    :aria-disabled="disabled ? 'true' : undefined"
+    :title="disabled ? disabledReason : undefined"
+    :class="['ledger-tier-chip', selected && 'is-selected', disabled && 'is-disabled']"
     :style="selected ? { backgroundColor: color, borderColor: color } : undefined"
   >
     <span
@@ -28,6 +30,12 @@ defineProps<{
   /** Render as a link (page navigation) instead of a toggle button. */
   href?: string;
   showCheck?: boolean;
+  /**
+   * Shown as unavailable but kept focusable (aria-disabled), so the click
+   * still reaches the parent, which decides to ignore it.
+   */
+  disabled?: boolean;
+  disabledReason?: string;
 }>();
 </script>
 
@@ -50,7 +58,12 @@ defineProps<{
   transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
-.ledger-tier-chip:hover:not(.is-selected) {
+.ledger-tier-chip.is-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ledger-tier-chip:hover:not(.is-selected):not(.is-disabled) {
   background: #fff8f3;
   border-color: #b9ae94;
 }
