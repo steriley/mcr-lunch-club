@@ -13,19 +13,28 @@ import { formatDate } from '@/lib/dates';
 import { focalStyle } from '@/lib/image-upload';
 import { getPublicMapApiKey } from '@/lib/env';
 import { getGoldenCut, getMapVenues, getPublicInspections, setPublicCacheHeaders } from '@/lib/public-data';
+import { getRecentTierChanges } from '@/lib/recent-tier-changes';
 import { walkText } from '@/lib/route-display';
 import { buildSovereignBench } from '@/lib/sovereign-bench';
+import { bulletinText, changesInWeek, gazetteLabel, londonWeek } from '@/lib/weekly-bulletin';
 import { seedLedgerInspections, seedLedgerVenues } from '@/stores/ledger';
 
 export const prerender = false;
 
 // Closed venues never go on the map or in Near Me.
-const [venuesData, inspectionsData, goldenCut] = await Promise.all([getMapVenues(), getPublicInspections(), getGoldenCut()]);
+const [venuesData, inspectionsData, goldenCut, recentTierChanges] = await Promise.all([
+  getMapVenues(),
+  getPublicInspections(),
+  getGoldenCut(),
+  getRecentTierChanges(),
+]);
 seedLedgerVenues(venuesData);
 seedLedgerInspections(inspectionsData);
 setPublicCacheHeaders(Astro.response.headers);
 
 const publicMapApiKey = getPublicMapApiKey();
+const bulletinWeek = londonWeek();
+const bulletin = bulletinText(changesInWeek(recentTierChanges, bulletinWeek));
 // Already in public order: nearest first.
 const approvedVenues = venuesData.filter((venue) => venue.status === 'Approved');
 const { mode, hero, pillars } = buildSovereignBench(goldenCut, venuesData, inspectionsData);
@@ -78,15 +87,13 @@ const fieldShortcuts = [
         <section class="field-dispatch" aria-label="Tribunal field dispatch">
           <div class="weekly-bulletin">
             <span class="bulletin-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="m14.2 5.1 4.7 4.7m-7.1-2.4 4.8-4.8m-9.8 7.4 7.1-7.1m-8.6 9.6 7.1 7.1m-2.8-4.7 4.8-4.8M4 20h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <span class="material-symbols-outlined">newspaper</span>
             </span>
             <div class="bulletin-copy">
               <strong>Weekly inspection bulletin</strong>
-              <p>2 venues re-inspected on Bridge St this Wednesday. 1 elevation to Approved, 1 referral.</p>
+              <p>{bulletin}</p>
             </div>
-            <a href="/inspections">Gazette #41</a>
+            <a href="/inspections">{gazetteLabel(bulletinWeek)}</a>
           </div>
 
           <div class="field-panel-grid">
