@@ -2,6 +2,7 @@ import type { Venue } from '@/types';
 import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES } from './config';
 import { getTierMetadata } from './tiers';
 import { milesText, walkText } from '@/lib/route-display';
+import { focalStyle } from '@/lib/image-upload';
 
 /**
  * Generate the HTML string for a venue marker pin.
@@ -106,7 +107,12 @@ export function createVenuePopupContent(venue: Venue, onViewDossier?: () => void
 
   const popupContent = document.createElement('div');
   popupContent.className = 'p-3 font-serif-header text-[#1a1e24] max-w-[260px]';
+  const image = venue.image
+    ? `<img src="${escapeHtml(venue.image.thumbUrl)}" alt="${escapeHtml(venue.image.alt)}" width="640" height="427" loading="lazy" decoding="async"
+           style="object-position: ${escapeHtml(focalStyle(venue.image))};" class="mb-2 block aspect-[3/2] h-auto w-full rounded object-cover" />`
+    : '';
   popupContent.innerHTML = `
+    ${image}
     <div class="flex items-center justify-between gap-2 border-b border-stone-200 pb-1.5 mb-2">
       <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded"
             style="background-color: ${styling.bg}20; color: ${styling.bg}; border: 1px solid ${styling.bg}40;">

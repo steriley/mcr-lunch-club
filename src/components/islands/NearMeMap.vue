@@ -339,6 +339,17 @@
                   @keydown.enter="selectVenueItem(rv.venue, false)"
                   @keydown.space.prevent="selectVenueItem(rv.venue, false)"
                 >
+                  <img
+                    v-if="rv.venue.image"
+                    :src="rv.venue.image.thumbUrl"
+                    :alt="rv.venue.image.alt"
+                    width="640"
+                    height="427"
+                    :style="{ objectPosition: focalStyle(rv.venue.image) }"
+                    loading="lazy"
+                    decoding="async"
+                    class="mb-2 block aspect-[3/2] max-h-36 h-auto w-full rounded-md object-cover"
+                  />
                   <div class="near-me-card-header">
                     <div class="near-me-card-meta">
                       <span class="near-me-card-index">#{{ index + 1 }}</span>
@@ -429,6 +440,7 @@ import { $venuesList } from '@/stores/ledger';
 import { countVenuesByTier } from '@/lib/tier-display';
 import type { TierStatus, Venue } from '@/types';
 import TierFilterChips from '@/components/TierFilterChips.vue';
+import { focalStyle } from '@/lib/image-upload';
 import {
   BASE_LAT,
   BASE_LNG,
@@ -1597,8 +1609,7 @@ onUnmounted(() => {
   outline-offset: 2px;
 }
 
-/* ============================================================
-   Venue Panel: Responsive Layout (Side panel desktop / Bottom sheet mobile)
+/* =====================================================   Venue Panel: Responsive Layout (Side panel desktop / Bottom sheet mobile)
    ============================================================ */
 .near-me-panel {
   pointer-events: auto;
@@ -1758,8 +1769,7 @@ onUnmounted(() => {
   background: var(--near-me-gold);
 }
 
-/* ============================================================
-   Hero Card: Nearest Venue
+/* =====================================================   Hero Card: Nearest Venue
    ============================================================ */
 .near-me-hero-card {
   background: linear-gradient(145deg, rgba(35, 40, 48, 0.98), rgba(22, 26, 32, 0.98));
@@ -1918,8 +1928,7 @@ onUnmounted(() => {
   color: #ffffff;
 }
 
-/* ============================================================
-   Ranked List Section & Cards
+/* =====================================================   Ranked List Section & Cards
    ============================================================ */
 .near-me-list-section {
   display: flex;
@@ -2147,8 +2156,7 @@ onUnmounted(() => {
   line-height: 1.4;
 }
 
-/* ============================================================
-   Leaflet Overrides & Highlighted Pin Styling
+/* =====================================================   Leaflet Overrides & Highlighted Pin Styling
    ============================================================ */
 :deep(.leaflet-top.leaflet-right) {
   top: calc(var(--near-me-safe-top) + 54px);
@@ -2194,8 +2202,7 @@ onUnmounted(() => {
   box-shadow: 0 0 0 3px #c59b27, 0 4px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* ============================================================
-   Phase 5: Pre-Permission Modal
+/* =====================================================   Phase 5: Pre-Permission Modal
    ============================================================ */
 .near-me-prepermission {
   pointer-events: auto;
@@ -2249,8 +2256,7 @@ onUnmounted(() => {
   margin: 0;
 }
 
-/* ============================================================
-   Phase 5: Offsite variant of the far-notice badge
+/* =====================================================   Phase 5: Offsite variant of the far-notice badge
    ============================================================ */
 .near-me-hero-far-notice--offsite {
   background-color: rgba(245, 158, 11, 0.2) !important;
@@ -2258,8 +2264,7 @@ onUnmounted(() => {
   color: #fbbf24 !important;
 }
 
-/* ============================================================
-   Phase 5: Fade transition for pre-permission modal
+/* =====================================================   Phase 5: Fade transition for pre-permission modal
    ============================================================ */
 .nm-fade-enter-active,
 .nm-fade-leave-active {

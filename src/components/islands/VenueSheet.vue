@@ -49,6 +49,17 @@
 
       <!-- Main Body (Scrollable) -->
       <div class="p-5 overflow-y-auto space-y-4 text-[#1a1e24]">
+        <img
+          v-if="venue.image"
+          :src="venue.image.thumbUrl"
+          :alt="venue.image.alt"
+          width="640"
+          height="427"
+          :style="{ objectPosition: focalStyle(venue.image) }"
+          loading="lazy"
+          decoding="async"
+          class="aspect-[3/2] max-h-56 h-auto w-full rounded-xl border border-[#dcd6c8] object-cover"
+        />
         <!-- Approved Prize Award Callout -->
         <div v-if="venue.status === 'Approved'" class="bg-[#1a1e24] text-[#f9f7f1] border border-[#c59b27] p-3 rounded-xl flex items-center gap-3 shadow-xs">
           <img
@@ -195,6 +206,7 @@ import { useStore } from '@nanostores/vue';
 import { $activeVenue, selectVenue } from '@/stores/filters';
 import { $inspectionsList } from '@/stores/ledger';
 import { formatDate } from '@/lib/dates';
+import { focalStyle } from '@/lib/image-upload';
 import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
 import { COST_LABELS, TIER_BANNERS } from '@/lib/tier-display';
 import { milesText, walkText } from '@/lib/route-display';

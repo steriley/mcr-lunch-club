@@ -1,5 +1,5 @@
 import { and, asc, count, desc, eq, sql } from 'drizzle-orm';
-import { briberyRecords, goldenCut, inspections, venues, type BriberyRow, type InspectionRow, type VenueRow } from '@/db/schema';
+import { briberyRecords, goldenCut, inspections, venueImages, venues, type BriberyRow, type InspectionRow, type VenueImageRow, type VenueRow } from '@/db/schema';
 import { cuisineLabel } from '@/lib/cuisines';
 import { formatDateTime } from '@/lib/dates';
 import { db } from '@/lib/db';
@@ -7,7 +7,7 @@ import { parseTier, tierLabel, type TierValue } from '@/lib/tiers';
 import type { CostBand } from '@/lib/venue-schema';
 import { sortForPublic } from '@/lib/venue-order';
 import { isMappable, isPubliclyVisible, publicVenueCondition } from '@/lib/visibility';
-import type { Incident, Inspection, Venue } from '@/types';
+import type { Incident, Inspection, PublicImage, Venue } from '@/types';
 
 /**
  * Read-only queries for the public site. Venues are filtered with the shared
@@ -28,7 +28,7 @@ function coordinateLink(latitude: number, longitude: number): string {
 
 /** A venue as shown on the public site. */
 export type PublicVenue = Venue & {
-  imageUrl: string | null;
+  image: PublicImage | null;
   /** Permanently closed; only Gone But Not Forgotten venues are public while closed. */
   closed: boolean;
 };
@@ -36,7 +36,27 @@ export type PublicVenue = Venue & {
 /** A row that passed the visibility rule, so it has an approved tier. */
 type PublicRow = VenueRow & { tier: TierValue };
 
-export function toPublicVenue(row: PublicRow): PublicVenue {
+/**
+ * Only the primary photo is joined, and only inside queries already limited
+ * by publicVenueCondition(), so a hidden venue never exposes an image.
+ */
+const primaryImage = and(eq(venueImages.venueId, venues.id), eq(venueImages.isPrimary, true));
+
+/** Public fields only: no uploader, no ids. */
+export function toPublicImage(image: VenueImageRow | null, venueName: string): PublicImage | null {
+  if (!image) return null;
+  return {
+    url: image.fullUrl,
+    thumbUrl: image.thumbUrl ?? image.fullUrl,
+    width: image.width,
+    height: image.height,
+    alt: image.caption?.trim() || venueName,
+    focalX: image.focalX,
+    focalY: image.focalY,
+  };
+}
+
+export function toPublicVenue(row: PublicRow, image: VenueImageRow | null = null): PublicVenue {
   const lat = row.latitude === null ? null : Number(row.latitude);
   const lng = row.longitude === null ? null : Number(row.longitude);
   const hasCoordinates = lat !== null && lng !== null;
@@ -60,7 +80,7 @@ export function toPublicVenue(row: PublicRow): PublicVenue {
       (hasCoordinates
         ? coordinateLink(lat, lng)
         : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${row.name} Manchester`)}`),
-    imageUrl: row.imageUrl,
+    image: toPublicImage(image, row.name),
     closed: row.closedAt !== null,
   };
 }
@@ -74,10 +94,21 @@ function isPublicRow(row: VenueRow): row is PublicRow {
   return isPubliclyVisible(row);
 }
 
+interface VenueWithImage {
+  venue: VenueRow;
+  image: VenueImageRow | null;
+}
+
+function publicVenueRows() {
+  return db.select({ venue: venues, image: venueImages }).from(venues).leftJoin(venueImages, primaryImage);
+}
+
+const toPublic = ({ venue, image }: VenueWithImage) => toPublicVenue(venue as PublicRow, image);
+
 /** Every public venue, grouped by tier and in each tier's public order (src/lib/venue-order.ts). */
 export async function getPublicVenues(): Promise<PublicVenue[]> {
-  const rows = await db.select().from(venues).where(publicVenueCondition()).orderBy(asc(venues.name));
-  return sortForPublic(rows.filter(isPublicRow).map(toPublicVenue), (venue) => parseTier(venue.status)!);
+  const rows: VenueWithImage[] = await publicVenueRows().where(publicVenueCondition()).orderBy(asc(venues.name));
+  return sortForPublic(rows.filter(({ venue }) => isPublicRow(venue)).map(toPublic), (venue) => parseTier(venue.status)!);
 }
 
 /**
@@ -85,18 +116,19 @@ export async function getPublicVenues(): Promise<PublicVenue[]> {
  * still open. Closed venues stay off the map even when their tier page lists them.
  */
 export async function getMapVenues(): Promise<PublicVenue[]> {
-  const rows = await db.select().from(venues).where(publicVenueCondition()).orderBy(asc(venues.name));
-  return sortForPublic(rows.filter(isPublicRow).filter(isMappable).map(toPublicVenue), (venue) => parseTier(venue.status)!);
+  const rows: VenueWithImage[] = await publicVenueRows().where(publicVenueCondition()).orderBy(asc(venues.name));
+  return sortForPublic(
+    rows.filter(({ venue }) => isPublicRow(venue) && isMappable(venue)).map(toPublic),
+    (venue) => parseTier(venue.status)!
+  );
 }
 
 export async function getPublicVenue(slug: string): Promise<PublicVenueDetail | null> {
-  const [row] = await db
-    .select()
-    .from(venues)
+  const [row]: VenueWithImage[] = await publicVenueRows()
     .where(and(eq(venues.slug, slug), publicVenueCondition()))
     .limit(1);
-  if (!row || !isPublicRow(row)) return null;
-  return { ...toPublicVenue(row), pullQuote: row.pullQuote };
+  if (!row || !isPublicRow(row.venue)) return null;
+  return { ...toPublic(row), pullQuote: row.venue.pullQuote };
 }
 
 /** A Golden Cut venue for the home page, in position order (the first is the hero). */
@@ -114,15 +146,16 @@ export interface GoldenCutVenue {
  */
 export async function getGoldenCut(): Promise<GoldenCutVenue[]> {
   const rows = await db
-    .select({ entry: goldenCut, venue: venues })
+    .select({ entry: goldenCut, venue: venues, image: venueImages })
     .from(goldenCut)
     .innerJoin(venues, eq(goldenCut.venueId, venues.id))
+    .leftJoin(venueImages, primaryImage)
     .where(and(publicVenueCondition(), eq(venues.tier, 'approved')))
     .orderBy(asc(goldenCut.position));
   return rows
     .filter(({ venue }) => isPublicRow(venue) && isMappable(venue) && venue.tier === 'approved')
-    .map(({ entry, venue }) => ({
-      venue: toPublicVenue(venue as PublicRow),
+    .map(({ entry, venue, image }) => ({
+      venue: toPublicVenue(venue as PublicRow, image),
       puffPiece: entry.puffPiece ?? venue.pullQuote,
       anchorDish: entry.anchorDish ?? venue.lunchSpecial,
     }));

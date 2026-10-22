@@ -2,7 +2,7 @@ import { formatDate } from '@/lib/dates';
 import { getWalkingDirectionsUrl } from '@/lib/map/directions';
 import type { GoldenCutVenue, PublicVenue } from '@/lib/public-data';
 import { milesText, walkText } from '@/lib/route-display';
-import type { CostTier, Inspection } from '@/types';
+import type { CostTier, Inspection, PublicImage } from '@/types';
 
 /** How many cards the bench shows: one hero and up to four pillars. */
 const BENCH_SIZE = 5;
@@ -21,7 +21,8 @@ export interface BenchCard {
   name: string;
   href: string;
   cost: CostTier;
-  imageUrl: string;
+  /** The venue's primary photo; null when it has none (the card shows the crest placeholder). */
+  image: PublicImage | null;
   /** The newest confirmed inspection, formatted; null when there is none. */
   lastInspection: string | null;
   /** Confirmed inspections (verified + legacy). */
@@ -72,7 +73,7 @@ function toCard(pick: Pick, inspections: Inspection[]): BenchCard {
     name: venue.name,
     href: `/venues/${venue.slug}`,
     cost: venue.cost,
-    imageUrl: venue.imageUrl ?? `/venues/${venue.slug}.jpg`,
+    image: venue.image ?? null,
     lastInspection: newest === null ? null : formatDate(newest),
     inspectionCount: own.length,
     walk: walkFor(venue),

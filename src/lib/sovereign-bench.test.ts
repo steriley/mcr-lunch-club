@@ -20,7 +20,7 @@ function venue(slug: string, overrides: Partial<PublicVenue> = {}): PublicVenue 
     lastInspectionDate: 'Awaiting Assessment',
     address: '1 High St',
     mapSearchLink: 'https://maps.example/x',
-    imageUrl: null,
+    image: null,
     closed: false,
     ...overrides,
   };
@@ -178,10 +178,11 @@ describe('buildSovereignBench: walk', () => {
 });
 
 describe('buildSovereignBench: images and cost', () => {
-  it('uses imageUrl when present, otherwise the local venue photo path', () => {
-    const bench = buildSovereignBench([pick('a', {}, { imageUrl: 'https://img.example/a.jpg' }), pick('b')], [], []);
-    assert.equal(bench.hero?.imageUrl, 'https://img.example/a.jpg');
-    assert.equal(bench.pillars[0].imageUrl, '/venues/b.jpg');
+  it('carries the primary photo, or null when the venue has none', () => {
+    const image = { url: 'https://img.example/a.jpg', thumbUrl: 'https://img.example/a-t.jpg', width: 1600, height: 1200, alt: 'A', focalX: null, focalY: null };
+    const bench = buildSovereignBench([pick('a', {}, { image }), pick('b')], [], []);
+    assert.deepEqual(bench.hero?.image, image);
+    assert.equal(bench.pillars[0].image, null);
   });
 
   it('carries the cost band', () => {
