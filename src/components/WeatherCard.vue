@@ -318,15 +318,6 @@ function dispatchFor(point: WeatherPoint, cached: boolean): WeatherDispatch {
     return { icon: 'freezing-rain', ...dispatchCopy['freezing-rain'] };
   }
 
-  if (code === 7) return { icon: 'overcast', ...dispatchCopy.overcast };
-  if (code === 8) {
-    return {
-      icon: 'overcast',
-      title: 'Monolithic Lead Vault',
-      quip: 'Natural daylight suppressed. All indoor lamps operating at committee spec.',
-    };
-  }
-
   if (code === 25 || code === 26) {
     return {
       icon: 'blizzard',
@@ -335,6 +326,7 @@ function dispatchFor(point: WeatherPoint, cached: boolean): WeatherDispatch {
     };
   }
 
+  // Dry skies, cloudy and overcast included: heat, frost and wind take precedence over the sky.
   if ([0, 1, 2, 3, 7, 8].includes(code)) {
     if (point.temperatureC !== null && point.temperatureC >= 29) {
       return { icon: 'extreme-heat', ...dispatchCopy['extreme-heat'] };
@@ -352,6 +344,15 @@ function dispatchFor(point: WeatherPoint, cached: boolean): WeatherDispatch {
       }
       return { icon: 'windy', ...dispatchCopy.windy };
     }
+  }
+
+  if (code === 7) return { icon: 'overcast', ...dispatchCopy.overcast };
+  if (code === 8) {
+    return {
+      icon: 'overcast',
+      title: 'Monolithic Lead Vault',
+      quip: 'Natural daylight suppressed. All indoor lamps operating at committee spec.',
+    };
   }
 
   if (code === 29) {
