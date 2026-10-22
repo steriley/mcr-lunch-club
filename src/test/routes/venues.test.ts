@@ -3,10 +3,13 @@ import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { GET, POST } from '@/pages/api/admin/venues';
 import * as byId from '@/pages/api/admin/venues/[id]';
+import { db } from '@/lib/db';
+import { blobClient } from '@/lib/venue-image-storage';
 import {
   ADMIN,
   VENUE_ID,
   adminRequest,
+  fakeQuery,
   quietly,
   renderSql,
   restoreStubs,
@@ -328,6 +331,7 @@ describe('/api/admin/venues/[id]', () => {
   describe('DELETE', () => {
     it('deletes, 404s, or 500s', async () => {
       signInAs();
+      stubDb('select', []);
       stubDb('delete', [{ id: VENUE_ID }]);
       const ok = await run(byId.DELETE, ctx('DELETE', VENUE_ID));
       assert.deepEqual(await ok.json(), { ok: true });
@@ -337,6 +341,64 @@ describe('/api/admin/venues/[id]', () => {
 
       stubDb('delete', new Error('db down'));
       assert.equal((await quietly(() => run(byId.DELETE, ctx('DELETE', VENUE_ID)))).status, 500);
+    });
+
+    it('collects the photos, deletes the venue, then best-effort deletes only our own blobs', async () => {
+      signInAs();
+      const owned = 'https://store123.public.blob.vercel-storage.com/prod/venues/v/i-full.webp';
+      const ownedThumb = 'https://store123.public.blob.vercel-storage.com/prod/venues/v/i-thumb.webp';
+      const order: string[] = [];
+      const database = db as any;
+      const originalDb = { select: database.select, delete: database.delete };
+      const patchDb = (method: 'select' | 'delete', fn: () => unknown) => (database[method] = fn);
+      patchDb('select', () => {
+        order.push('select');
+        return fakeQuery([
+          { fullUrl: owned, thumbUrl: ownedThumb },
+          { fullUrl: 'https://example.com/migrated.jpg', thumbUrl: null },
+        ]).builder;
+      });
+      patchDb('delete', () => {
+        order.push('delete');
+        return fakeQuery([{ id: VENUE_ID }]).builder;
+      });
+      const deleted: string[][] = [];
+      const originalDel = blobClient.del;
+      const savedToken = process.env.BLOB_READ_WRITE_TOKEN;
+      process.env.BLOB_READ_WRITE_TOKEN = 'vercel_blob_rw_testStore_secret';
+      (blobClient as any).del = async (urls: string[]) => {
+        order.push('del');
+        deleted.push(urls);
+        throw new Error('blob store down');
+      };
+      try {
+        const response = await quietly(() => run(byId.DELETE, ctx('DELETE', VENUE_ID)));
+        assert.equal(response.status, 200, 'a failed blob delete does not fail the venue delete');
+        assert.deepEqual(order, ['select', 'delete', 'del']);
+        assert.deepEqual(deleted, [[owned, ownedThumb]]);
+      } finally {
+        Object.assign(database, originalDb);
+        blobClient.del = originalDel;
+        if (savedToken === undefined) delete process.env.BLOB_READ_WRITE_TOKEN;
+        else process.env.BLOB_READ_WRITE_TOKEN = savedToken;
+      }
+    });
+
+    it('does not touch Blob when the venue is missing', async () => {
+      signInAs();
+      stubDb('select', [{ fullUrl: 'https://store123.public.blob.vercel-storage.com/x.webp', thumbUrl: null }]);
+      stubDb('delete', []);
+      const originalDel = blobClient.del;
+      let called = false;
+      (blobClient as any).del = async () => {
+        called = true;
+      };
+      try {
+        assert.equal((await run(byId.DELETE, ctx('DELETE', VENUE_ID))).status, 404);
+        assert.equal(called, false);
+      } finally {
+        blobClient.del = originalDel;
+      }
     });
   });
 });

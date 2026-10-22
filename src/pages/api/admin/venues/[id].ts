@@ -1,8 +1,10 @@
 import type { APIRoute } from 'astro';
 import { eq } from 'drizzle-orm';
-import { venues } from '@/db/schema';
+import { venueImages, venues } from '@/db/schema';
 import { isUniqueViolation, jsonError, jsonResponse, readJson, requireAdmin, serverError, uuidParam, validationError } from '@/lib/admin-api';
 import { db } from '@/lib/db';
+import { getBlobToken } from '@/lib/env';
+import { deleteOwnedBlobs } from '@/lib/venue-image-storage';
 import { venueInputSchema } from '@/lib/venue-schema';
 import { resolveRoute, routeWarning } from '@/lib/venue-route';
 import { isSlugTaken, recordVenueRevision, serializeVenue, venueValues } from '@/lib/venues';
@@ -80,8 +82,11 @@ export const DELETE: APIRoute = async ({ request, params }) => {
   if (!id.success) return jsonError(404, 'Venue not found.');
 
   try {
+    // Collect the photos first: deleting the venue cascades to their rows.
+    const images = await db.select({ fullUrl: venueImages.fullUrl, thumbUrl: venueImages.thumbUrl }).from(venueImages).where(eq(venueImages.venueId, id.data));
     const [row] = await db.delete(venues).where(eq(venues.id, id.data)).returning({ id: venues.id });
     if (!row) return jsonError(404, 'Venue not found.');
+    await deleteOwnedBlobs(getBlobToken(), images.flatMap((image) => [image.fullUrl, image.thumbUrl]), 'Delete venue');
     return jsonResponse({ ok: true });
   } catch (error) {
     return serverError('Delete venue', error);

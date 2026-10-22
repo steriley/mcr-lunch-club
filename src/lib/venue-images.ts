@@ -2,6 +2,7 @@ import { and, asc, count, eq } from 'drizzle-orm';
 import { venueImages, venues, type VenueImageRow } from '@/db/schema';
 import type { Database } from '@/lib/db-client';
 import { CAPTION_MAX, MAX_IMAGES_PER_VENUE } from '@/lib/image-upload';
+import { recordVenueEvent, type Actor } from '@/lib/venue-events';
 
 /**
  * Venue photos (#35): the server data layer. A venue has 0 to 5 images and,
@@ -11,7 +12,9 @@ import { CAPTION_MAX, MAX_IMAGES_PER_VENUE } from '@/lib/image-upload';
  * Every change that counts images or moves the primary flag locks the venue
  * row first, so two admins acting at once cannot exceed the cap or leave a
  * venue with two primaries (the partial unique index is the backstop).
- * Event logging and Blob writes/deletes are the routes' job.
+ * Given an actor, adds, deletes and primary changes are logged to
+ * venue_events in the same transaction (caption and focal edits are not
+ * logged). Blob writes and deletes are the routes' job.
  */
 
 type Tx = Parameters<Parameters<Database['transaction']>[0]>[0];
@@ -62,6 +65,17 @@ export function isValidFocal(focal: Focal): boolean {
 }
 
 /** Oldest first, matching the order photos were added. */
+/** How many photos the venue has, or null when the venue does not exist. Unlocked: a pre-check only. */
+export async function countVenueImages(db: Database, venueId: string): Promise<number | null> {
+  const [venue] = await db.select({ id: venues.id }).from(venues).where(eq(venues.id, venueId)).limit(1);
+  if (!venue) return null;
+  const [{ total }] = await db.select({ total: count() }).from(venueImages).where(eq(venueImages.venueId, venueId));
+  return total;
+}
+
+/** What venue_events keeps about a photo: never enough to render a removed one, just which it was. */
+const eventDetail = (image: VenueImageRow, extra: Record<string, unknown> = {}) => ({ imageId: image.id, thumbUrl: image.thumbUrl, ...extra });
+
 export async function listVenueImages(db: Database, venueId: string): Promise<VenueImageRow[]> {
   return db
     .select()
@@ -83,7 +97,7 @@ export interface NewVenueImage {
 }
 
 /** Adds a photo under the cap. The venue's first photo becomes primary. */
-export function addVenueImage(db: Database, image: NewVenueImage, now: Date = new Date()): Promise<VenueImageResult<VenueImageRow>> {
+export function addVenueImage(db: Database, image: NewVenueImage, now: Date = new Date(), actor?: Actor): Promise<VenueImageResult<VenueImageRow>> {
   const caption = normaliseCaption(image.caption);
   if (!caption.ok) return Promise.resolve(caption);
 
@@ -113,6 +127,7 @@ export function addVenueImage(db: Database, image: NewVenueImage, now: Date = ne
         createdAt: now,
       })
       .returning();
+    if (actor) await recordVenueEvent(tx, image.venueId, 'image_added', actor, eventDetail(row));
     return { ok: true, value: row };
   });
 }
@@ -125,7 +140,7 @@ export interface PrimaryChange {
 }
 
 /** Makes one of the venue's photos primary. A no-op when it already is. */
-export function setPrimary(db: Database, venueId: string, imageId: string): Promise<VenueImageResult<PrimaryChange>> {
+export function setPrimary(db: Database, venueId: string, imageId: string, actor?: Actor): Promise<VenueImageResult<PrimaryChange>> {
   return db.transaction(async (tx) => {
     if (!(await lockVenue(tx, venueId))) return fail('venue_not_found');
 
@@ -145,6 +160,7 @@ export function setPrimary(db: Database, venueId: string, imageId: string): Prom
       .where(and(eq(venueImages.venueId, venueId), eq(venueImages.isPrimary, true)))
       .returning({ id: venueImages.id });
     const [updated] = await tx.update(venueImages).set({ isPrimary: true }).where(eq(venueImages.id, imageId)).returning();
+    if (actor) await recordVenueEvent(tx, venueId, 'image_primary_changed', actor, eventDetail(updated));
     return { ok: true, value: { image: updated, previousPrimaryId: cleared[0]?.id ?? null, changed: true } };
   });
 }
@@ -189,7 +205,7 @@ export interface DeletedImage {
 }
 
 /** Removes the row. If it was primary, the oldest remaining photo becomes primary. Blobs are the caller's job. */
-export function deleteVenueImage(db: Database, venueId: string, imageId: string): Promise<VenueImageResult<DeletedImage>> {
+export function deleteVenueImage(db: Database, venueId: string, imageId: string, actor?: Actor): Promise<VenueImageResult<DeletedImage>> {
   return db.transaction(async (tx) => {
     if (!(await lockVenue(tx, venueId))) return fail('venue_not_found');
 
@@ -211,9 +227,32 @@ export function deleteVenueImage(db: Database, venueId: string, imageId: string)
         [promoted] = await tx.update(venueImages).set({ isPrimary: true }).where(eq(venueImages.id, oldest.id)).returning();
       }
     }
+    if (actor) {
+      await recordVenueEvent(tx, venueId, 'image_removed', actor, eventDetail(deleted));
+      if (promoted) await recordVenueEvent(tx, venueId, 'image_primary_changed', actor, eventDetail(promoted, { reason: 'promoted_after_delete' }));
+    }
     return { ok: true, value: { deleted, promoted } };
   });
 }
+
+/** JSON-safe photo for admin islands and API responses. */
+export function serializeVenueImage(image: VenueImageRow) {
+  return {
+    id: image.id,
+    venueId: image.venueId,
+    fullUrl: image.fullUrl,
+    thumbUrl: image.thumbUrl,
+    width: image.width,
+    height: image.height,
+    caption: image.caption,
+    isPrimary: image.isPrimary,
+    focalX: image.focalX,
+    focalY: image.focalY,
+    createdAt: image.createdAt.toISOString(),
+  };
+}
+
+export type SerializedVenueImage = ReturnType<typeof serializeVenueImage>;
 
 const OWNED_BLOB_HOST_SUFFIX = '.public.blob.vercel-storage.com';
 

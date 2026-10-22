@@ -67,6 +67,20 @@ describe('motionEntries and eventEntries', () => {
     const [entry] = eventEntries([{ id: 'e1', kind: 'closed', actorName: 'Sam', createdAt: at('2026-10-21T08:00:00Z') } as VenueEventRow]);
     assert.equal(entry.text, 'Closed by Sam on 21st Oct 26');
   });
+
+  it('describes photo events as plain text, never the image URL', () => {
+    const detail = { imageId: 'i1', thumbUrl: 'https://abc.public.blob.vercel-storage.com/dev/venues/v/i1-thumb.webp' };
+    const entries = eventEntries([
+      { id: 'e1', kind: 'image_added', actorName: 'Sam', detail, createdAt: at('2026-10-22T08:00:00Z') },
+      { id: 'e2', kind: 'image_removed', actorName: 'Sam', detail, createdAt: at('2026-10-22T09:00:00Z') },
+      { id: 'e3', kind: 'image_primary_changed', actorName: 'Sam', detail: { ...detail, reason: 'promoted_after_delete' }, createdAt: at('2026-10-22T09:00:00Z') },
+    ] as VenueEventRow[]);
+    assert.deepEqual(
+      entries.map((entry) => entry.text),
+      ['Photo added by Sam on 22nd Oct 26', 'Photo removed by Sam on 22nd Oct 26', 'Primary photo changed by Sam on 22nd Oct 26']
+    );
+    assert.ok(entries.every((entry) => entry.kind === 'event' && !JSON.stringify(entry).includes('blob.vercel-storage')));
+  });
 });
 
 describe('sortTimeline', () => {

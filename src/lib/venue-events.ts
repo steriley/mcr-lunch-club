@@ -8,7 +8,7 @@ import type { Database } from '@/lib/db-client';
  * the admin's display name as a snapshot, so history survives account
  * deletion. Kinds are added by the phases that need them.
  */
-export type VenueEventKind = 'closed' | 'reopened';
+export type VenueEventKind = 'closed' | 'reopened' | 'image_added' | 'image_removed' | 'image_primary_changed';
 
 export interface Actor {
   id: string;
@@ -38,9 +38,12 @@ export async function listVenueEvents(db: Database, venueId: string): Promise<Ve
 const EVENT_VERBS: Record<VenueEventKind, string> = {
   closed: 'Closed',
   reopened: 'Reopened',
+  image_added: 'Photo added',
+  image_removed: 'Photo removed',
+  image_primary_changed: 'Primary photo changed',
 };
 
-/** e.g. "Closed by Sam on 21st Oct 26". */
+/** e.g. "Closed by Sam on 21st Oct 26" or "Photo added by Sam on 22nd Oct 26". Text only, never an image. */
 export function describeVenueEvent(event: Pick<VenueEventRow, 'kind' | 'actorName' | 'createdAt'>): string {
   const verb = EVENT_VERBS[event.kind as VenueEventKind] ?? event.kind;
   return `${verb} by ${event.actorName ?? 'a former admin'} on ${formatDate(event.createdAt)}`;

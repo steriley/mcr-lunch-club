@@ -3,7 +3,7 @@ import { after, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
-import { venueImages, venues } from '@/db/schema';
+import { venueEvents, venueImages, venues } from '@/db/schema';
 import { addVenueImage, deleteVenueImage, listVenueImages, setPrimary, updateImageMeta, type NewVenueImage } from '@/lib/venue-images';
 import { closeTestDb, createAdmin, createVenue, resetTestDb, skipIntegration, testDb, violates, type TestAdmin } from './db';
 
@@ -223,6 +223,47 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
       db.update(venueImages).set({ focalX: 50, focalY: 101 }).where(eq(venueImages.id, row.id)),
       violates('venue_images_focal_range')
     );
+  });
+
+  it('logs adds, removals and primary changes (including promotion) with the actor, but not metadata edits', async () => {
+    const db = await testDb();
+    const actor = { id: sam.id, name: sam.name };
+    const first = await addVenueImage(db, image(), tick(), actor);
+    const second = await addVenueImage(db, image(), tick(), actor);
+    assert.ok(first.ok && second.ok);
+    await updateImageMeta(db, venueId, first.value.id, { caption: 'Counter', focal: { focalX: 10, focalY: 10 } });
+    await setPrimary(db, venueId, second.value.id, actor);
+    await deleteVenueImage(db, venueId, second.value.id, actor);
+
+    const events = await db.select().from(venueEvents).where(eq(venueEvents.venueId, venueId));
+    type Line = { kind: string; actor: string | null; imageId: string; reason?: string };
+    const key = (line: Line) => `${line.kind}|${line.reason ?? ''}|${line.imageId}`;
+    const sorted = (lines: Line[]) => [...lines].sort((a, b) => key(a).localeCompare(key(b)));
+    const actual = events.map((event) => ({
+      kind: event.kind,
+      actor: event.actorName,
+      imageId: (event.detail as any).imageId,
+      ...((event.detail as any).reason ? { reason: (event.detail as any).reason } : {}),
+    }));
+    assert.deepEqual(
+      sorted(actual),
+      sorted([
+        { kind: 'image_added', actor: 'Sam', imageId: first.value.id },
+        { kind: 'image_added', actor: 'Sam', imageId: second.value.id },
+        { kind: 'image_primary_changed', actor: 'Sam', imageId: second.value.id },
+        { kind: 'image_primary_changed', actor: 'Sam', imageId: first.value.id, reason: 'promoted_after_delete' },
+        { kind: 'image_removed', actor: 'Sam', imageId: second.value.id },
+      ])
+    );
+    assert.ok(events.every((event) => 'thumbUrl' in (event.detail as object)));
+  });
+
+  it('a failed event insert rolls back the image change', async () => {
+    const db = await testDb();
+    const ghost = { id: 'no-such-user', name: 'Ghost' };
+    // actor_id references user(id): an unknown id fails the event insert inside the transaction.
+    await assert.rejects(addVenueImage(db, image(), tick(), ghost));
+    assert.deepEqual(await listVenueImages(db, venueId), []);
   });
 
   it('deleting a venue removes its image rows', async () => {
