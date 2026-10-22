@@ -37,6 +37,8 @@ export interface IsochroneRing {
   radius: number; // in metres
   color: string;
   label: string;
+  /** Text in the homepage map's legend. */
+  legend: string;
   dash: string;
   weight?: number;
 }
@@ -47,20 +49,21 @@ export interface IsochroneRing {
  */
 export const WALKING_METRES_PER_MINUTE = 80;
 
-const walkRing = (minutes: number, color: string, dash: string): IsochroneRing => ({
+const walkRing = (minutes: number, miles: string, color: string, dash: string): IsochroneRing => ({
   radius: minutes * WALKING_METRES_PER_MINUTE,
   color,
   label: `${minutes} min walk`,
+  legend: `${minutes} min (${miles} mi)`,
   dash,
 });
 
 export const WALKING_ISOCHRONES: IsochroneRing[] = [
-  walkRing(5, '#059669', '3, 4'),
-  walkRing(10, '#d97706', '3, 5'),
-  walkRing(15, '#2563eb', '4, 6'),
-  walkRing(20, '#7c3aed', '4, 6'),
-  walkRing(25, '#e11d48', '5, 7'),
-  { radius: 4023, color: '#991b1b', label: '2.5-Mile Central Boundary', dash: '8, 8', weight: 2.5 },
+  walkRing(5, '0.25', '#059669', '3, 4'),
+  walkRing(10, '0.50', '#d97706', '3, 5'),
+  walkRing(15, '0.75', '#2563eb', '4, 6'),
+  walkRing(20, '1.00', '#7c3aed', '4, 6'),
+  walkRing(25, '1.25', '#e11d48', '5, 7'),
+  { radius: 4023, color: '#991b1b', label: '2.5-Mile Central Boundary', legend: '2.5 mi Boundary', dash: '8, 8', weight: 2.5 },
 ];
 
 /**

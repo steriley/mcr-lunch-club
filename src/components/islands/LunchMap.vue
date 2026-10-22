@@ -39,23 +39,13 @@
           <span class="text-xs text-stone-500 font-sans">from Base</span>
         </div>
         <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-stone-700 font-sans text-xs">
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-0.5 bg-emerald-600"></span> 5 min (0.25 mi)
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-0.5 bg-amber-600"></span> 10 min (0.50 mi)
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-0.5 bg-blue-600"></span> 15 min (0.75 mi)
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-0.5 bg-purple-600"></span> 20 min (1.00 mi)
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-0.5 bg-rose-600"></span> 25 min (1.25 mi)
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2.5 h-0.5 border-t border-dashed border-red-700"></span> 2.5 mi Boundary
+          <!-- Same colours as the rings on the map; the heavier boundary ring shows dashed. -->
+          <div v-for="ring in WALKING_ISOCHRONES" :key="ring.radius" class="flex items-center gap-1.5">
+            <span
+              class="w-2.5 h-0"
+              :style="{ borderTop: `${ring.weight ? 1 : 2}px ${ring.weight ? 'dashed' : 'solid'} ${ring.color}` }"
+            ></span>
+            {{ ring.legend }}
           </div>
         </div>
       </div>
@@ -66,7 +56,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
-import { $filters, selectVenue, openNearMe, toggleTier } from '@/stores/filters';
+import { $filters, matchesFilters, selectVenue, openNearMe, toggleTier } from '@/stores/filters';
+import { londonDate } from '@/lib/london-date';
 import { $venuesList } from '@/stores/ledger';
 import {
   BASE_LAT,
@@ -77,6 +68,7 @@ import {
   createWalkingIsochrones,
   createVenueMarker,
   bindVenuePopup,
+  WALKING_ISOCHRONES,
 } from '@/lib/map';
 
 const props = defineProps<{
@@ -92,55 +84,9 @@ let leafletModule: any = null;
 let markersLayer: any = null;
 let ringsLayer: any = null;
 
-// Filtered venues calculation
 const filteredVenues = computed(() => {
-  const currentFilters = filters.value;
-  const list = venuesList.value;
-
-  return list.filter((venue) => {
-    // Lat / Lng presence check
-    if (!venue.lat || !venue.lng) return false;
-
-    // Tier filter
-    if (!currentFilters.tiers.includes(venue.tier)) return false;
-
-    // Cost filter
-    if (currentFilters.cost !== 'all' && venue.cost !== currentFilters.cost) return false;
-
-    // Max walking time
-    if (currentFilters.maxWalkMinutes && venue.walkingTimeMin !== null && venue.walkingTimeMin > currentFilters.maxWalkMinutes) {
-      return false;
-    }
-
-    // Cuisine filter
-    if (currentFilters.cuisine !== 'all' && venue.cuisine !== currentFilters.cuisine) {
-      return false;
-    }
-
-    // Inspected within days filter
-    if (currentFilters.inspectedDays !== 'all') {
-      if (!venue.lastInspectionDate || venue.lastInspectionDate.includes('Awaiting')) {
-        return false;
-      }
-      const inspDate = new Date(venue.lastInspectionDate);
-      if (!isNaN(inspDate.getTime())) {
-        const daysDiff = (Date.now() - inspDate.getTime()) / (1000 * 60 * 60 * 24);
-        if (daysDiff > currentFilters.inspectedDays) return false;
-      }
-    }
-
-    // Search query filter
-    if (currentFilters.searchQuery && currentFilters.searchQuery.trim().length > 0) {
-      const q = currentFilters.searchQuery.toLowerCase();
-      const matchName = venue.name.toLowerCase().includes(q);
-      const matchCuisine = venue.cuisine.toLowerCase().includes(q);
-      const matchOrder = (venue.eatLikeUs || '').toLowerCase().includes(q);
-      const matchAddress = (venue.address || '').toLowerCase().includes(q);
-      if (!matchName && !matchCuisine && !matchOrder && !matchAddress) return false;
-    }
-
-    return true;
-  });
+  const today = londonDate();
+  return venuesList.value.filter((venue) => matchesFilters(venue, filters.value, today));
 });
 
 const visibleVenuesCount = computed(() => filteredVenues.value.length);

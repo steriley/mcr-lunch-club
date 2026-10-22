@@ -10,6 +10,7 @@ import {
   closeSuggestModal,
   closeWhereToday,
   initialFilterState,
+  matchesFilters,
   openNearMe,
   openSuggestModal,
   openWhereToday,
@@ -107,5 +108,58 @@ describe('UI state', () => {
     assert.equal($isNearMeOpen.get(), true);
     closeNearMe();
     assert.equal($isNearMeOpen.get(), false);
+  });
+});
+
+describe('matchesFilters', () => {
+  const place = (overrides: Partial<Venue> = {}): Venue => ({
+    id: 'pie', slug: 'pie', name: 'Pie Shop', tier: 'approved', lat: 53.48, lng: -2.25, distanceMiles: 0.4, walkingTimeMin: 9,
+    cost: '££', cuisine: 'British', eatLikeUs: 'Steak pudding', lastInspectionDate: '2026-10-15', address: '1 Deansgate', mapSearchLink: '',
+    ...overrides,
+  });
+  const filters = (overrides: Partial<typeof initialFilterState> = {}) => ({ ...initialFilterState, ...overrides });
+  const today = '2026-10-22';
+
+  it('passes a located venue in a selected tier with no other filters', () => {
+    assert.equal(matchesFilters(place(), filters(), today), true);
+  });
+
+  it('drops venues without a location or outside the selected tiers', () => {
+    assert.equal(matchesFilters(place({ lat: null }), filters(), today), false);
+    assert.equal(matchesFilters(place({ tier: 'rejected' }), filters(), today), false);
+    assert.equal(matchesFilters(place({ tier: 'rejected' }), filters({ tiers: ['rejected'] }), today), true);
+  });
+
+  it('filters by cost and cuisine', () => {
+    assert.equal(matchesFilters(place(), filters({ cost: '£' }), today), false);
+    assert.equal(matchesFilters(place(), filters({ cost: '££', cuisine: 'British' }), today), true);
+    assert.equal(matchesFilters(place(), filters({ cuisine: 'Pizza' }), today), false);
+  });
+
+  it('applies the walk limit, but never hides a venue whose route is pending', () => {
+    assert.equal(matchesFilters(place({ walkingTimeMin: 12 }), filters({ maxWalkMinutes: 10 }), today), false);
+    assert.equal(matchesFilters(place({ walkingTimeMin: 10 }), filters({ maxWalkMinutes: 10 }), today), true);
+    assert.equal(matchesFilters(place({ walkingTimeMin: null }), filters({ maxWalkMinutes: 10 }), today), true);
+  });
+
+  it('counts inspection age in whole London days, inclusive', () => {
+    assert.equal(matchesFilters(place({ lastInspectionDate: '2026-10-15' }), filters({ inspectedDays: 7 }), today), true);
+    assert.equal(matchesFilters(place({ lastInspectionDate: '2026-10-14' }), filters({ inspectedDays: 7 }), today), false);
+    assert.equal(matchesFilters(place({ lastInspectionDate: today }), filters({ inspectedDays: 7 }), today), true);
+  });
+
+  it('never passes an inspection-age filter without a stored date', () => {
+    for (const lastInspectionDate of ['Awaiting Assessment', '', 'not a date']) {
+      assert.equal(matchesFilters(place({ lastInspectionDate }), filters({ inspectedDays: 90 }), today), false, lastInspectionDate);
+      assert.equal(matchesFilters(place({ lastInspectionDate }), filters(), today), true, lastInspectionDate);
+    }
+  });
+
+  it('searches name, cuisine, order and address, ignoring case and spaces around the query', () => {
+    for (const searchQuery of ['pie', 'BRITISH', 'pudding', 'deansgate', '  shop  ']) {
+      assert.equal(matchesFilters(place(), filters({ searchQuery }), today), true, searchQuery);
+    }
+    assert.equal(matchesFilters(place(), filters({ searchQuery: 'sushi' }), today), false);
+    assert.equal(matchesFilters(place(), filters({ searchQuery: '   ' }), today), true);
   });
 });
