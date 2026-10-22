@@ -58,6 +58,7 @@
           :style="{ objectPosition: focalStyle(venue.image) }"
           loading="lazy"
           decoding="async"
+          @error="($event.target as HTMLElement).style.display = 'none'"
           class="aspect-[3/2] max-h-56 h-auto w-full rounded-xl border border-[#dcd6c8] object-cover"
         />
         <!-- Approved Prize Award Callout -->

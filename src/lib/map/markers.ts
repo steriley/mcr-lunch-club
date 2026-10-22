@@ -120,7 +120,7 @@ export function createVenuePopupContent(venue: Venue, onViewDossier?: () => void
   const popupContent = document.createElement('div');
   popupContent.className = 'p-3 font-serif-header text-[#1a1e24] max-w-[260px]';
   const image = venue.image
-    ? `<img src="${escapeHtml(venue.image.thumbUrl)}" alt="${escapeHtml(venue.image.alt)}" width="640" height="427" loading="lazy" decoding="async"
+    ? `<img src="${escapeHtml(venue.image.thumbUrl)}" alt="${escapeHtml(venue.image.alt)}" width="640" height="427" loading="lazy" decoding="async" onerror="this.style.display='none'"
            style="object-position: ${escapeHtml(focalStyle(venue.image))};" class="mb-2 block aspect-[3/2] h-auto w-full rounded object-cover" />`
     : '';
   popupContent.innerHTML = `
