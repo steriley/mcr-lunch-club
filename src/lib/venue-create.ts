@@ -3,7 +3,7 @@ import type { Database } from '@/lib/db-client';
 import { proposeTierInTx, type ProposalError } from '@/lib/tier-proposals';
 import type { TierValue } from '@/lib/tiers';
 import type { Actor } from '@/lib/venue-events';
-import type { RouteValues } from '@/lib/venue-route';
+import type { RouteValues } from '@/lib/walking-route';
 import type { VenueInput } from '@/lib/venue-schema';
 import { recordVenueRevision, venueValues } from '@/lib/venues';
 

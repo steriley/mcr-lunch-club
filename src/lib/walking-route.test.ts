@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { OrsError } from './ors';
-import { computeRoute, resolveRoute, routeWarning, sameCoordinates } from './venue-route';
+import { computeRoute, resolveRoute, routeWarning, sameCoordinates } from './walking-route';
 import { routeStatus } from './route-status';
 
 const ROUTED_AT = new Date('2026-10-01T00:00:00Z');

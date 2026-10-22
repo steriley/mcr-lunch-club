@@ -10,7 +10,7 @@ import path from 'node:path';
  */
 
 const ROOT = path.resolve('src');
-const SERVER_ONLY = ['lib/ors.ts', 'lib/env.ts', 'lib/venue-route.ts', 'lib/db.ts', 'lib/auth.ts'].map((file) => path.join(ROOT, file));
+const SERVER_ONLY = ['lib/ors.ts', 'lib/env.ts', 'lib/walking-route.ts', 'lib/db.ts', 'lib/auth.ts'].map((file) => path.join(ROOT, file));
 
 function filesUnder(dir: string, pattern: RegExp): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

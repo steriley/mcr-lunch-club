@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { venues } from '@/db/schema';
 import { adminRoute, jsonError, jsonResponse } from '@/lib/admin-api';
 import { db } from '@/lib/db';
-import { computeRoute, routeWarning } from '@/lib/venue-route';
+import { computeRoute, routeWarning } from '@/lib/walking-route';
 import { recordVenueRevision, serializeVenue } from '@/lib/venues';
 
 export const prerender = false;

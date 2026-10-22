@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 import { getBlobToken } from '@/lib/env';
 import { deleteOwnedBlobs } from '@/lib/venue-image-storage';
 import { venueInputSchema } from '@/lib/venue-schema';
-import { resolveRoute, routeWarning } from '@/lib/venue-route';
+import { resolveRoute, routeWarning } from '@/lib/walking-route';
 import { isSlugTaken, recordVenueRevision, serializeVenue, venueValues } from '@/lib/venues';
 
 export const prerender = false;

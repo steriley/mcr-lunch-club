@@ -31,4 +31,3 @@ export const goldenCutInputSchema = z.object({
 });
 
 export type GoldenCutEntryInput = z.infer<typeof goldenCutEntrySchema>;
-export type GoldenCutInput = z.infer<typeof goldenCutInputSchema>;
