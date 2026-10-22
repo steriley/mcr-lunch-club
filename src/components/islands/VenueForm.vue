@@ -6,7 +6,7 @@ import TierBadge from './TierBadge.vue';
 import TierProposalPanel from './TierProposalPanel.vue';
 import VenueImages from './VenueImages.vue';
 import AuditHistoryDrawer, { type AuditEntry } from './dossier/AuditHistoryDrawer.vue';
-import ConcordCard, { type VisitStatus } from './dossier/ConcordCard.vue';
+import ConcordCard from './dossier/ConcordCard.vue';
 import DossierCard from './dossier/DossierCard.vue';
 import DossierIcon from './dossier/DossierIcon.vue';
 import DossierMap from './dossier/DossierMap.vue';
@@ -20,54 +20,17 @@ import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
 import { COST_BANDS, COST_BAND_LABELS, isOutsideUk, slugify, venueCreateSchema, venueInputSchema } from '@/lib/venue-schema';
 import type { SerializedVenueImage } from '@/lib/image-upload';
 import { apiFetch } from '@/lib/api-fetch';
+import type { VisitStatus } from '@/lib/inspections';
+import type { SuggestionPrefill } from '@/lib/suggestions';
+import type { SerializedProposal } from '@/lib/tier-proposals';
+import type { SerializedVenue } from '@/lib/venues';
+import { hiddenReason } from '@/lib/visibility';
 
 /**
  * The venue dossier: the Chairs' edit page for one venue (and the new-venue
  * form). Field edits are dirty-tracked and saved together from the decree bar;
  * inspections, tier motions and closing act at once in their own cards.
  */
-
-interface VenueData {
-  id: string;
-  name: string;
-  slug: string;
-  tier: string | null;
-  address: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  pullQuote: string | null;
-  lunchSpecial: string | null;
-  websiteUrl: string | null;
-  cost: string;
-  cuisine: string;
-  distanceMiles: number | null;
-  walkingTimeMin: number | null;
-  routeUpdatedAt?: string | null;
-  mapSearchLink: string | null;
-  lastInspectionDate?: string | null;
-  updatedAt: string;
-}
-
-/** Mirrors suggestionPrefill() in src/lib/suggestions.ts. */
-interface SuggestionPrefill {
-  id: string;
-  name: string;
-  cost: string | null;
-  searchQuery: string;
-  cuisineHint: string | null;
-  recommendedOrder: string | null;
-  rationale: string;
-  submitterName: string | null;
-}
-
-interface PendingMotion {
-  id: string;
-  fromTier: string | null;
-  proposedTier: string;
-  proposedBy: string | null;
-  proposedByName: string | null;
-  proposedAt: string;
-}
 
 /** Edit mode only: the cards beside the form. */
 interface DossierContext {
@@ -76,7 +39,7 @@ interface DossierContext {
   currentUserName: string;
   visitStatus: VisitStatus;
   latestVerifiedInspection: string | null;
-  pendingMotion: PendingMotion | null;
+  pendingMotion: SerializedProposal | null;
   activeAdmins: number;
   closed: boolean;
   /** e.g. "Marked closed on 21st Oct 26 by Sam." */
@@ -86,7 +49,7 @@ interface DossierContext {
 
 const props = defineProps<{
   mode: 'create' | 'edit';
-  venue?: VenueData | null;
+  venue?: SerializedVenue | null;
   /** Accepting a member's suggestion: only the name and cost band are copied; the rest is reference. */
   suggestion?: SuggestionPrefill | null;
   updatedByName?: string | null;
@@ -109,7 +72,7 @@ const FIELD_LABELS: Record<FormField, string> = {
   lunchSpecial: 'Lunch special', websiteUrl: 'Website', cost: 'Cost', cuisine: 'Cuisine', mapSearchLink: 'Map link',
 };
 
-function toFormState(venue?: VenueData | null): Record<FormField, string> {
+function toFormState(venue?: SerializedVenue | null): Record<FormField, string> {
   const state = {} as Record<FormField, string>;
   for (const field of textFields) {
     const value = venue?.[field];
@@ -210,7 +173,7 @@ function clearLocation() {
   changingLocation.value = true;
 }
 
-function applySavedVenue(venue: VenueData) {
+function applySavedVenue(venue: SerializedVenue) {
   route.distanceMiles = venue.distanceMiles;
   route.walkingTimeMin = venue.walkingTimeMin;
   route.routeUpdatedAt = venue.routeUpdatedAt ?? null;
@@ -258,14 +221,23 @@ const coordinateWarning = computed(() => {
 const registryCode = computed(() => (venueId.value ? `REG-${venueId.value.slice(0, 6).toUpperCase()}` : 'New entry'));
 const district = computed(() => /\b([A-Z]{1,2}\d[A-Z\d]?)\s*\d[A-Z]{2}\b/i.exec(form.address)?.[1]?.toUpperCase() ?? '');
 const currentCuisine = computed(() => (isCuisineValue(form.cuisine) ? cuisineLabel(form.cuisine) : 'Other'));
+// The shared visibility rule, so a closed Gone But Not Forgotten venue counts as public here too.
+const hidden = computed(() =>
+  hiddenReason({
+    tier: props.dossier?.currentTier ?? null,
+    latitude: savedLocation.value.latitude,
+    longitude: savedLocation.value.longitude,
+    closedAt: props.venue?.closedAt ?? null,
+  })
+);
+const isPublic = computed(() => props.mode === 'edit' && hidden.value === null);
 const visibilityText = computed(() => {
   if (props.mode === 'create') return 'New ledger entry. It stays hidden from the public site until a different Chair approves its tier.';
   if (props.dossier?.closed) return props.dossier.closedText ?? 'Permanently closed.';
-  if (!props.dossier?.currentTier) return 'Hidden from the public site: no approved tier yet.';
-  if (savedLocation.value.latitude === null || savedLocation.value.longitude === null) return 'Hidden from the public site: needs a location.';
+  if (hidden.value === 'no_tier') return 'Hidden from the public site: no approved tier yet.';
+  if (hidden.value === 'needs_location') return 'Hidden from the public site: needs a location.';
   return `Public at /venues/${saved.slug}.`;
 });
-const isPublic = computed(() => props.mode === 'edit' && visibilityText.value.startsWith('Public'));
 
 const docketPreview = computed<DocketPreview>(() => ({
   name: form.name,

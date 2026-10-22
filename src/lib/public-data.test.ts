@@ -19,7 +19,7 @@ import {
   toPublicVenue,
 } from './public-data';
 import type { BriberyRow, InspectionRow, VenueImageRow, VenueRow } from '@/db/schema';
-import { publicVenueCondition } from './visibility';
+import { publicVenueCondition } from './visibility-sql';
 import { renderSql, restoreStubs, stubDb } from '../test/route-helpers';
 
 afterEach(restoreStubs);

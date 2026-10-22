@@ -9,7 +9,7 @@ import { createVenueWithProposal, ProposalFailed, SuggestionUnavailable } from '
 import { venueCreateSchema } from '@/lib/venue-schema';
 import { resolveRoute, routeWarning } from '@/lib/walking-route';
 import { isSlugTaken, serializeVenue } from '@/lib/venues';
-import { publicVenueCondition } from '@/lib/visibility';
+import { publicVenueCondition } from '@/lib/visibility-sql';
 
 export const prerender = false;
 

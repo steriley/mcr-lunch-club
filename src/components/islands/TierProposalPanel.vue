@@ -7,20 +7,12 @@ import DossierIcon from './dossier/DossierIcon.vue';
 import { formatDateTime } from '@/lib/dates';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
 import { apiFetch } from '@/lib/api-fetch';
-
-interface PendingProposal {
-  id: string;
-  fromTier: string | null;
-  proposedTier: string;
-  proposedBy: string | null;
-  proposedByName: string | null;
-  proposedAt: string;
-}
+import type { SerializedProposal } from '@/lib/tier-proposals';
 
 const props = defineProps<{
   venueId: string;
   currentTier: string | null;
-  pending: PendingProposal | null;
+  pending: SerializedProposal | null;
   currentUserId: string;
   activeAdmins: number;
 }>();

@@ -16,7 +16,7 @@ export interface RankedVenue {
 
 export interface RankVenuesOptions {
   origin: LatLng;
-  venues: Venue[];
+  venues: readonly Venue[];
   tiers?: readonly TierValue[];
   limit?: number;
   nearbyThresholdMetres?: number;

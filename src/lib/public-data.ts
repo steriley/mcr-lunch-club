@@ -6,7 +6,8 @@ import { db } from '@/lib/db';
 import type { TierValue } from '@/lib/tiers';
 import type { CostBand } from '@/lib/venue-schema';
 import { sortForPublic } from '@/lib/venue-order';
-import { isMappable, isPubliclyVisible, publicVenueCondition } from '@/lib/visibility';
+import { isMappable, isPubliclyVisible } from '@/lib/visibility';
+import { publicVenueCondition } from '@/lib/visibility-sql';
 import type { Incident, Inspection, PublicImage, Venue } from '@/types';
 
 /**
