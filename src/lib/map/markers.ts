@@ -7,9 +7,13 @@ import { focalStyle } from '@/lib/image-upload';
 /**
  * Generate the HTML string for a venue marker pin.
  */
-export function createVenueIconHtml(venue: Venue): string {
+export function createVenueIconHtml(venue: Venue, rank?: number): string {
   const tier = tierInfo(venue.tier);
   const badgeText = venue.cost;
+  // Near Me numbers its nearest pins so they match the list rows.
+  const rankBadge = rank
+    ? `<span class="absolute -top-2 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full border border-[#111e47] bg-[#f29a2e] px-1 text-[10px] font-extrabold leading-none text-[#111e47]" aria-hidden="true">${Math.trunc(rank)}</span>`
+    : '';
 
   return `
     <div class="group relative cursor-pointer transform transition-transform duration-200 hover:scale-125 hover:z-[9999]" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));">
@@ -17,6 +21,7 @@ export function createVenueIconHtml(venue: Venue): string {
            style="background-color: ${tier.color}; border-color: ${tier.border}; color: #ffffff;">
         <span>${escapeHtml(badgeText)}</span>
       </div>
+      ${rankBadge}
       <div class="w-1.5 h-1.5 mx-auto bg-stone-900 rounded-full mt-[-1px]"></div>
     </div>
   `;
@@ -25,18 +30,19 @@ export function createVenueIconHtml(venue: Venue): string {
 /**
  * Factory for creating a Leaflet venue marker.
  */
-export function createVenueMarker(L: any, venue: Venue): any {
+export function createVenueMarker(L: any, venue: Venue, rank?: number): any {
   if (venue.lat == null || venue.lng == null) return null;
 
-  const iconHtml = createVenueIconHtml(venue);
+  return L.marker([venue.lat, venue.lng], { icon: createVenueIcon(L, venue, rank) });
+}
 
-  return L.marker([venue.lat, venue.lng], {
-    icon: L.divIcon({
-      html: iconHtml,
-      className: 'custom-ledger-pin',
-      iconSize: [28, 34],
-      iconAnchor: [14, 30],
-    }),
+/** The divIcon for a venue pin; `rank` adds the Near Me number badge. */
+export function createVenueIcon(L: any, venue: Venue, rank?: number): any {
+  return L.divIcon({
+    html: createVenueIconHtml(venue, rank),
+    className: 'custom-ledger-pin',
+    iconSize: [28, 34],
+    iconAnchor: [14, 30],
   });
 }
 

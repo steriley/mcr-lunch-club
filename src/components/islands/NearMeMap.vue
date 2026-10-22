@@ -174,8 +174,26 @@
             </button>
           </div>
 
+          <!-- Collapsed sheet: one line about the selected (or nearest) venue so the map stays clear. -->
+          <div v-if="isCollapsedMobile && previewVenue" class="near-me-collapsed-summary">
+            <button type="button" class="near-me-collapsed-main" @click="expandSheet">
+              <span class="near-me-card-index">#{{ previewVenue.rank }}</span>
+              <span class="near-me-collapsed-name">{{ previewVenue.rv.venue.name }}</span>
+              <span class="near-me-collapsed-meta">{{ previewVenue.rv.formattedDistance }}</span>
+            </button>
+            <a
+              :href="getWalkingDirectionsUrl(previewVenue.rv.venue.lat!, previewVenue.rv.venue.lng!)"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="near-me-btn-walk"
+              :aria-label="`Get walking directions to ${previewVenue.rv.venue.name}`"
+            >
+              <span>Walk</span>
+            </a>
+          </div>
+
           <!-- Tier Filter Chips (Inside Panel): shared with the homepage filter bar -->
-          <div class="near-me-panel-filters">
+          <div v-show="!isCollapsedMobile" class="near-me-panel-filters">
             <TierFilterChips
               :tiers="NEAR_ME_TIERS"
               :selected="selectedTiers"
@@ -190,9 +208,12 @@
           <!-- Scrollable Content Body -->
           <div
             ref="listContainerRef"
+            v-show="!isCollapsedMobile"
             class="near-me-scroll-body"
             @scroll="onListScroll"
             @touchstart.passive="onListTouchStart"
+            @touchend.passive="onListTouchEnd"
+            @touchcancel.passive="onListTouchEnd"
           >
             <!-- Nearest-Venue Hero Card -->
             <section
@@ -275,15 +296,15 @@
                       </svg>
                       <span>Walk there</span>
                     </a>
-                    <a
-                      :href="`/venues/${nearestVenue.venue.slug}`"
+                    <button
+                      type="button"
                       class="near-me-hero-dossier-btn"
                       id="btn-hero-dossier"
-                      :aria-label="`View dossier for ${nearestVenue.venue.name}`"
-                      @click.stop
+                      :aria-label="`Details for ${nearestVenue.venue.name}`"
+                      @click.stop="selectVenue(nearestVenue.venue)"
                     >
-                      <span>Dossier</span>
-                    </a>
+                      <span>Details</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -293,7 +314,17 @@
             <div class="near-me-list-section">
               <div class="near-me-list-header">
                 <span class="near-me-list-title">{{ nearestVenue ? 'Also nearby' : 'Nearby targets' }} ({{ listVenues.length }})</span>
-                <span class="near-me-list-caption">Sorted by distance</span>
+                <div class="near-me-cost-filter" role="group" aria-label="Filter by price">
+                  <button
+                    v-for="cost in COST_BANDS"
+                    :key="cost"
+                    type="button"
+                    class="near-me-cost-chip"
+                    :class="{ 'is-selected': selectedCosts.includes(cost) }"
+                    :aria-pressed="selectedCosts.includes(cost)"
+                    @click="toggleCost(cost)"
+                  >{{ cost }}</button>
+                </div>
               </div>
 
               <div class="near-me-list-rows" role="list">
@@ -376,14 +407,14 @@
                         </svg>
                         <span>Walk</span>
                       </a>
-                      <a
-                        :href="`/venues/${rv.venue.slug}`"
+                      <button
+                        type="button"
                         class="near-me-btn-dossier"
-                        :aria-label="`View dossier for ${rv.venue.name}`"
-                        @click.stop
+                        :aria-label="`Details for ${rv.venue.name}`"
+                        @click.stop="selectVenue(rv.venue)"
                       >
-                        <span>Dossier</span>
-                      </a>
+                        <span>Details</span>
+                      </button>
                     </div>
                   </div>
                   </div>
@@ -395,7 +426,7 @@
                 <span class="near-me-empty-icon" aria-hidden="true">🏛️</span>
                 <h4 class="near-me-empty-title">No Targets Available</h4>
                 <p class="near-me-empty-text">
-                  No venues in the selected tiers match your current criteria. Enable additional tiers above to view options.
+                  No venues in the selected tiers match your current criteria. Enable additional tiers above, or clear the price filter.
                 </p>
               </div>
             </div>
@@ -413,7 +444,7 @@ import { useStore } from '@nanostores/vue';
 import { $isNearMeOpen, closeNearMe, selectVenue } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
 import { NEAR_ME_DEFAULT_TIERS, NEAR_ME_TIERS, countVenuesByTier, tierInfo, type TierValue } from '@/lib/tiers';
-import type { Venue } from '@/types';
+import type { CostTier, Venue } from '@/types';
 import TierFilterChips from '@/components/TierFilterChips.vue';
 import { focalStyle } from '@/lib/image-upload';
 import {
@@ -423,6 +454,7 @@ import {
   createTileLayer,
   createBaseMarker,
   createVenueMarker,
+  createVenueIcon,
   bindVenuePopup,
   useGeolocation,
   createUserMarkerLayers,
@@ -486,6 +518,20 @@ const DEV_FORCED_STATE = (() => {
 // other eligible tiers are opt-in; Rejected & Gone But Not Forgotten are never offered.
 const selectedTiers = ref<TierValue[]>([...NEAR_ME_DEFAULT_TIERS]);
 
+// Price filter: empty means any price.
+const COST_BANDS: readonly CostTier[] = ['£', '££', '£££'];
+const selectedCosts = ref<CostTier[]>([]);
+
+function matchesCost(venue: Venue): boolean {
+  return selectedCosts.value.length === 0 || selectedCosts.value.includes(venue.cost);
+}
+
+function toggleCost(cost: CostTier) {
+  selectedCosts.value = selectedCosts.value.includes(cost)
+    ? selectedCosts.value.filter((c) => c !== cost)
+    : [...selectedCosts.value, cost];
+}
+
 // Chip counts only include venues that can be plotted, so they match the pins and list.
 const tierCounts = computed(() =>
   countVenuesByTier(venuesList.value.filter((v) => v.lat != null && v.lng != null))
@@ -507,12 +553,25 @@ const nearestVenue = computed(() =>
 // The nearest venue is the hero card, so the list carries the rest.
 const listVenues = computed(() => rankedVenues.value.slice(1));
 
+const isCollapsedMobile = computed(() => !isDesktop.value && sheetSnapState.value === 'collapsed');
+
+// What the collapsed sheet shows: the selected venue, else the nearest.
+const previewVenue = computed(() => {
+  if (rankedVenues.value.length === 0) return null;
+  const selected = rankedVenues.value.findIndex((rv) => rv.venue.id === selectedVenueId.value);
+  const index = selected >= 0 ? selected : 0;
+  return { rv: rankedVenues.value[index], rank: index + 1 };
+});
+
+// The nearest few pins carry their list number.
+const PIN_RANK_LIMIT = 5;
+
 // Computed sheet height CSS variable value
 const currentSheetHeightCss = computed(() => {
   if (isDesktop.value) return '0px';
   if (sheetSnapState.value === 'collapsed') return '140px';
-  if (sheetSnapState.value === 'half') return '50dvh';
-  return 'calc(100dvh - 70px)';
+  if (sheetSnapState.value === 'half') return '54dvh';
+  return '86dvh';
 });
 
 let mapInstance: any = null;
@@ -581,24 +640,31 @@ function collapseSheet() {
   }
 }
 
-function onListScroll() {
+// Hold the ranking still while a finger is on the list or it is still scrolling, so rows don't jump.
+const LIST_SETTLE_MS = 400;
+
+function holdRanking(releaseAfterMs: number | null) {
   isInteractingWithList.value = true;
   if (interactionTimeout) clearTimeout(interactionTimeout);
+  interactionTimeout = null;
+  if (releaseAfterMs === null) return;
   interactionTimeout = setTimeout(() => {
     interactionTimeout = null;
     isInteractingWithList.value = false;
     updateRanking();
-  }, 1200);
+  }, releaseAfterMs);
+}
+
+function onListScroll() {
+  holdRanking(LIST_SETTLE_MS);
 }
 
 function onListTouchStart() {
-  isInteractingWithList.value = true;
-  if (interactionTimeout) clearTimeout(interactionTimeout);
-  interactionTimeout = setTimeout(() => {
-    interactionTimeout = null;
-    isInteractingWithList.value = false;
-    updateRanking();
-  }, 1200);
+  holdRanking(null);
+}
+
+function onListTouchEnd() {
+  holdRanking(LIST_SETTLE_MS);
 }
 
 function checkScreenSize() {
@@ -631,7 +697,7 @@ function updateRanking(force = false) {
   if (force || fromBase !== isRankedFromBase.value || hasOriginMovedSignificantly(lastRankedOrigin.value, currentOrigin, ORIGIN_MOVE_THRESHOLD_METRES)) {
     rankedVenues.value = rankVenues({
       origin: currentOrigin,
-      venues: venuesList.value,
+      venues: venuesList.value.filter(matchesCost),
       tiers: selectedTiers.value,
     });
     lastRankedOrigin.value = currentOrigin;
@@ -680,23 +746,45 @@ function fitFirstFixBounds() {
   }, 500);
 }
 
+function pinRankFor(venueId: string): number | undefined {
+  const index = rankedVenues.value.findIndex((rv) => rv.venue.id === venueId);
+  return index >= 0 && index < PIN_RANK_LIMIT ? index + 1 : undefined;
+}
+
+function highlightSelectedPin() {
+  venueMarkersMap.forEach((marker, id) => {
+    const el = marker.getElement();
+    if (!el) return;
+    const isSelected = id === selectedVenueId.value;
+    el.classList.toggle('is-selected-pin', isSelected);
+    marker.setZIndexOffset(isSelected ? 1000 : 0);
+  });
+}
+
+// Swap a pin's icon only when its rank changed, so open popups survive re-ranking.
+const pinRanks = new Map<string, number | undefined>();
+
+function applyPinRanks() {
+  if (!leafletModule || venueMarkersMap.size === 0) return;
+  const L = leafletModule.default || leafletModule;
+  let changed = false;
+  venueMarkersMap.forEach((marker, id) => {
+    const rank = pinRankFor(id);
+    if (pinRanks.get(id) === rank) return;
+    const venue = venuesList.value.find((v) => v.id === id);
+    if (!venue) return;
+    marker.setIcon(createVenueIcon(L, venue, rank));
+    pinRanks.set(id, rank);
+    changed = true;
+  });
+  if (changed) highlightSelectedPin();
+}
+
 // Select a venue item from list or pin click
 function selectVenueItem(venue: Venue, fromPinClick = false) {
   selectedVenueId.value = venue.id;
 
-  // Highlight pins on map
-  venueMarkersMap.forEach((marker, id) => {
-    const el = marker.getElement();
-    if (el) {
-      if (id === venue.id) {
-        el.classList.add('is-selected-pin');
-        marker.setZIndexOffset(1000);
-      } else {
-        el.classList.remove('is-selected-pin');
-        marker.setZIndexOffset(0);
-      }
-    }
-  });
+  highlightSelectedPin();
 
   if (venueMarkersMap.has(venue.id)) {
     const marker = venueMarkersMap.get(venue.id);
@@ -946,16 +1034,19 @@ function renderVenueMarkers() {
   const L = leafletModule.default || leafletModule;
   venueMarkersLayer.clearLayers();
   venueMarkersMap.clear();
+  pinRanks.clear();
 
   const eligibleVenues = venuesList.value.filter(
-    (v) => selectedTiers.value.includes(v.tier) && v.lat != null && v.lng != null
+    (v) => selectedTiers.value.includes(v.tier) && matchesCost(v) && v.lat != null && v.lng != null
   );
 
   eligibleVenues.forEach((venue) => {
-    const marker = createVenueMarker(L, venue);
+    const rank = pinRankFor(venue.id);
+    const marker = createVenueMarker(L, venue, rank);
     if (!marker) return;
 
     venueMarkersMap.set(venue.id, marker);
+    pinRanks.set(venue.id, rank);
 
     // 56px keeps the popup clear of the Near Me header.
     bindVenuePopup(marker, venue, () => selectVenue(venue), 56);
@@ -967,15 +1058,7 @@ function renderVenueMarkers() {
     venueMarkersLayer.addLayer(marker);
   });
 
-  // Re-apply highlight if a venue is selected
-  if (selectedVenueId.value && venueMarkersMap.has(selectedVenueId.value)) {
-    const marker = venueMarkersMap.get(selectedVenueId.value);
-    const el = marker.getElement();
-    if (el) {
-      el.classList.add('is-selected-pin');
-      marker.setZIndexOffset(1000);
-    }
-  }
+  highlightSelectedPin();
 }
 
 async function initNearMeMap(initializationId: number) {
@@ -1126,6 +1209,7 @@ watch([geo.position, geo.isManual], () => {
 
 // Watch rankedVenues to fit bounds if first fix position was acquired before ranking finished
 watch(rankedVenues, (venues) => {
+  applyPinRanks();
   if (!hasFittedFirstFix.value && geo.position.value && venues.length > 0) {
     nextTick(() => {
       fitFirstFixBounds();
@@ -1134,7 +1218,7 @@ watch(rankedVenues, (venues) => {
 });
 
 // Watch selected tiers to update ranking and map markers
-watch(selectedTiers, () => {
+watch([selectedTiers, selectedCosts], () => {
   renderVenueMarkers();
   updateRanking(true);
 });
@@ -1243,6 +1327,7 @@ watch(isOpen, async (open) => {
     geo.stop();
     isPickingLocation.value = false;
     selectedTiers.value = [...NEAR_ME_DEFAULT_TIERS];
+    selectedCosts.value = [];
     lastRankedOrigin.value = null;
     hasFittedFirstFix.value = false;
     selectedVenueId.value = null;
@@ -1640,11 +1725,11 @@ onUnmounted(() => {
   }
 
   .near-me-panel.snap-half {
-    height: 50dvh;
+    height: 54dvh;
   }
 
   .near-me-panel.snap-full {
-    height: calc(100dvh - 70px);
+    height: 86dvh;
   }
 }
 
@@ -2642,5 +2727,92 @@ onUnmounted(() => {
   :deep(.leaflet-control-zoom) {
     display: none;
   }
+}
+
+/* Collapsed sheet summary */
+.near-me-collapsed-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 14px 12px;
+}
+
+.near-me-collapsed-main {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--ledger-deep);
+  text-align: left;
+  cursor: pointer;
+}
+
+.near-me-collapsed-name {
+  overflow: hidden;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.near-me-collapsed-meta {
+  flex-shrink: 0;
+  font-family: monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--near-me-muted);
+}
+
+/* Price filter in the list header */
+.near-me-cost-filter {
+  display: flex;
+  gap: 4px;
+}
+
+.near-me-cost-chip {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 9999px;
+  background: var(--ledger-card);
+  color: var(--ledger-deep);
+  font-family: monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.near-me-cost-chip.is-selected {
+  background: var(--ledger-deep);
+  border-color: var(--ledger-deep);
+  color: var(--ledger-parchment);
+}
+
+.near-me-cost-chip:focus-visible {
+  outline: 2px solid var(--ledger-navy);
+  outline-offset: 2px;
+}
+
+.near-me-list-header {
+  align-items: center;
+}
+
+/* Details is a button now; match the old link look. */
+.near-me-hero-dossier-btn,
+.near-me-btn-dossier {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* The half-height sheet is short, so the hero verdict gives up a line to keep its buttons in view. */
+.near-me-panel.snap-half .near-me-hero-verdict {
+  -webkit-line-clamp: 1;
 }
 </style>
