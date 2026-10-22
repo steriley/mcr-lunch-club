@@ -166,36 +166,12 @@
             <button
               type="button"
               class="near-me-snap-btn"
-              aria-label="Toggle venue list height"
+              :aria-label="sheetSnapState === 'full' ? 'Shrink venue list' : 'Expand venue list'"
+              :aria-expanded="sheetSnapState !== 'collapsed'"
               @click="cycleSnapState"
             >
               <span class="near-me-sheet-handle-bar"></span>
             </button>
-
-            <div class="near-me-sheet-snap-controls">
-              <button
-                v-if="sheetSnapState !== 'full'"
-                type="button"
-                id="btn-sheet-expand"
-                class="near-me-snap-action-btn"
-                aria-label="Expand venue list"
-                title="Expand list"
-                @click="expandSheet"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-              </button>
-              <button
-                v-if="sheetSnapState !== 'collapsed'"
-                type="button"
-                id="btn-sheet-collapse"
-                class="near-me-snap-action-btn"
-                aria-label="Collapse venue list"
-                title="Collapse list"
-                @click="collapseSheet"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-              </button>
-            </div>
           </div>
 
           <!-- Tier Filter Chips (Inside Panel): shared with the homepage filter bar -->
@@ -316,13 +292,13 @@
             <!-- Ranked Venue List Section -->
             <div class="near-me-list-section">
               <div class="near-me-list-header">
-                <span class="near-me-list-title">Nearby Targets ({{ rankedVenues.length }})</span>
+                <span class="near-me-list-title">{{ nearestVenue ? 'Also nearby' : 'Nearby targets' }} ({{ listVenues.length }})</span>
                 <span class="near-me-list-caption">Sorted by distance</span>
               </div>
 
               <div class="near-me-list-rows" role="list">
                 <article
-                  v-for="(rv, index) in rankedVenues"
+                  v-for="(rv, index) in listVenues"
                   :key="rv.venue.id"
                   :id="`near-me-row-${rv.venue.id}`"
                   class="near-me-venue-card"
@@ -354,7 +330,7 @@
                   <div class="near-me-card-body">
                   <div class="near-me-card-header">
                     <div class="near-me-card-meta">
-                      <span class="near-me-card-index">#{{ index + 1 }}</span>
+                      <span class="near-me-card-index">#{{ index + 2 }}</span>
                       <h3 class="near-me-card-title">{{ rv.venue.name }}</h3>
                     </div>
                     <div class="near-me-card-badges">
@@ -528,6 +504,9 @@ const nearestVenue = computed(() =>
   rankedVenues.value.length > 0 ? rankedVenues.value[0] : null
 );
 
+// The nearest venue is the hero card, so the list carries the rest.
+const listVenues = computed(() => rankedVenues.value.slice(1));
+
 // Computed sheet height CSS variable value
 const currentSheetHeightCss = computed(() => {
   if (isDesktop.value) return '0px';
@@ -629,7 +608,7 @@ function checkScreenSize() {
 }
 
 function walkLabel(distanceMetres: number): string {
-  return `${estimateWalkMinutes(distanceMetres)} min walk${isRankedFromBase.value ? ' from Base' : ''}`;
+  return `${estimateWalkMinutes(distanceMetres)} min walk from ${isRankedFromBase.value ? 'Base' : 'you'}`;
 }
 
 function tierPillStyle(value: TierValue) {
@@ -745,7 +724,9 @@ function selectVenueItem(venue: Venue, fromPinClick = false) {
 
   // Scroll corresponding row into view
   nextTick(() => {
-    const rowEl = document.getElementById(`near-me-row-${venue.id}`);
+    const rowEl =
+      document.getElementById(`near-me-row-${venue.id}`) ??
+      (nearestVenue.value?.venue.id === venue.id ? document.getElementById('nearest-hero-card') : null);
     if (rowEl) {
       rowEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
@@ -794,7 +775,7 @@ const statusBanner = computed(() => {
     return {
       type: 'warning',
       icon: '🎯',
-      text: 'Tap anywhere on the map to file your position. The Quorum awaits.',
+      text: 'Tap the map to set your position',
       action: {
         label: 'Cancel',
         handler: () => { isPickingLocation.value = false; },
@@ -815,9 +796,9 @@ const statusBanner = computed(() => {
     return {
       type: 'error',
       icon: '⚠️',
-      text: 'Location access withheld. Defaulting to Spinningfields Base. You may file your position manually.',
+      text: 'Location off · showing from Spinningfields',
       action: {
-        label: 'Set Location',
+        label: 'Set location',
         handler: () => { isPickingLocation.value = true; },
       },
     };
@@ -827,9 +808,9 @@ const statusBanner = computed(() => {
     return {
       type: 'error',
       icon: '⚠️',
-      text: 'Location services are unavailable. Spinningfields Base is active. You may set your position manually.',
+      text: 'Location unavailable · showing from Spinningfields',
       action: {
-        label: 'Set Location',
+        label: 'Set location',
         handler: () => { isPickingLocation.value = true; },
       },
     };
@@ -839,9 +820,9 @@ const statusBanner = computed(() => {
     return {
       type: 'error',
       icon: '⚠️',
-      text: `Location error: ${geo.errorMessage.value || 'unknown cause'}. Defaulting to Spinningfields Base.`,
+      text: 'Location error · showing from Spinningfields',
       action: {
-        label: 'Set Location',
+        label: 'Set location',
         handler: () => { isPickingLocation.value = true; },
       },
     };
@@ -852,7 +833,7 @@ const statusBanner = computed(() => {
     return {
       type: 'warning',
       icon: '🗺️',
-      text: 'You appear to be outside Manchester. Spinningfields framing is maintained. The Ledger awaits your return.',
+      text: 'Outside Manchester · showing Spinningfields',
       action: { label: 'Return to Ledger', handler: close },
     };
   }
@@ -861,7 +842,7 @@ const statusBanner = computed(() => {
     return {
       type: 'manual',
       icon: '📍',
-      text: 'Position filed manually.',
+      text: 'Position set manually',
       action: {
         label: 'Resume GPS',
         handler: () => {
@@ -877,7 +858,7 @@ const statusBanner = computed(() => {
     return {
       type: 'info',
       icon: '📡',
-      text: 'Location approximate — accuracy radius exceeds 100 m. Results may vary.',
+      text: 'Location approximate · results may vary',
       action: null,
     };
   }
@@ -1702,30 +1683,8 @@ onUnmounted(() => {
   background-color: var(--near-me-gold);
 }
 
-.near-me-sheet-snap-controls {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
 
-.near-me-snap-action-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(197, 155, 39, 0.4);
-  color: #f9f7f1;
-  width: 26px;
-  height: 26px;
-  border-radius: 9999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
 
-.near-me-snap-action-btn:hover {
-  background-color: var(--near-me-gold);
-  color: #1a1e24;
-}
 
 /* Tier Filter Chips within Panel (chip styling comes from the shared TierFilterChips) */
 .near-me-panel-filters {
@@ -2305,7 +2264,6 @@ onUnmounted(() => {
 
 .near-me-control-btn:focus-visible,
 .near-me-close-btn:focus-visible,
-.near-me-snap-action-btn:focus-visible,
 .near-me-snap-btn:focus-visible {
   outline-color: var(--ledger-gold);
 }
@@ -2368,16 +2326,7 @@ onUnmounted(() => {
   background-color: var(--ledger-border);
 }
 
-.near-me-snap-action-btn {
-  background-color: var(--ledger-paper);
-  border-color: var(--ledger-border);
-  color: var(--ledger-deep);
-}
 
-.near-me-snap-action-btn:hover {
-  background-color: var(--ledger-deep);
-  color: var(--ledger-parchment);
-}
 
 .near-me-panel-filters {
   border-bottom-color: var(--ledger-border);
@@ -2671,13 +2620,9 @@ onUnmounted(() => {
   flex: 1;
 }
 
-.near-me-snap-action-btn {
-  width: 40px;
-  height: 40px;
-}
 
 .near-me-snap-btn {
-  min-height: 40px;
+  min-height: 44px;
 }
 
 .near-me-control-btn {
