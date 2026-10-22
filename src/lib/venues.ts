@@ -64,8 +64,8 @@ export async function recordVenueRevision(db: Pick<Database, 'insert'>, venue: V
 /**
  * Writes `changes` to a venue and records the revision, in one transaction
  * (a savepoint when `db` is already a transaction). A Chair's change is
- * stamped with who and when; a script's (`actor` null) leaves those as they
- * were. Null when the venue does not exist.
+ * stamped with who and when; a script's (`actor` null) adds no stamp of its
+ * own, though `changes` may still carry one. Null when the venue does not exist.
  */
 export function updateVenue(
   db: Database | Tx,

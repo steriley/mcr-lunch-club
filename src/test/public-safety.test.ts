@@ -33,7 +33,6 @@ const FORBIDDEN = [/tier[_-]?proposals?/i, /tierProposal/, /decline[_-]?reason/i
 describe('public code never touches tier proposals', () => {
   it('checks the public pages, API routes, components and serializers', () => {
     assert.ok(publicFiles.some((file) => file.endsWith(`pages${path.sep}index.astro`)));
-    assert.ok(publicFiles.some((file) => file.endsWith(`venues.json.ts`)));
     assert.ok(publicFiles.some((file) => file.endsWith(`suggestions.ts`) && file.includes(`${path.sep}api${path.sep}`)));
   });
 

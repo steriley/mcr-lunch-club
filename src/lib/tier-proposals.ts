@@ -24,7 +24,6 @@ import { updateVenue } from '@/lib/venues';
  * admin can decide it.
  */
 
-
 export const DECLINE_REASON_MAX = 1000;
 
 export type ProposalError =

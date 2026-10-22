@@ -49,7 +49,7 @@ async function createUser() {
   }
 
   isCreating.value = true;
-  const result = await apiFetch('/api/admin/users', { method: 'POST', body: checked.data, fallback: 'Unable to create this account.' });
+  const result = await apiFetch<{ user: { id: string; email: string; name: string; role?: string | null; createdAt?: string | null } }>('/api/admin/users', { method: 'POST', body: checked.data, fallback: 'Unable to create this account.' });
   isCreating.value = false;
   if (!result.ok) {
     Object.assign(errors, result.fields);

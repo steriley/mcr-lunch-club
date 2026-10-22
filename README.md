@@ -29,8 +29,8 @@ Built on **Astro 7** (server output on Vercel) with targeted **Vue 3 islands** h
   - `/hall-of-shame` — The Bribery & Improper Benefit Attempt Record
   - `/manifesto` — The Constitutional Articles of Governance
   - `/inspections` — The Complete Chronological Audit Log: every confirmed inspection (dual-verified or legacy) of a public venue
-  - `/api/venues.json` — Public venues as JSON
   - `/api/suggestions` — Public "Suggest a Venue" endpoint (same-origin only, rate limited)
+  - `/api/weather/[step]` — Weather forecast for the home page card
   - `/admin/*` — The Chairs' Area (sign-in required; see below)
 - **Vue 3 Islands (`src/components/islands/`)**:
   - `LunchMap.vue` (`client:load`) — Leaflet map with custom tier pins, walking isochrones, and the 2.5-mile boundary.
@@ -44,6 +44,13 @@ Built on **Astro 7** (server output on Vercel) with targeted **Vue 3 islands** h
   - `src/stores/ledger.ts` holds the public venues and confirmed inspections the server embeds in the page (`LedgerCanon.astro`).
 - **Data Validation**:
   - Zod schemas in `src/lib/venue-schema.ts`, `src/lib/bribery-schema.ts`, `src/lib/suggestion-schema.ts` and `src/lib/user-schema.ts`, shared by the APIs and the forms.
+- **Shared modules** (one place for each rule):
+  - `src/lib/tiers.ts` — every per-tier fact (label, URL slug, colours, banner, mottos, rule), keyed by the stored value.
+  - `src/lib/venues.ts` — the venue store: `updateVenue()` writes a venue row and its revision in one transaction; `saveVenue()` and `rerouteVenue()` add the slug check and the ORS walking route.
+  - `src/lib/admin-api.ts` — `adminRoute(spec, handler)` wraps every `/api/admin` handler (session, role, ban, origin, params, body, error mapping). `src/test/routes/admin-auth.test.ts` calls every admin route signed out, as a non-admin, as a banned admin and from a foreign origin.
+  - `src/lib/api-fetch.ts` — `apiFetch()`, the browser side of the `{ error, fields }` error shape, used by the islands.
+  - `src/lib/roles.ts` — who counts as an active Chair; shared by sign-in, `requireAdmin` and the two-Chair counts.
+  - Domain modules in `src/lib` never import `admin-api` or `auth` (`src/test/layering.test.ts`). Islands may use `import type` from server modules; `pnpm check:bundle` inspects the real built output.
 
 ---
 
@@ -55,6 +62,7 @@ cp .env.example .env.local   # then fill it in; see "Admin setup"
 pnpm dev                     # http://localhost:4321
 pnpm build                   # production build (Vercel output)
 pnpm test                    # unit tests
+pnpm typecheck               # astro check + vue-tsc
 pnpm test:db                 # database integration tests (needs TEST_DATABASE_URL, see Scripts)
 ```
 
@@ -282,9 +290,11 @@ not sign you in on the `vercel.app` address; sign in on each separately.
   never appear on the map or in Near Me. A closed venue whose tier is Gone But
   Not Forgotten stays on that tier page and its own page, labelled
   "Permanently closed"; any other closed venue is hidden (its page 404s).
-- **Public ordering**: within a tier, venues are listed by walking time (unknown
-  times last), then name; Rejected and Gone But Not Forgotten are alphabetical
-  (`src/lib/venue-order.ts`).
+- **Public ordering**: tiers are listed in the order of the filter chips
+  (Approved, Under Consideration, To Be Assessed, If We Must, Rejected, Gone But
+  Not Forgotten; `TIERS` in `src/lib/tiers.ts`). Within a tier, venues are
+  listed by walking time (unknown times last), then name; Rejected and Gone But
+  Not Forgotten are alphabetical (`src/lib/venue-order.ts`).
 - **Security**: sessions last 7 days with daily sliding refresh (`SESSION_SETTINGS`
   in `src/lib/auth-config.ts`). Sign-in is limited to 5 attempts per minute per
   IP, stored in the database so it holds across serverless invocations. Admin
@@ -319,7 +329,7 @@ mcr-lunch-club/
 │   │   └── WeatherCard.vue
 │   ├── data/                  # Original datasets: import source; inspections still read from here
 │   ├── db/                    # Drizzle schema (app + Better Auth)
-│   ├── lib/                   # Auth, database, validation, public data, map and admin helpers
+│   ├── lib/                   # Auth, database, validation, public data, map and admin helpers (see Shared modules)
 │   ├── layouts/               # Public and admin page shells
 │   ├── pages/
 │   │   ├── index.astro        # Sovereign Map view
@@ -340,7 +350,11 @@ mcr-lunch-club/
 │   ├── migrate-deploy.ts      # pnpm db:migrate:deploy (Vercel builds)
 │   ├── seed-chair.ts          # pnpm db:seed
 │   ├── import-existing-content.ts  # pnpm db:import
-│   └── check-admin-security.ts     # pnpm check:security
+│   ├── import-legacy-inspections.ts # pnpm inspections:import-legacy
+│   ├── backfill-routes.ts     # pnpm routes:backfill
+│   ├── check-admin-security.ts     # pnpm check:security
+│   ├── check-client-bundle.ts      # pnpm check:bundle
+│   └── test-db.ts             # pnpm test:db
 ├── manchester_lunch_venues.csv     # The club's original list of lunch spots (reference only)
 └── astro.config.mjs
 ```

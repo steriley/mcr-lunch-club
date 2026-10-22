@@ -91,7 +91,7 @@ async function handle(item: QueueItem) {
     form.set('thumb', optimised.thumb, 'thumb.webp');
     form.set('width', String(optimised.width));
     form.set('height', String(optimised.height));
-    const result = await apiFetch(base.value, {
+    const result = await apiFetch<{ image: SerializedVenueImage }>(base.value, {
       method: 'POST',
       body: form,
       fallback: 'Upload failed. Please try again.',
@@ -137,7 +137,7 @@ function dismiss(item: QueueItem) {
 async function send(image: SerializedVenueImage, method: 'PATCH' | 'DELETE', body?: unknown) {
   error.value = '';
   busy[image.id] = true;
-  const result = await apiFetch(`${base.value}/${image.id}`, {
+  const result = await apiFetch<{ image: SerializedVenueImage; promoted?: SerializedVenueImage | null }>(`${base.value}/${image.id}`, {
     method,
     body,
     fallback: 'That did not save. Please try again.',
