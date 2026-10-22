@@ -155,8 +155,18 @@ export function getPublicMapApiKey(): string | undefined {
   return optional('PUBLIC_MAP_API_KEY');
 }
 
+/** The classic read-write token; undefined when the store uses OIDC auth instead. */
 export function getBlobToken(): string | undefined {
   return optional('BLOB_READ_WRITE_TOKEN');
+}
+
+/**
+ * Whether photo uploads can work: either the classic token, or a store ID,
+ * which newer Blob stores use with the deployment's OIDC token (the SDK picks
+ * that up itself when no token is passed).
+ */
+export function isBlobConfigured(): boolean {
+  return Boolean(getBlobToken() ?? optional('BLOB_STORE_ID'));
 }
 
 export type BlobEnvPrefix = 'prod' | 'preview' | 'dev';

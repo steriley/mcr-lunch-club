@@ -1,5 +1,5 @@
 import { del, put } from '@vercel/blob';
-import { blobEnvPrefix } from '@/lib/env';
+import { blobEnvPrefix, isBlobConfigured } from '@/lib/env';
 import { isOwnedBlobUrl } from '@/lib/venue-images';
 
 /**
@@ -21,13 +21,13 @@ export function imageBlobKey(venueId: string, imageId: string, variant: ImageVar
   return `${blobEnvPrefix()}/venues/${venueId}/${imageId}-${variant}.webp`;
 }
 
-export async function putImageBlob(token: string, key: string, body: Blob | ArrayBuffer | Uint8Array): Promise<string> {
+export async function putImageBlob(token: string | undefined, key: string, body: Blob | ArrayBuffer | Uint8Array): Promise<string> {
   const result = await blobClient.put(key, body as Blob, {
     access: 'public',
     contentType: 'image/webp',
     addRandomSuffix: false,
     cacheControlMaxAge: ONE_YEAR_SECONDS,
-    token,
+    ...(token ? { token } : {}),
   });
   return result.url;
 }
@@ -40,12 +40,12 @@ export async function putImageBlob(token: string, key: string, body: Blob | Arra
 export async function deleteOwnedBlobs(token: string | undefined, urls: (string | null | undefined)[], context: string): Promise<void> {
   const owned = urls.filter((url): url is string => isOwnedBlobUrl(url));
   if (!owned.length) return;
-  if (!token) {
+  if (!isBlobConfigured()) {
     console.error(`[admin] ${context}: blob cleanup skipped, uploads are not configured.`);
     return;
   }
   try {
-    await blobClient.del(owned, { token });
+    await blobClient.del(owned, token ? { token } : {});
   } catch (error) {
     console.error(`[admin] ${context}: blob cleanup failed:`, error instanceof Error ? error.message : 'Unknown error');
   }
