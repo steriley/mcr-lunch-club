@@ -4,40 +4,13 @@ import {
   CAPTION_MAX,
   FULL_MAX_EDGE,
   FULL_QUALITY,
-  IMAGE_CONTENT_TYPES,
   MAX_FULL_BYTES,
-  MAX_IMAGE_BYTES,
   MAX_IMAGES_PER_VENUE,
   MAX_THUMB_BYTES,
   THUMB_MAX_EDGE,
   THUMB_QUALITY,
   focalStyle,
-  imageUploadPath,
 } from './image-upload';
-
-describe('imageUploadPath', () => {
-  it('slugifies the base name and keeps the extension', () => {
-    assert.equal(imageUploadPath('My Lunch Photo!.PNG'), 'venues/my-lunch-photo.png');
-  });
-
-  it('defaults the extension and name', () => {
-    assert.equal(imageUploadPath('noextension'), 'venues/noextension.jpg');
-    assert.equal(imageUploadPath('???.webp'), 'venues/image.webp');
-  });
-
-  it('truncates long names to 60 characters', () => {
-    const path = imageUploadPath(`${'a'.repeat(100)}.jpg`);
-    assert.equal(path, `venues/${'a'.repeat(60)}.jpg`);
-  });
-});
-
-describe('image limits', () => {
-  it('allows common web image types up to 4MB', () => {
-    assert.ok(IMAGE_CONTENT_TYPES.includes('image/png'));
-    assert.ok(!IMAGE_CONTENT_TYPES.includes('image/svg+xml'));
-    assert.equal(MAX_IMAGE_BYTES, 4 * 1024 * 1024);
-  });
-});
 
 describe('venue image settings', () => {
   it('match the agreed starting values', () => {

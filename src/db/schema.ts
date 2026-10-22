@@ -21,7 +21,6 @@ export const venues = pgTable('venues', {
   pullQuote: text('pull_quote'),
   lunchSpecial: text('lunch_special'),
   websiteUrl: text('website_url'),
-  imageUrl: text('image_url'),
   // Fields carried over from the original static content.
   cost: text('cost').notNull().default('££'),
   cuisine: cuisineEnum('cuisine').notNull().default('other'),
@@ -192,7 +191,7 @@ export const goldenCut = pgTable(
  * Venue photos (#35). Each has a full (~1600px) and a thumbnail (~640px) WebP
  * variant, both uncropped. Exactly one per venue is primary. The caption
  * doubles as alt text. Focal point is a percentage (centre when null). Rows
- * migrated from the old venues.image_url have no thumbnail, size or uploader.
+ * migrated from the old single image link (cutover migration 0013) have no thumbnail, size or uploader.
  */
 export const venueImages = pgTable(
   'venue_images',

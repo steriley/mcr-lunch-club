@@ -64,7 +64,7 @@ pnpm test:db                 # database integration tests (needs TEST_DATABASE_U
 
 The Chairs' Area lives at `/admin`. Authentication is Better Auth (email and
 password, **no public sign-up**), data is Neon Postgres through Drizzle ORM, and
-images go to Vercel Blob. The section name ("Chairs' Area") is set once in
+venue photos go to Vercel Blob. The section name ("Chairs' Area") is set once in
 `src/lib/admin-config.ts`.
 
 ### Environment variables
@@ -82,7 +82,7 @@ Environment Variables**. Never commit real values.
 | `BETTER_AUTH_URL` | Main site origin: `http://localhost:4321` locally, `https://mcrlunchclub.com` on Vercel Production. Not needed for Preview, which uses its own Vercel URL. See *Signing in on more than one domain* below. |
 | `BETTER_AUTH_ALLOWED_HOSTS` | Optional, comma-separated: extra hosts the Chairs' Area works on, e.g. the production `mcr-lunch-club.vercel.app` alias. |
 | `PRODUCTION_DATABASE_HOST` | Preview builds: the production Neon host (e.g. `ep-calm-river-123456.eu-west-2.aws.neon.tech`, pooled or direct). Preview builds refuse to migrate a database on that endpoint. See *Preview deployments* below. |
-| `BLOB_READ_WRITE_TOKEN` | Vercel Blob token for venue image uploads. Created when you connect a Blob store to the project; without it the form accepts image URLs only. |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob token for venue photo uploads. Created when you connect a Blob store to the project; without it the photo section is read-only. Server-only: `pnpm check:bundle` fails if it reaches the browser bundle. |
 | `SEED_CHAIR_EMAIL` / `SEED_CHAIR_NAME` / `SEED_CHAIR_PASSWORD` | Only for `pnpm db:seed`. Remove them from your machine afterwards. |
 | `ORS_API_KEY` | [OpenRouteService](https://openrouteservice.org) key, **server-only** (never prefix it with `PUBLIC_`). Powers the admin venue location search and the walking distance and time from HQ. Without it venues still save, but the location must be entered manually and routes stay "pending". `OPENROUTESERVICE_API_KEY` is accepted as an alternative name. Free Standard plan: 2,000 directions a day (40 a minute); Matrix has its own lower daily quota. Visitors never trigger requests, only admin saves and the backfill. |
 | `METOFFICE_API_KEY`, `PUBLIC_MAP_API_KEY` | Optional weather and map tile keys. |
@@ -124,7 +124,10 @@ Use a Neon **branch** so local work never touches production data:
    `vercel.app` address too. For Preview set a different `BETTER_AUTH_SECRET`
    and `PRODUCTION_DATABASE_HOST` (see *Preview deployments* below).
 3. **Blob (optional)**: create a Blob store under **Storage** and connect it to
-   the project, which adds `BLOB_READ_WRITE_TOKEN`.
+   the project, which adds `BLOB_READ_WRITE_TOKEN` (Production and Preview).
+   Keys are prefixed `prod/`, `preview/` or `dev/` by environment, so local and
+   preview uploads never mix with production. Mind the Hobby plan's Blob limit:
+   going over loses access to Blob rather than billing.
 4. **Migrations run automatically** as the last step of every Vercel build
    (`pnpm test && pnpm build && pnpm db:migrate:deploy`), so they only run
    once the tests and build have passed:
@@ -286,8 +289,22 @@ not sign you in on the `vercel.app` address; sign in on each separately.
   in `src/lib/auth-config.ts`). Sign-in is limited to 5 attempts per minute per
   IP, stored in the database so it holds across serverless invocations. Admin
   pages send `Cache-Control: no-store` and `noindex`; admin API writes must come
-  from the site's own origin. Image uploads accept JPEG, PNG, WebP, AVIF and GIF
-  up to 4 MB.
+  from the site's own origin.
+- **Venue photos** (`venue_images`): up to 5 per venue, added from the venue's
+  edit page (not the create form) and applied immediately, separately from the
+  form's Save button. Any Chair can add, delete, caption, set the focal point
+  or change the primary photo; adds, removals and primary changes are logged in
+  the venue history as text. The browser converts each photo to two WebP files
+  (1600px at quality 80, 640px at quality 75; constants in
+  `src/lib/image-upload.ts`) with `@jsquash/webp`, one photo at a time, which
+  strips EXIF/GPS. There is no unoptimised fallback: a format the browser cannot
+  read (e.g. HEIC on desktop Chrome or Firefox) shows an error with Retry. The
+  server re-checks both files really are WebP and within 800 KB / 1600px and
+  150 KB / 640px. The public site shows only the primary photo: the thumbnail
+  in lists, map popups, the venue sheet and Near Me; the full image on the
+  venue page and The Golden Cut, cropped at the focal point. A venue with no
+  photo shows no image area. Photos migrated from the old single image link
+  have no thumbnail and use the full image.
 - **Hosting plan**: Vercel's Hobby plan is for personal, non-commercial use. If
   the site ever takes payments, sponsorship or ads, move to a Pro plan.
 
