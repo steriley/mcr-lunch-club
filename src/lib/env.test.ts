@@ -4,6 +4,7 @@ import {
   blobEnvPrefix,
   getAuthEnvironment,
   getBlobToken,
+  isBlobConfigured,
   getDatabaseDriver,
   getMigrationDatabaseUrl,
   getPreviewOrigins,
@@ -29,6 +30,7 @@ const KEYS = [
   'WEATHER_API_KEY',
   'PUBLIC_MAP_API_KEY',
   'BLOB_READ_WRITE_TOKEN',
+  'BLOB_STORE_ID',
   'VERCEL_ENV',
   'VERCEL_URL',
   'VERCEL_BRANCH_URL',
@@ -214,6 +216,15 @@ describe('optional keys', () => {
     assert.equal(getWeatherApiKey(), 'primary');
     process.env.BLOB_READ_WRITE_TOKEN = 'tok';
     assert.equal(getBlobToken(), 'tok');
+  });
+
+  it('isBlobConfigured accepts the token or the OIDC store ID, and nothing else', () => {
+    assert.equal(isBlobConfigured(), false);
+    process.env.BLOB_STORE_ID = 'store_abc';
+    assert.equal(isBlobConfigured(), true);
+    delete process.env.BLOB_STORE_ID;
+    process.env.BLOB_READ_WRITE_TOKEN = 'tok';
+    assert.equal(isBlobConfigured(), true);
   });
 });
 
