@@ -1173,12 +1173,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "image_url": {
+          "name": "image_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "cost": {
           "name": "cost",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "default": "'\u00a3\u00a3'"
+          "default": "'££'"
         },
         "cuisine": {
           "name": "cuisine",

@@ -11,8 +11,12 @@ export const MAX_IMAGES_PER_VENUE = 5;
 export const FULL_MAX_EDGE = 1600;
 export const THUMB_MAX_EDGE = 640;
 
-/** WebP encoder quality (0 to 100) for each variant. */
-export const FULL_QUALITY = 80;
+/**
+ * WebP encoder quality (0 to 100) for each variant. The full variant starts at
+ * the first quality and steps down the list until it fits MAX_FULL_BYTES, so a
+ * noisy photo still uploads instead of failing the same way on every retry.
+ */
+export const FULL_QUALITIES = [80, 65, 50] as const;
 export const THUMB_QUALITY = 75;
 
 /** Largest accepted upload for each variant. */

@@ -57,8 +57,10 @@ const toNumber = (value: string | null) => (value === null ? null : Number(value
 
 /** JSON-safe venue for admin islands and revision snapshots. */
 export function serializeVenue(venue: VenueRow) {
+  // The old single image link is no longer edited here; photos live in venue_images (#35).
+  const { imageUrl: _imageUrl, ...fields } = venue;
   return {
-    ...venue,
+    ...fields,
     latitude: toNumber(venue.latitude),
     longitude: toNumber(venue.longitude),
     distanceMiles: toNumber(venue.distanceMiles),

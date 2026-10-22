@@ -295,7 +295,7 @@ not sign you in on the `vercel.app` address; sign in on each separately.
   form's Save button. Any Chair can add, delete, caption, set the focal point
   or change the primary photo; adds, removals and primary changes are logged in
   the venue history as text. The browser converts each photo to two WebP files
-  (1600px at quality 80, 640px at quality 75; constants in
+  (1600px at quality 80, stepping down to 65 then 50 if it exceeds 800 KB, and 640px at quality 75; constants in
   `src/lib/image-upload.ts`) with `@jsquash/webp`, one photo at a time, which
   strips EXIF/GPS. There is no unoptimised fallback: a format the browser cannot
   read (e.g. HEIC on desktop Chrome or Firefox) shows an error with Retry. The
