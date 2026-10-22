@@ -19,9 +19,10 @@ const currentPath = Astro.url.pathname;
 const inspectionCount = await countPublicInspections().catch(() => null);
 const currentYear = new Date().getFullYear();
 const navigation = [
-  { href: '/manifesto', label: 'The Manifesto', icon: '📜' },
-  { href: '/tiers/approved', label: 'Tiers', icon: '🏅' },
-  { href: '/inspections', label: 'Inspections', icon: '▤' },
+  { href: '/manifesto', label: 'The Manifesto', icon: 'history_edu' },
+  { href: '/tiers/approved', label: 'Tiers', icon: 'military_tech' },
+  { href: '/inspections', label: 'Inspections', icon: 'fact_check' },
+  { href: '/#where-to-today', label: 'Where to today?', icon: 'restaurant', opensWhereToday: true },
 ];
 ---
 
@@ -59,8 +60,9 @@ const navigation = [
                 href={item.href}
                 class:list={['site-nav-link', active && 'is-active']}
                 aria-current={active ? 'page' : undefined}
+                data-open-where-today={item.opensWhereToday ? '' : undefined}
               >
-                <span aria-hidden="true">{item.icon}</span>
+                <span class="material-symbols-outlined nav-icon" aria-hidden="true">{item.icon}</span>
                 <span>{item.label}</span>
                 {item.label === 'Inspections' && inspectionCount !== null && <span class="nav-count">{inspectionCount}</span>}
               </a>
@@ -68,22 +70,11 @@ const navigation = [
           })}
         </nav>
 
-        <a href="/#where-to-today" class="header-lunch-link" data-open-where-today>
-          <span aria-hidden="true">◉</span>
-          <span>Where to today?</span>
-          <span class="header-time">12:25</span>
-        </a>
-
         <details class="mobile-menu">
           <summary class="mobile-menu-trigger" aria-label="Menu">
             <span class="mobile-menu-bars" aria-hidden="true"><span></span><span></span><span></span></span>
           </summary>
           <div class="mobile-menu-panel">
-            <a href="/#where-to-today" class="header-lunch-link" data-open-where-today>
-              <span aria-hidden="true">◉</span>
-              <span>Where to today?</span>
-              <span class="header-time">12:25</span>
-            </a>
             <nav class="site-nav" aria-label="Mobile navigation">
               {navigation.map((item) => {
                 const active = item.href === '/tiers/approved'
@@ -94,8 +85,9 @@ const navigation = [
                     href={item.href}
                     class:list={['site-nav-link', active && 'is-active']}
                     aria-current={active ? 'page' : undefined}
+                    data-open-where-today={item.opensWhereToday ? '' : undefined}
                   >
-                    <span aria-hidden="true">{item.icon}</span>
+                    <span class="material-symbols-outlined nav-icon" aria-hidden="true">{item.icon}</span>
                     <span>{item.label}</span>
                     {item.label === 'Inspections' && inspectionCount !== null && <span class="nav-count">{inspectionCount}</span>}
                   </a>

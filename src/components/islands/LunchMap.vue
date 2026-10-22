@@ -1,34 +1,34 @@
 <template>
-  <div class="relative isolate w-full h-full overflow-hidden bg-[#f4efe4] rounded-lg border border-[#dcd6c8] shadow-inner">
-    <!-- Map Container -->
-    <div ref="mapContainer" class="w-full h-full z-0"></div>
-
-    <!-- Map Overlays / Quick Status Bar -->
-    <div class="absolute top-3 left-3 z-[1000] max-w-[calc(100%-1.5rem)]">
-      <div class="map-status-pill">
-        <span class="map-status-dot" aria-hidden="true"></span>
-        <span class="map-status-base">Base: Spinningfields</span>
-        <span class="map-status-divider" aria-hidden="true"></span>
-        <span class="map-status-count">{{ visibleVenuesCount }} / {{ totalVenuesCount }} <span>Active Pins</span></span>
+  <div class="relative isolate flex flex-col w-full h-full overflow-hidden bg-[#f4efe4] rounded-2xl border border-[#dcd6c8] shadow-inner">
+    <!-- Map Header Strip -->
+    <header class="map-header">
+      <div class="map-header-title">
+        <span class="material-symbols-outlined map-header-icon" aria-hidden="true">explore</span>
+        <div class="map-header-text">
+          <span class="map-header-kicker">Cartographic Projection</span>
+          <span class="map-header-subtitle">Lunch Club HQ: Spinningfields</span>
+        </div>
       </div>
-    </div>
+      <span class="map-header-count">{{ visibleVenuesCount }} / {{ totalVenuesCount }} Active Pins</span>
+    </header>
 
-    <!-- Quick Map Controls (Floating bottom right) -->
-    <div class="absolute bottom-4 right-4 z-[1000]">
-      <button
-        id="btn-near-me"
-        @click="openNearMe"
-        class="bg-[#1a1e24] hover:bg-[#8b1e22] text-[#f9f7f1] px-3.5 py-2 rounded-full shadow-lg border border-[#c59b27] transition-all flex items-center gap-1.5 text-xs font-bold tracking-wide cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-[#c59b27]"
-        title="Open Near Me locate mode"
-        aria-label="Open Near Me locate mode"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-[#c59b27]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
-        </svg>
-        <span>Near Me</span>
-      </button>
+    <!-- Map Container (positioning context for the floating controls) -->
+    <div class="relative w-full flex-1 min-h-0">
+      <div ref="mapContainer" class="absolute inset-0 z-0"></div>
 
+      <!-- Quick Map Controls (Floating top left) -->
+      <div class="absolute top-3 left-3 z-[1000]">
+        <button
+          id="btn-near-me"
+          @click="openNearMe"
+          class="bg-[#1a1e24] hover:bg-[#8b1e22] text-[#f9f7f1] px-5 py-3 rounded-full shadow-lg border border-[#c59b27] transition-all flex items-center gap-2 text-sm font-bold tracking-wide cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-[#c59b27]"
+          title="Open Near Me locate mode"
+          aria-label="Open Near Me locate mode"
+        >
+          <span class="material-symbols-outlined near-me-icon" aria-hidden="true">my_location</span>
+          <span>Near Me</span>
+        </button>
+      </div>
     </div>
 
     <!-- Walking Rings Legend Toggle -->
