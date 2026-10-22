@@ -7,6 +7,7 @@ import VenueSheet from '@/components/islands/VenueSheet.vue';
 import WhereToday from '@/components/islands/WhereToday.vue';
 import WeatherCard from '@/components/WeatherCard.vue';
 import SuggestModal from '@/components/islands/SuggestModal.vue';
+import BenchPillar from '@/components/BenchPillar.astro';
 import BenchWalk from '@/components/BenchWalk.astro';
 import LedgerCanon from '@/components/LedgerCanon.astro';
 import { formatDate } from '@/lib/dates';
@@ -221,52 +222,7 @@ const fieldShortcuts = [
           <div class="bench-pillars-section">
             <p class="bench-pillars-label">{isGoldenCut ? 'Chair-inspected & approved' : 'Approved & on the record'}</p>
             <div class="bench-pillars">
-              {pillars.map((pillar) => (
-                <article class="bench-pillar">
-                  <div class="bench-pillar-main">
-                    <div class="bench-thumb">
-                      <span class="bench-placeholder" aria-hidden="true">
-                        <img src="/brand/approved-sticker.png" alt="" />
-                      </span>
-                      {pillar.image && (
-                        <img
-                          class="bench-image"
-                          src={pillar.image.thumbUrl}
-                          alt=""
-                          width="80"
-                          height="80"
-                          style={{ objectPosition: focalStyle(pillar.image) }}
-                          loading="lazy"
-                          decoding="async"
-                          onerror="this.onerror=null;this.parentElement.classList.add('is-placeholder')"
-                        />
-                      )}
-                    </div>
-                    <div class="bench-pillar-copy">
-                      <div class="bench-pillar-title-row">
-                        <h3 class="bench-pillar-name">
-                          <a class="bench-pillar-link" href={pillar.href}>
-                            {pillar.name}
-                          </a>
-                        </h3>
-                        <span class="bench-cost">{pillar.cost}</span>
-                      </div>
-                      {pillar.lastInspection && <p class="bench-last">Last Inspection: {pillar.lastInspection}</p>}
-                      {pillar.quote ? (
-                        <p class="bench-pillar-text is-quote">{pillar.quote}</p>
-                      ) : (
-                        pillar.eatLikeUs && <p class="bench-pillar-text">Eat like us: {pillar.eatLikeUs}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div class="bench-telemetry">
-                    <BenchWalk walk={pillar.walk} venueName={pillar.name} />
-                    {pillar.inspectionCount > 0 && (
-                      <span class="bench-count">{pillar.inspectionCount} {pillar.inspectionCount === 1 ? 'Inspection' : 'Inspections'}</span>
-                    )}
-                  </div>
-                </article>
-              ))}
+              {pillars.map((pillar) => <BenchPillar pillar={pillar} />)}
             </div>
           </div>
         )}
