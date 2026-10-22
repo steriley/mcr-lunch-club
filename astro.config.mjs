@@ -8,6 +8,8 @@ export default defineConfig({
   adapter: vercel(),
   integrations: [vue()],
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    // The WebP encoder loads its .wasm relative to its own module; pre-bundling breaks that path in dev.
+    optimizeDeps: { exclude: ['@jsquash/webp'] }
   }
 });

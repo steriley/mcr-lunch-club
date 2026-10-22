@@ -1,13 +1,14 @@
 /**
- * Run after `pnpm build`: fails if the browser bundle contains the ORS key
- * (its variable name, or its value when ORS_API_KEY is set locally) or calls
- * OpenRouteService directly. Only the server may talk to ORS.
+ * Run after `pnpm build`: fails if the browser bundle contains a server secret
+ * (the ORS key or the Vercel Blob read-write token: their variable names, or
+ * their values when set locally) or calls OpenRouteService directly. Only the
+ * server may talk to ORS or write to Blob.
  *
  *   pnpm build && pnpm check:bundle
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { getOrsApiKey } from '@/lib/env';
+import { getBlobToken, getOrsApiKey } from '@/lib/env';
 
 const CLIENT_DIRS = ['.vercel/output/static', 'dist/client'].filter((dir) => existsSync(dir));
 
@@ -23,9 +24,14 @@ function files(dir: string): string[] {
   });
 }
 
-const needles = ['ORS_API_KEY', 'api.openrouteservice.org'];
-const key = getOrsApiKey();
-if (key) needles.push(key);
+const needles = ['ORS_API_KEY', 'api.openrouteservice.org', 'BLOB_READ_WRITE_TOKEN'];
+const secrets = new Map<string, string>();
+for (const [name, value] of [['ORS_API_KEY', getOrsApiKey()], ['BLOB_READ_WRITE_TOKEN', getBlobToken()]] as const) {
+  if (value) {
+    needles.push(value);
+    secrets.set(value, name);
+  }
+}
 
 const problems: string[] = [];
 let scanned = 0;
@@ -34,7 +40,7 @@ for (const dir of CLIENT_DIRS) {
     scanned += 1;
     const text = readFileSync(file, 'utf8');
     for (const needle of needles) {
-      if (text.includes(needle)) problems.push(`${file} contains ${needle === key ? 'the ORS_API_KEY value' : needle}`);
+      if (text.includes(needle)) problems.push(`${file} contains ${secrets.has(needle) ? `the ${secrets.get(needle)} value` : needle}`);
     }
   }
 }
@@ -43,4 +49,4 @@ if (problems.length) {
   console.error(`Client bundle check failed:\n${problems.map((problem) => `  - ${problem}`).join('\n')}`);
   process.exit(1);
 }
-console.log(`Client bundle check passed (${scanned} files${key ? ', including the key value' : ''}).`);
+console.log(`Client bundle check passed (${scanned} files${secrets.size ? `, including the ${[...secrets.values()].join(' and ')} value${secrets.size > 1 ? 's' : ''}` : ''}).`);

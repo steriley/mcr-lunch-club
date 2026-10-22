@@ -5,7 +5,7 @@ import VenueForm from '@/components/islands/VenueForm.vue';
 import { venueSuggestions } from '@/db/schema';
 import { uuidParam } from '@/lib/admin-api';
 import { db } from '@/lib/db';
-import { getBlobToken, getPublicMapApiKey } from '@/lib/env';
+import { getPublicMapApiKey } from '@/lib/env';
 import { suggestionPrefill } from '@/lib/suggestions';
 
 export const prerender = false;
@@ -27,5 +27,5 @@ const prefill = usable ? suggestionPrefill(suggestion) : null;
     </p>
   )}
 
-  <VenueForm client:load mode="create" uploadsEnabled={Boolean(getBlobToken())} suggestion={prefill} mapApiKey={getPublicMapApiKey()} />
+  <VenueForm client:load mode="create" suggestion={prefill} mapApiKey={getPublicMapApiKey()} />
 </AdminLayout>

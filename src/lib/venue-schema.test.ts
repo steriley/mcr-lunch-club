@@ -87,8 +87,12 @@ describe('venueInputSchema', () => {
   it('only allows http(s) links', () => {
     assert.equal(venueInputSchema.safeParse({ ...valid, websiteUrl: 'https://example.com' }).success, true);
     assert.equal(venueInputSchema.safeParse({ ...valid, websiteUrl: 'javascript:alert(1)' }).success, false);
-    assert.equal(venueInputSchema.safeParse({ ...valid, imageUrl: 'ftp://example.com/a.png' }).success, false);
+    assert.equal(venueInputSchema.safeParse({ ...valid, mapSearchLink: 'ftp://example.com/a' }).success, false);
     assert.equal(venueInputSchema.parse({ ...valid, mapSearchLink: '' }).mapSearchLink, null);
+  });
+
+  it('ignores the old image link: photos are managed separately', () => {
+    assert.ok(!('imageUrl' in venueInputSchema.parse({ ...valid, imageUrl: 'https://example.com/a.jpg' })));
   });
 
   it('never accepts a hand-edited inspection date', () => {

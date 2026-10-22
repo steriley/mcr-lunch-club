@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
-import ImageUpload from './ImageUpload.vue';
 import PlaceSearch, { type PlaceCandidate } from './PlaceSearch.vue';
 import TierBadge from './TierBadge.vue';
 import TierProposalPanel from './TierProposalPanel.vue';
+import VenueImages from './VenueImages.vue';
 import AuditHistoryDrawer, { type AuditEntry } from './dossier/AuditHistoryDrawer.vue';
 import ConcordCard, { type VisitStatus } from './dossier/ConcordCard.vue';
 import DossierCard from './dossier/DossierCard.vue';
@@ -18,6 +18,7 @@ import { INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import { routeStatus, type RouteStatus } from '@/lib/route-status';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
 import { COST_BANDS, COST_BAND_LABELS, isOutsideUk, slugify, venueCreateSchema, venueInputSchema } from '@/lib/venue-schema';
+import type { SerializedVenueImage } from '@/lib/image-upload';
 
 /**
  * The venue dossier: the Chairs' edit page for one venue (and the new-venue
@@ -36,7 +37,6 @@ interface VenueData {
   pullQuote: string | null;
   lunchSpecial: string | null;
   websiteUrl: string | null;
-  imageUrl: string | null;
   cost: string;
   cuisine: string;
   distanceMiles: number | null;
@@ -90,20 +90,22 @@ const props = defineProps<{
   suggestion?: SuggestionPrefill | null;
   updatedByName?: string | null;
   uploadsEnabled?: boolean;
+  /** Edit mode: the venue's photos, which save through their own requests. */
+  images?: SerializedVenueImage[];
   dossier?: DossierContext | null;
   mapApiKey?: string;
 }>();
 
 const textFields = [
   'name', 'slug', 'address', 'latitude', 'longitude', 'pullQuote', 'lunchSpecial',
-  'websiteUrl', 'imageUrl', 'cost', 'cuisine',
+  'websiteUrl', 'cost', 'cuisine',
   'mapSearchLink',
 ] as const;
 type FormField = (typeof textFields)[number];
 
 const FIELD_LABELS: Record<FormField, string> = {
   name: 'Name', slug: 'Slug', address: 'Address', latitude: 'Latitude', longitude: 'Longitude', pullQuote: 'Pull quote',
-  lunchSpecial: 'Lunch special', websiteUrl: 'Website', imageUrl: 'Image', cost: 'Cost', cuisine: 'Cuisine', mapSearchLink: 'Map link',
+  lunchSpecial: 'Lunch special', websiteUrl: 'Website', cost: 'Cost', cuisine: 'Cuisine', mapSearchLink: 'Map link',
 };
 
 function toFormState(venue?: VenueData | null): Record<FormField, string> {
@@ -135,6 +137,8 @@ const savedSnapshot = ref(JSON.stringify(form));
 const saved = reactive({ name: props.venue?.name ?? '', slug: props.venue?.slug ?? '' });
 const timeline = ref<AuditEntry[]>(props.dossier?.timeline ?? []);
 const lastInspection = ref(props.venue?.lastInspectionDate ?? null);
+const images = ref<SerializedVenueImage[]>(props.images ?? []);
+const primaryImage = computed(() => images.value.find((image) => image.isPrimary) ?? null);
 
 const errors = reactive<Record<string, string>>({});
 const isSubmitting = ref(false);
@@ -274,7 +278,7 @@ const docketPreview = computed<DocketPreview>(() => ({
   distanceMiles: route.distanceMiles,
   pullQuote: form.pullQuote,
   lunchSpecial: form.lunchSpecial,
-  imageUrl: form.imageUrl,
+  imageUrl: primaryImage.value?.fullUrl ?? '',
   lastInspection: formatDate(lastInspection.value, { fallback: 'Awaiting assessment' }),
   publicUrl: isPublic.value ? `/venues/${saved.slug}` : null,
   hiddenText: isPublic.value ? null : visibilityText.value,
@@ -553,32 +557,34 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
         </DossierCard>
 
         <DossierCard id="media" title="Media & Archival Records" tag="Plate & telemetry" icon="image" :class="mobileOrder(6)">
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label class="dossier-label" for="venue-website">Website / official registry link</label>
-              <div class="flex gap-2">
-                <input id="venue-website" v-model="form.websiteUrl" type="url" class="dossier-input dossier-mono text-[13px]" placeholder="https://…" :aria-invalid="Boolean(errors.websiteUrl)" />
-                <a
-                  :href="/^https?:\/\//.test(form.websiteUrl) ? form.websiteUrl : undefined"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  :aria-disabled="!/^https?:\/\//.test(form.websiteUrl)"
-                  :class="['dossier-btn px-3', !/^https?:\/\//.test(form.websiteUrl) && 'pointer-events-none opacity-50']"
-                  aria-label="Open the website in a new tab"
-                >
-                  <DossierIcon name="external" :size="16" />
-                </a>
-              </div>
-              <span class="dossier-hint">Menu, map portal or licensing page.</span>
-              <span v-if="errors.websiteUrl" class="dossier-error">{{ errors.websiteUrl }}</span>
+          <div>
+            <label class="dossier-label" for="venue-website">Website / official registry link</label>
+            <div class="flex gap-2">
+              <input id="venue-website" v-model="form.websiteUrl" type="url" class="dossier-input dossier-mono text-[13px]" placeholder="https://…" :aria-invalid="Boolean(errors.websiteUrl)" />
+              <a
+                :href="/^https?:\/\//.test(form.websiteUrl) ? form.websiteUrl : undefined"
+                target="_blank"
+                rel="noopener noreferrer"
+                :aria-disabled="!/^https?:\/\//.test(form.websiteUrl)"
+                :class="['dossier-btn px-3', !/^https?:\/\//.test(form.websiteUrl) && 'pointer-events-none opacity-50']"
+                aria-label="Open the website in a new tab"
+              >
+                <DossierIcon name="external" :size="16" />
+              </a>
             </div>
-            <div>
-              <label class="dossier-label" for="venue-image">Masthead image asset (URL)</label>
-              <input id="venue-image" v-model="form.imageUrl" type="url" class="dossier-input dossier-mono text-[13px]" placeholder="https://…" :aria-invalid="Boolean(errors.imageUrl)" />
-              <span class="dossier-hint">A direct HTTPS image link{{ uploadsEnabled ? ', or upload below' : '' }}.</span>
-            </div>
+            <span class="dossier-hint">Menu, map portal or licensing page.</span>
+            <span v-if="errors.websiteUrl" class="dossier-error">{{ errors.websiteUrl }}</span>
           </div>
-          <ImageUpload v-model="form.imageUrl" :enabled="Boolean(uploadsEnabled)" :error="errors.imageUrl" :venue-name="form.name" />
+          <VenueImages
+            v-if="mode === 'edit' && venueId"
+            v-model:images="images"
+            :venue-id="venueId"
+            :venue-name="saved.name"
+            :uploads-enabled="Boolean(uploadsEnabled)"
+          />
+          <p v-else class="flex items-center gap-1.5 text-[13px] text-[var(--dossier-muted)]">
+            <DossierIcon name="image" :size="15" /> Photos can be added once the venue has been created.
+          </p>
         </DossierCard>
 
         <GovernanceCard

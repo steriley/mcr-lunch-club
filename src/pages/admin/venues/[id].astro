@@ -11,6 +11,7 @@ import { getBlobToken, getPublicMapApiKey } from '@/lib/env';
 import { describeInspection, getVisitStatus, latestVerifiedInspection } from '@/lib/inspections';
 import { countActiveAdmins, pendingProposalForVenue, serializeProposal } from '@/lib/tier-proposals';
 import { loadVenueTimeline } from '@/lib/venue-history';
+import { listVenueImages, serializeVenueImage } from '@/lib/venue-images';
 import { serializeVenue } from '@/lib/venues';
 
 export const prerender = false;
@@ -28,7 +29,7 @@ const nameOf = async (userId: string | null) => {
   return found ? found.name || found.email : null;
 };
 
-const [editorName, closerName, visitStatus, timeline, pendingProposal, verifiedInspection, activeAdmins] = await Promise.all([
+const [editorName, closerName, visitStatus, timeline, pendingProposal, verifiedInspection, activeAdmins, images] = await Promise.all([
   nameOf(row.updatedBy),
   nameOf(row.closedBy),
   getVisitStatus(db, row.id, currentUser.id),
@@ -36,6 +37,7 @@ const [editorName, closerName, visitStatus, timeline, pendingProposal, verifiedI
   pendingProposalForVenue(db, row.id),
   latestVerifiedInspection(db, row.id),
   countActiveAdmins(db),
+  listVenueImages(db, row.id),
 ]);
 
 const closedText = row.closedAt
@@ -67,6 +69,7 @@ const dossier = {
     venue={serializeVenue(row)}
     updatedByName={editorName}
     uploadsEnabled={Boolean(getBlobToken())}
+    images={images.map(serializeVenueImage)}
     dossier={dossier}
     mapApiKey={getPublicMapApiKey()}
   />

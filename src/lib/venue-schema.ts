@@ -61,7 +61,6 @@ const venueFields = z.object({
   pullQuote: optionalText(400, 'Pull quote'),
   lunchSpecial: optionalText(1000, 'Lunch special'),
   websiteUrl: optionalUrl('Website URL'),
-  imageUrl: optionalUrl('Image URL'),
   cost: z.enum(COST_BANDS, { error: 'Choose a cost band.' }),
   cuisine: z.enum(CUISINE_VALUES, { error: 'Choose a cuisine from the list.' }).default(DEFAULT_CUISINE),
   mapSearchLink: optionalUrl('Map link'),

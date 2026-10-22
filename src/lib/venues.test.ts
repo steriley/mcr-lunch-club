@@ -57,6 +57,10 @@ describe('serializeVenue', () => {
     assert.equal(result.createdAt, '2026-01-02T03:04:05.000Z');
     assert.equal(result.updatedAt, '2026-02-03T04:05:06.000Z');
   });
+  it('leaves out the old image link, which the form no longer edits', () => {
+    const row = { id: 'id', latitude: null, longitude: null, distanceMiles: null, imageUrl: 'https://example.com/a.jpg', createdAt: new Date(), updatedAt: new Date(), closedAt: null, routeUpdatedAt: null } as unknown as VenueRow;
+    assert.ok(!('imageUrl' in serializeVenue(row)));
+  });
 });
 
 /** Records each builder call and resolves to `rows` at the end of the chain. */
