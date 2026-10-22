@@ -166,8 +166,7 @@
             <button
               type="button"
               class="near-me-snap-btn"
-              :aria-label="sheetSnapState === 'full' ? 'Shrink venue list' : 'Expand venue list'"
-              :aria-expanded="sheetSnapState !== 'collapsed'"
+              :aria-label="`Venue list height: ${sheetSnapState}. Activate to change.`"
               @click="cycleSnapState"
             >
               <span class="near-me-sheet-handle-bar"></span>
@@ -620,7 +619,8 @@ function cycleSnapState() {
   } else if (sheetSnapState.value === 'half') {
     sheetSnapState.value = 'full';
   } else {
-    sheetSnapState.value = 'half';
+    // The handle is the only non-drag control, so it must reach every height.
+    sheetSnapState.value = 'collapsed';
   }
 }
 
