@@ -53,15 +53,17 @@ beforeEach(() => {
   (blobClient as any).del = async (urls: string[]) => {
     dels.push(urls);
   };
-  savedEnv = { token: process.env.BLOB_READ_WRITE_TOKEN, vercel: process.env.VERCEL_ENV };
+  savedEnv = { token: process.env.BLOB_READ_WRITE_TOKEN, storeId: process.env.BLOB_STORE_ID, vercel: process.env.VERCEL_ENV };
   process.env.BLOB_READ_WRITE_TOKEN = 'vercel_blob_rw_testStore_secret';
+  // Vercel builds set this; "not configured" tests must not inherit it.
+  delete process.env.BLOB_STORE_ID;
   delete process.env.VERCEL_ENV;
 });
 
 afterEach(() => {
   restoreStubs();
   Object.assign(blobClient, originalBlob);
-  for (const [key, value] of [['BLOB_READ_WRITE_TOKEN', savedEnv.token], ['VERCEL_ENV', savedEnv.vercel]] as const) {
+  for (const [key, value] of [['BLOB_READ_WRITE_TOKEN', savedEnv.token], ['BLOB_STORE_ID', savedEnv.storeId], ['VERCEL_ENV', savedEnv.vercel]] as const) {
     if (value === undefined) delete process.env[key];
     else process.env[key] = value;
   }
