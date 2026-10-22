@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  blobEnvPrefix,
   getAuthEnvironment,
   getBlobToken,
   getDatabaseDriver,
@@ -213,5 +214,20 @@ describe('optional keys', () => {
     assert.equal(getWeatherApiKey(), 'primary');
     process.env.BLOB_READ_WRITE_TOKEN = 'tok';
     assert.equal(getBlobToken(), 'tok');
+  });
+});
+
+describe('blobEnvPrefix', () => {
+  it('is dev when VERCEL_ENV is unset or unknown', () => {
+    assert.equal(blobEnvPrefix(), 'dev');
+    process.env.VERCEL_ENV = 'development';
+    assert.equal(blobEnvPrefix(), 'dev');
+  });
+
+  it('separates production and preview uploads', () => {
+    process.env.VERCEL_ENV = 'production';
+    assert.equal(blobEnvPrefix(), 'prod');
+    process.env.VERCEL_ENV = 'preview';
+    assert.equal(blobEnvPrefix(), 'preview');
   });
 });
