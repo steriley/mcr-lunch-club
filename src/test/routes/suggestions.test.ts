@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { POST } from '@/pages/api/suggestions';
 import * as byId from '@/pages/api/admin/suggestions/[id]';
 import { POST as CREATE_VENUE } from '@/pages/api/admin/venues';
-import { ADMIN, VENUE_ID, adminRequest, quietly, restoreStubs, run, signInAs, stubDb, stubDbSequence, stubTransactions } from '../route-helpers';
+import { ADMIN, VENUE_ID, adminRequest, quietly, renderSql, restoreStubs, run, signInAs, stubDb, stubDbSequence, stubTransactions } from '../route-helpers';
 
 afterEach(restoreStubs);
 
@@ -108,7 +108,22 @@ describe('/api/admin/suggestions/[id]', () => {
       signInAs();
       assert.equal((await run(byId.PATCH, ctx('PATCH', VENUE_ID, { status: 'accepted' }))).status, 400);
       stubDb('update', []);
+      stubDb('select', []);
       assert.equal((await run(byId.PATCH, ctx('PATCH', VENUE_ID, { status: 'dismissed' }))).status, 404);
+    });
+
+    it('never touches an accepted suggestion, so a stale tab cannot undo an acceptance', async () => {
+      signInAs();
+      for (const status of ['dismissed', 'new'] as const) {
+        const updates = stubDb('update', []);
+        stubDb('select', [{ id: VENUE_ID }]);
+        const response = await run(byId.PATCH, ctx('PATCH', VENUE_ID, { status }));
+        assert.equal(response.status, 409, status);
+        assert.match((await response.json()).error, /already accepted/);
+        const { sql, params } = renderSql(updates.find((call) => call.method === 'where')!.args[0]);
+        assert.match(sql, /"venue_suggestions"\."status" <> \$\d/);
+        assert.ok(params.includes('accepted'));
+      }
     });
   });
 
