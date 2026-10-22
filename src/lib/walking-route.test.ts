@@ -97,6 +97,12 @@ describe('routeWarning', () => {
     assert.match(warn('no_result')!, /no walking route/);
     assert.match(warn('unavailable')!, /unavailable/);
   });
+
+  it('words a failed retry as a retry, not a save', () => {
+    const route = { distanceMiles: null, walkingTimeMin: null, error: new OrsError('rate_limited', '') };
+    assert.match(routeWarning(route)!, /^Saved, but the walking route is pending/);
+    assert.equal(routeWarning(route, 'reroute'), 'The walking route is pending because the route service is rate limited. Use Retry later.');
+  });
 });
 
 describe('routeStatus', () => {

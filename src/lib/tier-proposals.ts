@@ -2,11 +2,11 @@ import { and, count, desc, eq, inArray, isNull, ne, or, sql } from 'drizzle-orm'
 import { user } from '@/db/auth-schema';
 import { tierProposals, venues, type TierProposalRow, type VenueRow } from '@/db/schema';
 import { ADMIN_ROLES } from '@/lib/admin-api';
-import type { Database } from '@/lib/db-client';
+import type { Database, Tx } from '@/lib/db-client';
 import { latestVerifiedInspection } from '@/lib/inspections';
 import { tierLabel, type TierValue } from '@/lib/tiers';
 import { actorName, type Actor } from '@/lib/venue-events';
-import { recordVenueRevision } from '@/lib/venues';
+import { updateVenue } from '@/lib/venues';
 
 /**
  * Tier changes with two-admin integrity.
@@ -24,7 +24,6 @@ import { recordVenueRevision } from '@/lib/venues';
  * admin can decide it.
  */
 
-type Tx = Parameters<Parameters<Database['transaction']>[0]>[0];
 
 export const DECLINE_REASON_MAX = 1000;
 
@@ -163,12 +162,7 @@ export function approveProposal(db: Database, proposalId: string, actor: Actor, 
       .returning();
     if (!decided) return fail('not_pending');
 
-    const [venue] = await tx
-      .update(venues)
-      .set({ tier: proposal.proposedTier, updatedBy: actor.id, updatedAt: now })
-      .where(eq(venues.id, proposal.venueId))
-      .returning();
-    if (venue) await recordVenueRevision(tx, venue, actor.id);
+    await updateVenue(tx, proposal.venueId, { tier: proposal.proposedTier }, actor, now);
     return { ok: true, value: decided };
   });
 }

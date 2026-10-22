@@ -1,5 +1,5 @@
 import { venues, type TierProposalRow, type VenueRow } from '@/db/schema';
-import type { Database } from '@/lib/db-client';
+import type { Database, Tx } from '@/lib/db-client';
 import { proposeTierInTx, type ProposalError } from '@/lib/tier-proposals';
 import type { TierValue } from '@/lib/tiers';
 import type { Actor } from '@/lib/venue-events';
@@ -7,7 +7,6 @@ import type { RouteValues } from '@/lib/walking-route';
 import type { VenueInput } from '@/lib/venue-schema';
 import { recordVenueRevision, venueValues } from '@/lib/venues';
 
-type Tx = Parameters<Parameters<Database['transaction']>[0]>[0];
 
 export class ProposalFailed extends Error {
   constructor(readonly error: ProposalError) {

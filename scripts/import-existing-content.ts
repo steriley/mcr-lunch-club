@@ -17,7 +17,7 @@ import { closeDatabase, db } from '@/lib/db-script';
 import { mapLegacyCuisine } from '@/lib/cuisines';
 import { parseTier } from '@/lib/tiers';
 import { venueInputSchema, type VenueInput } from '@/lib/venue-schema';
-import { recordVenueRevision, venueValues } from '@/lib/venues';
+import { recordVenueRevision, updateVenue, venueValues } from '@/lib/venues';
 import type { Incident, Venue } from '@/types';
 
 const args = new Set(process.argv.slice(2));
@@ -84,11 +84,14 @@ for (const input of venueInputs) {
 
   // The import is not attributed to a Chair. Routes start pending; `pnpm routes:backfill` fills them from ORS.
   const values = venueValues(input, null, { distanceMiles: null, walkingTimeMin: null });
-  const [row] = existingId
-    ? await db.update(venues).set(values).where(eq(venues.id, existingId)).returning()
-    : await db.insert(venues).values(values).returning();
-  await recordVenueRevision(db, row, null);
-  existingId ? (updated += 1) : (inserted += 1);
+  if (existingId) {
+    await updateVenue(db, existingId, values, null);
+    updated += 1;
+  } else {
+    const [row] = await db.insert(venues).values(values).returning();
+    await recordVenueRevision(db, row, null);
+    inserted += 1;
+  }
 }
 
 const verb = (past: string, future: string) => (dryRun ? future : past);

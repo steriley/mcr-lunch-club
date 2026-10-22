@@ -2,7 +2,7 @@ import '../setup-env';
 import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { APIError } from 'better-auth/api';
-import { GET, POST } from '@/pages/api/admin/users';
+import { POST } from '@/pages/api/admin/users';
 import { POST as ban } from '@/pages/api/admin/users/[id]/ban';
 import { POST as unban } from '@/pages/api/admin/users/[id]/unban';
 import { POST as resetPassword } from '@/pages/api/admin/users/[id]/reset-password';
@@ -14,27 +14,6 @@ const ctx = (id: string | undefined, body?: unknown) => ({ request: adminRequest
 const newUser = { name: 'Ann', email: 'ann@example.com', password: 'a-long-enough-password' };
 
 describe('/api/admin/users', () => {
-  it('GET lists users via Better Auth', async () => {
-    signInAs();
-    const calls = stubAuthApi('listUsers', () => ({ users: [{ id: 'u1' }], total: 1 }));
-    const response = await run(GET, { request: adminRequest('GET') });
-    assert.deepEqual(await response.json(), { users: [{ id: 'u1' }], total: 1 });
-    assert.equal(calls[0].query.limit, 200);
-  });
-
-  it('GET maps Better Auth failures', async () => {
-    signInAs();
-    stubAuthApi('listUsers', () => {
-      throw new APIError('FORBIDDEN', { message: 'Nope' });
-    });
-    assert.equal((await run(GET, { request: adminRequest('GET') })).status, 403);
-
-    stubAuthApi('listUsers', () => {
-      throw new Error('boom');
-    });
-    assert.equal((await quietly(() => run(GET, { request: adminRequest('GET') }))).status, 500);
-  });
-
   it('POST validates, creates (201) and maps errors', async () => {
     signInAs();
     assert.equal((await run(POST, { request: adminRequest('POST', { name: '' }) })).status, 400);

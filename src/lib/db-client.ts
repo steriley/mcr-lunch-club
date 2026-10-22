@@ -7,6 +7,9 @@ import type { DatabaseDriver } from '@/lib/env';
 
 export type Database = NodePgDatabase<typeof schema>;
 
+/** The handle inside `db.transaction(async (tx) => …)`. */
+export type Tx = Parameters<Parameters<Database['transaction']>[0]>[0];
+
 export interface DatabaseClient {
   db: Database;
   driver: DatabaseDriver;

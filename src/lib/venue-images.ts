@@ -1,6 +1,6 @@
 import { and, asc, count, eq } from 'drizzle-orm';
 import { venueImages, venues, type VenueImageRow } from '@/db/schema';
-import type { Database } from '@/lib/db-client';
+import type { Database, Tx } from '@/lib/db-client';
 import { CAPTION_MAX, MAX_IMAGES_PER_VENUE, type SerializedVenueImage } from '@/lib/image-upload';
 import { recordVenueEvent, type Actor } from '@/lib/venue-events';
 
@@ -17,7 +17,6 @@ import { recordVenueEvent, type Actor } from '@/lib/venue-events';
  * logged). Blob writes and deletes are the routes' job.
  */
 
-type Tx = Parameters<Parameters<Database['transaction']>[0]>[0];
 
 export type VenueImageError = 'venue_not_found' | 'image_not_found' | 'too_many_images' | 'caption_too_long' | 'invalid_focal';
 

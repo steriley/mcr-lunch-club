@@ -10,11 +10,6 @@ export const prerender = false;
 const NOT_FOUND = 'Bribery record not found.';
 const notFound = () => jsonError(404, NOT_FOUND);
 
-export const GET = adminRoute({ action: 'Load bribery record', params: { id: NOT_FOUND } }, async ({ params }) => {
-  const [row] = await db.select().from(briberyRecords).where(eq(briberyRecords.id, params.id)).limit(1);
-  return row ? jsonResponse({ record: serializeBribery(row) }) : notFound();
-});
-
 export const PUT = adminRoute(
   { action: 'Update bribery record', params: { id: NOT_FOUND }, body: briberyInputSchema },
   async ({ params, body }) => {

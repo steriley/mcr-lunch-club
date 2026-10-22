@@ -25,6 +25,17 @@ describe('revisionEntries', () => {
     assert.equal(entries[2].text, 'Earliest recorded version, by Import script');
     assert.equal(entries[2].isFirst, true);
   });
+
+  it('credits a later change with no editor to a script, not the import', () => {
+    const [backfilled] = revisionEntries(
+      [
+        { id: 'r2', changedBy: null, changedAt: at('2026-10-20T09:00:00Z'), snapshot: { name: 'Pie Shop', walkingTimeMin: 9 } },
+        { id: 'r1', changedBy: null, changedAt: at('2026-10-19T09:00:00Z'), snapshot: { name: 'Pie Shop', walkingTimeMin: null } },
+      ],
+      new Map()
+    );
+    assert.equal(backfilled.text, 'Amended by a script: Walking time');
+  });
 });
 
 describe('inspectionEntries', () => {
