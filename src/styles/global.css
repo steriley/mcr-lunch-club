@@ -720,18 +720,6 @@
   gap: 4px;
 }
 
-.bench-badge {
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: #E8F5EE;
-  color: var(--ledger-green);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .04em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-
 .bench-hero-name,
 .bench-pillar-name {
   margin: 0;
@@ -898,11 +886,21 @@
   min-width: 0;
 }
 
-.bench-pillar-title-row {
+.bench-pillar-title-row,
+.bench-hero-title-row {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 6px;
+}
+
+.bench-hero-title-row {
+  align-self: stretch;
+}
+
+.bench-hero-title-row .bench-cost {
+  padding-top: 5px;
+  font-size: 14px;
 }
 
 .bench-pillar-name {

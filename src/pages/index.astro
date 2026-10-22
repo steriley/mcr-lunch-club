@@ -179,8 +179,10 @@ const fieldShortcuts = [
 
             <div class="bench-hero-body">
               <div class="bench-hero-heading">
-                <span class="bench-badge">{isGoldenCut ? 'The Golden Cut' : 'Nearest'} · Approved · {hero.cost}</span>
-                <h2 class="bench-hero-name"><a class="bench-hero-link" href={hero.href}>{hero.name}</a></h2>
+                <div class="bench-hero-title-row">
+                  <h2 class="bench-hero-name"><a class="bench-hero-link" href={hero.href}>{hero.name}</a></h2>
+                  <span class="bench-cost">{hero.cost}</span>
+                </div>
                 {hero.lastInspection && <p class="bench-last">Last Inspection: {hero.lastInspection}</p>}
               </div>
 
