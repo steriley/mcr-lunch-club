@@ -1746,3 +1746,26 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   align-items: stretch;
 }
+
+/* Inspection ledger cards: outcome badge beside the date, legacy records in a neutral badge. */
+.bench-inspection-date {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.bench-badge {
+  padding: 1px 6px;
+  border: 1px solid;
+  border-radius: 4px;
+  font: 700 10px/1.4 "Plus Jakarta Sans", sans-serif;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.bench-count.is-legacy {
+  border-color: #d6d3d1;
+  background: #f5f5f4;
+  color: #57534e;
+}

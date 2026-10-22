@@ -1,13 +1,18 @@
 ---
 import BenchWalk from '@/components/BenchWalk.astro';
 import { focalStyle } from '@/lib/image-upload';
+import { formatDate } from '@/lib/dates';
+import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
 import type { BenchCard } from '@/lib/sovereign-bench';
+import type { Inspection } from '@/types';
 
 interface Props {
   pillar: BenchCard;
+  /** Render one inspection of the venue (the /inspections ledger) instead of the venue summary. */
+  inspection?: Inspection;
 }
 
-const { pillar } = Astro.props;
+const { pillar, inspection } = Astro.props;
 ---
 
 <article class="bench-pillar">
@@ -39,8 +44,21 @@ const { pillar } = Astro.props;
         </h3>
         <span class="bench-cost">{pillar.cost}</span>
       </div>
-      {pillar.lastInspection && <p class="bench-last">Last Inspection: {pillar.lastInspection}</p>}
-      {pillar.quote ? (
+      {inspection ? (
+        <p class="bench-last bench-inspection-date">
+          Inspected: {formatDate(inspection.date)}
+          {inspection.outcome && (
+            <span class={`bench-badge ${INSPECTION_OUTCOME_BADGE_CLASSES[inspection.outcome]}`}>
+              {INSPECTION_OUTCOME_LABELS[inspection.outcome]}
+            </span>
+          )}
+        </p>
+      ) : (
+        pillar.lastInspection && <p class="bench-last">Last Inspection: {pillar.lastInspection}</p>
+      )}
+      {inspection ? (
+        <p class="bench-pillar-text">{inspectionWitnesses(inspection)}</p>
+      ) : pillar.quote ? (
         <p class="bench-pillar-text is-quote">{pillar.quote}</p>
       ) : (
         pillar.eatLikeUs && <p class="bench-pillar-text">Eat like us: {pillar.eatLikeUs}</p>
@@ -49,7 +67,9 @@ const { pillar } = Astro.props;
   </div>
   <div class="bench-telemetry">
     <BenchWalk walk={pillar.walk} venueName={pillar.name} />
-    {pillar.inspectionCount > 0 && (
+    {inspection ? (
+      <span class={`bench-count ${inspection.kind === 'legacy' ? 'is-legacy' : ''}`}>{INSPECTION_KIND_LABELS[inspection.kind]}</span>
+    ) : pillar.inspectionCount > 0 && (
       <span class="bench-count">{pillar.inspectionCount} {pillar.inspectionCount === 1 ? 'Inspection' : 'Inspections'}</span>
     )}
   </div>
