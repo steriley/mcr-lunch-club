@@ -1740,3 +1740,9 @@
     }
   }
 }
+
+/* Tier pages reuse the homepage pillar card in a responsive grid. */
+.tier-venue-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  align-items: stretch;
+}

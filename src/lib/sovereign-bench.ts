@@ -43,7 +43,7 @@ export interface SovereignBench {
   pillars: BenchCard[];
 }
 
-interface Pick {
+export interface Pick {
   venue: PublicVenue;
   puffPiece?: string | null;
   anchorDish?: string | null;
@@ -63,7 +63,7 @@ function walkFor(venue: PublicVenue): BenchWalk {
   return { label, lat, lng, directionsUrl: getWalkingDirectionsUrl(lat, lng, 'server') };
 }
 
-function toCard(pick: Pick, inspections: Inspection[]): BenchCard {
+export function toCard(pick: Pick, inspections: Inspection[]): BenchCard {
   const { venue } = pick;
   const own = inspections.filter((inspection) => inspection.venueSlug === venue.slug);
   // YYYY-MM-DD sorts as text, so the order of the input does not matter.
