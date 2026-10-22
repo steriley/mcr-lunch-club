@@ -1,12 +1,13 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import { formatDate } from '@/lib/dates';
-import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
-import { getPublicInspections, setPublicCacheHeaders } from '@/lib/public-data';
+import BenchPillar from '@/components/BenchPillar.astro';
+import { getPublicInspections, getPublicVenues, setPublicCacheHeaders } from '@/lib/public-data';
+import { toCard } from '@/lib/sovereign-bench';
 
 export const prerender = false;
 
-const inspections = await getPublicInspections();
+const [inspections, venues] = await Promise.all([getPublicInspections(), getPublicVenues()]);
+const venuesBySlug = new Map(venues.map((venue) => [venue.slug, venue]));
 setPublicCacheHeaders(Astro.response.headers);
 const verifiedCount = inspections.filter((inspection) => inspection.kind === 'verified').length;
 const legacyCount = inspections.length - verifiedCount;
@@ -73,53 +74,24 @@ const legacyCount = inspections.length - verifiedCount;
           No inspections are on record yet. An inspection is entered here once two Chairs confirm the same day's visit.
         </div>
       ) : (
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {inspections.map((insp) => (
-            <div class="bg-[#fdfcf9] rounded-xl border border-[#dcd6c8] shadow-sm p-5 space-y-3 flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between border-b border-stone-200 pb-2 mb-2">
-                  <span class="font-mono text-xs font-bold text-stone-500">{formatDate(insp.date)}</span>
-                  <div class="flex items-center gap-1.5">
-                    {insp.outcome && (
-                      <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono border ${INSPECTION_OUTCOME_BADGE_CLASSES[insp.outcome]}`}>
-                        {INSPECTION_OUTCOME_LABELS[insp.outcome]}
-                      </span>
-                    )}
-                    <span
-                      class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono border ${
-                        insp.kind === 'verified'
-                          ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
-                          : 'bg-stone-100 text-stone-600 border-stone-300'
-                      }`}
-                    >
-                      {INSPECTION_KIND_LABELS[insp.kind]}
-                    </span>
-                  </div>
-                </div>
-
-                <a
-                  href={`/venues/${insp.venueSlug}`}
-                  class="font-serif-header font-bold text-base text-[#1a1e24] hover:text-[#8b1e22] transition-colors"
-                >
-                  {insp.venueName}
-                </a>
-
-                <p class="text-base text-stone-700 mt-2">{inspectionWitnesses(insp)}</p>
-              </div>
-
-              <div class="pt-2 border-t border-stone-100 flex items-center justify-between text-xs">
-                <a
-                  href={`/venues/${insp.venueSlug}`}
-                  class="text-[#8b1e22] hover:underline font-semibold font-serif-header flex items-center gap-1"
-                >
-                  <span>View Full Venue Dossier</span>
-                  <span>→</span>
-                </a>
-              </div>
-            </div>
-          ))}
+        <div class="bench-pillars tier-venue-grid">
+          {inspections.map((insp) => {
+            const venue = venuesBySlug.get(insp.venueSlug);
+            return venue && <BenchPillar pillar={toCard({ venue }, [insp])} inspection={insp} />;
+          })}
         </div>
       )}
     </div>
   </div>
 </Layout>
+
+<script>
+  import { getWalkingDirectionsUrl } from '@/lib/map/directions';
+
+  // Apple devices get Apple Maps, like the homepage walk links.
+  document.querySelectorAll<HTMLAnchorElement>('a[data-walk-directions]').forEach((link) => {
+    const lat = Number(link.dataset.lat);
+    const lng = Number(link.dataset.lng);
+    if (Number.isFinite(lat) && Number.isFinite(lng)) link.href = getWalkingDirectionsUrl(lat, lng);
+  });
+</script>
