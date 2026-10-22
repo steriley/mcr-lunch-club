@@ -12,18 +12,6 @@ const row = { id: VENUE_ID, slug: 'chip-shop', name: 'Chip Shop', tier: 'if_we_m
 const ctx = (id: string = VENUE_ID, origin?: string) => ({ request: adminRequest('POST', undefined, { origin }), params: { id } });
 
 describe('POST /api/admin/venues/[id]/close and /reopen', () => {
-  for (const [name, handler] of [['close', close], ['reopen', reopen]] as const) {
-    it(`${name} requires an admin and a trusted origin`, async () => {
-      signInAs(null);
-      assert.equal((await run(handler, ctx())).status, 401);
-      signInAs({ id: 'u', role: 'user' });
-      assert.equal((await run(handler, ctx())).status, 403);
-      signInAs();
-      assert.equal((await run(handler, ctx(VENUE_ID, 'https://evil.example'))).status, 403);
-      assert.equal((await run(handler, ctx('nope'))).status, 404);
-    });
-  }
-
   it('closes the venue, keeps its tier and logs who did it, in one transaction', async () => {
     signInAs({ ...ADMIN, name: 'Sam' });
     const transactions = stubTransactions();

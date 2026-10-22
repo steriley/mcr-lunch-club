@@ -37,13 +37,6 @@ const input = { name: 'Chip Shop', slug: 'chip-shop', tier: 'approved', cost: 'Â
 afterEach(restoreStubs);
 
 describe('GET /api/admin/venues', () => {
-  it('requires an admin', async () => {
-    signInAs(null);
-    assert.equal((await run(GET, { request: adminRequest('GET'), url: new URL('https://x.test/') })).status, 401);
-    signInAs({ id: 'u', role: 'user' });
-    assert.equal((await run(GET, { request: adminRequest('GET'), url: new URL('https://x.test/') })).status, 403);
-  });
-
   it('lists serialised venues and applies filters', async () => {
     signInAs();
     const calls = stubDb('select', [row]);
@@ -82,12 +75,6 @@ describe('GET /api/admin/venues', () => {
 
 describe('POST /api/admin/venues', () => {
   const post = (body: unknown) => run(POST, { request: adminRequest('POST', body) });
-
-  it('rejects untrusted origins', async () => {
-    signInAs();
-    const request = adminRequest('POST', input, { origin: 'https://evil.example' });
-    assert.equal((await run(POST, { request })).status, 403);
-  });
 
   it('validates the body', async () => {
     signInAs();
@@ -167,20 +154,6 @@ describe('/api/admin/venues/[id]', () => {
   const ctx = (method: string, id: string | undefined, body?: unknown) => ({
     request: adminRequest(method, body),
     params: { id },
-  });
-
-  it('returns 404 for malformed ids on every method', async () => {
-    signInAs();
-    assert.equal((await run(byId.GET, ctx('GET', 'nope'))).status, 404);
-    assert.equal((await run(byId.PUT, ctx('PUT', 'nope', input))).status, 404);
-    assert.equal((await run(byId.DELETE, ctx('DELETE', 'nope'))).status, 404);
-  });
-
-  it('requires an admin', async () => {
-    signInAs(null);
-    assert.equal((await run(byId.GET, ctx('GET', VENUE_ID))).status, 401);
-    assert.equal((await run(byId.PUT, ctx('PUT', VENUE_ID, input))).status, 401);
-    assert.equal((await run(byId.DELETE, ctx('DELETE', VENUE_ID))).status, 401);
   });
 
   describe('GET', () => {

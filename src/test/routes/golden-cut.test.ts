@@ -11,16 +11,6 @@ const put = (body: unknown, origin?: string) => run(PUT, { request: adminRequest
 const listed = { entry: { venueId: VENUE_ID, position: 1, puffPiece: 'The best.', anchorDish: null }, venue: { name: 'Chip Shop', tier: 'approved', latitude: '53.48', longitude: '-2.25', closedAt: null } };
 
 describe('/api/admin/golden-cut', () => {
-  it('requires an active admin and a trusted origin', async () => {
-    signInAs(null);
-    assert.equal((await run(GET, { request: adminRequest('GET') })).status, 401);
-    assert.equal((await put({ entries: [] })).status, 401);
-    signInAs({ id: 'u', role: 'user' });
-    assert.equal((await put({ entries: [] })).status, 403);
-    signInAs();
-    assert.equal((await put({ entries: [] }, 'https://evil.example')).status, 403);
-  });
-
   it('GET lists the entries in order, flagging any the home page skips', async () => {
     signInAs();
     stubDb('select', [listed, { ...listed, entry: { ...listed.entry, venueId: OTHER_ID, position: 2 }, venue: { ...listed.venue, tier: 'rejected' } }]);

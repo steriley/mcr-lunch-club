@@ -14,25 +14,6 @@ const pending = { id: PROPOSAL_ID, venueId: VENUE_ID, fromTier: 'to_be_assessed'
 const ctx = (id: string, body?: unknown, origin?: string) => ({ request: adminRequest('POST', body ?? {}, { origin }), params: { id } });
 
 describe('tier proposal endpoints', () => {
-  for (const [name, handler, id] of [
-    ['propose', propose, VENUE_ID],
-    ['approve', approve, PROPOSAL_ID],
-    ['decline', decline, PROPOSAL_ID],
-    ['withdraw', withdraw, PROPOSAL_ID],
-  ] as const) {
-    it(`${name} requires an active admin, a trusted origin and a valid id`, async () => {
-      signInAs(null);
-      assert.equal((await run(handler, ctx(id))).status, 401);
-      signInAs({ id: 'u', role: 'user' });
-      assert.equal((await run(handler, ctx(id))).status, 403);
-      signInAs({ ...ADMIN, banned: true });
-      assert.equal((await run(handler, ctx(id))).status, 403, 'banned admins cannot propose or decide');
-      signInAs();
-      assert.equal((await run(handler, ctx(id, {}, 'https://evil.example'))).status, 403);
-      assert.equal((await run(handler, ctx('nope'))).status, 404);
-    });
-  }
-
   it('propose validates the tier', async () => {
     signInAs();
     assert.equal((await run(propose, ctx(VENUE_ID, { proposedTier: 'great' }))).status, 400);

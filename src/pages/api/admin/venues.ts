@@ -1,7 +1,6 @@
-import type { APIRoute } from 'astro';
 import { and, asc, eq, ilike, not, or, type SQL } from 'drizzle-orm';
 import { venues } from '@/db/schema';
-import { isUniqueViolation, jsonError, jsonResponse, readJson, requireAdmin, serverError, validationError } from '@/lib/admin-api';
+import { adminRoute, isUniqueViolation, jsonError, jsonResponse, slugTaken } from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { parseTier } from '@/lib/tiers';
 import { PROPOSAL_ERROR_MESSAGES, PROPOSAL_ERROR_STATUS } from '@/lib/tier-proposals';
@@ -14,53 +13,49 @@ import { publicVenueCondition } from '@/lib/visibility';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ request, url }) => {
-  const session = await requireAdmin(request);
-  if (session instanceof Response) return session;
+export const GET = adminRoute({ action: 'List venues' }, async ({ url }) => {
+  const conditions: SQL[] = [];
+  const query = url.searchParams.get('query')?.trim();
+  const tier = parseTier(url.searchParams.get('tier'));
+  const status = url.searchParams.get('status');
 
-  try {
-    const conditions: SQL[] = [];
-    const query = url.searchParams.get('query')?.trim();
-    const tier = parseTier(url.searchParams.get('tier'));
-    const status = url.searchParams.get('status');
-
-    if (query) {
-      const pattern = `%${query.replace(/[\\%_]/g, (match) => `\\${match}`)}%`;
-      conditions.push(or(ilike(venues.name, pattern), ilike(venues.slug, pattern))!);
-    }
-    if (tier) conditions.push(eq(venues.tier, tier));
-    if (status === 'public') conditions.push(publicVenueCondition());
-    if (status === 'hidden') conditions.push(not(publicVenueCondition()));
-
-    const rows = await db
-      .select()
-      .from(venues)
-      .where(conditions.length ? and(...conditions) : undefined)
-      .orderBy(asc(venues.name));
-
-    return jsonResponse({ venues: rows.map(serializeVenue) });
-  } catch (error) {
-    return serverError('List venues', error);
+  if (query) {
+    const pattern = `%${query.replace(/[\\%_]/g, (match) => `\\${match}`)}%`;
+    conditions.push(or(ilike(venues.name, pattern), ilike(venues.slug, pattern))!);
   }
-};
+  if (tier) conditions.push(eq(venues.tier, tier));
+  if (status === 'public') conditions.push(publicVenueCondition());
+  if (status === 'hidden') conditions.push(not(publicVenueCondition()));
 
-export const POST: APIRoute = async ({ request }) => {
-  const session = await requireAdmin(request);
-  if (session instanceof Response) return session;
+  const rows = await db
+    .select()
+    .from(venues)
+    .where(conditions.length ? and(...conditions) : undefined)
+    .orderBy(asc(venues.name));
 
-  const parsed = venueCreateSchema.safeParse(await readJson(request));
-  if (!parsed.success) return validationError(parsed.error);
+  return jsonResponse({ venues: rows.map(serializeVenue) });
+});
 
-  try {
-    if (await isSlugTaken(db, parsed.data.slug)) {
-      return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });
-    }
+function createVenueFailure(error: unknown): Response | undefined {
+  if (error instanceof SuggestionUnavailable) {
+    return jsonError(409, 'That suggestion has already been accepted or dismissed, or no longer exists. Nothing was saved.');
+  }
+  if (error instanceof ProposalFailed) {
+    return jsonError(PROPOSAL_ERROR_STATUS[error.error], PROPOSAL_ERROR_MESSAGES[error.error], { proposedTier: PROPOSAL_ERROR_MESSAGES[error.error] });
+  }
+  if (isUniqueViolation(error)) return slugTaken();
+  return undefined;
+}
+
+export const POST = adminRoute(
+  { action: 'Create venue', body: venueCreateSchema, onError: createVenueFailure },
+  async ({ body, actor }) => {
+    if (await isSlugTaken(db, body.slug)) return slugTaken();
 
     // ORS failures never block the save; the route stays pending instead. Looked up before the transaction.
-    const route = await resolveRoute(parsed.data, null);
+    const route = await resolveRoute(body, null);
     // The venue starts hidden (no approved tier); its tier is a proposal for a different admin to approve.
-    const { proposedTier, fromSuggestion, ...input } = parsed.data;
-    const actor = { id: session.user.id, name: session.user.name, email: session.user.email };
+    const { proposedTier, fromSuggestion, ...input } = body;
     const { venue, proposal } = fromSuggestion
       ? // Accepting a suggestion: always To Be Assessed, and the suggestion is marked accepted in the same transaction.
         await createVenueWithProposal(db, input, SUGGESTION_PROPOSED_TIER, actor, route, async (tx, created) => {
@@ -68,16 +63,5 @@ export const POST: APIRoute = async ({ request }) => {
         })
       : await createVenueWithProposal(db, input, proposedTier, actor, route);
     return jsonResponse({ venue: serializeVenue(venue), proposalId: proposal?.id ?? null, routeWarning: routeWarning(route) }, 201);
-  } catch (error) {
-    if (error instanceof SuggestionUnavailable) {
-      return jsonError(409, 'That suggestion has already been accepted or dismissed, or no longer exists. Nothing was saved.');
-    }
-    if (error instanceof ProposalFailed) {
-      return jsonError(PROPOSAL_ERROR_STATUS[error.error], PROPOSAL_ERROR_MESSAGES[error.error], { proposedTier: PROPOSAL_ERROR_MESSAGES[error.error] });
-    }
-    if (isUniqueViolation(error)) {
-      return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });
-    }
-    return serverError('Create venue', error);
   }
-};
+);

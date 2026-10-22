@@ -107,16 +107,6 @@ const values = (calls: { method: string; args: unknown[] }[]) => calls.filter((c
 const errorOf = async (response: Response) => ((await response.json()) as { error: string }).error;
 
 describe('POST /api/admin/venues/[id]/images', () => {
-  it('requires an admin and a trusted origin', async () => {
-    signInAs(null);
-    assert.equal((await upload()).status, 401);
-    signInAs({ id: 'u', role: 'user' });
-    assert.equal((await upload()).status, 403);
-    signInAs();
-    assert.equal((await upload({}, VENUE_ID, 'https://evil.example')).status, 403);
-    assert.equal(puts.length, 0);
-  });
-
   it('returns 503 when uploads are not configured, and 404 for a bad venue id', async () => {
     signInAs();
     delete process.env.BLOB_READ_WRITE_TOKEN;
@@ -300,12 +290,8 @@ describe('POST /api/admin/venues/[id]/images', () => {
 });
 
 describe('PATCH /api/admin/venues/[id]/images/[imageId]', () => {
-  it('requires an admin, a trusted origin and Blob configuration', async () => {
-    signInAs(null);
-    assert.equal((await patch({ caption: 'x' })).status, 401);
+  it('requires Blob configuration', async () => {
     signInAs();
-    assert.equal((await run(PATCH, { request: adminRequest('PATCH', { caption: 'x' }, { origin: 'https://evil.example' }), params: { id: VENUE_ID, imageId: IMAGE_ID } })).status, 403);
-    assert.equal((await patch({ caption: 'x' }, 'nope')).status, 404);
     delete process.env.BLOB_READ_WRITE_TOKEN;
     assert.equal((await patch({ caption: 'x' })).status, 503);
   });
@@ -372,9 +358,7 @@ describe('PATCH /api/admin/venues/[id]/images/[imageId]', () => {
 });
 
 describe('DELETE /api/admin/venues/[id]/images/[imageId]', () => {
-  it('requires an admin and Blob configuration', async () => {
-    signInAs(null);
-    assert.equal((await remove()).status, 401);
+  it('requires Blob configuration', async () => {
     signInAs();
     delete process.env.BLOB_READ_WRITE_TOKEN;
     assert.equal((await remove()).status, 503);

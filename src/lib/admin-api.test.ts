@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { z } from 'zod';
 import { APIError } from 'better-auth/api';
 import {
+  adminRoute,
   authApiError,
   hasAdminRole,
   hasTrustedOrigin,
@@ -14,11 +15,13 @@ import {
   readJson,
   requireAdmin,
   serverError,
+  slugTaken,
   userIdParam,
   uuidParam,
   validationError,
 } from './admin-api';
 import { auth } from './auth';
+import { quietly } from '../test/route-helpers';
 
 function silenceErrors<T>(fn: () => T): T {
   const original = console.error;
@@ -200,6 +203,79 @@ describe('authApiError', () => {
       const response = await silenceErrors(async () => authApiError('Ban', error));
       assert.equal(response.status, 500);
       assert.deepEqual(await response.json(), { error: 'Something went wrong. Please try again.' });
+    }
+  });
+});
+
+describe('adminRoute', () => {
+  const ID = '3f2b7a52-5c1e-4c0d-9a4f-1a2b3c4d5e6f';
+  const chair = { id: 'admin-1', name: 'Sam', email: 'sam@example.com', role: 'admin' };
+  const originalGetSession = auth.api.getSession;
+  const signedInAs = (user: unknown) => {
+    (auth.api as any).getSession = async () => (user ? { user } : null);
+  };
+  const call = (route: Function, params: Record<string, string> = {}, body?: unknown) =>
+    route({
+      request: new Request('https://lunch.example.com/api/admin/x', {
+        method: 'POST',
+        headers: { origin: 'https://lunch.example.com' },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      }),
+      params,
+      url: new URL('https://lunch.example.com/api/admin/x'),
+    }) as Promise<Response>;
+
+  const route = adminRoute(
+    { action: 'Test', params: { id: 'Thing not found.', userId: { schema: userIdParam, notFound: 'User not found.' } }, body: z.object({ name: z.string().min(1, 'Name it.') }) },
+    async ({ params, body, actor }) => jsonResponse({ params, body, actor })
+  );
+
+  it('refuses before running the handler: 401, 403, then each param in order, then the body', async () => {
+    try {
+      signedInAs(null);
+      assert.equal((await call(route, { id: ID, userId: 'u' }, { name: 'x' })).status, 401);
+      signedInAs({ ...chair, role: 'user' });
+      assert.equal((await call(route, { id: ID, userId: 'u' }, { name: 'x' })).status, 403);
+
+      signedInAs(chair);
+      const badId = await call(route, { id: 'nope', userId: '' }, { name: 'x' });
+      assert.deepEqual([badId.status, await badId.json()], [404, { error: 'Thing not found.' }]);
+      const badUser = await call(route, { id: ID, userId: '' }, { name: 'x' });
+      assert.deepEqual([badUser.status, await badUser.json()], [404, { error: 'User not found.' }]);
+      const badBody = await call(route, { id: ID, userId: 'u' }, { name: '' });
+      assert.deepEqual([badBody.status, (await badBody.json()).fields], [400, { name: 'Name it.' }]);
+    } finally {
+      (auth.api as any).getSession = originalGetSession;
+    }
+  });
+
+  it('passes parsed params, the body and the signed-in Chair to the handler', async () => {
+    try {
+      signedInAs(chair);
+      const response = await call(route, { id: ID, userId: ' u1 ' }, { name: 'Pie' });
+      assert.deepEqual(await response.json(), {
+        params: { id: ID, userId: 'u1' },
+        body: { name: 'Pie' },
+        actor: { id: 'admin-1', name: 'Sam', email: 'sam@example.com' },
+      });
+    } finally {
+      (auth.api as any).getSession = originalGetSession;
+    }
+  });
+
+  it('maps thrown errors with onError, and logs a 500 for anything it leaves', async () => {
+    const throwing = (error: unknown) =>
+      adminRoute({ action: 'Throw', onError: (e) => (isUniqueViolation(e) ? slugTaken() : undefined) }, async () => {
+        throw error;
+      });
+    try {
+      signedInAs(chair);
+      const conflict = await call(throwing({ code: '23505' }));
+      assert.deepEqual([conflict.status, (await conflict.json()).fields], [409, { slug: 'That slug is already in use. Choose another.' }]);
+      const crash = await quietly(() => call(throwing(new Error('boom'))));
+      assert.deepEqual([crash.status, await crash.json()], [500, { error: 'Something went wrong. Please try again.' }]);
+    } finally {
+      (auth.api as any).getSession = originalGetSession;
     }
   });
 });
