@@ -46,6 +46,10 @@ const emit = defineEmits<{ toggle: [tier: TierValue] }>();
   overflow-x: auto;
   padding-block: 1px 3px;
   scrollbar-width: none;
+  /* The fade hints that more tiers sit off-screen; the padding keeps it over empty space when every chip fits. */
+  padding-right: 24px;
+  mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
 }
 
 .tier-filter-chips::-webkit-scrollbar {

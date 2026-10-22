@@ -201,7 +201,6 @@
           <!-- Tier Filter Chips (Inside Panel): shared with the homepage filter bar -->
           <div class="near-me-panel-filters">
             <TierFilterChips
-              class="near-me-tier-chips"
               :tiers="NEAR_ME_TIERS"
               :selected="selectedTiers"
               :counts="tierCounts"
@@ -1725,13 +1724,6 @@ onUnmounted(() => {
   padding: 8px 14px;
   border-bottom: 1px solid rgba(197, 155, 39, 0.25);
   flex-shrink: 0;
-}
-
-/* Chips scroll horizontally; the fade hints that more tiers sit off-screen. */
-.near-me-tier-chips {
-  padding-right: 24px;
-  mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
 }
 
 /* Scrollable Container */
