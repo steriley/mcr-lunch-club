@@ -11,8 +11,8 @@ import type { Incident, Inspection, PublicImage, Venue } from '@/types';
 
 /**
  * Read-only queries for the public site. Venues are filtered with the shared
- * visibility rule (src/lib/visibility.ts) and mapped to the same shapes the
- * static JSON used, so existing pages and islands render unchanged.
+ * visibility rule (src/lib/visibility.ts) and mapped to public shapes that
+ * carry no admin-only fields.
  */
 
 /** CDN caching for public pages: fresh for 60s, then served stale while revalidating. */

@@ -335,7 +335,6 @@ mcr-lunch-club/
 │   ├── styles/global.css      # Tailwind CSS & Leaflet custom rules
 │   └── types/index.ts         # Shared TypeScript interfaces
 ├── drizzle/                   # Committed SQL migrations
-├── docs/                      # Build specs
 ├── scripts/
 │   ├── migrate.ts             # pnpm db:migrate
 │   ├── migrate-deploy.ts      # pnpm db:migrate:deploy (Vercel builds)

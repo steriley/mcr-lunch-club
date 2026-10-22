@@ -29,11 +29,6 @@ export function tierComparator(tier: TierValue): (a: OrderableVenue, b: Orderabl
   return ALPHABETICAL_TIERS.includes(tier) ? compareNames : compareByWalkingTime;
 }
 
-/** Sorts venues of one tier into public order (returns a new array). */
-export function sortForTier<T extends OrderableVenue>(tier: TierValue, venues: readonly T[]): T[] {
-  return [...venues].sort(tierComparator(tier));
-}
-
 /** Sorts venues of mixed tiers: by tier (in `TIERS` display order), then each tier's own order. */
 export function sortForPublic<T extends OrderableVenue>(venues: readonly T[], tierOf: (venue: T) => TierValue): T[] {
   const tierIndex = new Map(TIERS.map((tier, index) => [tier.value, index]));

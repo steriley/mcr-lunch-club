@@ -254,15 +254,4 @@ export type SuggestionRow = typeof venueSuggestions.$inferSelect;
 export type VenueEventRow = typeof venueEvents.$inferSelect;
 export type InspectionRow = typeof inspections.$inferSelect;
 export type TierProposalRow = typeof tierProposals.$inferSelect;
-export type GoldenCutRow = typeof goldenCut.$inferSelect;
 export type VenueImageRow = typeof venueImages.$inferSelect;
-
-export const schema = {
-  venues,
-  briberyRecords,
-  venueRevisions,
-  venueEvents,
-  inspections,
-  tierProposals,
-  venueSuggestions
-};

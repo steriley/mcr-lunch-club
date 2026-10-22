@@ -2,11 +2,11 @@ import { and, desc, eq, ne } from 'drizzle-orm';
 import { venueRevisions, venues, type VenueRow } from '@/db/schema';
 import type { Database } from '@/lib/db-client';
 import type { VenueInput } from '@/lib/venue-schema';
-import type { RouteValues } from '@/lib/venue-route';
+import type { RouteValues } from '@/lib/walking-route';
 
 /**
  * Database values for an insert or update. Distance and walking time come
- * from resolveRoute() (src/lib/venue-route.ts), never from the form.
+ * from resolveRoute() (src/lib/walking-route.ts), never from the form.
  */
 export function venueValues(input: VenueInput, userId: string | null, route: RouteValues) {
   return {

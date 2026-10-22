@@ -27,7 +27,6 @@ export const suggestionInputSchema = z.object({
   website: z.string().optional(),
 });
 
-export type SuggestionInput = z.output<typeof suggestionInputSchema>;
 
 export const SUGGESTION_STATUSES = ['new', 'accepted', 'dismissed'] as const;
 export type SuggestionStatus = (typeof SUGGESTION_STATUSES)[number];

@@ -7,7 +7,7 @@ import { PROPOSAL_ERROR_MESSAGES, PROPOSAL_ERROR_STATUS } from '@/lib/tier-propo
 import { markSuggestionAccepted, SUGGESTION_PROPOSED_TIER } from '@/lib/suggestions';
 import { createVenueWithProposal, ProposalFailed, SuggestionUnavailable } from '@/lib/venue-create';
 import { venueCreateSchema } from '@/lib/venue-schema';
-import { resolveRoute, routeWarning } from '@/lib/venue-route';
+import { resolveRoute, routeWarning } from '@/lib/walking-route';
 import { isSlugTaken, serializeVenue } from '@/lib/venues';
 import { publicVenueCondition } from '@/lib/visibility';
 

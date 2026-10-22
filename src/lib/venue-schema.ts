@@ -111,8 +111,6 @@ export const venueCreateSchema = venueFields
   });
 
 export type VenueInput = z.output<typeof venueInputSchema>;
-export type VenueCreateInput = z.output<typeof venueCreateSchema>;
-export type VenueFormValues = z.input<typeof venueInputSchema>;
 
 /** Rough UK bounding box; venues outside it are rejected. */
 export function isOutsideUk(latitude: number | null, longitude: number | null): boolean {

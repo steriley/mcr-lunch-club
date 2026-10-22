@@ -1,4 +1,3 @@
-import { schema } from '@/db/drizzle-schema';
 import { createDatabase } from '@/lib/db-client';
 import { getDatabaseDriver, getRuntimeDatabaseUrl, isDevelopment } from '@/lib/env';
 
@@ -9,8 +8,6 @@ const client = createDatabase({
   maxConnections: 5,
   logger: isDevelopment() && process.env.DATABASE_LOG === 'true',
 });
-
-export { schema };
 
 export const db = client.db;
 
