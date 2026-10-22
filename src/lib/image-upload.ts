@@ -33,6 +33,20 @@ export function focalStyle(image: FocalPoint): string {
   return `${image.focalX}% ${image.focalY}%`;
 }
 
+/** A venue photo as JSON, for admin islands and API responses. */
+export interface SerializedVenueImage extends FocalPoint {
+  id: string;
+  venueId: string;
+  fullUrl: string;
+  /** Null for photos migrated from the old single image link. */
+  thumbUrl: string | null;
+  width: number | null;
+  height: number | null;
+  caption: string | null;
+  isPrimary: boolean;
+  createdAt: string;
+}
+
 // --- Legacy single-image upload (ImageUpload.vue, /api/admin/upload). Removed in Phase 5 of #35. ---
 
 /** Shared limits for venue image uploads (client check + server token). */

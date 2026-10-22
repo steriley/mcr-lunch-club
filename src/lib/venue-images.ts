@@ -1,7 +1,7 @@
 import { and, asc, count, eq } from 'drizzle-orm';
 import { venueImages, venues, type VenueImageRow } from '@/db/schema';
 import type { Database } from '@/lib/db-client';
-import { CAPTION_MAX, MAX_IMAGES_PER_VENUE } from '@/lib/image-upload';
+import { CAPTION_MAX, MAX_IMAGES_PER_VENUE, type SerializedVenueImage } from '@/lib/image-upload';
 import { recordVenueEvent, type Actor } from '@/lib/venue-events';
 
 /**
@@ -236,7 +236,7 @@ export function deleteVenueImage(db: Database, venueId: string, imageId: string,
 }
 
 /** JSON-safe photo for admin islands and API responses. */
-export function serializeVenueImage(image: VenueImageRow) {
+export function serializeVenueImage(image: VenueImageRow): SerializedVenueImage {
   return {
     id: image.id,
     venueId: image.venueId,
@@ -251,8 +251,6 @@ export function serializeVenueImage(image: VenueImageRow) {
     createdAt: image.createdAt.toISOString(),
   };
 }
-
-export type SerializedVenueImage = ReturnType<typeof serializeVenueImage>;
 
 const OWNED_BLOB_HOST_SUFFIX = '.public.blob.vercel-storage.com';
 
