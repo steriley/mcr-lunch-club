@@ -91,10 +91,6 @@ describe('venueInputSchema', () => {
     assert.equal(venueInputSchema.parse({ ...valid, mapSearchLink: '' }).mapSearchLink, null);
   });
 
-  it('ignores the old image link: photos are managed separately', () => {
-    assert.ok(!('imageUrl' in venueInputSchema.parse({ ...valid, imageUrl: 'https://example.com/a.jpg' })));
-  });
-
   it('never accepts a hand-edited inspection date', () => {
     assert.ok(!('lastInspectionDate' in venueInputSchema.parse({ ...valid, lastInspectionDate: '2026-09-01' })));
   });

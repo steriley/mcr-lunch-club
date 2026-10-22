@@ -42,7 +42,6 @@ function toVenueInput(venue: Venue): VenueInput {
     pullQuote: null,
     lunchSpecial: venue.eatLikeUs,
     websiteUrl: null,
-    imageUrl: null,
     cost: venue.cost,
     cuisine: mapLegacyCuisine(venue.cuisine),
     mapSearchLink: venue.mapSearchLink,
