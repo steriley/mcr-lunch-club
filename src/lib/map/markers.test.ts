@@ -62,6 +62,13 @@ describe('createVenueIconHtml', () => {
   });
 });
 
+describe('createVenueIconHtml rank badge', () => {
+  it('adds a numbered badge only when a rank is given', () => {
+    assert.ok(createVenueIconHtml(venue(), 3).includes('>3</span>'));
+    assert.ok(!createVenueIconHtml(venue()).includes('aria-hidden="true">'));
+  });
+});
+
 describe('createVenueMarker', () => {
   it('returns null without coordinates', () => {
     assert.equal(createVenueMarker(L, venue({ lat: null })), null);
