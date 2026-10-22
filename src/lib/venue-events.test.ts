@@ -10,6 +10,16 @@ describe('describeVenueEvent', () => {
     assert.equal(describeVenueEvent({ kind: 'reopened', actorName: 'Alex', createdAt }), 'Reopened by Alex on 21st Oct 26');
   });
 
+  it('describes photo events as text lines', () => {
+    const at = new Date('2026-10-22T11:00:00Z');
+    assert.equal(describeVenueEvent({ kind: 'image_added', actorName: 'Sam', createdAt: at }), 'Photo added by Sam on 22nd Oct 26');
+    assert.equal(describeVenueEvent({ kind: 'image_removed', actorName: 'Alex', createdAt: at }), 'Photo removed by Alex on 22nd Oct 26');
+    assert.equal(
+      describeVenueEvent({ kind: 'image_primary_changed', actorName: 'Jo', createdAt: at }),
+      'Primary photo changed by Jo on 22nd Oct 26'
+    );
+  });
+
   it('uses the London date', () => {
     assert.equal(describeVenueEvent({ kind: 'closed', actorName: 'Sam', createdAt: new Date('2026-10-21T23:30:00Z') }), 'Closed by Sam on 22nd Oct 26');
   });

@@ -1,22 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { isOwnedBlobUrl, isValidFocal, normaliseCaption, readWebpInfo } from './venue-images';
-
-// Real files made with libwebp (via Pillow): a 37x21 lossy, the same image
-// lossless, and a 29x43 lossy image with alpha (which uses the extended format).
-const sample = (base64: string) => new Uint8Array(Buffer.from(base64, 'base64'));
-const VP8 = sample(
-  'UklGRqIAAABXRUJQVlA4IJYAAABQBACdASolABUAPr1Sm0unJSIhtVv8AOAXiWxrlViORgaUB7CwKN6E/odgAP7RGfWDq3oJ+X50v72bUXJ/EXlV6yaP/SFpF4B/xBfxA/hAEhRsXVOnMa5wOzTOaFN/HL9sVv5ZJjYvZNU7O9/kw6k/Sxgaf/JP9nHh7ZUbgzLrfQwZI/YpjzrRExZ/nGcvV4vHv1AAAAA='
-);
-const VP8L = sample(
-  'UklGRloAAABXRUJQVlA4TE4AAAAvJAAFAA9wROQr+F7Lef4jDY4iSY4jCH7euw1V0ARFEPT07aQR0f/4NHlVuRXZ+dJ507hT2VPo8WnxqnErsfPX+WmsKqPCwCe8wi3sQhc='
-);
-const VP8X = sample(
-  'UklGRmoAAABXRUJQVlA4WAoAAAAQAAAAHAAAKgAAQUxQSAoAAAABB1DAiAhERP8DVlA4IDoAAABwAwCdASodACsAPtFmrFEoJaQipWgBABoJZwDPzoAAN7nfSoAA/tDK/r4Ap6o/9wZn1dgn52MwAAAA'
-);
-// The first bytes of a JPEG and a PNG are enough: neither is a RIFF file.
-const JPEG = sample('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4n');
-const PNG = sample('iVBORw0KGgoAAAANSUhEUgAAACUAAAAVCAIAAABOhrD5AAAAiElEQVR4nL3VsRGAIAyFYUnpJNaMwATWTsIITEVNxUx2noco5CUxXYr/vrs0cWs5cqoLOiF6Vk451RA97HFzAhoJSUAjIQloJCTdlx9IanZrsvWsyY5nSvY9O');
+import { JPEG, PNG, VP8, VP8L, VP8X } from '../test/webp-samples';
 
 describe('readWebpInfo', () => {
   it('reads the size of a lossy (VP8) WebP', () => {
