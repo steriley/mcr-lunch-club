@@ -1,6 +1,7 @@
 ---
 import '@/styles/global.css';
-import { countPublicInspections } from '@/lib/public-data';
+import FontLinks from '@/components/FontLinks.astro';
+import { countPublicInspections, countPublicInspectionsForBuild } from '@/lib/public-data';
 
 interface Props {
   title?: string;
@@ -16,7 +17,8 @@ const {
 
 const currentPath = Astro.url.pathname;
 // The badge is decoration: a database hiccup must not take down every page (the 404 page included).
-const inspectionCount = await countPublicInspections().catch(() => null);
+// Prerendered pages share one count per build; the sign-in page renders on demand and counts afresh.
+const inspectionCount = await (Astro.isPrerendered ? countPublicInspectionsForBuild() : countPublicInspections()).catch(() => null);
 const currentYear = new Date().getFullYear();
 const navigation = [
   { href: '/manifesto', label: 'The Manifesto', icon: 'history_edu' },
@@ -31,8 +33,9 @@ const navigation = [
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <FontLinks />
     <meta name="theme-color" content="#FBF6EA" />
-    <link rel="icon" type="image/png" href="/brand/logo.png" />
+    <link rel="icon" type="image/png" href="/brand/favicon-64.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="MCR Lunch Club" />
     <title>{title}</title>
@@ -43,7 +46,7 @@ const navigation = [
     <header class="site-header sticky top-0 z-50">
       <div class="site-header-inner">
         <a href="/" class="brand-lockup" aria-label="MCR Lunch Club home">
-          <img src="/brand/logo.png" alt="" class="brand-crest" />
+          <img src="/brand/logo-96.webp" alt="" class="brand-crest" />
           <span class="brand-copy">
             <span class="brand-name">MCR LUNCH CLUB</span>
             <span class="brand-caption">WE RETURN ONLY WHERE DESERVED</span>

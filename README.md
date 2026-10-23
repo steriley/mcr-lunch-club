@@ -20,7 +20,9 @@ Welcome to the official repository of the **Manchester Lunch Club Map App**.
 
 ## 🛠️ Architecture
 
-Built on **Astro 7** (server output on Vercel) with targeted **Vue 3 islands** hydrated only where interactive client state is required. Venue and Hall of Shame content lives in **Neon Postgres** and is edited by the Chairs in the admin area (`/admin`); public pages only show venues that pass the visibility rule in `src/lib/visibility.ts` (an approved tier and a location) and are cached at Vercel's CDN (`s-maxage=60, stale-while-revalidate=300`), so a change appears within about a minute.
+Built on **Astro 7** on Vercel (functions in `lhr1`, next to the Neon database in London) with targeted **Vue 3 islands** hydrated only where interactive client state is required. Venue and Hall of Shame content lives in **Neon Postgres** and is edited by the Chairs in the admin area (`/admin`); public pages only show venues that pass the visibility rule in `src/lib/visibility.ts` (an approved tier and a location).
+
+The public pages are **prerendered**: they read the database when the site is built and are served as static files, so visitors never wait on Neon. Admin saves that change what the public sees (each `adminRoute` declares `publishes`) call a Vercel Deploy Hook (`src/lib/rebuild.ts`), and the change is live once that build finishes, usually within two minutes. A Vercel Cron job rebuilds the site on Wednesday evenings for the new weekly bulletin (`src/pages/api/cron/weekly-bulletin.ts`). Only the Chairs' Area, `/api/*` and the sign-in page run on demand.
 
 - **Pages (`.astro`)**:
   - `/` — The interactive Leaflet Ledger Map
@@ -31,6 +33,7 @@ Built on **Astro 7** (server output on Vercel) with targeted **Vue 3 islands** h
   - `/inspections` — The Complete Chronological Audit Log: every confirmed inspection (dual-verified or legacy) of a public venue
   - `/api/suggestions` — Public "Suggest a Venue" endpoint (same-origin only, rate limited)
   - `/api/weather/[step]` — Weather forecast for the home page card
+  - `/api/cron/weekly-bulletin` — Vercel Cron: rebuilds the site when the Wednesday bulletin goes out
   - `/admin/*` — The Chairs' Area (sign-in required; see below)
 - **Vue 3 Islands (`src/components/islands/`)**:
   - `LunchMap.vue` (`client:load`) — Leaflet map with custom tier pins, walking isochrones, and the 2.5-mile boundary.
@@ -94,6 +97,8 @@ Environment Variables**. Never commit real values.
 | `SEED_CHAIR_EMAIL` / `SEED_CHAIR_NAME` / `SEED_CHAIR_PASSWORD` | Only for `pnpm db:seed`. Remove them from your machine afterwards. |
 | `ORS_API_KEY` | [OpenRouteService](https://openrouteservice.org) key, **server-only** (never prefix it with `PUBLIC_`). Powers the admin venue location search and the walking distance and time from HQ. Without it venues still save, but the location must be entered manually and routes stay "pending". `OPENROUTESERVICE_API_KEY` is accepted as an alternative name. Free Standard plan: 2,000 directions a day (40 a minute); Matrix has its own lower daily quota. Visitors never trigger requests, only admin saves and the backfill. |
 | `METOFFICE_API_KEY`, `PUBLIC_MAP_API_KEY` | Optional weather and map tile keys. |
+| `DEPLOY_HOOK_URL` | **Production only.** A Vercel Deploy Hook for `main` (**Settings → Git → Deploy Hooks**). Admin saves POST to it so the prerendered public pages pick up the change. Unset, saves still work but the public site only changes on the next deploy. Treat the URL as a secret. Never set it for Preview: a preview save would rebuild production. |
+| `CRON_SECRET` | **Production only.** Random string (`openssl rand -hex 32`). Vercel Cron sends it to `/api/cron/weekly-bulletin`, which refuses requests without it. |
 
 ### Local development with a Neon branch
 
@@ -112,7 +117,7 @@ Use a Neon **branch** so local work never touches production data:
 | --- | --- |
 | `pnpm db:generate` | Generate a migration in `drizzle/` after changing `src/db/schema.ts`. Commit it. |
 | `pnpm db:migrate` | Apply committed migrations (uses `DATABASE_URL_UNPOOLED`). |
-| `pnpm db:migrate:deploy` | Last step of the Vercel build. Production builds migrate production; Preview builds migrate their own Neon branch; anywhere else it does nothing. |
+| `pnpm db:migrate:deploy` | Runs in the Vercel build after the tests and before `pnpm build` (which reads the database). Production builds migrate production; Preview builds migrate their own Neon branch; anywhere else it does nothing. |
 | `pnpm db:studio` | Open Drizzle Studio. |
 | `pnpm db:seed` | Create (or re-promote) the first Chair from `SEED_CHAIR_*`. Idempotent; refuses to run with `NODE_ENV=production` unless `--force` is passed. `--reset-password` resets an existing Chair's password. Prints the email only. |
 | `pnpm db:import` | Import `src/data/venues.json` and `src/data/incidents.json`. Idempotent (venues match on slug, records on title + date); existing rows are left alone. `--dry-run` reports without writing; `--update` overwrites existing venues from the files. |
@@ -136,29 +141,36 @@ Use a Neon **branch** so local work never touches production data:
    Keys are prefixed `prod/`, `preview/` or `dev/` by environment, so local and
    preview uploads never mix with production. Mind the Hobby plan's Blob limit:
    going over loses access to Blob rather than billing.
-4. **Migrations run automatically** as the last step of every Vercel build
-   (`pnpm test && pnpm build && pnpm db:migrate:deploy`), so they only run
-   once the tests and build have passed:
+4. **Migrations run automatically** in every Vercel build
+   (`pnpm test && pnpm db:migrate:deploy && pnpm build`), once the tests have
+   passed and before the build, which reads the database to prerender the
+   public pages:
    - **Production** (merging to `main`) migrates the production database before
      the new deployment goes live.
    - **Preview** migrates that preview's own Neon branch (see below).
 
-   The old deployment keeps serving for the few seconds between the migration
-   and the new one going live, so keep migrations backwards compatible: add
-   columns and tables first, and remove old ones in a later pull request once
-   no deployed code uses them. Instant Rollback in Vercel rolls back code, not
-   the schema. To migrate by hand, e.g. the first time:
+   The old deployment keeps serving while the new one builds after the
+   migration (and for good if that build fails), so keep migrations backwards
+   compatible: add columns and tables first, and remove old ones in a later
+   pull request once no deployed code uses them. Instant Rollback in Vercel
+   rolls back code, and the public pages as they were when that deployment was
+   built, but not the schema. To migrate by hand, e.g. the first time:
    ```bash
    DATABASE_URL_UNPOOLED='<production direct url>' pnpm db:migrate
    ```
-5. **First Chair** (once): with production env vars set locally,
+5. **Rebuilds** (once): create a Deploy Hook for `main` under **Settings →
+   Git → Deploy Hooks** and save its URL as `DEPLOY_HOOK_URL`, and set
+   `CRON_SECRET`, both for Production only. Then redeploy. The Wednesday
+   cron in `vercel.json` runs at 18:00 UTC, at or after the bulletin's 18:00
+   London issue time all year.
+6. **First Chair** (once): with production env vars set locally,
    ```bash
    NODE_ENV=production SEED_CHAIR_EMAIL=… SEED_CHAIR_NAME=… SEED_CHAIR_PASSWORD=… pnpm db:seed --force
    ```
    then delete the `SEED_CHAIR_*` values from that machine. Add further Chairs
    from **Chairs' Area → Users**.
-6. **Content** (once, if the database is empty): `pnpm db:import`.
-7. **Verify**: `pnpm check:security https://<your-domain>`.
+7. **Content** (once, if the database is empty): `pnpm db:import`.
+8. **Verify**: `pnpm check:security https://<your-domain>`.
 
 ### Preview deployments (a Neon branch per pull request)
 

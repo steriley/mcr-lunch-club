@@ -2,17 +2,16 @@ import '../test/setup-env';
 import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  PUBLIC_CACHE_CONTROL,
   countPublicInspections,
   getGoldenCut,
   getMapVenues,
   getPublicInspections,
   getPublicVenue,
+  getPublicVenueDetails,
   getPublicVenues,
   getPublishedIncidents,
   formatIncidentDate,
   serializeForScript,
-  setPublicCacheHeaders,
   toPublicIncident,
   toPublicImage,
   toPublicInspection,
@@ -226,14 +225,6 @@ describe('serializeForScript', () => {
   });
 });
 
-describe('setPublicCacheHeaders', () => {
-  it('sets the CDN cache header', () => {
-    const headers = new Headers();
-    setPublicCacheHeaders(headers);
-    assert.equal(headers.get('Cache-Control'), PUBLIC_CACHE_CONTROL);
-  });
-});
-
 describe('public venue queries', () => {
   it('getPublicVenues filters with the shared visibility rule', async () => {
     const calls = stubDb('select', []);
@@ -284,6 +275,17 @@ describe('public venue queries', () => {
     assert.equal(await getPublicVenue('missing'), null);
   });
 
+  it('getPublicVenueDetails returns every visible venue with its detail fields', async () => {
+    const calls = stubDb('select', [
+      joined(venueRow({ slug: 'chip-shop', pullQuote: 'Gold' }), imageRow()),
+      joined(venueRow({ slug: 'pending', tier: null as never })),
+    ]);
+    const venues = await getPublicVenueDetails();
+    assert.equal(renderSql(calls.find((call) => call.method === 'where')!.args[0]).sql, renderSql(publicVenueCondition()).sql);
+    assert.deepEqual(venues.map((venue) => [venue.slug, venue.pullQuote]), [['chip-shop', 'Gold']]);
+    assert.equal(venues[0].image?.url, imageRow().fullUrl);
+  });
+
   it('joins only the primary photo, inside the visibility filter', async () => {
     const calls = stubDb('select', []);
     await getPublicVenues();
@@ -299,7 +301,7 @@ describe('public venue queries', () => {
       joined(venueRow({ slug: 'pending', tier: null as never }), photo),
       joined(venueRow({ slug: 'unlocated', latitude: null, longitude: null }), photo),
     ];
-    for (const load of [getPublicVenues, getMapVenues]) {
+    for (const load of [getPublicVenues, getMapVenues, getPublicVenueDetails]) {
       stubDb('select', hidden);
       const venues = await load();
       assert.deepEqual(venues, [], load.name);

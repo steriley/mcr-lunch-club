@@ -2,14 +2,14 @@
 import Layout from '@/layouts/Layout.astro';
 import BenchPillar from '@/components/BenchPillar.astro';
 import PageRibbon from '@/components/PageRibbon.astro';
-import { getPublicInspections, getPublicVenues, setPublicCacheHeaders } from '@/lib/public-data';
+import { getPublicInspections, getPublicVenues } from '@/lib/public-data';
 import { toCard } from '@/lib/sovereign-bench';
 
-export const prerender = false;
+// Built with the site; admin saves trigger a rebuild (src/lib/rebuild.ts).
+export const prerender = true;
 
 const [inspections, venues] = await Promise.all([getPublicInspections(), getPublicVenues()]);
 const venuesBySlug = new Map(venues.map((venue) => [venue.slug, venue]));
-setPublicCacheHeaders(Astro.response.headers);
 const verifiedCount = inspections.filter((inspection) => inspection.kind === 'verified').length;
 const legacyCount = inspections.length - verifiedCount;
 ---

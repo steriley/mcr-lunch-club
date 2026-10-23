@@ -15,7 +15,7 @@ const notFound = () => jsonError(404, NOT_FOUND);
 
 export const PUT = adminRoute(
   {
-    action: 'Update venue',
+    action: 'Update venue', publishes: true,
     params: { id: NOT_FOUND },
     body: venueInputSchema,
     onError: (error) => (isUniqueViolation(error) ? slugTaken() : undefined),
@@ -27,7 +27,7 @@ export const PUT = adminRoute(
   }
 );
 
-export const DELETE = adminRoute({ action: 'Delete venue', params: { id: NOT_FOUND } }, async ({ params }) => {
+export const DELETE = adminRoute({ action: 'Delete venue', publishes: true, params: { id: NOT_FOUND } }, async ({ params }) => {
   // Collect the photos first: deleting the venue cascades to their rows.
   const images = await db.select({ fullUrl: venueImages.fullUrl, thumbUrl: venueImages.thumbUrl }).from(venueImages).where(eq(venueImages.venueId, params.id));
   const [row] = await db.delete(venues).where(eq(venues.id, params.id)).returning({ id: venues.id });

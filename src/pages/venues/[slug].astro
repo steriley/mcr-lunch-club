@@ -3,21 +3,32 @@ import Layout from '@/layouts/Layout.astro';
 import { formatDate } from '@/lib/dates';
 import { focalStyle } from '@/lib/image-upload';
 import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
-import { getPublicInspections, getPublicVenue, setPublicCacheHeaders } from '@/lib/public-data';
+import { getPublicInspections, getPublicVenueDetails, type PublicVenueDetail } from '@/lib/public-data';
 import { milesText, walkText } from '@/lib/route-display';
 import { COST_LABELS } from '@/lib/cost-display';
 import { tierInfo } from '@/lib/tiers';
+import type { Inspection } from '@/types';
 
-export const prerender = false;
+// Built with the site; admin saves trigger a rebuild (src/lib/rebuild.ts).
+// A slug with no public venue has no page, so it gets src/pages/404.astro.
+export const prerender = true;
 
-const venue = Astro.params.slug ? await getPublicVenue(Astro.params.slug) : null;
-if (!venue) {
-  // An empty 404 makes Astro render src/pages/404.astro.
-  return new Response(null, { status: 404, statusText: 'Not found' });
+export async function getStaticPaths() {
+  // Two queries for every venue page, rather than two per page.
+  const [venues, inspections] = await Promise.all([getPublicVenueDetails(), getPublicInspections()]);
+  return venues.map((venue) => ({
+    params: { slug: venue.slug },
+    props: { venue, venueInspections: inspections.filter((inspection) => inspection.venueSlug === venue.slug) },
+  }));
 }
-setPublicCacheHeaders(Astro.response.headers);
 
-const venueInspections = await getPublicInspections(venue.slug);
+interface Props {
+  venue: PublicVenueDetail;
+  /** Newest first, like getPublicInspections. */
+  venueInspections: Inspection[];
+}
+
+const { venue, venueInspections } = Astro.props;
 
 const tier = tierInfo(venue.tier);
 ---
@@ -93,7 +104,7 @@ const tier = tierInfo(venue.tier);
           <div class="bg-gradient-to-r from-[#1a1e24] via-[#242b35] to-[#1a1e24] text-[#f9f7f1] p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-5 font-serif-header relative overflow-hidden">
             <div class="shrink-0 relative z-10">
               <img
-                src="/brand/approved-sticker.png"
+                src="/brand/approved-sticker-256.webp"
                 alt="Official MCR Lunch Club Approved Sticker"
                 class="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-[0_0_20px_rgba(197,155,39,0.45)] select-none hover:scale-105 transition-transform"
               />
