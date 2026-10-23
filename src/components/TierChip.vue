@@ -88,6 +88,26 @@ defineProps<{
   outline-offset: 2px;
 }
 
+/* The count: a pill a shade off the chip it sits in, so it reads as part of the chip. */
+.ledger-tier-chip .ledger-tier-count {
+  display: inline-flex;
+  min-width: 22px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgb(30 27 23 / 7%);
+  color: rgb(30 27 23 / 70%);
+  font: 700 11px/1 "Plus Jakarta Sans", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger-tier-chip.is-selected .ledger-tier-count {
+  background: rgb(255 255 255 / 24%);
+  color: #fff;
+}
+
 .ledger-tier-check {
   font-size: 12px;
   line-height: 1;
