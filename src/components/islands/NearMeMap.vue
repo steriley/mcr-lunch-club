@@ -16,26 +16,12 @@
       <div
         ref="mapContainerRef"
         class="near-me-map-container"
-        :class="{ 'is-picking-location': isPickingLocation }"
       ></div>
 
       <!-- Sibling Overlay Layer (z-index above Leaflet panes, pointer-events: none) -->
       <div class="near-me-overlay-layer">
-        <!-- Top Bar: Title Pill & Close Button -->
+        <!-- Top Bar: Close Button -->
         <header class="near-me-top-bar">
-          <div class="near-me-title-pill">
-            <span class="near-me-badge" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-[#c59b27]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
-              </svg>
-            </span>
-            <div class="near-me-title-text">
-              <h1 class="near-me-title">Near Me</h1>
-              <p class="near-me-subtitle">Spinningfields Quorum</p>
-            </div>
-          </div>
-
           <button
             ref="closeButtonRef"
             type="button"
@@ -84,9 +70,7 @@
               <div class="near-me-prepermission-body">
                 <h3 class="near-me-prepermission-title">Location Required</h3>
                 <p class="near-me-prepermission-text">
-                  The Near Me function requires your approximate position to rank nearby venues.
-                  Your coordinates are used locally, never transmitted, and discarded when you close this view.
-                  The Quorum requests your co-operation.
+                  Used to rank nearby venues. Never sent or stored.
                 </p>
               </div>
             </div>
@@ -1053,6 +1037,12 @@ function updateUserMarkerOnMap() {
   }
 }
 
+// Toggled by hand: a Vue :class binding on the Leaflet container would rewrite its
+// class list and strip the leaflet-* classes, collapsing every tile to zero width.
+watch(isPickingLocation, (picking) => {
+  mapContainerRef.value?.classList.toggle('is-picking-location', picking);
+});
+
 // Watch user position and manual flag
 watch([geo.position, geo.isManual], () => {
   updateUserMarkerOnMap();
@@ -1326,52 +1316,11 @@ onUnmounted(() => {
 .near-me-top-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   width: 100%;
   gap: 12px;
   pointer-events: none;
   z-index: 1250;
-}
-
-.near-me-title-pill {
-  pointer-events: auto;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background-color: rgba(26, 30, 36, 0.95);
-  backdrop-filter: blur(8px);
-  color: var(--near-me-header-text);
-  padding: 6px 14px;
-  border-radius: 9999px;
-  border: 1px solid var(--near-me-gold);
-  box-shadow: var(--near-me-shadow);
-}
-
-.near-me-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.near-me-title-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.15;
-}
-
-.near-me-title {
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: #f9f7f1;
-  margin: 0;
-}
-
-.near-me-subtitle {
-  font-size: 0.68rem;
-  color: #c59b27;
-  font-weight: 500;
-  margin: 0;
 }
 
 .near-me-close-btn {
@@ -1597,7 +1546,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px 4px 16px;
+  padding: 4px 16px 0 16px;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -1606,7 +1555,7 @@ onUnmounted(() => {
 .near-me-snap-btn {
   background: none;
   border: none;
-  padding: 6px 12px;
+  padding: 2px 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1762,23 +1711,6 @@ onUnmounted(() => {
   }
 }
 
-:deep(.leaflet-popup-content-wrapper) {
-  border-radius: 8px;
-  background: #fdfcf9;
-  border: 1px solid #dcd6c8;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
-  padding: 0;
-}
-
-:deep(.leaflet-popup-content) {
-  margin: 0;
-  line-height: 1.4;
-}
-
-:deep(.leaflet-popup-tip) {
-  background: #fdfcf9;
-}
-
 /* Pin Selection Highlighting */
 :deep(.custom-ledger-pin.is-selected-pin) {
   z-index: 9999 !important;
@@ -1861,21 +1793,11 @@ onUnmounted(() => {
 }
 
 /* Phase 6: Use the site's parchment, ink, navy and gold design system. */
-.near-me-title-pill,
 .near-me-close-btn,
 .near-me-control-btn {
   background-color: var(--ledger-deep);
   color: var(--ledger-parchment);
   border-color: var(--ledger-gold);
-}
-
-.near-me-title {
-  color: var(--ledger-parchment);
-}
-
-.near-me-subtitle,
-.near-me-title-pill .near-me-badge {
-  color: var(--ledger-gold);
 }
 
 .near-me-close-btn:hover,
@@ -2013,12 +1935,6 @@ onUnmounted(() => {
   filter: saturate(0.88) sepia(0.05);
 }
 
-:deep(.leaflet-popup-content-wrapper),
-:deep(.leaflet-popup-tip) {
-  background: var(--ledger-parchment);
-  border-color: var(--ledger-border);
-}
-
 .near-me-shell-enter-active,
 .near-me-shell-leave-active {
   transition: opacity 180ms ease;
@@ -2044,10 +1960,6 @@ onUnmounted(() => {
   font-size: 0.8rem;
 }
 
-.near-me-subtitle {
-  font-size: 0.75rem;
-}
-
 .near-me-btn-walk {
   min-height: 44px;
   justify-content: center;
@@ -2058,7 +1970,7 @@ onUnmounted(() => {
 
 
 .near-me-snap-btn {
-  min-height: 44px;
+  min-height: 24px;
 }
 
 .near-me-control-btn {

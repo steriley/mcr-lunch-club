@@ -30,7 +30,8 @@ export const CARTO_VOYAGER_TILE_CONFIG: TileLayerConfig = {
   attribution:
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
   subdomains: 'abcd',
-  maxZoom: 19,
+  // CARTO serves no Voyager tiles past zoom 18; zooming further blanks the map.
+  maxZoom: 18,
 };
 
 export interface IsochroneRing {

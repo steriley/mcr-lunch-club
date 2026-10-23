@@ -191,21 +191,3 @@ function renderMarkers() {
 }
 
 </script>
-
-<style>
-/* Leaflet Popup Styling */
-.ledger-popup .leaflet-popup-content-wrapper {
-  border-radius: 8px;
-  background: #fdfcf9;
-  border: 1px solid #dcd6c8;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
-  padding: 0;
-}
-.ledger-popup .leaflet-popup-content {
-  margin: 0;
-  line-height: 1.4;
-}
-.ledger-popup .leaflet-popup-tip {
-  background: #fdfcf9;
-}
-</style>

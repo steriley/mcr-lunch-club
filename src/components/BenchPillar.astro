@@ -2,7 +2,7 @@
 import BenchWalk from '@/components/BenchWalk.astro';
 import { focalStyle } from '@/lib/image-upload';
 import { formatDate } from '@/lib/dates';
-import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS, inspectionWitnesses } from '@/lib/inspection-display';
+import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import type { BenchCard } from '@/lib/sovereign-bench';
 import type { Inspection } from '@/types';
 
@@ -45,19 +45,19 @@ const { pillar, inspection } = Astro.props;
         <span class="bench-cost">{pillar.cost}</span>
       </div>
       {inspection ? (
-        <p class="bench-last bench-inspection-date">
-          Inspected: {formatDate(inspection.date)}
+        <p class="bench-last bench-inspection-date">Inspected: {formatDate(inspection.date)}</p>
+      ) : (
+        pillar.lastInspection && <p class="bench-last">Last Inspection: {pillar.lastInspection}</p>
+      )}
+      {inspection ? (
+        <div class="bench-inspection-badges">
+          <span class={`bench-count ${inspection.kind === 'legacy' ? 'is-legacy' : ''}`}>{INSPECTION_KIND_LABELS[inspection.kind]}</span>
           {inspection.outcome && (
             <span class={`bench-badge ${INSPECTION_OUTCOME_BADGE_CLASSES[inspection.outcome]}`}>
               {INSPECTION_OUTCOME_LABELS[inspection.outcome]}
             </span>
           )}
-        </p>
-      ) : (
-        pillar.lastInspection && <p class="bench-last">Last Inspection: {pillar.lastInspection}</p>
-      )}
-      {inspection ? (
-        <p class="bench-pillar-text">{inspectionWitnesses(inspection)}</p>
+        </div>
       ) : pillar.quote ? (
         <p class="bench-pillar-text is-quote">{pillar.quote}</p>
       ) : (
@@ -67,9 +67,7 @@ const { pillar, inspection } = Astro.props;
   </div>
   <div class="bench-telemetry">
     <BenchWalk walk={pillar.walk} venueName={pillar.name} />
-    {inspection ? (
-      <span class={`bench-count ${inspection.kind === 'legacy' ? 'is-legacy' : ''}`}>{INSPECTION_KIND_LABELS[inspection.kind]}</span>
-    ) : pillar.inspectionCount > 0 && (
+    {pillar.inspectionCount > 0 && (
       <span class="bench-count">{pillar.inspectionCount} {pillar.inspectionCount === 1 ? 'Inspection' : 'Inspections'}</span>
     )}
   </div>

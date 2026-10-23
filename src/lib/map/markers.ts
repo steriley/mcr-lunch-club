@@ -118,32 +118,21 @@ export function createVenuePopupContent(venue: Venue, onViewDossier?: () => void
   const tier = tierInfo(venue.tier);
 
   const popupContent = document.createElement('div');
-  popupContent.className = 'p-3 font-serif-header text-[#1a1e24] max-w-[260px]';
+  popupContent.className = 'venue-popup';
   const image = venue.image
     ? `<img src="${escapeHtml(venue.image.thumbUrl)}" alt="${escapeHtml(venue.image.alt)}" width="640" height="427" loading="lazy" decoding="async" onerror="this.style.display='none'"
-           style="object-position: ${escapeHtml(focalStyle(venue.image))};" class="mb-2 block aspect-[3/2] h-auto w-full rounded object-cover" />`
+           style="object-position: ${escapeHtml(focalStyle(venue.image))};" class="venue-popup-image" />`
     : '';
   popupContent.innerHTML = `
     ${image}
-    <div class="flex items-center justify-between gap-2 border-b border-stone-200 pb-1.5 mb-2">
-      <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded"
-            style="background-color: ${tier.color}20; color: ${tier.color}; border: 1px solid ${tier.color}40;">
-        ${escapeHtml(tier.label)}
-      </span>
-      <span class="text-xs font-mono font-bold text-amber-900">${escapeHtml(venue.cost)}</span>
-    </div>
-    <h3 class="font-bold text-sm text-[#1a1e24] leading-tight">${escapeHtml(venue.name)}</h3>
-    <p class="text-xs text-stone-600 font-sans mt-0.5">${escapeHtml(venue.cuisine)} &bull; ${escapeHtml(walkText(venue.walkingTimeMin, 'min walk from Base'))} (${escapeHtml(milesText(venue.distanceMiles, 'mi'))})</p>
-
-    <div class="mt-2 p-1.5 bg-stone-100/90 rounded border border-stone-200 text-xs font-sans">
-      <strong class="text-stone-800 font-serif-header">Eat Like Us:</strong>
-      <p class="text-stone-700 italic mt-0.5 line-clamp-2">${escapeHtml(venue.eatLikeUs)}</p>
-    </div>
-
-    <div class="mt-3 flex items-center justify-between gap-2 font-sans text-xs">
-      <button type="button" data-view-dossier class="w-full bg-[#1a1e24] hover:bg-[#8b1e22] text-[#f9f7f1] py-1.5 px-3 rounded font-semibold text-center transition-colors">
-        View Ledger Dossier
-      </button>
+    <div class="venue-popup-body">
+      <div class="venue-popup-title-row">
+        <h3 class="venue-popup-name">${escapeHtml(venue.name)}</h3>
+        <span class="venue-popup-cost">${escapeHtml(venue.cost)}</span>
+      </div>
+      <span class="venue-popup-tier" style="--tier-color: ${tier.color};">${escapeHtml(tier.label)}</span>
+      <p class="venue-popup-walk">${escapeHtml(walkText(venue.walkingTimeMin, 'min walk from Base'))} (${escapeHtml(milesText(venue.distanceMiles, 'mi'))})</p>
+      <button type="button" data-view-dossier class="venue-popup-button">View Ledger Dossier</button>
     </div>
   `;
 

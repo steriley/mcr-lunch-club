@@ -41,7 +41,7 @@ describe('map config', () => {
     assert.equal(createTileLayer(L, 'k'), 'layer');
     const [url, options] = calls[0] as [string, Record<string, unknown>];
     assert.ok(url.endsWith('?key=k'));
-    assert.equal(options.maxZoom, 19);
+    assert.equal(options.maxZoom, 18);
     assert.equal(options.subdomains, 'abcd');
   });
 });

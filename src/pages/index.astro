@@ -6,6 +6,7 @@ import NearMeMap from '@/components/islands/NearMeMap.vue';
 import VenueSheet from '@/components/islands/VenueSheet.vue';
 import WhereToday from '@/components/islands/WhereToday.vue';
 import WeatherCard from '@/components/WeatherCard.vue';
+import ChairsDeliberation from '@/components/ChairsDeliberation.vue';
 import SuggestModal from '@/components/islands/SuggestModal.vue';
 import BenchPillar from '@/components/BenchPillar.astro';
 import BenchWalk from '@/components/BenchWalk.astro';
@@ -42,7 +43,11 @@ const { mode, hero, pillars } = buildSovereignBench(goldenCut, venuesData, inspe
 const isGoldenCut = mode === 'golden-cut';
 // Lists are already nearest first, unknown walking times last.
 const valueShortcut = approvedVenues.find((venue) => venue.cost === '£');
-const swiftShortcut = approvedVenues.find((venue) => venue !== valueShortcut);
+// Inspections are newest first, so the first one at another Approved venue is the freshest verdict.
+const freshInspection = inspectionsData.find((inspection) =>
+  approvedVenues.some((venue) => venue.slug === inspection.venueSlug && venue !== valueShortcut)
+);
+const freshShortcut = approvedVenues.find((venue) => venue.slug === freshInspection?.venueSlug);
 const scrutinyShortcut = venuesData.find((venue) => venue.tier === 'under_consideration');
 const latestLedgerEntry = inspectionsData[0];
 const scrutinyAuditCount = scrutinyShortcut
@@ -52,13 +57,13 @@ const fieldShortcuts = [
   {
     label: 'High value',
     venue: valueShortcut,
-    detail: valueShortcut ? `${valueShortcut.cost} · ${valueShortcut.cuisine} · ${walkText(valueShortcut.walkingTimeMin)}` : '',
+    detail: valueShortcut ? `${valueShortcut.cost} · ${walkText(valueShortcut.walkingTimeMin)}` : '',
     variant: 'is-approved',
   },
   {
-    label: 'Swift exit',
-    venue: swiftShortcut,
-    detail: swiftShortcut ? `${swiftShortcut.cuisine} · ${walkText(swiftShortcut.walkingTimeMin)}` : '',
+    label: 'Freshly inspected',
+    venue: freshShortcut,
+    detail: freshShortcut && freshInspection ? `Inspected ${formatDate(freshInspection.date)} · ${walkText(freshShortcut.walkingTimeMin)}` : '',
     variant: 'is-approved',
   },
   {
@@ -98,24 +103,7 @@ const fieldShortcuts = [
           </div>
 
           <div class="field-panel-grid">
-            <article class="field-panel">
-              <div class="field-panel-heading">
-                <h2>
-                  <svg class="field-icon is-gold" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M12 3v17M5 6h14M7 6 3.8 13h6.4L7 6Zm10 0-3.2 7h6.4L17 6ZM7 20h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
-                  Chairs' Deliberation
-                </h2>
-                <span class="decree-badge">Decree #284</span>
-              </div>
-              <blockquote class="deliberation-quote">
-                “Never queue past 12:35 without contingency pastry. If a venue has no lunchtime trade by 12:45, suspect refrigeration failure.”
-              </blockquote>
-              <div class="field-panel-footer">
-                <span>Chair Henderson presiding</span>
-                <a href="/manifesto">Read Codex <span aria-hidden="true">→</span></a>
-              </div>
-            </article>
+            <ChairsDeliberation client:load />
 
             <WeatherCard client:visible />
           </div>

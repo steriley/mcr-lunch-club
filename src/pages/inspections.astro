@@ -71,7 +71,7 @@ const legacyCount = inspections.length - verifiedCount;
         <div class="bench-pillars tier-venue-grid">
           {inspections.map((insp) => {
             const venue = venuesBySlug.get(insp.venueSlug);
-            return venue && <BenchPillar pillar={toCard({ venue }, [insp])} inspection={insp} />;
+            return venue && <BenchPillar pillar={toCard({ venue }, inspections)} inspection={insp} />;
           })}
         </div>
       )}
