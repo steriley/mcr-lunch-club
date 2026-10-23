@@ -214,100 +214,29 @@
             @touchend.passive="onListTouchEnd"
             @touchcancel.passive="onListTouchEnd"
           >
-            <!-- Nearest-Venue Hero Card -->
-            <section
-              v-if="nearestVenue"
-              id="nearest-hero-card"
-              class="near-me-hero-card"
-              :class="{ 'is-selected': selectedVenueId === nearestVenue.venue.id }"
-              aria-label="Nearest venue recommendation"
-              tabindex="0"
-              role="button"
-              @click="selectVenueItem(nearestVenue.venue, false)"
-              @keydown.enter="selectVenueItem(nearestVenue.venue, false)"
-              @keydown.space.prevent="selectVenueItem(nearestVenue.venue, false)"
-            >
-              <div class="near-me-hero-ribbon">
-                <span class="near-me-hero-tag">
-                  <span aria-hidden="true">🎯</span>
-                  <!-- Phase 5: contextual tag copy depending on far state -->
-                  <span v-if="isUserFarFromManchester">CLOSEST TO SPINNINGFIELDS</span>
-                  <span v-else-if="nearestVenue.isFarAway">NEAREST AVAILABLE (FAR)</span>
-                  <span v-else>NEAREST RECOMMENDATION</span>
+            <!-- Nearest venue -->
+            <div v-if="nearestVenue" class="near-me-list-section">
+              <div class="near-me-list-header">
+                <span class="near-me-list-title">
+                  {{ isUserFarFromManchester ? 'Closest to Spinningfields' : nearestVenue.isFarAway ? 'Nearest available' : 'Nearest' }}
                 </span>
-                <!-- Phase 5: far-from-Manchester notice -->
-                <span v-if="isUserFarFromManchester" class="near-me-hero-far-notice near-me-hero-far-notice--offsite">
-                  You are outside Manchester
-                </span>
-                <!-- Phase 5: no venues nearby in selected tiers, but showing closest anyway -->
-                <span v-else-if="nearestVenue.isFarAway" class="near-me-hero-far-notice">
-                  None nearby — showing closest
-                </span>
-                <span class="near-me-hero-dist-badge">
-                  {{ nearestVenue.formattedDistance }}
-                </span>
+                <span v-if="isUserFarFromManchester" class="near-me-far-note">You are outside Manchester</span>
+                <span v-else-if="nearestVenue.isFarAway" class="near-me-far-note">None nearby</span>
               </div>
-
-              <div class="near-me-hero-body">
-                <div class="near-me-hero-heading-row">
-                  <h2 class="near-me-hero-title">{{ nearestVenue.venue.name }}</h2>
-                  <span
-                    class="near-me-tier-pill"
-                    :style="tierPillStyle(nearestVenue.venue.tier)"
-                  >
-                    <span
-                      class="near-me-tier-pill-dot"
-                      :style="{ backgroundColor: tierInfo(nearestVenue.venue.tier).color }"
-                    ></span>
-                    {{ tierInfo(nearestVenue.venue.tier).label }}
-                  </span>
-                </div>
-
-                <p
-                  v-if="nearestVenue.venue.eatLikeUs"
-                  class="near-me-hero-verdict"
-                >
-                  “{{ nearestVenue.venue.eatLikeUs }}”
-                </p>
-
-                <div class="near-me-hero-actions-row">
-                  <div class="near-me-hero-subinfo">
-                    <span>{{ nearestVenue.venue.cuisine }}</span>
-                    <span>•</span>
-                    <span class="font-mono font-bold">{{ nearestVenue.venue.cost }}</span>
-                    <span>•</span>
-                    <span>{{ walkLabel(nearestVenue.distanceMetres) }}</span>
-                  </div>
-
-                  <div class="near-me-hero-buttons">
-                    <a
-                      :href="getWalkingDirectionsUrl(nearestVenue.venue.lat!, nearestVenue.venue.lng!)"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="near-me-hero-walk-btn"
-                      id="btn-hero-walk-there"
-                      :aria-label="`Walk there to ${nearestVenue.venue.name}`"
-                      @click.stop
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="13 17 18 12 13 7"/>
-                        <polyline points="6 17 11 12 6 7"/>
-                      </svg>
-                      <span>Walk there</span>
-                    </a>
-                    <button
-                      type="button"
-                      class="near-me-hero-dossier-btn"
-                      id="btn-hero-dossier"
-                      :aria-label="`Details for ${nearestVenue.venue.name}`"
-                      @click.stop="selectVenue(nearestVenue.venue)"
-                    >
-                      <span>Details</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </section>
+              <BenchPillar
+                :id="`near-me-row-${nearestVenue.venue.id}`"
+                :venue="nearestVenue.venue"
+                :inspections="inspections"
+                :rank="1"
+                :walk-label="rowWalkLabel(nearestVenue)"
+                :walk-url="rowWalkUrl(nearestVenue)"
+                selectable
+                show-tier
+                :selected="selectedVenueId === nearestVenue.venue.id"
+                @select="selectVenueItem(nearestVenue.venue, false)"
+                @details="selectVenue(nearestVenue.venue)"
+              />
+            </div>
 
             <!-- Ranked Venue List Section -->
             <div class="near-me-list-section">
@@ -327,97 +256,22 @@
               </div>
 
               <div class="near-me-list-rows" role="list">
-                <article
+                <BenchPillar
                   v-for="(rv, index) in listVenues"
-                  :key="rv.venue.id"
                   :id="`near-me-row-${rv.venue.id}`"
-                  class="near-me-venue-card"
-                  :class="{ 'is-selected': selectedVenueId === rv.venue.id }"
-                  tabindex="0"
+                  :key="rv.venue.id"
                   role="listitem"
-                  :aria-label="`${rv.venue.name}, ${rv.formattedDistance}, ${tierInfo(rv.venue.tier).label}`"
-                  @click="selectVenueItem(rv.venue, false)"
-                  @keydown.enter="selectVenueItem(rv.venue, false)"
-                  @keydown.space.prevent="selectVenueItem(rv.venue, false)"
-                >
-                  <div class="bench-thumb near-me-card-thumb">
-                    <span class="bench-placeholder" aria-hidden="true">
-                      <img src="/brand/approved-sticker.png" alt="" />
-                    </span>
-                    <img
-                      v-if="rv.venue.image"
-                      class="bench-image"
-                      :src="rv.venue.image.thumbUrl"
-                      alt=""
-                      width="64"
-                      height="64"
-                      :style="{ objectPosition: focalStyle(rv.venue.image) }"
-                      loading="lazy"
-                      decoding="async"
-                      @error="($event.target as HTMLElement).parentElement?.classList.add('is-placeholder')"
-                    />
-                  </div>
-                  <div class="near-me-card-body">
-                  <div class="near-me-card-header">
-                    <div class="near-me-card-meta">
-                      <span class="near-me-card-index">#{{ index + 2 }}</span>
-                      <h3 class="near-me-card-title">{{ rv.venue.name }}</h3>
-                    </div>
-                    <div class="near-me-card-badges">
-                      <span class="near-me-dist-pill">{{ rv.formattedDistance }}</span>
-                      <span
-                        class="near-me-tier-pill"
-                        :style="tierPillStyle(rv.venue.tier)"
-                      >
-                        <span
-                          class="near-me-tier-pill-dot"
-                          :style="{ backgroundColor: tierInfo(rv.venue.tier).color }"
-                        ></span>
-                        <span>{{ tierInfo(rv.venue.tier).label }}</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  <p v-if="rv.venue.eatLikeUs" class="near-me-card-verdict">
-                    “{{ rv.venue.eatLikeUs }}”
-                  </p>
-
-                  <div class="near-me-card-footer">
-                    <div class="near-me-card-subinfo">
-                      <span>{{ rv.venue.cuisine }}</span>
-                      <span>•</span>
-                      <span class="font-mono font-bold">{{ rv.venue.cost }}</span>
-                      <span>•</span>
-                      <span>{{ walkLabel(rv.distanceMetres) }}</span>
-                    </div>
-
-                    <div class="near-me-card-actions">
-                      <a
-                        :href="getWalkingDirectionsUrl(rv.venue.lat!, rv.venue.lng!)"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="near-me-btn-walk"
-                        :aria-label="`Get walking directions to ${rv.venue.name}`"
-                        @click.stop
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                          <polyline points="13 17 18 12 13 7"/>
-                          <polyline points="6 17 11 12 6 7"/>
-                        </svg>
-                        <span>Walk</span>
-                      </a>
-                      <button
-                        type="button"
-                        class="near-me-btn-dossier"
-                        :aria-label="`Details for ${rv.venue.name}`"
-                        @click.stop="selectVenue(rv.venue)"
-                      >
-                        <span>Details</span>
-                      </button>
-                    </div>
-                  </div>
-                  </div>
-                </article>
+                  :venue="rv.venue"
+                  :inspections="inspections"
+                  :rank="index + 2"
+                  :walk-label="rowWalkLabel(rv)"
+                  :walk-url="rowWalkUrl(rv)"
+                  selectable
+                  show-tier
+                  :selected="selectedVenueId === rv.venue.id"
+                  @select="selectVenueItem(rv.venue, false)"
+                  @details="selectVenue(rv.venue)"
+                />
               </div>
 
               <!-- Empty state when no venues match -->
@@ -441,11 +295,11 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $isNearMeOpen, closeNearMe, selectVenue } from '@/stores/filters';
-import { $venuesList } from '@/stores/ledger';
-import { NEAR_ME_DEFAULT_TIERS, NEAR_ME_TIERS, countVenuesByTier, tierInfo, type TierValue } from '@/lib/tiers';
-import type { CostTier, Venue } from '@/types';
+import { $inspectionsList, $venuesList } from '@/stores/ledger';
+import { NEAR_ME_DEFAULT_TIERS, NEAR_ME_TIERS, countVenuesByTier, type TierValue } from '@/lib/tiers';
+import type { CostTier, Inspection, Venue } from '@/types';
+import BenchPillar from '@/components/BenchPillar.vue';
 import TierFilterChips from '@/components/TierFilterChips.vue';
-import { focalStyle } from '@/lib/image-upload';
 import {
   BASE_LAT,
   BASE_LNG,
@@ -476,6 +330,9 @@ const props = defineProps<{
 
 const isOpen = useStore($isNearMeOpen);
 const venuesList = useStore($venuesList);
+const inspectionsStore = useStore($inspectionsList);
+// The store hands back a deep-readonly copy; the card only reads it.
+const inspections = computed(() => inspectionsStore.value as Inspection[]);
 
 const shellRef = ref<HTMLElement | null>(null);
 const mapContainerRef = ref<HTMLElement | null>(null);
@@ -677,9 +534,13 @@ function walkLabel(distanceMetres: number): string {
   return `${estimateWalkMinutes(distanceMetres)} min walk from ${isRankedFromBase.value ? 'Base' : 'you'}`;
 }
 
-function tierPillStyle(value: TierValue) {
-  const { color, border } = tierInfo(value);
-  return { backgroundColor: color, borderColor: border, color: '#ffffff' };
+function rowWalkLabel(rv: RankedVenue): string {
+  return `${rv.formattedDistance} · ${walkLabel(rv.distanceMetres)}`;
+}
+
+function rowWalkUrl(rv: RankedVenue): string | null {
+  const { lat, lng } = rv.venue;
+  return lat == null || lng == null ? null : getWalkingDirectionsUrl(lat, lng);
 }
 
 function toggleTierFilter(tier: TierValue) {
@@ -812,9 +673,7 @@ function selectVenueItem(venue: Venue, fromPinClick = false) {
 
   // Scroll corresponding row into view
   nextTick(() => {
-    const rowEl =
-      document.getElementById(`near-me-row-${venue.id}`) ??
-      (nearestVenue.value?.venue.id === venue.id ? document.getElementById('nearest-hero-card') : null);
+    const rowEl = document.getElementById(`near-me-row-${venue.id}`);
     if (rowEl) {
       rowEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
@@ -1807,165 +1666,6 @@ onUnmounted(() => {
   background: var(--near-me-gold);
 }
 
-/* =====================================================   Hero Card: Nearest Venue
-   ============================================================ */
-.near-me-hero-card {
-  background: linear-gradient(145deg, rgba(35, 40, 48, 0.98), rgba(22, 26, 32, 0.98));
-  border: 1.5px solid var(--near-me-gold);
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.near-me-hero-card:hover {
-  border-color: #f9f7f1;
-  transform: translateY(-1px);
-}
-
-.near-me-hero-card.is-selected {
-  outline: 2px solid var(--near-me-gold);
-  outline-offset: 2px;
-  box-shadow: 0 0 16px rgba(197, 155, 39, 0.45);
-}
-
-.near-me-hero-ribbon {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-
-.near-me-hero-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: var(--near-me-gold);
-  text-transform: uppercase;
-}
-
-.near-me-hero-far-notice {
-  font-size: 0.62rem;
-  background-color: rgba(220, 38, 38, 0.25);
-  border: 1px solid rgba(220, 38, 38, 0.6);
-  color: #fca5a5;
-  padding: 1px 6px;
-  border-radius: 9999px;
-  font-weight: 600;
-}
-
-.near-me-hero-dist-badge {
-  font-family: monospace;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #93c5fd;
-  background-color: rgba(29, 78, 216, 0.25);
-  border: 1px solid rgba(147, 197, 253, 0.4);
-  padding: 2px 8px;
-  border-radius: 9999px;
-}
-
-.near-me-hero-body {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.near-me-hero-heading-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.near-me-hero-title {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0;
-  line-height: 1.2;
-}
-
-.near-me-hero-verdict {
-  font-size: 0.76rem;
-  color: #e5e7eb;
-  font-style: italic;
-  line-height: 1.35;
-  margin: 2px 0 4px 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.near-me-hero-actions-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.near-me-hero-subinfo {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.68rem;
-  color: #9ca3af;
-}
-
-.near-me-hero-buttons {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.near-me-hero-walk-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background-color: var(--near-me-crimson);
-  color: #ffffff;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 5px 12px;
-  border-radius: 6px;
-  text-decoration: none;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  transition: all 0.15s ease;
-}
-
-.near-me-hero-walk-btn:hover {
-  background-color: #b91c1c;
-  transform: translateY(-1px);
-}
-
-.near-me-hero-dossier-btn {
-  display: inline-flex;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  color: #f9f7f1;
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 5px 10px;
-  border-radius: 6px;
-  text-decoration: none;
-  transition: all 0.15s ease;
-}
-
-.near-me-hero-dossier-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-}
-
 /* =====================================================   Ranked List Section & Cards
    ============================================================ */
 .near-me-list-section {
@@ -1989,58 +1689,10 @@ onUnmounted(() => {
   letter-spacing: 0.05em;
 }
 
-.near-me-list-caption {
-  font-size: 0.65rem;
-  color: #9ca3af;
-}
-
 .near-me-list-rows {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.near-me-venue-card {
-  background-color: rgba(30, 35, 42, 0.85);
-  border: 1px solid rgba(220, 214, 200, 0.18);
-  border-radius: 10px;
-  padding: 10px 12px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.near-me-venue-card:hover {
-  background-color: rgba(40, 46, 56, 0.95);
-  border-color: rgba(197, 155, 39, 0.6);
-  transform: translateY(-1px);
-}
-
-.near-me-venue-card.is-selected {
-  border-color: var(--near-me-gold);
-  background-color: rgba(45, 52, 64, 0.98);
-  box-shadow: 0 0 10px rgba(197, 155, 39, 0.35);
-}
-
-.near-me-venue-card:focus-visible {
-  outline: 2px solid var(--near-me-gold);
-  outline-offset: 1px;
-}
-
-.near-me-card-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.near-me-card-meta {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  overflow: hidden;
 }
 
 .near-me-card-index {
@@ -2048,87 +1700,6 @@ onUnmounted(() => {
   font-weight: 700;
   color: var(--near-me-gold);
   flex-shrink: 0;
-}
-
-.near-me-card-title {
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 0.92rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.near-me-card-badges {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex-shrink: 0;
-}
-
-.near-me-dist-pill {
-  font-family: monospace;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #93c5fd;
-  background-color: rgba(29, 78, 216, 0.2);
-  border: 1px solid rgba(147, 197, 253, 0.3);
-  padding: 1px 6px;
-  border-radius: 9999px;
-}
-
-.near-me-tier-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 9999px;
-  border: 1px solid transparent;
-  white-space: nowrap;
-}
-
-.near-me-tier-pill-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 9999px;
-}
-
-.near-me-card-verdict {
-  font-size: 0.72rem;
-  color: #d1d5db;
-  font-style: italic;
-  line-height: 1.3;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.near-me-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 3px;
-}
-
-.near-me-card-subinfo {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.65rem;
-  color: #9ca3af;
-}
-
-.near-me-card-actions {
-  display: flex;
-  align-items: center;
-  gap: 5px;
 }
 
 .near-me-btn-walk {
@@ -2147,24 +1718,6 @@ onUnmounted(() => {
 
 .near-me-btn-walk:hover {
   background-color: #b91c1c;
-}
-
-.near-me-btn-dossier {
-  display: inline-flex;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #f9f7f1;
-  font-size: 0.68rem;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 4px;
-  text-decoration: none;
-  transition: all 0.15s ease;
-}
-
-.near-me-btn-dossier:hover {
-  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .near-me-empty-state {
@@ -2292,14 +1845,6 @@ onUnmounted(() => {
   color: #d1d5db;
   line-height: 1.5;
   margin: 0;
-}
-
-/* =====================================================   Phase 5: Offsite variant of the far-notice badge
-   ============================================================ */
-.near-me-hero-far-notice--offsite {
-  background-color: rgba(245, 158, 11, 0.2) !important;
-  border-color: rgba(245, 158, 11, 0.6) !important;
-  color: #fbbf24 !important;
 }
 
 /* =====================================================   Phase 5: Fade transition for pre-permission modal
@@ -2433,134 +1978,22 @@ onUnmounted(() => {
   background: var(--ledger-gold);
 }
 
-.near-me-hero-card {
-  background: linear-gradient(145deg, var(--ledger-deep), var(--ledger-navy));
-  border-color: var(--ledger-gold);
-  border-radius: var(--near-me-radius-panel);
-  box-shadow: 0 3px 12px rgb(17 30 71 / 18%);
-}
-
-.near-me-hero-card:hover {
-  border-color: var(--ledger-gold);
-}
-
-.near-me-hero-card.is-selected {
-  outline-color: var(--ledger-gold);
-  box-shadow: 0 0 0 3px rgb(242 154 46 / 24%);
-}
-
-.near-me-hero-tag,
 .near-me-card-index {
   color: var(--ledger-gold);
 }
 
-.near-me-hero-far-notice {
-  background-color: rgb(185 43 39 / 18%);
-  border-color: rgb(255 220 215 / 48%);
-  color: #ffe2de;
-}
-
-.near-me-hero-dist-badge,
-.near-me-dist-pill {
-  background-color: rgb(251 246 234 / 12%);
-  border-color: rgb(251 246 234 / 28%);
-  color: var(--ledger-parchment);
-}
-
-.near-me-hero-title,
-.near-me-card-title {
-  color: var(--ledger-parchment);
-}
-
-.near-me-hero-verdict,
-.near-me-card-verdict {
-  color: var(--near-me-muted-on-dark);
-}
-
-.near-me-hero-subinfo,
-.near-me-card-subinfo,
-.near-me-list-caption {
-  color: var(--near-me-muted-on-dark);
-}
-
-.near-me-hero-walk-btn,
 .near-me-btn-walk {
   background-color: var(--ledger-gold);
   color: var(--ledger-deep);
   box-shadow: 0 1px 3px rgb(17 30 71 / 20%);
 }
 
-.near-me-hero-walk-btn:hover,
 .near-me-btn-walk:hover {
   background-color: #ffb454;
   color: var(--ledger-deep);
 }
 
-.near-me-hero-dossier-btn,
-.near-me-btn-dossier {
-  background-color: transparent;
-  border-color: rgb(251 246 234 / 40%);
-  color: var(--ledger-parchment);
-}
-
-.near-me-hero-dossier-btn:hover,
-.near-me-btn-dossier:hover {
-  background-color: rgb(251 246 234 / 12%);
-  color: #ffffff;
-}
-
-/* List rows sit on light cards, so the dossier link needs dark ink there. */
-.near-me-venue-card .near-me-btn-dossier {
-  border-color: var(--ledger-border);
-  color: var(--ledger-deep);
-}
-
-.near-me-venue-card .near-me-btn-dossier:hover {
-  background-color: #ffffff;
-  color: var(--ledger-deep);
-}
-
 .near-me-list-title {
-  color: var(--ledger-deep);
-}
-
-.near-me-venue-card {
-  background-color: var(--ledger-card);
-  border-color: var(--ledger-border);
-  border-radius: var(--near-me-radius-card);
-}
-
-.near-me-venue-card:hover {
-  background-color: var(--ledger-paper);
-  border-color: var(--ledger-gold);
-}
-
-.near-me-venue-card.is-selected {
-  background-color: #fff6e5;
-  border-color: var(--ledger-gold);
-  box-shadow: 0 0 0 2px rgb(242 154 46 / 18%);
-}
-
-.near-me-venue-card:focus-visible {
-  outline-color: var(--ledger-navy);
-}
-
-.near-me-card-title {
-  color: var(--ledger-deep);
-}
-
-.near-me-card-verdict {
-  color: var(--near-me-muted);
-}
-
-.near-me-card-subinfo,
-.near-me-list-caption {
-  color: var(--near-me-muted);
-}
-
-.near-me-dist-pill {
-  background-color: var(--ledger-parchment);
-  border-color: var(--ledger-border);
   color: var(--ledger-deep);
 }
 
@@ -2607,56 +2040,6 @@ onUnmounted(() => {
   }
 }
 
-/* Small-screen polish: readable type, 44px tap targets, thumbnails with fallback. */
-.near-me-venue-card {
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.near-me-card-thumb {
-  width: 64px;
-  height: 64px;
-}
-
-.near-me-card-thumb.bench-thumb .bench-placeholder img {
-  width: 40px;
-  height: 40px;
-}
-
-.near-me-card-body {
-  display: flex;
-  flex: 1;
-  min-width: 0;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.near-me-card-header {
-  flex-wrap: wrap;
-}
-
-.near-me-card-verdict {
-  -webkit-line-clamp: 2;
-}
-
-.near-me-hero-subinfo,
-.near-me-card-subinfo,
-.near-me-list-caption {
-  font-size: 0.8rem;
-}
-
-.near-me-card-verdict,
-.near-me-hero-verdict {
-  font-size: 0.85rem;
-}
-
-.near-me-tier-pill,
-.near-me-hero-tag,
-.near-me-dist-pill {
-  font-size: 0.75rem;
-}
-
 .near-me-list-title {
   font-size: 0.8rem;
 }
@@ -2665,44 +2048,12 @@ onUnmounted(() => {
   font-size: 0.75rem;
 }
 
-.near-me-hero-btn-row,
-.near-me-hero-actions-row {
-  flex-wrap: wrap;
-}
-
-.near-me-hero-subinfo {
-  flex-wrap: wrap;
-}
-
-.near-me-hero-buttons {
-  flex: 1 1 100%;
-}
-
-.near-me-hero-walk-btn,
-.near-me-hero-dossier-btn,
-.near-me-btn-walk,
-.near-me-btn-dossier {
+.near-me-btn-walk {
   min-height: 44px;
   justify-content: center;
   padding-inline: 14px;
   font-size: 0.85rem;
   white-space: nowrap;
-}
-
-.near-me-hero-walk-btn {
-  flex: 1;
-}
-
-.near-me-card-footer {
-  flex-wrap: wrap;
-}
-
-.near-me-card-actions {
-  flex: 1 1 100%;
-}
-
-.near-me-card-actions > a {
-  flex: 1;
 }
 
 
@@ -2804,15 +2155,9 @@ onUnmounted(() => {
   align-items: center;
 }
 
-/* Details is a button now; match the old link look. */
-.near-me-hero-dossier-btn,
-.near-me-btn-dossier {
-  font-family: inherit;
-  cursor: pointer;
-}
-
-/* The half-height sheet is short, so the hero verdict gives up a line to keep its buttons in view. */
-.near-me-panel.snap-half .near-me-hero-verdict {
-  -webkit-line-clamp: 1;
+.near-me-far-note {
+  color: #8a5100;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 </style>
