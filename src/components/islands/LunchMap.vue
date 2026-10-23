@@ -31,21 +31,34 @@
       </div>
     </div>
 
-    <!-- Walking Rings Legend Toggle -->
+    <!-- Walking rings legend: collapsed to a small pill until someone wants the key -->
     <div class="absolute bottom-4 left-4 z-[1000] hidden sm:block">
-      <div class="bg-[#f9f7f1]/95 backdrop-blur-sm border border-[#dcd6c8] rounded-md p-2 text-xs shadow-md font-serif-header">
-        <div class="font-bold text-[#1a1e24] border-b border-[#dcd6c8] pb-1 mb-1.5 flex items-center justify-between">
-          <span>Walking Isochrones</span>
-          <span class="text-xs text-stone-500 font-sans">from Base</span>
-        </div>
-        <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-stone-700 font-sans text-xs">
-          <!-- Same colours as the rings on the map; the heavier boundary ring shows dashed. -->
-          <div v-for="ring in WALKING_ISOCHRONES" :key="ring.radius" class="flex items-center gap-1.5">
-            <span
-              class="w-2.5 h-0"
-              :style="{ borderTop: `${ring.weight ? 1 : 2}px ${ring.weight ? 'dashed' : 'solid'} ${ring.color}` }"
-            ></span>
-            {{ ring.legend }}
+      <div class="isochrone-card bg-[#f9f7f1]/95 backdrop-blur-sm border border-[#dcd6c8] rounded-md text-xs shadow-md font-serif-header" :class="{ 'is-collapsed': !legendOpen }">
+        <button
+          type="button"
+          class="isochrone-toggle"
+          :aria-expanded="legendOpen"
+          aria-controls="isochrone-legend"
+          @click="legendOpen = !legendOpen"
+        >
+          <span class="font-bold text-[#1a1e24]">Walking Isochrones</span>
+          <span v-if="legendOpen" class="text-xs text-stone-500 font-sans">from Base</span>
+          <svg class="isochrone-chevron" :class="{ 'is-open': legendOpen }" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="m5 12 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <div id="isochrone-legend" class="isochrone-body" :class="{ 'is-open': legendOpen }" :inert="!legendOpen">
+          <div class="isochrone-body-inner">
+            <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-stone-700 font-sans text-xs border-t border-[#dcd6c8] mx-2 pt-1.5 pb-2">
+              <!-- Same colours as the rings on the map; the heavier boundary ring shows dashed. -->
+              <div v-for="ring in WALKING_ISOCHRONES" :key="ring.radius" class="flex items-center gap-1.5">
+                <span
+                  class="w-2.5 h-0"
+                  :style="{ borderTop: `${ring.weight ? 1 : 2}px ${ring.weight ? 'dashed' : 'solid'} ${ring.color}` }"
+                ></span>
+                {{ ring.legend }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -76,6 +89,7 @@ const props = defineProps<{
 }>();
 
 const mapContainer = ref<HTMLElement | null>(null);
+const legendOpen = ref(false);
 const filters = useStore($filters);
 const venuesList = useStore($venuesList);
 
@@ -191,3 +205,68 @@ function renderMarkers() {
 }
 
 </script>
+
+<style scoped>
+.isochrone-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #1a1e24;
+  text-align: left;
+}
+
+.isochrone-toggle:hover {
+  background: rgb(27 47 107 / 6%);
+}
+
+.isochrone-toggle:focus-visible {
+  outline: 2px solid var(--ledger-navy);
+  outline-offset: -2px;
+}
+
+.isochrone-chevron {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  margin-left: auto;
+  color: #57534e;
+  transition: transform 160ms ease;
+}
+
+/* The chevron points up while the key is folded away, down once it is open. */
+.isochrone-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+/* Grid-rows trick: animates the height to and from its natural size. */
+.isochrone-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 180ms ease;
+}
+
+.isochrone-body.is-open {
+  grid-template-rows: 1fr;
+}
+
+.isochrone-body-inner {
+  overflow: hidden;
+}
+
+/* Folded away, the key shouldn't hold the pill at its full width. */
+.isochrone-card.is-collapsed .isochrone-body-inner {
+  width: 0;
+  min-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .isochrone-body,
+  .isochrone-chevron {
+    transition: none;
+  }
+}
+</style>
