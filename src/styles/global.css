@@ -951,8 +951,15 @@ button.bench-pillar-link {
   cursor: pointer;
 }
 
+/* The rank sits beside the name, so a long name wraps under itself rather than dropping the rank. */
+.bench-pillar-name.has-rank {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
 .bench-rank {
-  margin-right: 6px;
+  flex: none;
   color: var(--bench-amber);
   font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 13px;
