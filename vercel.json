@@ -1,3 +1,5 @@
 {
-  "buildCommand": "pnpm test && pnpm build && pnpm db:migrate:deploy"
+  "buildCommand": "pnpm test && pnpm db:migrate:deploy && pnpm build",
+  "regions": ["lhr1"],
+  "crons": [{ "path": "/api/cron/weekly-bulletin", "schedule": "0 18 * * 3" }]
 }

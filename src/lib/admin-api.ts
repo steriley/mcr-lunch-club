@@ -3,6 +3,7 @@ import { isAPIError } from 'better-auth/api';
 import { z } from 'zod';
 import { auth, type AuthSession } from '@/lib/auth';
 import { getAuthEnvironment } from '@/lib/env';
+import { requestRebuild } from '@/lib/rebuild';
 import { hasAdminRole, isBanned } from '@/lib/roles';
 import type { Actor } from '@/lib/venue-events';
 
@@ -107,6 +108,12 @@ type ParamSpec = string | { schema: z.ZodType<string>; notFound: string };
 export interface AdminRouteSpec<P extends string, S extends z.ZodType | undefined> {
   /** Names the action in the server log when it fails, e.g. "Update venue". */
   action: string;
+  /**
+   * Whether a success can change what the public site shows. The public pages
+   * are prerendered, so a successful response then requests a rebuild
+   * (src/lib/rebuild.ts) before it is returned.
+   */
+  publishes: boolean;
   /** Checked in order; the first invalid one answers 404 with its message. */
   params?: Record<P, ParamSpec>;
   /** Validates the JSON body; failures answer 400 with field errors. */
@@ -152,10 +159,13 @@ export function adminRoute<P extends string = never, S extends z.ZodType | undef
     }
 
     const actor = { id: session.user.id, name: session.user.name, email: session.user.email };
+    let response: Response;
     try {
-      return await handler({ request, url, params, body: body as never, actor });
+      response = await handler({ request, url, params, body: body as never, actor });
     } catch (error) {
       return spec.onError?.(error) ?? serverError(spec.action, error);
     }
+    if (spec.publishes && response.ok) await requestRebuild(spec.action);
+    return response;
   };
 }

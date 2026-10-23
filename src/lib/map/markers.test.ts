@@ -161,10 +161,15 @@ describe('bindVenuePopup', () => {
     (globalThis as any).document = { createElement: () => element };
     const calls: string[] = [];
     const marker = {
-      bindPopup: (content: unknown, options: any) =>
-        calls.push(`bindPopup:${content === element}:${options.className}:${options.autoPanPaddingTopLeft}`),
-      closePopup: () => calls.push('closePopup'),
-      on: () => calls.push('on'),
+      bindPopup: (content: unknown, options: any): void => {
+        calls.push(`bindPopup:${content === element}:${options.className}:${options.autoPanPaddingTopLeft}`);
+      },
+      closePopup: (): void => {
+        calls.push('closePopup');
+      },
+      on: (): void => {
+        calls.push('on');
+      },
     };
     return { marker, calls, pressDossier: () => dossierHandler?.() };
   }

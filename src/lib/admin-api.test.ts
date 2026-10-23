@@ -226,7 +226,7 @@ describe('adminRoute', () => {
     }) as Promise<Response>;
 
   const route = adminRoute(
-    { action: 'Test', params: { id: 'Thing not found.', userId: { schema: userIdParam, notFound: 'User not found.' } }, body: z.object({ name: z.string().min(1, 'Name it.') }) },
+    { action: 'Test', publishes: false, params: { id: 'Thing not found.', userId: { schema: userIdParam, notFound: 'User not found.' } }, body: z.object({ name: z.string().min(1, 'Name it.') }) },
     async ({ params, body, actor }) => jsonResponse({ params, body, actor })
   );
 
@@ -265,7 +265,7 @@ describe('adminRoute', () => {
 
   it('maps thrown errors with onError, and logs a 500 for anything it leaves', async () => {
     const throwing = (error: unknown) =>
-      adminRoute({ action: 'Throw', onError: (e) => (isUniqueViolation(e) ? slugTaken() : undefined) }, async () => {
+      adminRoute({ action: 'Throw', publishes: true, onError: (e) => (isUniqueViolation(e) ? slugTaken() : undefined) }, async () => {
         throw error;
       });
     try {
@@ -276,6 +276,34 @@ describe('adminRoute', () => {
       assert.deepEqual([crash.status, await crash.json()], [500, { error: 'Something went wrong. Please try again.' }]);
     } finally {
       (auth.api as any).getSession = originalGetSession;
+    }
+  });
+
+  it('requests a rebuild after a successful publishing route, and only then', async () => {
+    const originalFetch = globalThis.fetch;
+    const hookCalls: string[] = [];
+    globalThis.fetch = (async (url: URL) => {
+      hookCalls.push(String(url));
+      return new Response('{}', { status: 201 });
+    }) as typeof fetch;
+    process.env.DEPLOY_HOOK_URL = 'https://api.vercel.com/v1/integrations/deploy/prj_x/secret';
+    const responding = (publishes: boolean, status: number) =>
+      adminRoute({ action: 'Respond', publishes }, async () => jsonResponse({}, status));
+    try {
+      signedInAs(chair);
+      assert.equal((await call(responding(true, 200))).status, 200);
+      assert.equal(hookCalls.length, 1);
+
+      await call(responding(false, 200));
+      await call(responding(true, 409));
+      await quietly(() => call(adminRoute({ action: 'Throw', publishes: true }, async () => { throw new Error('boom'); })));
+      signedInAs(null);
+      await call(responding(true, 200));
+      assert.equal(hookCalls.length, 1);
+    } finally {
+      (auth.api as any).getSession = originalGetSession;
+      globalThis.fetch = originalFetch;
+      process.env.DEPLOY_HOOK_URL = '';
     }
   });
 });

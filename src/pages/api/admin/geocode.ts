@@ -14,7 +14,7 @@ function orsFailure(error: unknown): Response | undefined {
 }
 
 /** GET /api/admin/geocode?q=…: up to five ORS candidates near Greater Manchester. */
-export const GET = adminRoute({ action: 'Geocode search', onError: orsFailure }, async ({ url }) => {
+export const GET = adminRoute({ action: 'Geocode search', publishes: false, onError: orsFailure }, async ({ url }) => {
   const query = (url.searchParams.get('q') ?? '').trim();
   if (query.length < MIN_QUERY_LENGTH) {
     return jsonError(400, `Type at least ${MIN_QUERY_LENGTH} characters to search.`);

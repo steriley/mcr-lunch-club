@@ -13,15 +13,9 @@ import type { Incident, Inspection, PublicImage, Venue } from '@/types';
 /**
  * Read-only queries for the public site. Venues are filtered with the shared
  * visibility rule (src/lib/visibility.ts) and mapped to public shapes that
- * carry no admin-only fields.
+ * carry no admin-only fields. The public pages are prerendered, so these run
+ * when the site is built; admin saves trigger a rebuild (src/lib/rebuild.ts).
  */
-
-/** CDN caching for public pages: fresh for 60s, then served stale while revalidating. */
-export const PUBLIC_CACHE_CONTROL = 'public, max-age=0, s-maxage=60, stale-while-revalidate=300';
-
-export function setPublicCacheHeaders(headers: Headers): void {
-  headers.set('Cache-Control', PUBLIC_CACHE_CONTROL);
-}
 
 function coordinateLink(latitude: number, longitude: number): string {
   return `https://www.google.com/maps/search/?api=1&query=${latitude.toFixed(6)}%2C${longitude.toFixed(6)}`;
@@ -124,12 +118,20 @@ export async function getMapVenues(): Promise<PublicVenue[]> {
   );
 }
 
+const toPublicDetail = (row: VenueWithImage): PublicVenueDetail => ({ ...toPublic(row), pullQuote: row.venue.pullQuote });
+
 export async function getPublicVenue(slug: string): Promise<PublicVenueDetail | null> {
   const [row]: VenueWithImage[] = await publicVenueRows()
     .where(and(eq(venues.slug, slug), publicVenueCondition()))
     .limit(1);
   if (!row || !isPublicRow(row.venue)) return null;
-  return { ...toPublic(row), pullQuote: row.venue.pullQuote };
+  return toPublicDetail(row);
+}
+
+/** Every public venue with its detail fields, for building the venue pages in one query. */
+export async function getPublicVenueDetails(): Promise<PublicVenueDetail[]> {
+  const rows: VenueWithImage[] = await publicVenueRows().where(publicVenueCondition()).orderBy(asc(venues.name));
+  return rows.filter(({ venue }) => isPublicRow(venue)).map(toPublicDetail);
 }
 
 /** A Golden Cut venue for the home page, in position order (the first is the hero). */
@@ -201,6 +203,13 @@ export async function countPublicInspections(): Promise<number> {
     .innerJoin(venues, eq(inspections.venueId, venues.id))
     .where(publicInspectionCondition());
   return row?.total ?? 0;
+}
+
+let buildInspectionCount: Promise<number> | undefined;
+
+/** countPublicInspections, run once and shared by every page prerendered in a build. */
+export function countPublicInspectionsForBuild(): Promise<number> {
+  return (buildInspectionCount ??= countPublicInspections());
 }
 
 /** e.g. "8th Jul 26, 09:00": the incident's calendar day plus its recorded time, if any. */

@@ -11,3 +11,10 @@ export function londonDate(instant: Date = new Date()): string {
   return LONDON_DATE.format(instant);
 }
 
+// dates-guard:allow reads the London hour as a number for scheduling, not display text
+const LONDON_HOUR = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', hour: '2-digit', hourCycle: 'h23' });
+
+/** The London wall-clock hour (0-23) at `instant`. */
+export function londonHour(instant: Date = new Date()): number {
+  return Number(LONDON_HOUR.format(instant));
+}

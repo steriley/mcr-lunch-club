@@ -2,7 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import FilterBar from '@/components/islands/FilterBar.vue';
 import LunchMap from '@/components/islands/LunchMap.vue';
-import NearMeMap from '@/components/islands/NearMeMap.vue';
+import NearMeLoader from '@/components/islands/NearMeLoader.vue';
 import VenueSheet from '@/components/islands/VenueSheet.vue';
 import WhereToday from '@/components/islands/WhereToday.vue';
 import WeatherCard from '@/components/WeatherCard.vue';
@@ -14,29 +14,30 @@ import LedgerCanon from '@/components/LedgerCanon.astro';
 import { formatDate } from '@/lib/dates';
 import { focalStyle } from '@/lib/image-upload';
 import { getPublicMapApiKey } from '@/lib/env';
-import { getGoldenCut, getMapVenues, getPublicInspections, setPublicCacheHeaders } from '@/lib/public-data';
+import { getGoldenCut, getMapVenues, getPublicInspections } from '@/lib/public-data';
 import { getRecentTierChanges } from '@/lib/recent-tier-changes';
 import { walkText } from '@/lib/route-display';
 import { buildSovereignBench } from '@/lib/sovereign-bench';
-import { bulletinText, changesInWeek, gazetteLabel, londonWeek } from '@/lib/weekly-bulletin';
+import { bulletinIssue, bulletinText, changesInIssue, gazetteLabel } from '@/lib/weekly-bulletin';
 import { seedLedgerInspections, seedLedgerVenues } from '@/stores/ledger';
 
-export const prerender = false;
+// Built with the site; admin saves trigger a rebuild (src/lib/rebuild.ts), and so does the
+// Wednesday evening bulletin (src/pages/api/cron/weekly-bulletin.ts).
+export const prerender = true;
 
+const issue = bulletinIssue();
 // Closed venues never go on the map or in Near Me.
 const [venuesData, inspectionsData, goldenCut, recentTierChanges] = await Promise.all([
   getMapVenues(),
   getPublicInspections(),
   getGoldenCut(),
-  getRecentTierChanges(),
+  getRecentTierChanges(issue),
 ]);
 seedLedgerVenues(venuesData);
 seedLedgerInspections(inspectionsData);
-setPublicCacheHeaders(Astro.response.headers);
 
 const publicMapApiKey = getPublicMapApiKey();
-const bulletinWeek = londonWeek();
-const bulletin = bulletinText(changesInWeek(recentTierChanges, bulletinWeek));
+const bulletin = bulletinText(changesInIssue(recentTierChanges, issue));
 // Already in public order: nearest first.
 const approvedVenues = venuesData.filter((venue) => venue.tier === 'approved');
 const { mode, hero, pillars } = buildSovereignBench(goldenCut, venuesData, inspectionsData);
@@ -84,7 +85,7 @@ const fieldShortcuts = [
       <div class="home-map-column">
         <section class="home-map-stage relative w-full flex flex-col">
           <LunchMap client:load mapApiKey={publicMapApiKey} />
-          <NearMeMap client:only="vue" mapApiKey={publicMapApiKey} />
+          <NearMeLoader client:only="vue" mapApiKey={publicMapApiKey} />
           <VenueSheet client:load />
           <WhereToday client:idle />
           <SuggestModal client:idle />
@@ -99,7 +100,7 @@ const fieldShortcuts = [
               <strong>Weekly inspection bulletin</strong>
               <p>{bulletin}</p>
             </div>
-            <a href="/inspections">{gazetteLabel(bulletinWeek)}</a>
+            <a href="/inspections">{gazetteLabel(issue)}</a>
           </div>
 
           <div class="field-panel-grid">
@@ -147,7 +148,7 @@ const fieldShortcuts = [
           <article class="bench-hero">
             <div class="bench-hero-media">
               <span class="bench-placeholder" aria-hidden="true">
-                <img src="/brand/approved-sticker.png" alt="" />
+                <img src="/brand/approved-sticker-256.webp" alt="" />
               </span>
               {hero.image && (
                 <img
@@ -162,7 +163,7 @@ const fieldShortcuts = [
                 />
               )}
               <a class="bench-seal" href={hero.href} aria-label={`View ${hero.name}'s audit`}>
-                <img src="/brand/approved-sticker.png" alt="" />
+                <img src="/brand/approved-sticker-256.webp" alt="" />
               </a>
             </div>
 

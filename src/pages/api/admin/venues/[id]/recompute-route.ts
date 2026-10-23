@@ -6,7 +6,7 @@ import { routeWarning } from '@/lib/walking-route';
 export const prerender = false;
 
 /** POST /api/admin/venues/[id]/recompute-route: retry the ORS walking route from HQ. */
-export const POST = adminRoute({ action: 'Recompute venue route', params: { id: 'Venue not found.' } }, async ({ params, actor }) => {
+export const POST = adminRoute({ action: 'Recompute venue route', publishes: true, params: { id: 'Venue not found.' } }, async ({ params, actor }) => {
   const result = await rerouteVenue(db, params.id, actor);
   if (result.ok) return jsonResponse({ venue: serializeVenue(result.venue) });
   if (result.error === 'not_found') return jsonError(404, 'Venue not found.');

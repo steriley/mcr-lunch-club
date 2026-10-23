@@ -6,7 +6,7 @@ import { db } from '@/lib/db';
 
 export const prerender = false;
 
-export const POST = adminRoute({ action: 'Create bribery record', body: briberyInputSchema }, async ({ body, actor }) => {
+export const POST = adminRoute({ action: 'Create bribery record', publishes: true, body: briberyInputSchema }, async ({ body, actor }) => {
   const result = await briberyValues(db, body);
   if (!result.ok) return jsonError(400, 'Please correct the highlighted fields.', { venueId: result.error });
 

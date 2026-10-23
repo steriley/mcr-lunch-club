@@ -13,8 +13,10 @@
     </header>
 
     <!-- Map Container (positioning context for the floating controls) -->
-    <div class="relative w-full flex-1 min-h-0">
+    <div class="relative w-full flex-1 min-h-0" :aria-busy="!mapReady">
       <div ref="mapContainer" class="absolute inset-0 z-0"></div>
+      <!-- A grey box until Leaflet has started (see onMounted). Leaflet owns the container's classes, so it sits on top instead. -->
+      <div v-if="!mapReady" class="map-loading absolute inset-0 z-[1]" aria-hidden="true"></div>
 
       <!-- Quick Map Controls (Floating top left) -->
       <div class="absolute top-3 left-3 z-[1000]">
@@ -70,6 +72,7 @@
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $filters, matchesFilters, selectVenue, openNearMe, toggleTier } from '@/stores/filters';
+import { whenIdle } from '@/lib/idle';
 import { londonDate } from '@/lib/london-date';
 import { $venuesList } from '@/stores/ledger';
 import {
@@ -89,6 +92,7 @@ const props = defineProps<{
 }>();
 
 const mapContainer = ref<HTMLElement | null>(null);
+const mapReady = ref(false);
 const legendOpen = ref(false);
 const filters = useStore($filters);
 const venuesList = useStore($venuesList);
@@ -106,11 +110,27 @@ const filteredVenues = computed(() => {
 const visibleVenuesCount = computed(() => filteredVenues.value.length);
 const totalVenuesCount = computed(() => venuesList.value.length);
 
-onMounted(async () => {
+let cancelStart: (() => void) | null = null;
+
+onMounted(() => {
   if (typeof window === 'undefined' || !mapContainer.value) return;
 
-  // Dynamically import Leaflet
+  // Leaflet is the heaviest script on the page, so it starts once the browser is
+  // idle and the rest of the page has rendered. A ?venue= link came for the map,
+  // so that starts it straight away.
+  if (new URLSearchParams(window.location.search).has('venue')) {
+    void startMap();
+  } else {
+    cancelStart = whenIdle(() => void startMap());
+  }
+});
+
+async function startMap() {
+  cancelStart = null;
+  if (!mapContainer.value) return;
+
   leafletModule = await import('leaflet');
+  if (!mapContainer.value) return;
   const L = leafletModule.default || leafletModule;
 
   // Initialize Map
@@ -135,9 +155,10 @@ onMounted(async () => {
 
   // Render Venue Markers
   renderMarkers();
+  mapReady.value = true;
 
   focusLinkedVenue();
-});
+}
 
 /** `/?venue=<slug>` (from a dossier's "Locate on Ledger Map") centres on that venue and opens it. */
 function focusLinkedVenue() {
@@ -157,6 +178,7 @@ function focusLinkedVenue() {
 }
 
 onUnmounted(() => {
+  cancelStart?.();
   if (mapInstance) {
     mapInstance.remove();
     mapInstance = null;
@@ -207,6 +229,10 @@ function renderMarkers() {
 </script>
 
 <style scoped>
+.map-loading {
+  background-color: #e2dfd8;
+}
+
 .isochrone-toggle {
   display: flex;
   align-items: center;

@@ -1,20 +1,27 @@
-import { londonDate } from '@/lib/london-date';
+import { londonDate, londonHour } from '@/lib/london-date';
 import { tierLabel, type TierValue } from '@/lib/tiers';
 
 /**
  * The homepage "Weekly inspection bulletin": an informal line summarising
- * which venues changed tier during the current Europe/London calendar week
- * (Monday to Sunday), and the Gazette number for that week.
+ * which venues changed tier, and the Gazette number of the issue. An issue
+ * goes out at 18:00 Europe/London every Wednesday, once the week's main
+ * lunching is done, and stays up until the next one. Each issue covers the
+ * verdicts decided since the previous issue.
  */
 
+const HOUR_MS = 3_600_000;
 const DAY_MS = 86_400_000;
 
-export interface LondonWeek {
-  /** Monday, YYYY-MM-DD. */
-  start: string;
-  /** Sunday, YYYY-MM-DD. */
-  end: string;
-  /** ISO week number, 1-53. */
+/** Wednesday, as Date#getUTCDay() numbers it. */
+const ISSUE_WEEKDAY = 3;
+const ISSUE_HOUR = 18;
+
+export interface BulletinIssue {
+  /** When this issue went out: Wednesday, 18:00 London time. */
+  publishedAt: Date;
+  /** When the previous issue went out. This issue covers verdicts after it, up to and including publishedAt. */
+  coversFrom: Date;
+  /** ISO week number of the issue's Wednesday, 1-53. */
   week: number;
   /** Last two digits of the ISO week-year. */
   yy: string;
@@ -25,24 +32,40 @@ function utcDay(isoDate: string): number {
   return Date.UTC(year, month - 1, day);
 }
 
-function isoDay(ms: number): string {
-  return new Date(ms).toISOString().slice(0, 10);
+/**
+ * `hour`:00 London time on the calendar day starting at `dayMs`. London is
+ * UTC or UTC+1, and the clocks change at 01:00 on a Sunday, never at the
+ * issue time.
+ */
+function londonInstant(dayMs: number, hour: number): Date {
+  const utc = new Date(dayMs + hour * HOUR_MS);
+  return londonHour(utc) === hour ? utc : new Date(utc.getTime() - HOUR_MS);
 }
 
-/** The London calendar week containing `now`, with its ISO week number. */
-export function londonWeek(now: Date = new Date()): LondonWeek {
-  const today = utcDay(londonDate(now));
-  const monday = today - ((new Date(today).getUTCDay() + 6) % 7) * DAY_MS;
+/** The ISO week number and week-year of the calendar day starting at `dayMs`. */
+function isoWeek(dayMs: number): Pick<BulletinIssue, 'week' | 'yy'> {
   // The ISO week-year and number come from the week's Thursday.
-  const thursday = new Date(monday + 3 * DAY_MS);
+  const thursday = new Date(dayMs + (3 - ((new Date(dayMs).getUTCDay() + 6) % 7)) * DAY_MS);
   const isoYear = thursday.getUTCFullYear();
   const week = Math.ceil(((thursday.getTime() - Date.UTC(isoYear, 0, 1)) / DAY_MS + 1) / 7);
-  return { start: isoDay(monday), end: isoDay(monday + 6 * DAY_MS), week, yy: String(isoYear % 100).padStart(2, '0') };
+  return { week, yy: String(isoYear % 100).padStart(2, '0') };
+}
+
+/** The latest issue out at `now`: last Wednesday's, or today's once 18:00 has passed. */
+export function bulletinIssue(now: Date = new Date()): BulletinIssue {
+  const today = utcDay(londonDate(now));
+  let wednesday = today - ((new Date(today).getUTCDay() - ISSUE_WEEKDAY + 7) % 7) * DAY_MS;
+  if (londonInstant(wednesday, ISSUE_HOUR) > now) wednesday -= 7 * DAY_MS;
+  return {
+    publishedAt: londonInstant(wednesday, ISSUE_HOUR),
+    coversFrom: londonInstant(wednesday - 7 * DAY_MS, ISSUE_HOUR),
+    ...isoWeek(wednesday),
+  };
 }
 
 /** e.g. "Gazette #43.26". */
-export function gazetteLabel(week: LondonWeek): string {
-  return `Gazette #${week.week}.${week.yy}`;
+export function gazetteLabel(issue: BulletinIssue): string {
+  return `Gazette #${issue.week}.${issue.yy}`;
 }
 
 /** An approved tier change, as the public sees it. */
@@ -55,17 +78,14 @@ export interface TierChange {
   decidedAt: Date;
 }
 
-/** Changes decided inside `week`, collapsed to one net move per venue (a venue that ended the week where it began is dropped). */
-export function changesInWeek(changes: TierChange[], week: LondonWeek): TierChange[] {
-  const inWeek = changes
-    .filter((change) => {
-      const day = londonDate(change.decidedAt);
-      return day >= week.start && day <= week.end;
-    })
+/** Changes the issue covers, collapsed to one net move per venue (a venue that ended where it began is dropped). */
+export function changesInIssue(changes: TierChange[], issue: BulletinIssue): TierChange[] {
+  const inIssue = changes
+    .filter((change) => change.decidedAt > issue.coversFrom && change.decidedAt <= issue.publishedAt)
     .sort((a, b) => a.decidedAt.getTime() - b.decidedAt.getTime());
 
   const net = new Map<string, TierChange>();
-  for (const change of inWeek) {
+  for (const change of inIssue) {
     const first = net.get(change.slug);
     net.set(change.slug, first ? { ...change, fromTier: first.fromTier } : change);
   }
@@ -98,9 +118,9 @@ function clause({ verb, names }: Group): string {
   return `${names.length} venues ${verb}`;
 }
 
-/** The one-liner. `changes` must already be the week's net changes (see changesInWeek). */
+/** The one-liner. `changes` must already be the issue's net changes (see changesInIssue). */
 export function bulletinText(changes: TierChange[]): string {
-  if (changes.length === 0) return 'Quiet week on the ledger so far. No verdicts have moved since Monday.';
+  if (changes.length === 0) return 'Quiet week on the ledger. No verdicts have moved since the last bulletin.';
 
   const groups = new Map<string, Group>();
   for (const change of changes) {
