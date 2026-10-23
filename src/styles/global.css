@@ -2123,3 +2123,41 @@ button.bench-pillar-link {
     font-size: 14px;
   }
 }
+
+/* Page transitions: the browser cross-fades between pages on a normal link click, with no
+   client-side router. Browsers without support just navigate as usual. */
+@view-transition {
+  navigation: auto;
+}
+
+/* The header is the same on every page, so it stays put while the page beneath changes. */
+.site-header {
+  view-transition-name: site-header;
+}
+
+::view-transition-old(root) {
+  animation: page-fade-out 140ms ease-in both;
+}
+
+::view-transition-new(root) {
+  animation: page-fade-in 220ms ease-out 60ms both;
+}
+
+@keyframes page-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}
