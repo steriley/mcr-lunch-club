@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { bulletinText, changesInWeek, gazetteLabel, londonWeek, type TierChange } from './weekly-bulletin';
+import { bulletinIssue, bulletinText, changesInIssue, gazetteLabel, type TierChange } from './weekly-bulletin';
 
 const change = (slug: string, fromTier: TierChange['fromTier'], toTier: TierChange['toTier'], at: string): TierChange => ({
   slug,
@@ -10,54 +10,70 @@ const change = (slug: string, fromTier: TierChange['fromTier'], toTier: TierChan
   decidedAt: new Date(at),
 });
 
-describe('londonWeek', () => {
-  it('finds the Monday to Sunday week and ISO number', () => {
-    const week = londonWeek(new Date('2026-10-22T12:00:00Z'));
-    assert.deepEqual(week, { start: '2026-10-19', end: '2026-10-25', week: 43, yy: '26' });
-    assert.equal(gazetteLabel(week), 'Gazette #43.26');
+describe('bulletinIssue', () => {
+  it('is the latest Wednesday 18:00 London issue, covering the week before it', () => {
+    // Thursday; 18:00 BST is 17:00 UTC.
+    const issue = bulletinIssue(new Date('2026-10-22T12:00:00Z'));
+    assert.deepEqual(issue, {
+      publishedAt: new Date('2026-10-21T17:00:00Z'),
+      coversFrom: new Date('2026-10-14T17:00:00Z'),
+      week: 43,
+      yy: '26',
+    });
+    assert.equal(gazetteLabel(issue), 'Gazette #43.26');
   });
 
-  it('treats Sunday as the end of its week', () => {
-    assert.equal(londonWeek(new Date('2026-10-25T12:00:00Z')).start, '2026-10-19');
-    assert.equal(londonWeek(new Date('2026-10-26T12:00:00Z')).start, '2026-10-26');
+  it('keeps last week’s issue up until 18:00 London on Wednesday', () => {
+    assert.deepEqual(bulletinIssue(new Date('2026-10-21T16:59:59Z')).publishedAt, new Date('2026-10-14T17:00:00Z'));
+    assert.deepEqual(bulletinIssue(new Date('2026-10-21T17:00:00Z')).publishedAt, new Date('2026-10-21T17:00:00Z'));
   });
 
-  it('uses the ISO week-year around New Year', () => {
-    const week = londonWeek(new Date('2027-01-01T12:00:00Z'));
-    assert.equal(week.week, 53);
-    assert.equal(week.yy, '26');
+  it('stays on Wednesday’s issue through the weekend and Monday', () => {
+    assert.deepEqual(bulletinIssue(new Date('2026-10-25T12:00:00Z')).publishedAt, new Date('2026-10-21T17:00:00Z'));
+    assert.deepEqual(bulletinIssue(new Date('2026-10-27T12:00:00Z')).publishedAt, new Date('2026-10-21T17:00:00Z'));
   });
 
-  it('flips the day at London midnight in summer', () => {
-    // 23:30 UTC on a Sunday is already Monday in BST.
-    assert.equal(londonWeek(new Date('2026-06-14T23:30:00Z')).start, '2026-06-15');
+  it('publishes at 18:00 GMT in winter, covering back across the clock change', () => {
+    const issue = bulletinIssue(new Date('2026-10-28T18:00:00Z'));
+    assert.deepEqual(issue.publishedAt, new Date('2026-10-28T18:00:00Z'));
+    assert.deepEqual(issue.coversFrom, new Date('2026-10-21T17:00:00Z'));
+    assert.deepEqual(bulletinIssue(new Date('2026-10-28T17:30:00Z')).publishedAt, new Date('2026-10-21T17:00:00Z'));
+  });
+
+  it('numbers the issue by its Wednesday’s ISO week-year around New Year', () => {
+    const lastOf2026 = bulletinIssue(new Date('2027-01-02T12:00:00Z'));
+    assert.deepEqual(lastOf2026.publishedAt, new Date('2026-12-30T18:00:00Z'));
+    assert.equal(gazetteLabel(lastOf2026), 'Gazette #53.26');
+    assert.equal(gazetteLabel(bulletinIssue(new Date('2027-01-06T19:00:00Z'))), 'Gazette #1.27');
   });
 });
 
-describe('changesInWeek', () => {
-  const week = londonWeek(new Date('2026-10-22T12:00:00Z'));
+describe('changesInIssue', () => {
+  const issue = bulletinIssue(new Date('2026-10-22T12:00:00Z'));
 
-  it('keeps only changes decided this London week', () => {
-    const kept = changesInWeek(
+  it('keeps changes after the previous issue, up to and including this one', () => {
+    const kept = changesInIssue(
       [
         change('a', 'to_be_assessed', 'approved', '2026-10-19T09:00:00Z'),
-        change('b', 'to_be_assessed', 'approved', '2026-10-18T22:00:00Z'),
-        change('c', 'to_be_assessed', 'approved', '2026-10-26T09:00:00Z'),
+        change('b', 'to_be_assessed', 'approved', '2026-10-14T17:00:00Z'),
+        change('c', 'to_be_assessed', 'approved', '2026-10-14T17:00:01Z'),
+        change('d', 'to_be_assessed', 'approved', '2026-10-21T17:00:00Z'),
+        change('e', 'to_be_assessed', 'approved', '2026-10-21T17:00:01Z'),
       ],
-      week
+      issue
     );
-    assert.deepEqual(kept.map((c) => c.slug), ['a']);
+    assert.deepEqual(kept.map((c) => c.slug), ['c', 'a', 'd']);
   });
 
   it('collapses a venue to its net move and drops a round trip', () => {
-    const kept = changesInWeek(
+    const kept = changesInIssue(
       [
         change('a', 'to_be_assessed', 'under_consideration', '2026-10-19T09:00:00Z'),
         change('a', 'under_consideration', 'approved', '2026-10-21T09:00:00Z'),
         change('b', 'approved', 'rejected', '2026-10-19T09:00:00Z'),
         change('b', 'rejected', 'approved', '2026-10-20T09:00:00Z'),
       ],
-      week
+      issue
     );
     assert.equal(kept.length, 1);
     assert.equal(kept[0].fromTier, 'to_be_assessed');
