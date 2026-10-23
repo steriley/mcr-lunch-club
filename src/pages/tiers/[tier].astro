@@ -23,7 +23,7 @@ setPublicCacheHeaders(Astro.response.headers);
 ---
 
 <Layout title={`${tier.label} Tier — The Official Ledger Registry`}>
-  <div class="max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
+  <div class="max-w-6xl mx-auto px-4 pt-8 sm:pt-12 pb-8 w-full font-serif-header">
     <!-- Tier Navigation Tabs -->
     <nav class="flex items-center gap-[7px] overflow-x-auto pb-2 border-b border-[#dcd6c8]" aria-label="Browse by verdict">
       {TIERS.map((t) => (
@@ -36,44 +36,50 @@ setPublicCacheHeaders(Astro.response.headers);
         />
       ))}
     </nav>
+  </div>
 
-    <!-- Tier Header Hero Card -->
-    <div class={`${tier.bannerClass} tier-header-gradient text-white p-6 sm:p-8 rounded-2xl border-2 border-[#c59b27] shadow-xl space-y-4`}>
-      <div class="flex items-center gap-3">
-        <span class="text-3xl sm:text-4xl">{tier.icon}</span>
-        <div>
-          <span class="text-xs uppercase tracking-widest text-[#f9f7f1] font-bold font-mono">
-            Official Tier Classification
-          </span>
-          <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">
-            {tier.label}
-          </h1>
-        </div>
-      </div>
-
-      <p class="text-base sm:text-lg italic text-[#f9f7f1] pt-1">
-        “{tier.motto}”
-      </p>
-
-      <p class="text-xs sm:text-sm text-stone-200 font-sans max-w-3xl leading-relaxed pt-2 border-t border-white/20">
-        {tier.description}
-      </p>
-
-      <div class="flex flex-wrap items-center gap-3 pt-1">
-        <div class="inline-flex items-center gap-2 bg-black/30 border border-white/20 px-3 py-1.5 rounded-lg text-xs font-sans text-amber-200">
-          <strong>Constitutional Standard:</strong>
-          <span class="text-base">{tier.rule}</span>
-        </div>
-
-        {tier.value === 'approved' && (
-          <div class="inline-flex items-center gap-2 bg-black/30 border border-white/20 px-3 py-1.5 rounded-lg text-xs font-sans text-stone-200">
-            <strong class="text-[#c59b27] font-mono">Cost Key:</strong>
-            <span>£ (under £10) &bull; ££ (above £10) &bull; £££ (payday treat)</span>
+  <!-- Tier Header Ribbon -->
+  <div class={`${tier.bannerClass} tier-header-gradient text-white w-full font-serif-header`}>
+    <div class="max-w-6xl mx-auto px-4 w-full">
+      <div class="p-6 sm:p-8 space-y-4">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl sm:text-4xl">{tier.icon}</span>
+          <div>
+            <span class="text-xs uppercase tracking-widest text-[#f9f7f1] font-bold font-mono">
+              Official Tier Classification
+            </span>
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+              {tier.label}
+            </h1>
           </div>
-        )}
+        </div>
+
+        <p class="text-base sm:text-lg italic text-[#f9f7f1] pt-1">
+          “{tier.motto}”
+        </p>
+
+        <p class="text-xs sm:text-sm text-stone-200 font-sans max-w-3xl leading-relaxed pt-2 border-t border-white/20">
+          {tier.description}
+        </p>
+
+        <div class="flex flex-wrap items-center gap-3 pt-1">
+          <div class="inline-flex items-center gap-2 bg-black/30 border border-white/20 px-3 py-1.5 rounded-lg text-xs font-sans text-amber-200">
+            <strong>Constitutional Standard:</strong>
+            <span class="text-base">{tier.rule}</span>
+          </div>
+
+          {tier.value === 'approved' && (
+            <div class="inline-flex items-center gap-2 bg-black/30 border border-white/20 px-3 py-1.5 rounded-lg text-xs font-sans text-stone-200">
+              <strong class="text-[#c59b27] font-mono">Cost Key:</strong>
+              <span>£ (under £10) &bull; ££ (above £10) &bull; £££ (payday treat)</span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
+  </div>
 
+  <div class="max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
     <!-- Approved Tier Michelin Star Style Prize Banner -->
     {tier.value === 'approved' && (
       <div class="bg-[#1a1e24] text-[#f9f7f1] border-2 border-[#c59b27] p-6 sm:p-7 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-6 font-serif-header relative overflow-hidden">
@@ -108,16 +114,14 @@ setPublicCacheHeaders(Astro.response.headers);
 
     <!-- Venue Grid -->
     <div class="space-y-4">
-      <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2 font-serif-header">
-        <h2 class="text-xl font-bold text-[#1a1e24] flex items-center gap-2">
-          <span>Enrolled Establishments</span>
-          <span class="text-xs font-mono font-bold bg-[#8b1e22] text-white px-2 py-0.5 rounded">
-            {venues.length} Venues
-          </span>
-        </h2>
-        <span class="text-xs text-stone-500 font-sans">
-          Origin: Spinningfields Base Quorum
-        </span>
+      <div class="space-y-2 font-serif-header">
+        <div class="border-b border-[#dcd6c8] pb-2 space-y-1">
+          <h2 class="text-xl font-bold text-[#1a1e24]">Enrolled Establishments</h2>
+          <p class="text-xs font-mono text-stone-500">Origin: Spinningfields Base Quorum</p>
+        </div>
+        <div class="flex justify-end">
+          <span class="bench-count">{venues.length} Venues</span>
+        </div>
       </div>
 
       <div class="bench-pillars tier-venue-grid">
