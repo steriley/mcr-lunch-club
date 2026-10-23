@@ -2021,3 +2021,25 @@ button.bench-pillar-link {
     transition: none;
   }
 }
+
+/* Tiers page nav: runs the full width of the screen, with the chips lined up to the page
+   column and a fade at each side hinting that more tiers sit off-screen. */
+.tier-nav-scroll {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow-x: auto;
+  padding-inline: max(24px, calc((100% - 72rem) / 2 + 16px));
+  scrollbar-width: none;
+  mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+
+.tier-nav-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.tier-nav-scroll.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+}

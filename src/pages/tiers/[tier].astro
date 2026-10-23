@@ -23,19 +23,21 @@ setPublicCacheHeaders(Astro.response.headers);
 ---
 
 <Layout title={`${tier.label} Tier — The Official Ledger Registry`}>
-  <div class="max-w-6xl mx-auto px-4 pt-8 sm:pt-12 pb-8 w-full font-serif-header">
-    <!-- Tier Navigation Tabs -->
-    <nav class="flex items-center gap-[7px] overflow-x-auto pb-2 border-b border-[#dcd6c8]" aria-label="Browse by verdict">
-      {TIERS.map((t) => (
-        <TierChip
-          href={`/tiers/${t.slug}`}
-          name={t.label}
-          color={t.color}
-          count={tierCounts[t.value]}
-          selected={t.value === tier.value}
-        />
-      ))}
-    </nav>
+  <div class="w-full pt-8 sm:pt-12 pb-8 font-serif-header">
+    <!-- Tier Navigation Tabs: edge to edge, fading out at both sides -->
+    <div class="border-b border-[#dcd6c8]">
+      <nav class="tier-nav-scroll pb-2" aria-label="Browse by verdict">
+        {TIERS.map((t) => (
+          <TierChip
+            href={`/tiers/${t.slug}`}
+            name={t.label}
+            color={t.color}
+            count={tierCounts[t.value]}
+            selected={t.value === tier.value}
+          />
+        ))}
+      </nav>
+    </div>
   </div>
 
   <!-- Tier Header Ribbon -->
@@ -130,6 +132,7 @@ setPublicCacheHeaders(Astro.response.headers);
 
 <script>
   import { getWalkingDirectionsUrl } from '@/lib/map/directions';
+  import { enableHorizontalScroll } from '@/lib/horizontal-scroll';
 
   // Apple devices get Apple Maps, like the homepage walk links.
   document.querySelectorAll<HTMLAnchorElement>('a[data-walk-directions]').forEach((link) => {
@@ -137,4 +140,8 @@ setPublicCacheHeaders(Astro.response.headers);
     const lng = Number(link.dataset.lng);
     if (Number.isFinite(lat) && Number.isFinite(lng)) link.href = getWalkingDirectionsUrl(lat, lng);
   });
+
+  // A mouse can't scroll the tier strip sideways without a visible scrollbar, so add wheel and drag.
+  const nav = document.querySelector<HTMLElement>('.tier-nav-scroll');
+  if (nav) enableHorizontalScroll(nav);
 </script>

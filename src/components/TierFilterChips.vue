@@ -1,5 +1,5 @@
 <template>
-  <div class="tier-filter-chips" role="group" :aria-label="label">
+  <div ref="strip" class="tier-filter-chips" role="group" :aria-label="label">
     <TierChip
       v-for="tier in tiers"
       :key="tier"
@@ -16,7 +16,9 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref } from 'vue';
 import TierChip from '@/components/TierChip.vue';
+import { enableHorizontalScroll } from '@/lib/horizontal-scroll';
 import { tierInfo, type TierValue } from '@/lib/tiers';
 
 withDefaults(
@@ -34,6 +36,19 @@ withDefaults(
 );
 
 const emit = defineEmits<{ toggle: [tier: TierValue] }>();
+
+// The scrollbar is hidden, so give a mouse the wheel and drag to reach chips off the edge.
+const strip = ref<HTMLElement | null>(null);
+onMounted(() => {
+  const el = strip.value;
+  if (!el) return;
+  enableHorizontalScroll(el);
+  // The left fade only shows once chips have scrolled out of view, so the first chip stays
+  // flush with the search box at rest.
+  const updateLeftFade = () => el.style.setProperty('--fade-left', el.scrollLeft > 1 ? '24px' : '0px');
+  el.addEventListener('scroll', updateLeftFade, { passive: true });
+  updateLeftFade();
+});
 </script>
 
 <style>
@@ -46,13 +61,18 @@ const emit = defineEmits<{ toggle: [tier: TierValue] }>();
   overflow-x: auto;
   padding-block: 1px 3px;
   scrollbar-width: none;
-  /* The fade hints that more tiers sit off-screen; the padding keeps it over empty space when every chip fits. */
+  /* The fades hint that more tiers sit off-screen; the padding keeps it over empty space when every chip fits. */
   padding-right: 24px;
-  mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
-  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 var(--fade-left, 0px), #000 calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fade-left, 0px), #000 calc(100% - 24px), transparent);
 }
 
 .tier-filter-chips::-webkit-scrollbar {
   display: none;
+}
+
+.tier-filter-chips.is-dragging {
+  cursor: grabbing;
+  user-select: none;
 }
 </style>
