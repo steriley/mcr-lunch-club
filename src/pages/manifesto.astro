@@ -63,30 +63,15 @@ import PageRibbon from '@/components/PageRibbon.astro';
           Value is a core principle. Price range will always be considered alongside quality, portion, and overall experience. We recognise excellence at all price points, but extravagance without merit will not pass inspection.
         </p>
 
-        <!-- Official Cost Key Callout -->
-        <div class="bg-amber-50 border-2 border-[#c59b27] p-5 rounded-xl space-y-2 font-serif-header">
-          <div class="flex items-center gap-2 text-xs uppercase tracking-wider font-bold text-[#8b1e22]">
-            <span>🪙</span>
-            <span>Official Cost Key</span>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-2xs">
-              <span class="text-xl font-bold font-mono text-[#8b1e22] block">£</span>
-              <span class="text-sm font-bold text-stone-900 block mt-0.5">under £10</span>
-              <span class="text-xs text-stone-500 font-sans">Everyday budget & grab</span>
-            </div>
-            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-2xs">
-              <span class="text-xl font-bold font-mono text-[#8b1e22] block">££</span>
-              <span class="text-sm font-bold text-stone-900 block mt-0.5">above £10</span>
-              <span class="text-xs text-stone-500 font-sans">Standard municipal protocol</span>
-            </div>
-            <div class="bg-white p-3 rounded-lg border border-amber-200 shadow-2xs">
-              <span class="text-xl font-bold font-mono text-[#8b1e22] block">£££</span>
-              <span class="text-sm font-bold text-stone-900 block mt-0.5">payday treat</span>
-              <span class="text-xs text-stone-500 font-sans">Special celebration feast</span>
-            </div>
-          </div>
-        </div>
+        <!-- Official Cost Key: plain copy -->
+        <p class="text-base text-stone-800 leading-relaxed font-serif-header">
+          The Official Cost Key:
+        </p>
+        <ul class="text-base text-stone-800 leading-relaxed font-serif-header space-y-1 list-disc pl-6">
+          <li><strong>£</strong> under £10: everyday budget and grab</li>
+          <li><strong>££</strong> above £10: standard municipal protocol</li>
+          <li><strong>£££</strong> payday treat: special celebration feast</li>
+        </ul>
       </section>
 
       <!-- Article IV: Geographical Jurisdiction & Radius -->
@@ -116,9 +101,7 @@ import PageRibbon from '@/components/PageRibbon.astro';
         <div class="pt-2 text-xs font-sans text-stone-600 flex items-center gap-2">
           <span>⚖️</span>
           <span>
-            Violations of this principle are logged in the
-            <a href="/hall-of-shame" class="text-[#8b1e22] underline font-bold">Hall of Shame</a>
-            (see the permanent record of the <em>Red Roses for Forgiveness</em> incident).
+            Violations of this principle are logged in the&nbsp;<a href="/hall-of-shame" class="text-[#8b1e22] underline font-bold">Hall of Shame</a>
           </span>
         </div>
       </section>
@@ -138,39 +121,24 @@ import PageRibbon from '@/components/PageRibbon.astro';
         <div class="bg-[#fdfcf9] rounded-2xl p-6 space-y-4 shadow-sm flex flex-col justify-between">
           <div class="space-y-3">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-[#8b1e22] font-bold flex items-center gap-1.5">
+              <span class="text-xs font-mono uppercase tracking-wider text-stone-500 font-bold flex items-center gap-1.5">
                 <span>🏆</span>
                 <span>The Sovereign Rotation</span>
               </span>
-              <a href="/tiers/approved" class="text-xs text-[#8b1e22] hover:underline font-bold">View Tier →</a>
             </div>
 
-            <div class="flex items-start gap-3 sm:gap-4">
-              <img
-                src="/brand/approved-sticker.png"
-                alt="Official MCR Lunch Club Approved Sticker"
-                class="w-16 h-16 sm:w-20 sm:h-20 object-contain drop-shadow-md shrink-0 hover:scale-105 transition-transform"
-              />
-              <div class="space-y-1">
-                <div class="flex items-center gap-2">
-                  <h3 class="text-2xl font-bold text-[#8b1e22]">Approved</h3>
-                  <span class="bg-[#c59b27]/20 text-[#8b1e22] border border-[#c59b27]/50 text-xs font-mono px-1.5 py-0.2 rounded font-bold uppercase">
-                    Prize Winner
-                  </span>
-                </div>
-                <p class="text-sm text-stone-800 leading-relaxed">
-                  Venue has survived the Chairs’ scrutiny by delivering consistent, good-value, characterful lunches across multiple visits. It has earned the highest honour in Manchester lunching: <strong>the right to be returned to</strong>.
-                </p>
-              </div>
+            <div class="space-y-1">
+              <h3 class="text-2xl font-bold text-[#8b1e22]">Approved</h3>
+              <p class="text-sm text-stone-800 leading-relaxed">
+                Venue has survived the Chairs’ scrutiny by delivering consistent, good-value, characterful lunches across multiple visits. It has earned the highest honour in Manchester lunching: <strong>the right to be returned to</strong>.
+              </p>
+              <a href="/tiers/approved" class="inline-block text-sm text-[#8b1e22] hover:underline font-bold">Approved Venues →</a>
             </div>
 
-            <div class="bg-amber-50/80 border border-amber-200 p-2.5 rounded-xl text-xs text-stone-700 font-sans">
+            <div class="bg-stone-50 border border-stone-200 p-3 rounded-xl text-xs text-stone-700 font-sans">
               <span class="font-bold text-[#8b1e22] block font-serif-header">The Official Sticker Prize:</span>
               Qualifying venues receive our official physical sticker — handed out as prizes and treated like Manchester’s own lunchtime Michelin star.
             </div>
-          </div>
-          <div class="bg-stone-50 p-3 rounded-xl border border-stone-200 text-xs text-stone-600 font-mono">
-            <strong>Cost Key:</strong> £ (under £10), ££ (above £10), £££ (payday treat)
           </div>
         </div>
 
@@ -178,18 +146,18 @@ import PageRibbon from '@/components/PageRibbon.astro';
         <div class="bg-[#fdfcf9] rounded-2xl p-6 space-y-3 shadow-sm flex flex-col justify-between">
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-amber-700 font-bold flex items-center gap-1.5">
+              <span class="text-xs font-mono uppercase tracking-wider text-stone-500 font-bold flex items-center gap-1.5">
                 <span>⏳</span>
                 <span>The Waiting Chamber</span>
               </span>
-              <a href="/tiers/under-consideration" class="text-xs text-amber-700 hover:underline font-bold">View Tier →</a>
             </div>
-            <h3 class="text-2xl font-bold text-amber-700">Under Consideration</h3>
+            <h3 class="text-2xl font-bold text-[#8b1e22]">Under Consideration</h3>
             <p class="text-sm text-stone-800 leading-relaxed">
               Venue has shown enough promise to warrant serious attention, but has not yet earned a final verdict from the Chairs. It sits in the waiting chamber of judgement, pending further evidence, appetite, and official lunching scrutiny.
             </p>
+            <a href="/tiers/under-consideration" class="inline-block text-sm text-[#8b1e22] hover:underline font-bold">Under Consideration Venues →</a>
           </div>
-          <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-xs text-amber-900 font-sans">
+          <div class="bg-stone-50 border border-stone-200 p-3 rounded-xl text-xs text-stone-700 font-sans">
             Pending confirmatory secondary visit & tribunal audit.
           </div>
         </div>
@@ -198,18 +166,18 @@ import PageRibbon from '@/components/PageRibbon.astro';
         <div class="bg-[#fdfcf9] rounded-2xl p-6 space-y-3 shadow-sm flex flex-col justify-between">
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-blue-700 font-bold flex items-center gap-1.5">
+              <span class="text-xs font-mono uppercase tracking-wider text-stone-500 font-bold flex items-center gap-1.5">
                 <span>📜</span>
                 <span>The Field of Vision</span>
               </span>
-              <a href="/tiers/to-be-assessed" class="text-xs text-blue-700 hover:underline font-bold">View Tier →</a>
             </div>
-            <h3 class="text-2xl font-bold text-blue-700">To Be Assessed</h3>
+            <h3 class="text-2xl font-bold text-[#8b1e22]">To Be Assessed</h3>
             <p class="text-sm text-stone-800 leading-relaxed">
               Venue has entered the Lunch Club’s field of vision, but has not yet faced the full judgement of the Chairs. Its fate remains undecided until proper inspection confirms whether it is worthy of approval, rejection, or reluctant tolerance.
             </p>
+            <a href="/tiers/to-be-assessed" class="inline-block text-sm text-[#8b1e22] hover:underline font-bold">To Be Assessed Venues →</a>
           </div>
-          <div class="bg-blue-50 p-3 rounded-xl border border-blue-200 text-xs text-blue-900 font-sans">
+          <div class="bg-stone-50 border border-stone-200 p-3 rounded-xl text-xs text-stone-700 font-sans">
             Docketed for exploratory inspection by the Committee.
           </div>
         </div>
@@ -218,18 +186,18 @@ import PageRibbon from '@/components/PageRibbon.astro';
         <div class="bg-[#fdfcf9] rounded-2xl p-6 space-y-3 shadow-sm flex flex-col justify-between">
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-yellow-800 font-bold flex items-center gap-1.5">
+              <span class="text-xs font-mono uppercase tracking-wider text-stone-500 font-bold flex items-center gap-1.5">
                 <span>🌧</span>
                 <span>Reluctant Permission</span>
               </span>
-              <a href="/tiers/if-we-must" class="text-xs text-yellow-800 hover:underline font-bold">View Tier →</a>
             </div>
-            <h3 class="text-2xl font-bold text-yellow-800">If We Must</h3>
+            <h3 class="text-2xl font-bold text-[#8b1e22]">If We Must</h3>
             <p class="text-sm text-stone-800 leading-relaxed">
               Venue is not celebrated, but tolerated: acceptable only when circumstance, convenience, or lack of better options forces the Club’s hand. It remains outside true approval, granted not honour, but reluctant permission.
             </p>
+            <a href="/tiers/if-we-must" class="inline-block text-sm text-[#8b1e22] hover:underline font-bold">If We Must Venues →</a>
           </div>
-          <div class="bg-yellow-50 p-3 rounded-xl border border-yellow-200 text-xs text-yellow-950 font-sans">
+          <div class="bg-stone-50 border border-stone-200 p-3 rounded-xl text-xs text-stone-700 font-sans">
             Reserved for extreme meteorological duress or proximity emergencies.
           </div>
         </div>
@@ -237,31 +205,31 @@ import PageRibbon from '@/components/PageRibbon.astro';
         <!-- Rejected Venues -->
         <div class="bg-[#fdfcf9] rounded-2xl p-6 space-y-3 shadow-sm md:col-span-2">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-mono uppercase tracking-wider text-rose-800 font-bold flex items-center gap-1.5">
+            <span class="text-xs font-mono uppercase tracking-wider text-stone-500 font-bold flex items-center gap-1.5">
               <span>⛔</span>
               <span>Removed from the Sacred Rotation</span>
             </span>
-            <a href="/tiers/rejected" class="text-xs text-rose-800 hover:underline font-bold">View Rejected Venues →</a>
           </div>
-          <h3 class="text-2xl font-bold text-stone-900">Rejected Venues</h3>
+          <h3 class="text-2xl font-bold text-[#8b1e22]">Rejected Venues</h3>
           <p class="text-sm text-stone-800 leading-relaxed">
             Venue has failed to meet the standards of the Chairs, whether through poor value, weak quality, lack of character, or the unforgivable sin of inconsistency. It is removed from the sacred lunch rotation and may only return through exceptional redemption.
           </p>
+          <a href="/tiers/rejected" class="inline-block text-sm text-[#8b1e22] hover:underline font-bold">Rejected Venues →</a>
         </div>
 
         <!-- Gone But Not Forgotten -->
         <div class="bg-[#fdfcf9] rounded-2xl p-6 space-y-3 shadow-sm md:col-span-2">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-mono uppercase tracking-wider text-stone-600 font-bold flex items-center gap-1.5">
+            <span class="text-xs font-mono uppercase tracking-wider text-stone-500 font-bold flex items-center gap-1.5">
               <span>🕊</span>
               <span>In Memoriam</span>
             </span>
-            <a href="/tiers/gone-but-not-forgotten" class="text-xs text-stone-600 hover:underline font-bold">View In Memoriam →</a>
           </div>
-          <h3 class="text-2xl font-bold text-stone-700">Gone But Not Forgotten</h3>
+          <h3 class="text-2xl font-bold text-[#8b1e22]">Gone But Not Forgotten</h3>
           <p class="text-sm text-stone-800 leading-relaxed">
             Venue once held a place in the Club’s affections, but is no longer available to be judged, revisited, or relied upon. Its doors may be closed, but its legend remains in the lunching annals.
           </p>
+          <a href="/tiers/gone-but-not-forgotten" class="inline-block text-sm text-[#8b1e22] hover:underline font-bold">Gone But Not Forgotten Venues →</a>
         </div>
       </div>
     </div>
