@@ -64,7 +64,7 @@ function markBroken(event: Event) {
       </div>
       <div class="bench-pillar-copy">
         <div class="bench-pillar-title-row">
-          <h3 class="bench-pillar-name">
+          <h3 class="bench-pillar-name" :class="{ 'has-rank': rank }">
             <span v-if="rank" class="bench-rank">#{{ rank }}</span>
             <button v-if="selectable" type="button" class="bench-pillar-link" @click="emit('select')">{{ card.name }}</button>
             <a v-else class="bench-pillar-link" :href="card.href">{{ card.name }}</a>
