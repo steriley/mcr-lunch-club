@@ -577,7 +577,8 @@ function fitFirstFixBounds() {
       animate: true,
     });
   } else {
-    const bottomPadding = Math.min(Math.round(window.innerHeight * 0.45), 320);
+    // Fit into the part of the map the bottom sheet leaves showing.
+    const bottomPadding = Math.round(sheetHeightPx(sheetSnapState.value)) + 24;
     mapInstance.fitBounds(bounds, {
       paddingTopLeft: [30, 80],
       paddingBottomRight: [30, bottomPadding],
@@ -625,34 +626,64 @@ function applyPinRanks() {
   if (changed) highlightSelectedPin();
 }
 
+// Height of the bottom sheet once it settles in `state` (its CSS height transitions, so
+// measuring the element mid-animation would give the wrong answer).
+function sheetHeightPx(state: 'collapsed' | 'half' | 'full'): number {
+  if (state === 'collapsed') return 140;
+  return window.innerHeight * (state === 'half' ? 0.54 : 0.86);
+}
+
+// Share of the uncovered map, from its top edge, where a selected pin sits. A little
+// below the middle leaves room above the pin for its popup.
+const SELECTED_PIN_VISIBLE_FRACTION = 0.6;
+
+/**
+ * The map centre that puts a point in the part of the map the venue panel leaves showing:
+ * above the bottom sheet on a phone, right of the floating panel on desktop. `fraction` is
+ * how far down the uncovered height the point sits on a phone (0.5 is the middle).
+ */
+function centreForVisibleMap(
+  lat: number,
+  lng: number,
+  zoom: number,
+  sheetState: 'collapsed' | 'half' | 'full' = sheetSnapState.value,
+  fraction = 0.5
+) {
+  const point = mapInstance.project([lat, lng], zoom);
+  if (isDesktop.value) {
+    // Offset so the point isn't hidden behind the 380px left floating panel
+    point.x -= 190;
+  } else {
+    // The sheet covers the bottom of the map: shift the centre below the point so the
+    // point lands in the middle of the part still showing.
+    const mapHeight = mapInstance.getSize().y;
+    const visibleHeight = Math.max(mapHeight - sheetHeightPx(sheetState), 0);
+    point.y += mapHeight / 2 - visibleHeight * fraction;
+  }
+  return mapInstance.unproject(point, zoom);
+}
+
 // Select a venue item from list or pin click
 function selectVenueItem(venue: Venue, fromPinClick = false) {
   selectedVenueId.value = venue.id;
 
   highlightSelectedPin();
 
+  // Tapping a pin on a collapsed sheet opens it to half height (below), so aim for that.
+  const sheetState = fromPinClick && !isDesktop.value && sheetSnapState.value === 'collapsed' ? 'half' : sheetSnapState.value;
+
   if (venueMarkersMap.has(venue.id)) {
     const marker = venueMarkersMap.get(venue.id);
-    if (!fromPinClick && mapInstance && venue.lat != null && venue.lng != null) {
+    if (mapInstance && venue.lat != null && venue.lng != null && (!fromPinClick || !isDesktop.value)) {
       isProgrammaticMove = true;
-      if (isDesktop.value) {
-        // Offset so pin isn't hidden behind the 380px left floating panel
-        const targetPoint = mapInstance.project([venue.lat, venue.lng], mapInstance.getZoom());
-        targetPoint.x -= 190;
-        const targetLatLng = mapInstance.unproject(targetPoint, mapInstance.getZoom());
-        mapInstance.panTo(targetLatLng, { animate: true });
-      } else {
-        // Offset so pin isn't hidden behind the bottom sheet
-        const targetPoint = mapInstance.project([venue.lat, venue.lng], mapInstance.getZoom());
-        targetPoint.y += 120;
-        const targetLatLng = mapInstance.unproject(targetPoint, mapInstance.getZoom());
-        mapInstance.panTo(targetLatLng, { animate: true });
-      }
+      const zoom = mapInstance.getZoom();
+      const centre = centreForVisibleMap(venue.lat, venue.lng, zoom, sheetState, SELECTED_PIN_VISIBLE_FRACTION);
+      mapInstance.panTo(centre, { animate: true });
       setTimeout(() => {
         isProgrammaticMove = false;
       }, 400);
-      marker.openPopup();
     }
+    if (!fromPinClick) marker?.openPopup();
   }
 
   // Scroll corresponding row into view
@@ -805,11 +836,8 @@ function recenterOnMe() {
   isFollowingUser.value = true;
   if (geo.position.value && mapInstance) {
     isProgrammaticMove = true;
-    mapInstance.setView(
-      [geo.position.value.lat, geo.position.value.lng],
-      Math.max(mapInstance.getZoom(), 16),
-      { animate: true }
-    );
+    const zoom = Math.max(mapInstance.getZoom(), 16);
+    mapInstance.setView(centreForVisibleMap(geo.position.value.lat, geo.position.value.lng, zoom), zoom, { animate: true });
     setTimeout(() => {
       isProgrammaticMove = false;
     }, 400);
@@ -822,7 +850,7 @@ function returnHome() {
   isFollowingUser.value = false;
   if (mapInstance) {
     isProgrammaticMove = true;
-    mapInstance.setView([BASE_LAT, BASE_LNG], DEFAULT_ZOOM, { animate: true });
+    mapInstance.setView(centreForVisibleMap(BASE_LAT, BASE_LNG, DEFAULT_ZOOM), DEFAULT_ZOOM, { animate: true });
     setTimeout(() => {
       isProgrammaticMove = false;
     }, 400);
@@ -892,7 +920,9 @@ function renderVenueMarkers() {
     pinRanks.set(venue.id, rank);
 
     // 56px keeps the popup clear of the Near Me header.
-    bindVenuePopup(marker, venue, () => selectVenue(venue), 56);
+    // On a phone selectVenueItem centres the pin above the sheet itself; the popup's own
+    // auto-pan would fight it, so only the desktop layout leaves panning to the popup.
+    bindVenuePopup(marker, venue, () => selectVenue(venue), 56, isDesktop.value);
 
     marker.on('click', () => {
       selectVenueItem(venue, true);
@@ -961,11 +991,8 @@ async function initNearMeMap(initializationId: number) {
       geo.setManualPosition({ lat: e.latlng.lat, lng: e.latlng.lng });
       isPickingLocation.value = false;
       isFollowingUser.value = true;
-      mapInstance.setView(
-        [e.latlng.lat, e.latlng.lng],
-        Math.max(mapInstance.getZoom(), 16),
-        { animate: true }
-      );
+      const zoom = Math.max(mapInstance.getZoom(), 16);
+      mapInstance.setView(centreForVisibleMap(e.latlng.lat, e.latlng.lng, zoom), zoom, { animate: true });
     }
   });
 
@@ -1027,11 +1054,8 @@ function updateUserMarkerOnMap() {
 
     if (isFollowingUser.value && hasFittedFirstFix.value) {
       isProgrammaticMove = true;
-      mapInstance.setView(
-        [geo.position.value.lat, geo.position.value.lng],
-        Math.max(mapInstance.getZoom(), 16),
-        { animate: true }
-      );
+      const zoom = Math.max(mapInstance.getZoom(), 16);
+      mapInstance.setView(centreForVisibleMap(geo.position.value.lat, geo.position.value.lng, zoom), zoom, { animate: true });
       setTimeout(() => { isProgrammaticMove = false; }, 400);
     }
   }

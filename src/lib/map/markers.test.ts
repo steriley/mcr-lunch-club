@@ -177,6 +177,15 @@ describe('bindVenuePopup', () => {
     assert.equal(opened, 0);
   });
 
+  it('leaves panning to the popup unless the caller turns auto-pan off', () => {
+    const { marker } = fakePopupSetup();
+    const seen: unknown[] = [];
+    marker.bindPopup = (_content: unknown, options: any) => { seen.push(options.autoPan); };
+    bindVenuePopup(marker, venue(), () => {});
+    bindVenuePopup(marker, venue(), () => {}, 0, false);
+    assert.deepEqual(seen, [true, false]);
+  });
+
   it('closes the popup before opening the venue panel from the dossier button', () => {
     const { marker, calls, pressDossier } = fakePopupSetup();
     bindVenuePopup(marker, venue(), () => calls.push('openPanel'));
