@@ -43,7 +43,7 @@ const positiveInt = (value: FormDataEntryValue | null) => (typeof value === 'str
  * photo becomes primary). If anything fails after a blob was written, the
  * blobs written so far are deleted.
  */
-export const POST = adminRoute({ action: 'Add venue image', params: { id: 'Venue not found.' } }, async ({ request, params, actor }) => {
+export const POST = adminRoute({ action: 'Add venue image', publishes: true, params: { id: 'Venue not found.' } }, async ({ request, params, actor }) => {
   if (!isBlobConfigured()) return jsonError(503, 'Image uploads are not configured.');
   const token = getBlobToken();
   const venueId = params.id;

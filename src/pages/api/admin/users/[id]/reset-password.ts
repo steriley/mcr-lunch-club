@@ -10,7 +10,7 @@ export const prerender = false;
  */
 export const POST = adminRoute(
   {
-    action: 'Reset password',
+    action: 'Reset password', publishes: false,
     params: { id: { schema: userIdParam, notFound: 'User not found.' } },
     body: resetPasswordSchema,
     onError: (error) => authApiError('Reset password', error),

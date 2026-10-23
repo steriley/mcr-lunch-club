@@ -21,7 +21,7 @@ function createVenueFailure(error: unknown): Response | undefined {
 }
 
 export const POST = adminRoute(
-  { action: 'Create venue', body: venueCreateSchema, onError: createVenueFailure },
+  { action: 'Create venue', publishes: false, body: venueCreateSchema, onError: createVenueFailure },
   async ({ body, actor }) => {
     if (await isSlugTaken(db, body.slug)) return slugTaken();
 

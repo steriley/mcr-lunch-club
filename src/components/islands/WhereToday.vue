@@ -112,7 +112,7 @@
             </h3>
             <img
               v-if="pickedVenue.tier === 'approved'"
-              src="/brand/approved-sticker.png"
+              src="/brand/approved-sticker-256.webp"
               alt="MCR Lunch Club Approved"
               class="w-6 h-6 object-contain inline-block shrink-0"
               title="Official MCR Lunch Club Approved Prize Winner"

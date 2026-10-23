@@ -5,7 +5,7 @@ import { serializeVenue } from '@/lib/venues';
 
 export const prerender = false;
 
-export const POST = adminRoute({ action: 'Close venue', params: { id: 'Venue not found.' } }, async ({ params, actor }) => {
+export const POST = adminRoute({ action: 'Close venue', publishes: true, params: { id: 'Venue not found.' } }, async ({ params, actor }) => {
   const result = await closeVenue(db, params.id, actor);
   if (!result.ok) {
     return result.reason === 'not_found' ? jsonError(404, 'Venue not found.') : jsonError(409, 'This venue is already marked closed.');

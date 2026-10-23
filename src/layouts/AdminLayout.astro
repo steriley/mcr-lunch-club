@@ -1,5 +1,6 @@
 ---
 import '@/styles/global.css';
+import FontLinks from '@/components/FontLinks.astro';
 import AdminUserMenu from '@/components/islands/AdminUserMenu.vue';
 import { ADMIN_AREA_NAME, ADMIN_NAV } from '@/lib/admin-config';
 
@@ -23,8 +24,9 @@ const navItems = ADMIN_NAV.map((item) => ({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <FontLinks />
     <meta name="robots" content="noindex, nofollow" />
-    <link rel="icon" type="image/png" href="/brand/logo.png" />
+    <link rel="icon" type="image/png" href="/brand/favicon-64.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon-chairs.png" />
     <meta name="apple-mobile-web-app-title" content="MCR Chairs" />
     <title>{pageTitle} | MCR Lunch Club</title>
@@ -36,7 +38,7 @@ const navItems = ADMIN_NAV.map((item) => ({
     <header class="border-b border-[#d9cfb8] bg-[#FBF6EA] shadow-sm">
       <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <a href="/" class="flex items-center gap-3 text-[#1a1e24] no-underline" aria-label="MCR Lunch Club home">
-          <img src="/brand/logo.png" alt="" class="h-11 w-11 object-contain" />
+          <img src="/brand/logo-96.webp" alt="" class="h-11 w-11 object-contain" />
           <div>
             <div class="font-serif text-lg font-bold uppercase tracking-[0.08em]">MCR LUNCH CLUB</div>
             <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8a5100]">{ADMIN_AREA_NAME}</div>

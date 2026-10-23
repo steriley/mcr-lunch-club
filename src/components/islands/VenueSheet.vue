@@ -20,7 +20,7 @@
         <div class="flex items-center gap-2.5">
           <img
             v-if="venue.tier === 'approved'"
-            src="/brand/approved-sticker.png"
+            src="/brand/approved-sticker-256.webp"
             alt="MCR Lunch Club Approved"
             class="w-9 h-9 object-contain drop-shadow shrink-0"
           />
@@ -64,7 +64,7 @@
         <!-- Approved Prize Award Callout -->
         <div v-if="venue.tier === 'approved'" class="bg-[#1a1e24] text-[#f9f7f1] border border-[#c59b27] p-3 rounded-xl flex items-center gap-3 shadow-xs">
           <img
-            src="/brand/approved-sticker.png"
+            src="/brand/approved-sticker-256.webp"
             alt="Official Approved Sticker"
             class="w-11 h-11 object-contain drop-shadow shrink-0"
           />

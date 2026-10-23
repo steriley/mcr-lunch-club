@@ -11,7 +11,7 @@ const NOT_FOUND = 'Bribery record not found.';
 const notFound = () => jsonError(404, NOT_FOUND);
 
 export const PUT = adminRoute(
-  { action: 'Update bribery record', params: { id: NOT_FOUND }, body: briberyInputSchema },
+  { action: 'Update bribery record', publishes: true, params: { id: NOT_FOUND }, body: briberyInputSchema },
   async ({ params, body }) => {
     const result = await briberyValues(db, body);
     if (!result.ok) return jsonError(400, 'Please correct the highlighted fields.', { venueId: result.error });
@@ -23,7 +23,7 @@ export const PUT = adminRoute(
 
 /** Publish or unpublish without resending the whole record. */
 export const PATCH = adminRoute(
-  { action: 'Publish bribery record', params: { id: NOT_FOUND }, body: briberyPublishSchema },
+  { action: 'Publish bribery record', publishes: true, params: { id: NOT_FOUND }, body: briberyPublishSchema },
   async ({ params, body }) => {
     const [row] = await db
       .update(briberyRecords)
@@ -34,7 +34,7 @@ export const PATCH = adminRoute(
   }
 );
 
-export const DELETE = adminRoute({ action: 'Delete bribery record', params: { id: NOT_FOUND } }, async ({ params }) => {
+export const DELETE = adminRoute({ action: 'Delete bribery record', publishes: true, params: { id: NOT_FOUND } }, async ({ params }) => {
   const [row] = await db.delete(briberyRecords).where(eq(briberyRecords.id, params.id)).returning({ id: briberyRecords.id });
   return row ? jsonResponse({ ok: true }) : notFound();
 });

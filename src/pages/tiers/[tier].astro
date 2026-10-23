@@ -3,24 +3,31 @@ import Layout from '@/layouts/Layout.astro';
 import TierChip from '@/components/TierChip.vue';
 import BenchPillar from '@/components/BenchPillar.astro';
 import PageRibbon from '@/components/PageRibbon.astro';
-import { getPublicInspections, getPublicVenues, setPublicCacheHeaders } from '@/lib/public-data';
+import { getPublicInspections, getPublicVenues, type PublicVenue } from '@/lib/public-data';
 import { toCard } from '@/lib/sovereign-bench';
-import { TIERS, countVenuesByTier, tierFromSlug } from '@/lib/tiers';
+import { TIERS, countVenuesByTier, type Tier } from '@/lib/tiers';
+import type { Inspection } from '@/types';
 
-export const prerender = false;
+// Built with the site; admin saves trigger a rebuild (src/lib/rebuild.ts).
+// An unknown tier slug has no page, so it gets src/pages/404.astro.
+export const prerender = true;
 
-const tier = tierFromSlug(Astro.params.tier);
-if (!tier) {
-  // An empty 404 makes Astro render src/pages/404.astro.
-  return new Response(null, { status: 404, statusText: 'Not found' });
+export async function getStaticPaths() {
+  // getPublicVenues already returns each tier in its public order (src/lib/venue-order.ts).
+  const [publicVenues, inspections] = await Promise.all([getPublicVenues(), getPublicInspections()]);
+  return TIERS.map((tier) => ({ params: { tier: tier.slug }, props: { tier, publicVenues, inspections } }));
 }
 
-// getPublicVenues already returns each tier in its public order (src/lib/venue-order.ts).
-const [publicVenues, inspections] = await Promise.all([getPublicVenues(), getPublicInspections()]);
+interface Props {
+  tier: Tier;
+  publicVenues: PublicVenue[];
+  inspections: Inspection[];
+}
+
+const { tier, publicVenues, inspections } = Astro.props;
 const venues = publicVenues.filter((venue) => venue.tier === tier.value);
 const cards = venues.map((venue) => toCard({ venue }, inspections));
 const tierCounts = countVenuesByTier(publicVenues);
-setPublicCacheHeaders(Astro.response.headers);
 ---
 
 <Layout title={`${tier.label} Tier — The Official Ledger Registry`}>
@@ -56,7 +63,7 @@ setPublicCacheHeaders(Astro.response.headers);
       <div class="bg-[#1a1e24] text-[#f9f7f1] p-6 sm:p-7 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-6 font-serif-header relative overflow-hidden">
         <div class="relative z-10 shrink-0">
           <img
-            src="/brand/approved-sticker.png"
+            src="/brand/approved-sticker-256.webp"
             alt="Official MCR Lunch Club Approved Sticker"
             class="w-28 h-28 sm:w-32 sm:h-32 object-contain drop-shadow-[0_0_20px_rgba(197,155,39,0.4)] select-none hover:scale-105 transition-transform"
           />

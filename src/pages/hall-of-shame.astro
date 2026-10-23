@@ -1,11 +1,11 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import { getPublishedIncidents, setPublicCacheHeaders } from '@/lib/public-data';
+import { getPublishedIncidents } from '@/lib/public-data';
 
-export const prerender = false;
+// Built with the site; admin saves trigger a rebuild (src/lib/rebuild.ts).
+export const prerender = true;
 
 const incidentsData = await getPublishedIncidents();
-setPublicCacheHeaders(Astro.response.headers);
 ---
 
 <Layout title="The Hall of Shame — Register of Improper Benefit Attempts | MCR Lunch Club">

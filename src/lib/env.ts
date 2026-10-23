@@ -190,3 +190,17 @@ export function blobEnvPrefix(): BlobEnvPrefix {
 export function getOrsApiKey(): string | undefined {
   return optional('ORS_API_KEY') ?? optional('OPENROUTESERVICE_API_KEY');
 }
+
+/**
+ * Vercel Deploy Hook URL. Admin saves POST to it so the prerendered public
+ * pages are rebuilt with the change. Set it for Production only; unset, saves
+ * trigger nothing (local dev, previews).
+ */
+export function getDeployHookUrl(): string | undefined {
+  return optional('DEPLOY_HOOK_URL');
+}
+
+/** Vercel Cron sends this as a bearer token; the cron routes refuse requests without it. */
+export function getCronSecret(): string | undefined {
+  return optional('CRON_SECRET');
+}

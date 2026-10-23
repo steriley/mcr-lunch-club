@@ -10,7 +10,7 @@ const declineSchema = z.object({
 });
 
 export const POST = adminRoute(
-  { action: 'decline proposal', params: { id: 'Proposal not found.' }, body: declineSchema },
+  { action: 'decline proposal', publishes: false, params: { id: 'Proposal not found.' }, body: declineSchema },
   async ({ params, body, actor }) => {
     const result = await declineProposal(db, params.id, actor, body.reason);
     if (!result.ok) return jsonError(PROPOSAL_ERROR_STATUS[result.error], PROPOSAL_ERROR_MESSAGES[result.error]);

@@ -45,7 +45,7 @@ const failure = (error: VenueImageError) => jsonError(VENUE_IMAGE_ERROR_STATUS[e
 const imageParams = { id: VENUE_IMAGE_ERROR_MESSAGES.venue_not_found, imageId: VENUE_IMAGE_ERROR_MESSAGES.image_not_found };
 const notConfigured = () => jsonError(503, 'Image uploads are not configured.');
 
-export const PATCH = adminRoute({ action: 'Update venue image', params: imageParams, body: imagePatchSchema }, async ({ params, body, actor }) => {
+export const PATCH = adminRoute({ action: 'Update venue image', publishes: true, params: imageParams, body: imagePatchSchema }, async ({ params, body, actor }) => {
   if (!isBlobConfigured()) return notConfigured();
 
   // Primary first: it is the one change that can fail on a stale image, so nothing is half-written.
@@ -68,7 +68,7 @@ export const PATCH = adminRoute({ action: 'Update venue image', params: imagePar
 });
 
 /** Row first (promoting a new primary if needed), then the blobs, best-effort. */
-export const DELETE = adminRoute({ action: 'Delete venue image', params: imageParams }, async ({ params, actor }) => {
+export const DELETE = adminRoute({ action: 'Delete venue image', publishes: true, params: imageParams }, async ({ params, actor }) => {
   if (!isBlobConfigured()) return notConfigured();
 
   const result = await deleteVenueImage(db, params.id, params.imageId, actor);

@@ -13,7 +13,7 @@ const bodySchema = z.object({ proposedTier: z.enum(TIER_VALUES, { error: 'Choose
  * caller's own pending proposal; refused while another admin's is pending.
  */
 export const POST = adminRoute(
-  { action: 'Propose tier', params: { id: 'Venue not found.' }, body: bodySchema },
+  { action: 'Propose tier', publishes: false, params: { id: 'Venue not found.' }, body: bodySchema },
   async ({ params, body, actor }) => {
     const result = await proposeTier(db, params.id, body.proposedTier, actor);
     if (!result.ok) return jsonError(PROPOSAL_ERROR_STATUS[result.error], PROPOSAL_ERROR_MESSAGES[result.error]);

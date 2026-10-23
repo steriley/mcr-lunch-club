@@ -15,7 +15,7 @@ const NOT_FOUND = 'Suggestion not found.';
  * undo another Chair's acceptance: that answers 409 and changes nothing.
  */
 export const PATCH = adminRoute(
-  { action: 'Update suggestion', params: { id: NOT_FOUND }, body: suggestionStatusSchema },
+  { action: 'Update suggestion', publishes: false, params: { id: NOT_FOUND }, body: suggestionStatusSchema },
   async ({ params, body, actor }) => {
     const reviewed = body.status === 'dismissed';
     const [row] = await db
@@ -36,7 +36,7 @@ export const PATCH = adminRoute(
   }
 );
 
-export const DELETE = adminRoute({ action: 'Delete suggestion', params: { id: NOT_FOUND } }, async ({ params }) => {
+export const DELETE = adminRoute({ action: 'Delete suggestion', publishes: false, params: { id: NOT_FOUND } }, async ({ params }) => {
   const [row] = await db.delete(venueSuggestions).where(eq(venueSuggestions.id, params.id)).returning({ id: venueSuggestions.id });
   if (!row) return jsonError(404, NOT_FOUND);
   return jsonResponse({ ok: true });

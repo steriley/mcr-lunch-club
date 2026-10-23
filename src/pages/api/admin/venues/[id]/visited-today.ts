@@ -20,7 +20,7 @@ const visitInputSchema = z.preprocess(
  * adminRoute.
  */
 export const POST = adminRoute(
-  { action: 'Record visit', params: { id: 'Venue not found.' }, body: visitInputSchema },
+  { action: 'Record visit', publishes: true, params: { id: 'Venue not found.' }, body: visitInputSchema },
   async ({ params, body, actor }) => {
     const now = new Date();
     const outcome = await recordVisit(db, params.id, actor, body.outcome, now);
