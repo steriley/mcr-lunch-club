@@ -31,21 +31,7 @@ setPublicCacheHeaders(Astro.response.headers);
     quote={tier.motto}
     description={tier.description}
     bannerClass={tier.bannerClass}
-  >
-    <div class="flex flex-wrap items-center gap-3">
-      <div class="ribbon-chip">
-        <strong class="text-[#c59b27] font-mono">Constitutional Standard:</strong>
-        <span>{tier.rule}</span>
-      </div>
-
-      {tier.value === 'approved' && (
-        <div class="ribbon-chip">
-          <strong class="text-[#c59b27] font-mono">Cost Key:</strong>
-          <span>£ (under £10) &bull; ££ (above £10) &bull; £££ (payday treat)</span>
-        </div>
-      )}
-    </div>
-  </PageRibbon>
+  />
 
   <div class="w-full pt-6 sm:pt-8 font-serif-header">
     <!-- Tier Navigation Tabs: below the ribbon, edge to edge, fading out at both sides -->
