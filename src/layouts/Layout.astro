@@ -155,10 +155,42 @@ const navigation = [
       </div>
     </footer>
     <script>
+      // <details> flips to display:none the moment it closes, so keep it [open] while the
+      // panel fades out and slides in/out with the .is-open class.
+      const CLOSE_MS = 180;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
       document.querySelectorAll<HTMLDetailsElement>('.mobile-menu').forEach((menu) => {
+        let closeTimer: ReturnType<typeof setTimeout> | undefined;
+
+        const openMenu = () => {
+          clearTimeout(closeTimer);
+          menu.open = true;
+          // Paint the closed state first so the transition has somewhere to start from.
+          void menu.offsetWidth;
+          menu.classList.add('is-open');
+        };
+
+        const closeMenu = () => {
+          menu.classList.remove('is-open');
+          clearTimeout(closeTimer);
+          closeTimer = setTimeout(() => { menu.open = false; }, reducedMotion.matches ? 0 : CLOSE_MS);
+        };
+
+        menu.querySelector('summary')?.addEventListener('click', (event) => {
+          event.preventDefault();
+          if (menu.classList.contains('is-open')) closeMenu();
+          else openMenu();
+        });
+
         menu.addEventListener('click', (event) => {
-          if (event.target instanceof Element && event.target.closest('a')) {
-            menu.open = false;
+          if (event.target instanceof Element && event.target.closest('a')) closeMenu();
+        });
+
+        document.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape' && menu.classList.contains('is-open')) {
+            closeMenu();
+            menu.querySelector('summary')?.focus();
           }
         });
       });
