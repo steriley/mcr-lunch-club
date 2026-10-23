@@ -14,51 +14,53 @@ const legacyCount = inspections.length - verifiedCount;
 ---
 
 <Layout title="The Inspection Audits — Chronological Ledger | MCR Lunch Club">
-  <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
-    <!-- Header Card -->
-    <div class="bg-[#1a1e24] text-[#f9f7f1] p-6 sm:p-10 rounded-2xl border-2 border-[#c59b27] shadow-2xl relative overflow-hidden">
-      <div class="relative z-10 space-y-3">
-        <div class="flex items-center gap-3">
-          <span class="text-4xl">📋</span>
-          <div>
-            <span class="text-xs uppercase tracking-widest text-[#c59b27] font-bold font-mono">
-              Operational Field Ledger
-            </span>
-            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-[#f9f7f1]">
-              The Inspection Audits
-            </h1>
+  <!-- Header Ribbon -->
+  <div class="bg-[#1a1e24] text-[#f9f7f1] w-full font-serif-header">
+    <div class="max-w-5xl mx-auto px-4 w-full">
+      <div class="p-6 sm:p-10">
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <span class="text-4xl">📋</span>
+            <div>
+              <span class="text-xs uppercase tracking-widest text-[#c59b27] font-bold font-mono">
+                Operational Field Ledger
+              </span>
+              <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-[#f9f7f1]">
+                The Inspection Audits
+              </h1>
+            </div>
           </div>
-        </div>
 
-        <p class="text-sm sm:text-base text-stone-300 italic pt-1 border-t border-[#c59b27]/30 max-w-3xl">
-          “Every verdict herein is etched in indelible ink. The Two-Visit Rule dictates that excellence must be demonstrated twice under fire; mediocrity is rewarded with swift eviction.”
-        </p>
+          <p class="text-sm sm:text-base text-stone-300 italic pt-1 border-t border-[#c59b27]/30 max-w-3xl">
+            “Every verdict herein is etched in indelible ink. The Two-Visit Rule dictates that excellence must be demonstrated twice under fire; mediocrity is rewarded with swift eviction.”
+          </p>
 
-        <div class="pt-2 flex items-center gap-4 text-xs font-sans">
-          <div class="flex items-center gap-1.5">
-            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-            <span>Dual-verified Inspections: <strong>{verifiedCount}</strong></span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-3 h-3 rounded-full bg-stone-400"></span>
-            <span>Legacy Records: <strong>{legacyCount}</strong></span>
+          <div class="pt-2 flex items-center gap-4 text-xs font-sans">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+              <span>Dual-verified Inspections: <strong>{verifiedCount}</strong></span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full bg-stone-400"></span>
+              <span>Legacy Records: <strong>{legacyCount}</strong></span>
+            </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
+  <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
     <!-- Inspection List -->
     <div class="space-y-4 font-sans">
-      <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2 font-serif-header">
-        <h2 class="text-xl font-bold text-[#1a1e24] flex items-center gap-2">
-          <span>Audit Registry</span>
-          <span class="text-xs font-mono font-bold bg-[#8b1e22] text-white px-2 py-0.5 rounded">
-            {inspections.length} Entries
-          </span>
-        </h2>
-        <span class="text-xs text-stone-500 font-sans">
-          Sorted by Date Recorded
-        </span>
+      <div class="space-y-2 font-serif-header">
+        <div class="border-b border-[#dcd6c8] pb-2 space-y-1">
+          <h2 class="text-xl font-bold text-[#1a1e24]">Audit Registry</h2>
+          <p class="text-xs font-mono text-stone-500">Sorted by Date Recorded</p>
+        </div>
+        <div class="flex justify-end">
+          <span class="bench-count">{inspections.length} Entries</span>
+        </div>
       </div>
 
       {inspections.length === 0 ? (
