@@ -24,18 +24,6 @@ setPublicCacheHeaders(Astro.response.headers);
 
 <Layout title={`${tier.label} Tier — The Official Ledger Registry`}>
   <div class="max-w-6xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
-    <!-- Breadcrumbs & Manifesto Link -->
-    <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
-      <a href="/" class="text-[#8b1e22] hover:underline flex items-center gap-1 font-bold">
-        <span>←</span>
-        <span>Return to Sovereign Map</span>
-      </a>
-      <a href="/manifesto" class="text-stone-600 hover:text-[#8b1e22] flex items-center gap-1.5 underline decoration-[#c59b27] font-semibold">
-        <span>📜</span>
-        <span>Read The Official Manifesto</span>
-      </a>
-    </div>
-
     <!-- Tier Navigation Tabs -->
     <nav class="flex items-center gap-[7px] overflow-x-auto pb-2 border-b border-[#dcd6c8]" aria-label="Browse by verdict">
       {TIERS.map((t) => (
