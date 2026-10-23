@@ -2,7 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import FilterBar from '@/components/islands/FilterBar.vue';
 import LunchMap from '@/components/islands/LunchMap.vue';
-import NearMeMap from '@/components/islands/NearMeMap.vue';
+import NearMeLoader from '@/components/islands/NearMeLoader.vue';
 import VenueSheet from '@/components/islands/VenueSheet.vue';
 import WhereToday from '@/components/islands/WhereToday.vue';
 import WeatherCard from '@/components/WeatherCard.vue';
@@ -85,7 +85,7 @@ const fieldShortcuts = [
       <div class="home-map-column">
         <section class="home-map-stage relative w-full flex flex-col">
           <LunchMap client:load mapApiKey={publicMapApiKey} />
-          <NearMeMap client:only="vue" mapApiKey={publicMapApiKey} />
+          <NearMeLoader client:only="vue" mapApiKey={publicMapApiKey} />
           <VenueSheet client:load />
           <WhereToday client:idle />
           <SuggestModal client:idle />

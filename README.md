@@ -36,10 +36,10 @@ The public pages are **prerendered**: they read the database when the site is bu
   - `/api/cron/weekly-bulletin` — Vercel Cron: rebuilds the site when the Wednesday bulletin goes out
   - `/admin/*` — The Chairs' Area (sign-in required; see below)
 - **Vue 3 Islands (`src/components/islands/`)**:
-  - `LunchMap.vue` (`client:load`) — Leaflet map with custom tier pins, walking isochrones, and the 2.5-mile boundary.
+  - `LunchMap.vue` (`client:load`) — Leaflet map with custom tier pins, walking isochrones, and the 2.5-mile boundary. Leaflet starts once the browser is idle (a grey box until then), or straight away for a `/?venue=` link.
   - `FilterBar.vue` (`client:load`) — Search, tier badges, cost (`£`/`££`/`£££`), walking time slider, and recency filter.
   - `VenueSheet.vue` (`client:load`) — Slide-up dossier sheet with official manifesto wording and "Eat Like Us" prescribed orders.
-  - `NearMeMap.vue` (`client:only`) — Full-screen "Near Me" mode ranking venues by distance from the user.
+  - `NearMeMap.vue` — Full-screen "Near Me" mode ranking venues by distance from the user. Loaded by `NearMeLoader.vue` (`client:only`) the first time Near Me opens (or for a `#near-me` link), and prefetched once the page is idle.
   - `WhereToday.vue` (`client:idle`) — The 12:25 decision oracle and stalemate resolver.
   - `SuggestModal.vue` (`client:idle`) — Member petition form; suggestions go to the Chairs' Area inbox (`/admin/suggestions`), never straight onto the site.
 - **State Management**:
