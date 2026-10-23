@@ -2161,3 +2161,8 @@ button.bench-pillar-link {
     navigation: none;
   }
 }
+
+/* Until the opening decree is picked, hold the badge's space without showing a number. */
+.decree-badge.is-pending {
+  visibility: hidden;
+}

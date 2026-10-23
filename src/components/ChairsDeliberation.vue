@@ -13,7 +13,7 @@
         </svg>
         Chairs' Deliberation
       </h2>
-      <span class="decree-badge">Decree #{{ DECREES[current].number }}</span>
+      <span class="decree-badge" :class="{ 'is-pending': current < 0 }">Decree #{{ DECREES[Math.max(current, 0)].number }}</span>
     </div>
     <!-- Every decree sits in one grid cell, so the panel keeps the height of the longest. -->
     <div class="deliberation-stack" aria-live="off">
@@ -40,11 +40,14 @@ import { DECREES } from '@/lib/decrees';
 
 const CYCLE_MS = 60_000;
 
-const current = ref(0);
+// -1 until mounted: the page is cached and shared, so the opening decree is picked in the
+// browser (not on the server) and the panel fades it in.
+const current = ref(-1);
 const paused = ref(false);
 let timer: ReturnType<typeof setInterval> | undefined;
 
 onMounted(() => {
+  current.value = Math.floor(Math.random() * DECREES.length);
   timer = setInterval(() => {
     if (!paused.value) current.value = (current.value + 1) % DECREES.length;
   }, CYCLE_MS);
