@@ -666,6 +666,9 @@ function centreForVisibleMap(
 // Select a venue item from list or pin click
 function selectVenueItem(venue: Venue, fromPinClick = false) {
   selectedVenueId.value = venue.id;
+  // Choosing a venue overrides following the user, so a position update doesn't pull the
+  // map back. Recentre on me (or a manual pick) switches following back on.
+  isFollowingUser.value = false;
 
   highlightSelectedPin();
 
