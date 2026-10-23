@@ -1134,7 +1134,7 @@ function onLocationChange() {
   }
 }
 
-watch(isOpen, async (open) => {
+async function onOpenChange(open: boolean) {
   if (open) {
     const initializationId = ++mapInitializationId;
 
@@ -1239,7 +1239,9 @@ watch(isOpen, async (open) => {
       }
     });
   }
-});
+}
+
+watch(isOpen, onOpenChange);
 
 onMounted(() => {
   if (typeof window === 'undefined') return;
@@ -1247,7 +1249,10 @@ onMounted(() => {
   checkScreenSize();
   window.addEventListener('resize', checkScreenSize);
 
-  if (window.location.hash === '#near-me') {
+  if (isOpen.value) {
+    // NearMeLoader only mounts this once Near Me is opened, so the watcher never sees it open.
+    void onOpenChange(true);
+  } else if (window.location.hash === '#near-me') {
     $isNearMeOpen.set(true);
   }
 
