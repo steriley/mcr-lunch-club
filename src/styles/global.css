@@ -936,6 +936,62 @@
   font-style: italic;
 }
 
+/* Near Me: the pillar card as a selectable list row. */
+.bench-pillar.is-selected {
+  border-color: var(--ledger-gold);
+  box-shadow: 0 0 0 2px rgb(242 154 46 / 30%);
+}
+
+button.bench-pillar-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.bench-rank {
+  margin-right: 6px;
+  color: var(--bench-amber);
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.bench-tier {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.bench-tier-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* Above the stretched link, like the walk link. */
+.bench-details {
+  position: relative;
+  z-index: 1;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 6px;
+  background: var(--ledger-card);
+  color: var(--ledger-deep);
+  font: 700 12px "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+}
+
+.bench-details:hover {
+  border-color: var(--ledger-navy);
+}
+
 .field-dispatch {
   display: flex;
   flex-direction: column;
