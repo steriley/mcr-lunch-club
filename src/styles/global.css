@@ -2104,3 +2104,22 @@ button.bench-pillar-link {
   cursor: grabbing;
   user-select: none;
 }
+
+/* Extra facts in a page ribbon: the tier rule, cost key, inspection counts and the creed. */
+.ribbon-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 8px;
+  background: rgb(0 0 0 / 30%);
+  color: #e7e5e4;
+  font: 400 12px/1.5 "Plus Jakarta Sans", sans-serif;
+}
+
+@media (min-width: 640px) {
+  .ribbon-chip {
+    font-size: 14px;
+  }
+}
