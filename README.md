@@ -24,6 +24,8 @@ Built on **Astro 7** on Vercel (functions in `lhr1`, next to the Neon database i
 
 The public pages are **prerendered**: they read the database when the site is built and are served as static files, so visitors never wait on Neon. Admin saves that change what the public sees (each `adminRoute` declares `publishes`) call a Vercel Deploy Hook (`src/lib/rebuild.ts`), and the change is live once that build finishes, usually within two minutes. A Vercel Cron job rebuilds the site on Wednesday evenings for the new weekly bulletin (`src/pages/api/cron/weekly-bulletin.ts`). Only the Chairs' Area, `/api/*` and the sign-in page run on demand.
 
+Every public page carries a canonical URL and Open Graph / Twitter card tags (`src/layouts/Layout.astro`), so links shared in a chat show a preview: venue pages use their photo, everything else `public/brand/og-default.png`. `@astrojs/sitemap` writes `/sitemap-index.xml` at build time, and `vercel.json` sets the security headers (`nosniff`, no framing, referrer and permissions policies; geolocation stays allowed for Near Me).
+
 - **Pages (`.astro`)**:
   - `/` — The interactive Leaflet Ledger Map
   - `/venues/[slug]` — Dossiers for every public establishment

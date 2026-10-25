@@ -3,6 +3,13 @@ import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES } from './config';
 import { tierInfo } from '@/lib/tiers';
 import { milesText, walkText } from '@/lib/route-display';
 import { focalStyle } from '@/lib/image-upload';
+import { getWalkingDirectionsUrl } from './directions';
+
+/** What a screen reader announces for a pin: the cost badge alone ("££") says nothing. */
+export function venuePinLabel(venue: Venue): string {
+  const walk = venue.walkingTimeMin == null ? null : walkText(venue.walkingTimeMin, 'min walk');
+  return [venue.name, tierInfo(venue.tier).label, venue.cost, walk].filter(Boolean).join(', ');
+}
 
 /**
  * Generate the HTML string for a venue marker pin.
@@ -19,8 +26,9 @@ export function createVenueIconHtml(venue: Venue, rank?: number): string {
     <div class="group relative cursor-pointer transform transition-transform duration-200 hover:scale-125 hover:z-[9999]" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));">
       <div class="flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shadow-md border-2"
            style="background-color: ${tier.color}; border-color: ${tier.border}; color: #ffffff;">
-        <span>${escapeHtml(badgeText)}</span>
+        <span aria-hidden="true">${escapeHtml(badgeText)}</span>
       </div>
+      <span class="sr-only">${escapeHtml(venuePinLabel(venue))}</span>
       ${rankBadge}
       <div class="w-1.5 h-1.5 mx-auto bg-stone-900 rounded-full mt-[-1px]"></div>
     </div>
@@ -123,6 +131,9 @@ export function createVenuePopupContent(venue: Venue, onViewDossier?: () => void
     ? `<img src="${escapeHtml(venue.image.thumbUrl)}" alt="${escapeHtml(venue.image.alt)}" width="640" height="427" loading="lazy" decoding="async" onerror="this.style.display='none'"
            style="object-position: ${escapeHtml(focalStyle(venue.image))};" class="venue-popup-image" />`
     : '';
+  const directions = venue.lat != null && venue.lng != null
+    ? `<a href="${escapeHtml(getWalkingDirectionsUrl(venue.lat, venue.lng))}" target="_blank" rel="noopener noreferrer" class="venue-popup-button is-secondary" aria-label="Walking directions to ${escapeHtml(venue.name)}">Walk there</a>`
+    : '';
   popupContent.innerHTML = `
     ${image}
     <div class="venue-popup-body">
@@ -132,7 +143,10 @@ export function createVenuePopupContent(venue: Venue, onViewDossier?: () => void
       </div>
       <span class="venue-popup-tier" style="--tier-color: ${tier.color};">${escapeHtml(tier.label)}</span>
       <p class="venue-popup-walk">${escapeHtml(walkText(venue.walkingTimeMin, 'min walk from Base'))} (${escapeHtml(milesText(venue.distanceMiles, 'mi'))})</p>
-      <button type="button" data-view-dossier class="venue-popup-button">View Ledger Dossier</button>
+      <div class="venue-popup-actions">
+        <button type="button" data-view-dossier class="venue-popup-button">View Ledger Dossier</button>
+        ${directions}
+      </div>
     </div>
   `;
 

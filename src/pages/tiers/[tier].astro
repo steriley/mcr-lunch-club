@@ -30,7 +30,7 @@ const cards = venues.map((venue) => toCard({ venue }, inspections));
 const tierCounts = countVenuesByTier(publicVenues);
 ---
 
-<Layout title={`${tier.label} Tier — The Official Ledger Registry`}>
+<Layout title={`${tier.label} Tier — The Official Ledger Registry`} description={`${tier.label}: ${tier.description}`}>
   <PageRibbon
     icon={tier.icon}
     kicker="Official Tier Classification"

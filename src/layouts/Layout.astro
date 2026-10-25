@@ -7,13 +7,23 @@ interface Props {
   title?: string;
   description?: string;
   noindex?: boolean;
+  /** Social card image, absolute or site-relative; defaults to the club card. */
+  image?: string;
 }
 
 const {
   title = "MCR Lunch Club — We Return Only Where Deserved",
   description = "A map of Manchester where every pin is a verdict. Formal, a bit pompous, and actually useful at 12:25.",
-  noindex = false
+  noindex = false,
+  image = '/brand/og-default.png'
 } = Astro.props;
+
+// Shared links (Slack, WhatsApp) show these; prerendered pages resolve them against `site`.
+const siteUrl = Astro.site ?? Astro.url;
+// Prerendered paths end in a slash; the site links without one, so the canonical does too.
+const canonicalPath = Astro.url.pathname.length > 1 ? Astro.url.pathname.replace(/\/$/, '') : '/';
+const canonicalUrl = new URL(canonicalPath, siteUrl).href;
+const imageUrl = new URL(image, siteUrl).href;
 
 const currentPath = Astro.url.pathname;
 // The badge is decoration: a database hiccup must not take down every page (the 404 page included).
@@ -40,9 +50,18 @@ const navigation = [
     <meta name="apple-mobile-web-app-title" content="MCR Lunch Club" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {noindex ? <meta name="robots" content="noindex, nofollow" /> : <link rel="canonical" href={canonicalUrl} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MCR Lunch Club" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:locale" content="en_GB" />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body class="min-h-screen flex flex-col text-[#1e1b17] bg-[#FBF6EA] antialiased selection:bg-[#1B2F6B] selection:text-white">
+    <a href="#main" class="skip-link">Skip to content</a>
     <header class="site-header sticky top-0 z-50">
       <div class="site-header-inner">
         <a href="/" class="brand-lockup" aria-label="MCR Lunch Club home">
@@ -102,7 +121,7 @@ const navigation = [
       </div>
     </header>
 
-    <main class="flex-1 flex flex-col">
+    <main id="main" tabindex="-1" class="flex-1 flex flex-col outline-none">
       <slot />
     </main>
 
@@ -157,6 +176,16 @@ const navigation = [
         </div>
       </div>
     </footer>
+    <script>
+      import { getWalkingDirectionsUrl } from '@/lib/map/directions';
+
+      // Pages ship Google walking directions; Apple devices get Apple Maps, like the Near Me walk button.
+      document.querySelectorAll<HTMLAnchorElement>('a[data-walk-directions]').forEach((link) => {
+        const lat = Number(link.dataset.lat);
+        const lng = Number(link.dataset.lng);
+        if (Number.isFinite(lat) && Number.isFinite(lng)) link.href = getWalkingDirectionsUrl(lat, lng);
+      });
+    </script>
     <script>
       // <details> flips to display:none the moment it closes, so keep it [open] while the
       // panel fades out and slides in/out with the .is-open class.

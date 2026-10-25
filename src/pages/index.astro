@@ -219,14 +219,3 @@ const fieldShortcuts = [
     </div>
   </div>
 </Layout>
-
-<script>
-  import { getWalkingDirectionsUrl } from '@/lib/map/directions';
-
-  // The page ships Google walking directions; Apple devices get Apple Maps, like the Near Me walk button.
-  document.querySelectorAll<HTMLAnchorElement>('a[data-walk-directions]').forEach((link) => {
-    const lat = Number(link.dataset.lat);
-    const lng = Number(link.dataset.lng);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) link.href = getWalkingDirectionsUrl(lat, lng);
-  });
-</script>
