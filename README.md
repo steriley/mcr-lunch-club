@@ -1,6 +1,6 @@
 # MCR Lunch Club — The Chairs' Official Ledger 🏛️⚖️
 
-> *"A map of Manchester where every pin is a verdict. Formal, a bit pompous, and actually useful at 12:25 when someone asks 'where are we going?'"*
+> *"A map of Manchester where every pin is a verdict. Formal, a bit pompous, and actually useful at 11:59 when someone asks 'where are we going?'"*
 
 Welcome to the official repository of the **Manchester Lunch Club Map App**.
 
@@ -42,7 +42,7 @@ Every public page carries a canonical URL and Open Graph / Twitter card tags (`s
   - `FilterBar.vue` (`client:load`) — Search, tier badges, cost (`£`/`££`/`£££`), walking time slider, and recency filter.
   - `VenueSheet.vue` (`client:load`) — Slide-up dossier sheet with official manifesto wording and "Eat Like Us" prescribed orders.
   - `NearMeMap.vue` — Full-screen "Near Me" mode ranking venues by distance from the user. Loaded by `NearMeLoader.vue` (`client:only`) the first time Near Me opens (or for a `#near-me` link), and prefetched once the page is idle.
-  - `WhereToday.vue` (`client:idle`) — The 12:25 decision oracle and stalemate resolver.
+  - `WhereToday.vue` (`client:idle`) — The 11:59 decision oracle and stalemate resolver.
   - `SuggestModal.vue` (`client:idle`) — Member petition form; suggestions go to the Chairs' Area inbox (`/admin/suggestions`), never straight onto the site.
 - **State Management**:
   - `nanostores` with `@nanostores/vue` for cross-island reactive filtering and modal state.

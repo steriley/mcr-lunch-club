@@ -102,14 +102,14 @@
         <!-- Distance & Walking Time Pill Bar -->
         <div class="grid grid-cols-2 gap-2 bg-paper p-3 rounded-lg border border-hairline text-center font-serif-header">
           <div>
-            <span class="text-xs text-stone-600 uppercase tracking-wide block">Foot Journey</span>
+            <span class="text-xs text-stone-600 uppercase tracking-wide block">Walk</span>
             <span class="text-base font-bold text-navy">{{ walkText(venue.walkingTimeMin, 'mins') }}</span>
             <span class="text-xs text-stone-500 block font-sans">from Spinningfields Base</span>
           </div>
           <div class="border-l border-hairline">
-            <span class="text-xs text-stone-600 uppercase tracking-wide block">Displacement</span>
+            <span class="text-xs text-stone-600 uppercase tracking-wide block">Distance</span>
             <span class="text-base font-bold text-stone-900">{{ milesText(venue.distanceMiles) }}</span>
-            <span class="text-xs text-stone-500 block font-sans">within 2.5 mi limit</span>
+            <span class="text-xs text-stone-500 block font-sans">walking route</span>
           </div>
         </div>
 
@@ -171,13 +171,13 @@
       <!-- Footer Buttons -->
       <div class="p-4 bg-paper border-t border-hairline flex flex-wrap items-center justify-between gap-2">
         <a
-          :href="venue.mapSearchLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue.name + ' Manchester')}`"
+          :href="directionsUrl"
           target="_blank"
           rel="noopener noreferrer"
           class="flex-1 bg-white hover:bg-stone-100 text-stone-900 border border-hairline py-2 px-3 rounded-md text-xs font-semibold text-center shadow-xs flex items-center justify-center gap-1.5"
         >
           <span>🧭</span>
-          <span>Google Maps Directions</span>
+          <span>Walking directions</span>
         </a>
 
         <a
@@ -185,7 +185,7 @@
           class="flex-1 bg-navy hover:bg-[#70161a] text-white py-2 px-3 rounded-md text-xs font-serif-header font-bold text-center shadow flex items-center justify-center gap-1.5"
         >
           <span>📜</span>
-          <span>Full Stamped Dossier</span>
+          <span>Full dossier</span>
         </a>
 
         <button
@@ -212,6 +212,7 @@ import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OU
 import { COST_LABELS } from '@/lib/cost-display';
 import { tierInfo } from '@/lib/tiers';
 import { milesText, walkText } from '@/lib/route-display';
+import { getWalkingDirectionsUrl } from '@/lib/map/directions';
 
 const venue = useStore($activeVenue);
 const inspectionsList = useStore($inspectionsList);
@@ -221,6 +222,14 @@ const dialogRef = ref<HTMLElement | null>(null);
 let previouslyFocused: HTMLElement | null = null;
 
 const tier = computed(() => (venue.value ? tierInfo(venue.value.tier) : null));
+
+// Walking directions when the venue is located, otherwise a map search for it.
+const directionsUrl = computed(() => {
+  const current = venue.value;
+  if (!current) return '';
+  if (current.lat != null && current.lng != null) return getWalkingDirectionsUrl(current.lat, current.lng);
+  return current.mapSearchLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(current.name + ' Manchester')}`;
+});
 
 const venueInspections = computed(() => {
   if (!venue.value) return [];

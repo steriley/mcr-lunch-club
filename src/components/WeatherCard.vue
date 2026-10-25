@@ -40,8 +40,8 @@
         </svg>
       </div>
       <div>
-        <h3>{{ loading ? 'System Sync' : error ? 'Met Office Wire Snapped' : 'Parish Boundary Unknown' }}</h3>
-        <p>{{ loading ? 'Checking conditions over Manchester.' : error ? 'Assume persistent drizzle as statutory default. Equip galoshes regardless. Please try again later.' : 'Geolocation suppressed. Defaulting synoptic vector to Manchester Town Hall flagpole.' }}</p>
+        <h3>{{ loading ? 'Checking the forecast' : error ? 'Forecast unavailable' : 'Mixed conditions' }}</h3>
+        <p>{{ loading ? 'Checking conditions over Manchester.' : error ? 'Assume persistent drizzle as statutory default. Equip galoshes regardless. Please try again later.' : 'No clear reading from the Met Office. Pack a brolly to be safe.' }}</p>
       </div>
     </div>
 
@@ -271,7 +271,7 @@ const dispatchCopy: Record<WeatherIcon, Omit<WeatherDispatch, 'icon'>> = {
     quip: 'Micro-cyclonic rotation over ship canal. Tether all wheelie bins without delay.',
   },
   'system-sync': {
-    title: 'System Sync',
+    title: 'Checking the forecast',
     quip: 'Fetching the latest Manchester dispatch.',
   },
 };
@@ -295,8 +295,8 @@ function dispatchFor(point: WeatherPoint, cached: boolean): WeatherDispatch {
   if (cached) {
     return {
       icon: 'light-rain',
-      title: 'Cached Ledger: Rain Likely',
-      quip: 'Telegram receiver unpowered. Historic probability indicates high chance of precipitation.',
+      title: 'Forecast out of date',
+      quip: 'The latest forecast would not load. Manchester being Manchester, assume rain.',
     };
   }
 
@@ -304,8 +304,8 @@ function dispatchFor(point: WeatherPoint, cached: boolean): WeatherDispatch {
   if (code === null || point.condition === 'Mixed conditions') {
     return {
       icon: 'overcast',
-      title: 'Parish Boundary Unknown',
-      quip: 'Geolocation suppressed. Defaulting synoptic vector to Manchester Town Hall flagpole.',
+      title: 'Mixed conditions',
+      quip: 'No clear reading from the Met Office. Pack a brolly to be safe.',
     };
   }
 

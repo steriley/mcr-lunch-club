@@ -54,7 +54,7 @@
       <div class="p-5 overflow-y-auto space-y-5 text-xs text-ink">
         <!-- 1. Available Time -->
         <div>
-          <span class="oracle-label">1. Temporal Allowance (Max Walk Time)</span>
+          <span class="oracle-label">1. How far will you walk?</span>
           <div class="grid grid-cols-3 gap-2 font-serif-header">
             <button
               v-for="time in timeOptions"
@@ -72,7 +72,7 @@
 
         <!-- 2. Budget (Cost Key) -->
         <div>
-          <span class="oracle-label">2. Treasury Impact (Cost Key)</span>
+          <span class="oracle-label">2. Budget</span>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 font-serif-header">
             <button
               v-for="b in budgetOptions"

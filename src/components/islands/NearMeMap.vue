@@ -261,7 +261,7 @@
               <!-- Empty state when no venues match -->
               <div v-if="rankedVenues.length === 0" class="near-me-empty-state">
                 <span class="near-me-empty-icon" aria-hidden="true">🏛️</span>
-                <h4 class="near-me-empty-title">No Targets Available</h4>
+                <h4 class="near-me-empty-title">No venues match</h4>
                 <p class="near-me-empty-text">
                   No venues in the selected tiers match your current criteria. Enable additional tiers above, or clear the price filter.
                 </p>
@@ -719,7 +719,7 @@ const statusBanner = computed(() => {
         return {
           type: 'warning', icon: '🗺️',
           text: '[DEV] You appear to be outside Manchester. Spinningfields framing maintained.',
-          action: { label: 'Return to Ledger', handler: close },
+          action: { label: 'Back to the map', handler: close },
         };
       case 'low-accuracy':
         return {
@@ -799,7 +799,7 @@ const statusBanner = computed(() => {
       type: 'warning',
       icon: '🗺️',
       text: 'Outside Manchester · showing Spinningfields',
-      action: { label: 'Return to Ledger', handler: close },
+      action: { label: 'Back to the map', handler: close },
     };
   }
 
