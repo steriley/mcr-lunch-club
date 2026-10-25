@@ -75,7 +75,7 @@ onBeforeUnmount(() => {
         <li v-for="entry in entries" :key="entry.id" class="rounded-lg border border-[var(--dossier-border)] bg-[var(--dossier-card)] p-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <span :class="['rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]', KIND_TONES[entry.kind]]">{{ KIND_LABELS[entry.kind] }}</span>
-            <span class="dossier-mono text-[11px] text-[var(--dossier-muted)]">{{ entry.when }}</span>
+            <span class="dossier-figures text-[11px] text-[var(--dossier-muted)]">{{ entry.when }}</span>
           </div>
           <p class="mt-2 text-[13px] leading-[19px]">{{ entry.text }}</p>
           <p v-if="entry.note" class="mt-1 text-[12px] italic text-[var(--dossier-muted)]">Reason: {{ entry.note }}</p>

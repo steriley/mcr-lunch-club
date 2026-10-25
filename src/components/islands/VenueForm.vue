@@ -409,7 +409,7 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
           <span class="text-[var(--dossier-border)]" aria-hidden="true">/</span>
           <span class="truncate text-[var(--dossier-secondary)]">{{ saved.name || (suggestion ? `Accept “${suggestion.name}”` : 'New venue') }}</span>
           <span class="text-[var(--dossier-border)]" aria-hidden="true">/</span>
-          <span class="dossier-mono font-semibold">{{ registryCode }}{{ district ? ` · ${district}` : '' }}</span>
+          <span class="dossier-figures font-semibold">{{ registryCode }}{{ district ? ` · ${district}` : '' }}</span>
         </nav>
         <p v-if="updatedAt" class="flex items-center gap-1.5 text-[13px] text-[var(--dossier-muted)]">
           <DossierIcon name="feather" :size="14" class="text-[var(--dossier-secondary)]" />
@@ -436,7 +436,7 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
           <button type="button" class="dossier-btn" @click="showDocket = true"><DossierIcon name="external" :size="16" /> View public docket</button>
           <button type="button" class="dossier-btn text-[var(--dossier-ink)]" @click="showHistory = true">
             <DossierIcon name="receipt" :size="16" /> Audit history
-            <span class="dossier-mono rounded-full bg-[var(--dossier-card)] px-1.5 py-0.5 text-[11px]">{{ timeline.length }}</span>
+            <span class="dossier-figures rounded-full bg-[var(--dossier-card)] px-1.5 py-0.5 text-[11px]">{{ timeline.length }}</span>
           </button>
           <button type="button" class="dossier-btn is-danger" @click="governance?.openClose()">
             <DossierIcon name="door" :size="16" /> {{ dossier?.closed ? 'Reopen venue' : 'Mark permanently closed' }}
@@ -481,12 +481,12 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
           <div>
             <label class="dossier-label" for="venue-slug">Canonical URL slug</label>
             <div class="flex overflow-hidden rounded-lg border border-[var(--dossier-border)] focus-within:border-[var(--dossier-primary-container)]">
-              <span class="dossier-mono flex items-center border-r border-[var(--dossier-border)] bg-[var(--dossier-paper)] px-3 text-[13px] text-[var(--dossier-muted)]">/venues/</span>
+              <span class="dossier-figures flex items-center border-r border-[var(--dossier-border)] bg-[var(--dossier-paper)] px-3 text-[13px] text-[var(--dossier-muted)]">/venues/</span>
               <input
                 id="venue-slug"
                 v-model="form.slug"
                 type="text"
-                class="dossier-input dossier-mono rounded-none border-0 focus:shadow-none"
+                class="dossier-input dossier-figures rounded-none border-0 focus:shadow-none"
                 :aria-invalid="Boolean(errors.slug)"
                 @input="onSlugInput"
               />
@@ -507,7 +507,7 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
             <textarea id="venue-lunch" v-model="form.lunchSpecial" rows="3" maxlength="1000" class="dossier-input" :aria-invalid="Boolean(errors.lunchSpecial)"></textarea>
             <div class="mt-1.5 flex items-start justify-between gap-3">
               <span class="dossier-hint mt-0">The prescribed order or set deal, shown prominently on the public docket.</span>
-              <span class="dossier-mono shrink-0 text-[11px] font-bold text-[var(--dossier-muted)]">{{ form.lunchSpecial.length }} chars</span>
+              <span class="dossier-figures shrink-0 text-[11px] font-bold text-[var(--dossier-muted)]">{{ form.lunchSpecial.length }} chars</span>
             </div>
             <span v-if="errors.lunchSpecial" class="dossier-error">{{ errors.lunchSpecial }}</span>
           </div>
@@ -534,7 +534,7 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
           <div>
             <label class="dossier-label" for="venue-website">Website / official registry link</label>
             <div class="flex gap-2">
-              <input id="venue-website" v-model="form.websiteUrl" type="url" class="dossier-input dossier-mono text-[13px]" placeholder="https://…" :aria-invalid="Boolean(errors.websiteUrl)" />
+              <input id="venue-website" v-model="form.websiteUrl" type="url" class="dossier-input dossier-figures text-[13px]" placeholder="https://…" :aria-invalid="Boolean(errors.websiteUrl)" />
               <a
                 :href="/^https?:\/\//.test(form.websiteUrl) ? form.websiteUrl : undefined"
                 target="_blank"
@@ -617,7 +617,7 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
                 <DossierIcon name="pin" :size="16" class="mt-0.5 text-[var(--dossier-secondary)]" />
                 <span class="break-words">{{ form.address || 'No address recorded' }}</span>
               </p>
-              <p class="dossier-mono mt-1 text-[12px] text-[var(--dossier-muted)]">{{ Number(form.latitude).toFixed(6) }} N, {{ Number(form.longitude).toFixed(6) }}</p>
+              <p class="dossier-figures mt-1 text-[12px] text-[var(--dossier-muted)]">{{ Number(form.latitude).toFixed(6) }} N, {{ Number(form.longitude).toFixed(6) }}</p>
             </div>
             <div class="flex shrink-0 flex-col items-end gap-1.5">
               <button type="button" class="dossier-link" @click="changingLocation = true">Change</button>
@@ -641,11 +641,11 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="dossier-label" for="venue-lat">Latitude</label>
-                <input id="venue-lat" v-model="form.latitude" type="number" step="0.000001" inputmode="decimal" class="dossier-input dossier-mono text-[13px]" :aria-invalid="Boolean(errors.latitude)" placeholder="53.479850" />
+                <input id="venue-lat" v-model="form.latitude" type="number" step="0.000001" inputmode="decimal" class="dossier-input dossier-figures text-[13px]" :aria-invalid="Boolean(errors.latitude)" placeholder="53.479850" />
               </div>
               <div>
                 <label class="dossier-label" for="venue-lng">Longitude</label>
-                <input id="venue-lng" v-model="form.longitude" type="number" step="0.000001" inputmode="decimal" class="dossier-input dossier-mono text-[13px]" :aria-invalid="Boolean(errors.longitude)" placeholder="-2.251050" />
+                <input id="venue-lng" v-model="form.longitude" type="number" step="0.000001" inputmode="decimal" class="dossier-input dossier-figures text-[13px]" :aria-invalid="Boolean(errors.longitude)" placeholder="-2.251050" />
               </div>
             </div>
           </template>
@@ -697,7 +697,7 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
             </summary>
             <div class="border-t border-[var(--dossier-border)] p-4">
               <label class="dossier-label" for="venue-map-link">Custom Google Maps link</label>
-              <input id="venue-map-link" v-model="form.mapSearchLink" type="url" class="dossier-input dossier-mono text-[12px]" placeholder="https://www.google.com/maps/…" :aria-invalid="Boolean(errors.mapSearchLink)" />
+              <input id="venue-map-link" v-model="form.mapSearchLink" type="url" class="dossier-input dossier-figures text-[12px]" placeholder="https://www.google.com/maps/…" :aria-invalid="Boolean(errors.mapSearchLink)" />
               <span class="dossier-hint">Leave blank to link to the coordinates.</span>
               <span v-if="errors.mapSearchLink" class="dossier-error">{{ errors.mapSearchLink }}</span>
             </div>

@@ -279,7 +279,7 @@ const altFor = (image: SerializedVenueImage) => image.caption || props.venueName
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-4 text-[13px]">
-        <span class="dossier-mono text-[12px] text-[var(--dossier-muted)]">{{ focusImage.focalX === null ? 'Centred' : `${focusImage.focalX}% across, ${focusImage.focalY}% down` }}</span>
+        <span class="dossier-figures text-[12px] text-[var(--dossier-muted)]">{{ focusImage.focalX === null ? 'Centred' : `${focusImage.focalX}% across, ${focusImage.focalY}% down` }}</span>
         <button type="button" class="dossier-link" :disabled="busy[focusImage.id] || focusImage.focalX === null" @click="resetFocal">Reset to centre</button>
         <button type="button" class="dossier-link" @click="focusing = null">Done</button>
       </div>

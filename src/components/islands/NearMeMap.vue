@@ -2058,7 +2058,8 @@ onUnmounted(() => {
 
 .near-me-collapsed-meta {
   flex-shrink: 0;
-  font-family: monospace;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--near-me-muted);
@@ -2078,7 +2079,8 @@ onUnmounted(() => {
   border-radius: 9999px;
   background: var(--ledger-card);
   color: var(--ledger-deep);
-  font-family: monospace;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;

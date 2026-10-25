@@ -72,7 +72,7 @@ async function press() {
     <div class="dossier-inset space-y-3 bg-[var(--dossier-field)]" role="status">
       <div class="flex items-center justify-between gap-2">
         <span class="dossier-overline">Quorum concordance</span>
-        <span :class="['dossier-mono text-xs font-bold', signatures === 2 ? 'text-[var(--dossier-green)]' : 'text-[var(--dossier-secondary)]']">
+        <span :class="['dossier-figures text-xs font-bold', signatures === 2 ? 'text-[var(--dossier-green)]' : 'text-[var(--dossier-secondary)]']">
           {{ signatures }} / 2 affirmed
         </span>
       </div>
@@ -89,7 +89,7 @@ async function press() {
             <DossierIcon :name="first ? 'checkCircle' : 'circle'" :size="16" :class="first ? 'text-[var(--dossier-green)]' : 'text-[var(--dossier-border)]'" />
             <span :class="first ? 'font-semibold' : 'text-[var(--dossier-muted)]'">{{ first?.firstAdminName ?? 'Awaiting first Chair' }}</span>
           </span>
-          <span v-if="first" class="dossier-mono shrink-0 text-[11px] text-[var(--dossier-muted)]">{{ formatDateTime(first.firstAt) }}</span>
+          <span v-if="first" class="dossier-figures shrink-0 text-[11px] text-[var(--dossier-muted)]">{{ formatDateTime(first.firstAt) }}</span>
         </li>
         <li class="flex items-center justify-between gap-2">
           <span class="flex min-w-0 items-center gap-2">
@@ -98,7 +98,7 @@ async function press() {
               {{ status.confirmed?.secondAdminName ?? 'Awaiting second Chair cosigner' }}
             </span>
           </span>
-          <span v-if="status.confirmed?.confirmedAt" class="dossier-mono shrink-0 text-[11px] text-[var(--dossier-muted)]">
+          <span v-if="status.confirmed?.confirmedAt" class="dossier-figures shrink-0 text-[11px] text-[var(--dossier-muted)]">
             {{ formatDateTime(status.confirmed.confirmedAt) }}
           </span>
           <span v-else-if="status.pending" class="shrink-0 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--dossier-amber)]">Pending</span>

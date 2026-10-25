@@ -54,7 +54,7 @@ onBeforeUnmount(() => {
       </p>
       <label class="mt-4 block">
         <span class="dossier-label">Type {{ WORD }} to confirm</span>
-        <input ref="input" v-model="typed" type="text" autocomplete="off" spellcheck="false" class="dossier-input dossier-mono uppercase" :aria-invalid="typed !== '' && !ready" />
+        <input ref="input" v-model="typed" type="text" autocomplete="off" spellcheck="false" class="dossier-input dossier-figures uppercase" :aria-invalid="typed !== '' && !ready" />
       </label>
       <div class="mt-6 flex justify-end gap-3">
         <button type="button" class="dossier-btn" @click="emit('cancel')">Cancel</button>

@@ -140,7 +140,7 @@ const smallButton = 'rounded-lg border border-hairline bg-parchment px-3 py-1.5 
             @dragstart="onDragStart(index, $event)"
             @dragend="dragIndex = null; dropIndex = null"
           >⠿</span>
-          <span class="rounded-md bg-deep px-2 py-1 font-mono text-xs font-bold text-[#f5c451]">{{ position(index) }}</span>
+          <span class="rounded-md bg-deep px-2 py-1 font-sans tabular-nums text-xs font-bold text-[#f5c451]">{{ position(index) }}</span>
           <span class="text-base font-semibold text-ink">{{ row.venueName }}</span>
           <span v-if="index === 0" class="rounded-full border border-gold bg-[#fff8e6] px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-ochre">Hero</span>
           <span v-if="row.notShownReason" class="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800">

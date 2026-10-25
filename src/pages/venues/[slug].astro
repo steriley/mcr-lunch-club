@@ -67,7 +67,7 @@ function truncate(text: string, max: number): string {
           </div>
 
           <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 border-white/20 pt-3 sm:pt-0">
-            <span class="text-2xl font-mono font-bold text-white">{venue.cost}</span>
+            <span class="text-2xl font-sans tabular-nums font-bold text-white">{venue.cost}</span>
             <span class="text-xs text-stone-200 font-sans uppercase tracking-wider font-semibold">
               {COST_LABELS[venue.cost]}
             </span>
@@ -175,7 +175,7 @@ function truncate(text: string, max: number): string {
 
           <div class="p-2 border-t sm:border-t-0 sm:border-l border-hairline">
             <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Last inspected</span>
-            <span class="text-lg font-bold text-stone-800 font-mono mt-1 block">{formatDate(venue.lastInspectionDate, { fallback: 'Awaiting Assessment' })}</span>
+            <span class="text-lg font-bold text-stone-800 font-sans tabular-nums mt-1 block">{formatDate(venue.lastInspectionDate, { fallback: 'Awaiting Assessment' })}</span>
             <span class="text-xs text-stone-500 block font-sans">by the Chairs</span>
           </div>
         </div>
@@ -203,7 +203,7 @@ function truncate(text: string, max: number): string {
               <span>📋</span>
               <span>Chronological Inspection Ledger</span>
             </h2>
-            <span class="text-xs font-mono text-stone-500 bg-stone-100 px-2 py-0.5 rounded">
+            <span class="text-xs font-sans tabular-nums text-stone-500 bg-stone-100 px-2 py-0.5 rounded">
               {venueInspections.length} recorded visits
             </span>
           </div>
@@ -217,14 +217,14 @@ function truncate(text: string, max: number): string {
               {venueInspections.map((insp) => (
                 <div class="px-4 py-2.5 rounded-xl bg-white border border-hairline shadow-xs">
                   <div class="flex items-center justify-between gap-2">
-                    <span class="font-mono text-xs font-bold text-stone-800">{formatDate(insp.date)}</span>
+                    <span class="font-sans tabular-nums text-xs font-bold text-stone-800">{formatDate(insp.date)}</span>
                     <div class="flex items-center gap-1.5">
                       {insp.outcome && (
-                        <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono border ${INSPECTION_OUTCOME_BADGE_CLASSES[insp.outcome]}`}>
+                        <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-sans tabular-nums border ${INSPECTION_OUTCOME_BADGE_CLASSES[insp.outcome]}`}>
                           {INSPECTION_OUTCOME_LABELS[insp.outcome]}
                         </span>
                       )}
-                      <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-mono ${insp.kind === 'verified' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-stone-100 text-stone-600 border border-stone-300'}`}>
+                      <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-sans tabular-nums ${insp.kind === 'verified' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-stone-100 text-stone-600 border border-stone-300'}`}>
                         {INSPECTION_KIND_LABELS[insp.kind]}
                       </span>
                     </div>
