@@ -6,6 +6,7 @@ import {
   FAR_FROM_BASE_METRES,
   bindVenuePopup,
   createBaseMarker,
+  createMapRemover,
   createTileLayer,
   createUserMarkerLayers,
   createVenueIcon,
@@ -61,6 +62,8 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
   const { sheet, geo } = options;
 
   let mapInstance: any = null;
+  // Removes the map once any zoom animation has ended (see createMapRemover).
+  let removeMap: (() => void) | null = null;
   let leafletModule: any = null;
   let venueMarkersLayer: any = null;
   let userLayersGroup: any = null;
@@ -269,12 +272,9 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
     if (!isCurrent() || !options.container.value) return false;
     const L = leaflet();
 
-    if (mapInstance) {
-      mapInstance.remove();
-      mapInstance = null;
-    }
-
+    removeMap?.();
     mapInstance = L.map(options.container.value, { center: [BASE_LAT, BASE_LNG], zoom: DEFAULT_ZOOM, zoomControl: false });
+    removeMap = createMapRemover(mapInstance);
 
     // Top-right zoom controls (below header overlay)
     L.control.zoom({ position: 'topright' }).addTo(mapInstance);
@@ -316,10 +316,9 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
   }
 
   function destroy() {
-    if (mapInstance) {
-      mapInstance.remove();
-      mapInstance = null;
-    }
+    removeMap?.();
+    removeMap = null;
+    mapInstance = null;
     venueMarkersLayer = null;
     userLayersGroup = null;
     venueMarkersMap.clear();

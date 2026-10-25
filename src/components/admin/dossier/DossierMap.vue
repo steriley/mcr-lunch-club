@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { CircleMarker, Map as LeafletMap, Polyline } from 'leaflet';
 import DossierIcon from './DossierIcon.vue';
 import { BASE_LAT_LNG, createTileLayer } from '@/lib/map/config';
+import { createMapRemover } from '@/lib/map/removal';
 import { themeColor } from '@/lib/theme-color';
 
 /**
@@ -13,6 +14,7 @@ const props = defineProps<{ lat: number | null; lng: number | null; mapLink: str
 
 const container = ref<HTMLDivElement | null>(null);
 let map: LeafletMap | null = null;
+let removeMap: (() => void) | null = null;
 let venueMarker: CircleMarker | null = null;
 let axis: Polyline | null = null;
 let leaflet: typeof import('leaflet') | null = null;
@@ -46,6 +48,7 @@ onMounted(async () => {
     keyboard: false,
     touchZoom: false,
   });
+  removeMap = createMapRemover(map);
   createTileLayer(leaflet, props.apiKey).addTo(map);
   leaflet.circleMarker(BASE_LAT_LNG, { radius: 7, color: themeColor('parchment'), weight: 2, fillColor: themeColor('navy'), fillOpacity: 1 }).addTo(map);
   draw();
@@ -54,7 +57,8 @@ onMounted(async () => {
 watch(() => [props.lat, props.lng], draw);
 
 onBeforeUnmount(() => {
-  map?.remove();
+  removeMap?.();
+  removeMap = null;
   map = null;
 });
 </script>

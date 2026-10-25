@@ -4,3 +4,4 @@ export * from './useGeolocation';
 export * from './userMarker';
 export * from './ranking';
 export * from './directions';
+export * from './removal';
