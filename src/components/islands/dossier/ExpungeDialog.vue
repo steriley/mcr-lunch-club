@@ -57,7 +57,7 @@ onBeforeUnmount(() => {
         <input ref="input" v-model="typed" type="text" autocomplete="off" spellcheck="false" class="dossier-input dossier-mono uppercase" :aria-invalid="typed !== '' && !ready" />
       </label>
       <div class="mt-6 flex justify-end gap-3">
-        <button type="button" class="dossier-btn" @click="emit('cancel')">Abort</button>
+        <button type="button" class="dossier-btn" @click="emit('cancel')">Cancel</button>
         <button type="button" class="dossier-btn is-danger-solid" :disabled="!ready || busy" @click="emit('confirm')">
           {{ busy ? 'Expunging…' : 'Expunge record' }}
         </button>

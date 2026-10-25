@@ -103,10 +103,10 @@
                 :class="['ledger-select', filters.inspectedDays !== 'all' && 'is-active']"
                 @change="onInspectedChange"
               >
-                <option value="all">Any Inspection Date</option>
-                <option :value="30">Last 30 Days (Fresh Gazette)</option>
-                <option :value="90">Last 90 Days</option>
-                <option :value="180">Last 180 Days</option>
+                <option value="all">Any time</option>
+                <option :value="30">Last 30 days</option>
+                <option :value="90">Last 90 days</option>
+                <option :value="180">Last 180 days</option>
               </select>
             </label>
           </div>

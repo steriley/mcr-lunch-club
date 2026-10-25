@@ -162,23 +162,21 @@ function truncate(text: string, max: number): string {
         <!-- Geographic & Walking Specifications -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-paper p-4 rounded-xl border border-hairline text-center">
           <div class="p-2">
-            <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Walk Duration</span>
+            <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Walk</span>
             <span class="text-2xl font-bold text-navy">{walkText(venue.walkingTimeMin, 'mins')}</span>
             <span class="text-xs text-stone-500 block font-sans">from Spinningfields Base</span>
           </div>
 
           <div class="p-2 border-t sm:border-t-0 sm:border-l border-hairline">
-            <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Distance Vector</span>
+            <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Distance</span>
             <span class="text-2xl font-bold text-stone-900">{milesText(venue.distanceMiles)}</span>
-            {venue.lat !== null && venue.lng !== null && (
-              <span class="text-xs text-stone-500 block font-sans">Centroid: {venue.lat.toFixed(5)}, {venue.lng.toFixed(5)}</span>
-            )}
+            <span class="text-xs text-stone-500 block font-sans">walking route</span>
           </div>
 
           <div class="p-2 border-t sm:border-t-0 sm:border-l border-hairline">
-            <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Last Sovereign Audit</span>
+            <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Last inspected</span>
             <span class="text-lg font-bold text-stone-800 font-mono mt-1 block">{formatDate(venue.lastInspectionDate, { fallback: 'Awaiting Assessment' })}</span>
-            <span class="text-xs text-stone-500 block font-sans">Permanent Record</span>
+            <span class="text-xs text-stone-500 block font-sans">by the Chairs</span>
           </div>
         </div>
 

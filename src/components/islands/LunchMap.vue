@@ -9,7 +9,7 @@
           <span class="map-header-subtitle">Lunch Club HQ: Spinningfields</span>
         </div>
       </div>
-      <span class="map-header-count">{{ visibleVenuesCount }} / {{ totalVenuesCount }} Active Pins</span>
+      <span class="map-header-count">{{ visibleVenuesCount }} of {{ totalVenuesCount }} venues shown</span>
     </header>
 
     <!-- Map Container (positioning context for the floating controls) -->
