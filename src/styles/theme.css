@@ -1,0 +1,146 @@
+/*
+ * Shared by the public site (global.css) and the Chairs' Area (admin.css): the
+ * palette and the base styles. Each of those imports Tailwind, then this.
+ */
+
+/*
+ * The palette. Use these as Tailwind utilities (text-ink, bg-parchment, border-hairline)
+ * or as CSS variables (var(--color-ink)) rather than hard-coding hex values. Tier colours
+ * live in src/lib/tiers.ts. `static` keeps every token in the output, so plain CSS can
+ * use them even where no utility does.
+ */
+@theme static {
+  --color-ink: #1e1b17; /* body text */
+  --color-charcoal: #1a1e24; /* headings and dark panels */
+  --color-soot: #3d3d3d; /* strong secondary text */
+  --color-graphite: #535353; /* secondary text */
+  --color-deep: #111e47; /* darkest navy: buttons, header */
+  --color-navy: #1b2f6b; /* links, focus rings */
+  --color-crimson: #8b1e22; /* emphasis and errors */
+  --color-ochre: #8a5100; /* amber text on light backgrounds */
+  --color-brass: #c59b27; /* gold rules and accents */
+  --color-gold: #f29a2e; /* brand orange */
+  --color-parchment: #fbf6ea; /* page background */
+  --color-paper: #f7f0df; /* raised surfaces */
+  --color-card: #f3ecdb; /* cards */
+  --color-linen: #f5efe5; /* soft panels */
+  --color-sand: #eadfca; /* muted fills */
+  --color-cream: #f9f7f1; /* text on dark, light fills */
+  --color-ivory: #fdfcf9; /* near-white fills */
+  --color-hairline: #d9cfb8; /* default borders */
+  --color-rule: #dcd6c8; /* dividers */
+
+  /* Tiers (src/lib/tiers.ts reads these): accent, darker edge for pins, pale tint for badges. */
+  --color-tier-approved: #1e7a4e;
+  --color-tier-approved-edge: #155b39;
+  --color-tier-approved-tint: #e8f5ee;
+  --color-tier-under-consideration: #c27803;
+  --color-tier-under-consideration-edge: #8a5100;
+  --color-tier-under-consideration-tint: #fef5e7;
+  --color-tier-to-be-assessed: #5a6474;
+  --color-tier-to-be-assessed-edge: #454e5c;
+  --color-tier-to-be-assessed-tint: #f0f2f5;
+  --color-tier-if-we-must: #7c3a82;
+  --color-tier-if-we-must-edge: #602d64;
+  --color-tier-if-we-must-tint: #f7eef8;
+  --color-tier-rejected: #b92b27;
+  --color-tier-rejected-edge: #8f201d;
+  --color-tier-rejected-tint: #fdf0f0;
+  --color-tier-gone-but-not-forgotten: #71717a;
+  --color-tier-gone-but-not-forgotten-edge: #52525b;
+  --color-tier-gone-but-not-forgotten-tint: #f4f4f5;
+
+  /* Status colours borrow the tier palette, so they move with it. */
+  --color-success: var(--color-tier-approved);
+  --color-success-tint: var(--color-tier-approved-tint);
+  --color-warning: var(--color-tier-under-consideration);
+  --color-warning-tint: var(--color-tier-under-consideration-tint);
+  --color-danger: var(--color-tier-rejected);
+  --color-danger-tint: var(--color-tier-rejected-tint);
+  --color-steel: var(--color-tier-to-be-assessed);
+  --color-steel-tint: var(--color-tier-to-be-assessed-tint);
+  --color-plum: var(--color-tier-if-we-must);
+  --color-pewter: var(--color-tier-gone-but-not-forgotten);
+  --color-pewter-tint: var(--color-tier-gone-but-not-forgotten-tint);
+
+
+  /* Text and rules on the navy footer, header and bench panels. */
+  --color-on-dark: #fff8f3;
+  --color-on-dark-warm: #efe7e0;
+  --color-on-dark-soft: #e9e1da;
+  --color-on-dark-muted: #d6d8e0;
+  --color-on-dark-subtle: #c5c6d1;
+  --color-on-dark-faint: #aeb1c0;
+  --color-on-dark-rule: #25315b;
+  /* The home page bench and field panels. */
+  --color-midnight: #0e1b44;
+  --color-royal: #001854;
+  --color-peach: #ffdcbd;
+  --color-peach-pale: #ffdec1;
+  --color-blush: #fbf2eb;
+  --color-umber: #49321b;
+  --color-bronze: #9a5a00;
+  --color-copper: #b36b00;
+  --color-gold-bright: #ffa538;
+  --color-vellum: #fffcf4;
+  /* Muted greys for secondary text on light surfaces. */
+  --color-ink-soft: #302b28;
+  --color-muted: #454650;
+  --color-muted-soft: #5a5b64;
+  --color-dim: #666974;
+  --color-subtle: #797b85;
+  /* Status hovers, text and washes beyond the tier palette. */
+  --color-danger-strong: var(--color-tier-rejected-edge);
+  --color-success-strong: #17603d;
+  --color-warning-ink: #7a4b02;
+  --color-plum-tint: var(--color-tier-if-we-must-tint);
+  --color-navy-tint: #edf3ff;
+  --color-charcoal-soft: #242b35;
+  --color-coal: #2d2d2d;
+  --color-saffron: #f5c451;
+
+  /* Tailwind's stone-500 (#79716b) is 4.2:1 on the parchment backgrounds; this passes WCAG AA (5:1+). */
+  --color-stone-500: #6b645e;
+}
+
+@layer base {
+  :root {
+    --ledger-parchment: var(--color-parchment);
+    --ledger-paper: var(--color-paper);
+    --ledger-card: var(--color-card);
+    --ledger-ink: var(--color-ink);
+    --ledger-gold: var(--color-gold);
+    --ledger-navy: var(--color-navy);
+    --ledger-deep: var(--color-deep);
+    --ledger-border: var(--color-hairline);
+    --ledger-green: var(--color-success);
+    --bench-navy: var(--color-midnight);
+    --bench-primary: var(--color-royal);
+    --bench-peach: var(--color-peach);
+    --bench-amber: var(--color-ochre);
+    --bench-pillar: var(--color-blush);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--ledger-parchment);
+    color: var(--ledger-ink);
+    font-family: "Plus Jakarta Sans", sans-serif;
+  }
+
+  h1, h2, h3, .font-serif-header {
+    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  }
+
+  .font-sans {
+    font-family: "Plus Jakarta Sans", sans-serif;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ledger-navy);
+    outline-offset: 2px;
+  }
+}

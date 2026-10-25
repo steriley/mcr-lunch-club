@@ -8,7 +8,7 @@ import path from 'node:path';
  * survive later edits. The type is Playfair Display for headings and Plus
  * Jakarta Sans for everything else; figures that need to line up use
  * `tabular-nums`, never a monospaced font. Colours are the theme tokens in
- * src/styles/global.css (`@theme`), used as utilities (`text-ink`) or
+ * src/styles/theme.css (`@theme`), used as utilities (`text-ink`) or
  * variables (`var(--color-ink)`), never as raw hex.
  */
 
@@ -41,15 +41,18 @@ describe('design system', () => {
       if (file.endsWith('.css')) continue;
       const lines = readFileSync(file, 'utf8').split('\n');
       lines.forEach((line, index) => {
-        assert.ok(!hexClass.test(line), `${path.relative(SRC, file)}:${index + 1} has a hex colour class: use a token (src/styles/global.css)`);
+        assert.ok(!hexClass.test(line), `${path.relative(SRC, file)}:${index + 1} has a hex colour class: use a token (src/styles/theme.css)`);
       });
     }
   });
 
-  it('keeps raw hex in global.css to the token definitions', () => {
-    const css = readFileSync(path.join(SRC, 'styles/global.css'), 'utf8');
-    const afterTheme = css.slice(css.indexOf('@layer base'));
-    const withoutComments = afterTheme.replace(/\/\*[\s\S]*?\*\//g, '');
-    assert.deepEqual(withoutComments.match(/#[0-9a-f]{3,8}\b/gi) ?? [], [], 'raw hex outside @theme: add a token instead');
+  it('keeps raw hex in the stylesheets to the token definitions', () => {
+    for (const name of readdirSync(path.join(SRC, 'styles')).filter((file) => file.endsWith('.css'))) {
+      let css = readFileSync(path.join(SRC, 'styles', name), 'utf8');
+      // The tokens themselves are the one place hex belongs.
+      if (name === 'theme.css') css = css.slice(css.indexOf('@layer base'));
+      const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, '');
+      assert.deepEqual(withoutComments.match(/#[0-9a-f]{3,8}\b/gi) ?? [], [], `${name}: raw hex outside @theme: add a token instead`);
+    }
   });
 });

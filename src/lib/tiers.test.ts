@@ -37,7 +37,7 @@ describe('tiers', () => {
   });
 
   it('defines every tier colour token in the theme', () => {
-    const css = readFileSync('src/styles/global.css', 'utf8');
+    const css = readFileSync('src/styles/theme.css', 'utf8');
     for (const tier of TIERS) {
       for (const suffix of ['', '-edge', '-tint']) {
         assert.match(css, new RegExp(`--color-tier-${tier.slug}${suffix}: #[0-9a-f]{6};`), `${tier.slug}${suffix} has no token`);
