@@ -1,17 +1,17 @@
 <template>
   <div
     v-if="isOpen"
-    class="fixed inset-0 z-[2500] flex items-center justify-center p-4 bg-[#111E47]/60 backdrop-blur-xs animate-in fade-in duration-200"
+    class="fixed inset-0 z-[2500] flex items-center justify-center p-4 bg-deep/60 backdrop-blur-xs animate-in fade-in duration-200"
     @click.self="closeModal"
   >
     <div
       role="dialog"
       aria-modal="true"
       aria-labelledby="where-today-title"
-      class="w-full max-w-lg bg-[#FBF6EA] rounded-2xl border border-[#D9CFB8] shadow-2xl overflow-hidden font-sans flex flex-col max-h-[90vh]"
+      class="w-full max-w-lg bg-parchment rounded-2xl border border-hairline shadow-2xl overflow-hidden font-sans flex flex-col max-h-[90vh]"
     >
       <!-- Header -->
-      <div class="bg-[#111E47] text-[#FBF6EA] px-5 py-4 flex items-center justify-between gap-3">
+      <div class="bg-deep text-parchment px-5 py-4 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <span class="text-3xl" aria-hidden="true">⚖️</span>
           <div>
@@ -35,10 +35,10 @@
       </div>
 
       <!-- Overdue Re-inspection Alert Nudge -->
-      <div v-if="overdueVenues.length" class="bg-[#F3ECDB] border-b border-[#D9CFB8] px-5 py-3 text-xs text-[#1e1b17] flex items-start gap-2">
+      <div v-if="overdueVenues.length" class="bg-card border-b border-hairline px-5 py-3 text-xs text-ink flex items-start gap-2">
         <span class="text-base" aria-hidden="true">⚠️</span>
         <div class="flex-1">
-          <strong class="font-serif-header font-bold text-[#8a5100]">Overdue Sovereign Inspection Notice:</strong>
+          <strong class="font-serif-header font-bold text-ochre">Overdue Sovereign Inspection Notice:</strong>
           <p class="text-xs font-sans text-stone-700 mt-0.5">
             <template v-for="(overdue, index) in overdueVenues" :key="overdue.venue.slug">
               <template v-if="index > 0"> and </template>
@@ -51,7 +51,7 @@
       </div>
 
       <!-- Body / Form -->
-      <div class="p-5 overflow-y-auto space-y-5 text-xs text-[#1a1e24]">
+      <div class="p-5 overflow-y-auto space-y-5 text-xs text-ink">
         <!-- 1. Available Time -->
         <div>
           <span class="oracle-label">1. Temporal Allowance (Max Walk Time)</span>
@@ -101,9 +101,9 @@
 
         <!-- The Result Card: the whole card opens the venue's dossier -->
         <div v-if="pickedVenue" class="oracle-result animate-in zoom-in-95 duration-200">
-          <div class="flex items-center justify-between border-b border-[#D9CFB8] pb-2 mb-3">
+          <div class="flex items-center justify-between border-b border-hairline pb-2 mb-3">
             <span class="oracle-label !mb-0">The Oracle Decrees</span>
-            <span class="text-sm font-bold text-[#8a5100]">{{ pickedVenue.cost }}</span>
+            <span class="text-sm font-bold text-ochre">{{ pickedVenue.cost }}</span>
           </div>
 
           <div class="flex items-center gap-2">
@@ -112,7 +112,7 @@
             </h3>
             <img
               v-if="pickedVenue.tier === 'approved'"
-              src="/brand/approved-sticker-256.webp"
+              src="/brand/approved-sticker-256.webp" width="256" height="256"
               alt="MCR Lunch Club Approved"
               class="w-6 h-6 object-contain inline-block shrink-0"
               title="Official MCR Lunch Club Approved Prize Winner"
@@ -122,8 +122,8 @@
             <span class="venue-popup-tier" :style="{ '--tier-color': tierInfo(pickedVenue.tier).color }">{{ tierInfo(pickedVenue.tier).label }}</span>
           </div>
 
-          <div class="mt-3 p-3 bg-[#F3ECDB] rounded-lg border border-[#D9CFB8] text-xs">
-            <strong class="text-[#8a5100] font-serif-header block">Eat Like Us Order:</strong>
+          <div class="mt-3 p-3 bg-card rounded-lg border border-hairline text-xs">
+            <strong class="text-ochre font-serif-header block">Eat Like Us Order:</strong>
             <p class="italic text-stone-800 mt-1">“{{ pickedVenue.eatLikeUs }}”</p>
           </div>
 

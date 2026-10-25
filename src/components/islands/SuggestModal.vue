@@ -8,10 +8,10 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="suggest-modal-title"
-      class="w-full max-w-md bg-[#fdfcf9] rounded-2xl border-2 border-[#1B2F6B] shadow-2xl overflow-hidden font-sans flex flex-col max-h-[90vh]"
+      class="w-full max-w-md bg-card rounded-2xl border-2 border-navy shadow-2xl overflow-hidden font-sans flex flex-col max-h-[90vh]"
     >
       <!-- Header -->
-      <div class="bg-[#1B2F6B] text-white p-4 flex items-center justify-between">
+      <div class="bg-navy text-white p-4 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="text-xl" aria-hidden="true">📜</span>
           <div>
@@ -23,7 +23,7 @@
       </div>
 
       <!-- Sent -->
-      <div v-if="sent" class="p-6 space-y-4 text-center text-[#1a1e24]" role="status">
+      <div v-if="sent" class="p-6 space-y-4 text-center text-ink" role="status">
         <p class="text-3xl" aria-hidden="true">✉️</p>
         <h3 class="text-lg font-bold font-serif-header">Petition received</h3>
         <p class="text-sm text-stone-700">
@@ -33,7 +33,7 @@
         <button
           ref="doneButton"
           type="button"
-          class="w-full bg-[#1B2F6B] hover:bg-[#111E47] text-white py-2.5 px-4 rounded-lg font-serif-header font-bold text-sm"
+          class="w-full bg-navy hover:bg-deep text-white py-2.5 px-4 rounded-lg font-serif-header font-bold text-sm"
           @click="closeModal"
         >
           Done
@@ -41,7 +41,7 @@
       </div>
 
       <!-- Form -->
-      <form v-else @submit.prevent="submitPetition" class="p-5 overflow-y-auto space-y-3 text-sm text-[#1a1e24]" novalidate>
+      <form v-else @submit.prevent="submitPetition" class="p-5 overflow-y-auto space-y-3 text-sm text-ink" novalidate>
         <div class="bg-blue-50 border border-blue-200 p-2.5 rounded text-xs text-blue-900 font-serif-header">
           <strong>Article 3.1:</strong> Members may petition for new venues. The Chairs review every petition; a venue enters
           <em>To Be Assessed</em> only once they accept it.
@@ -114,7 +114,7 @@
           <button
             type="submit"
             :disabled="submitting"
-            class="w-full bg-[#1B2F6B] hover:bg-[#111E47] disabled:opacity-60 text-white py-2.5 px-4 rounded-lg font-serif-header font-bold text-sm shadow transition-colors cursor-pointer"
+            class="w-full bg-navy hover:bg-deep disabled:opacity-60 text-white py-2.5 px-4 rounded-lg font-serif-header font-bold text-sm shadow transition-colors cursor-pointer"
           >
             {{ submitting ? 'Sending…' : 'Submit petition to the Chairs' }}
           </button>

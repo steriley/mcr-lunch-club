@@ -28,9 +28,9 @@ const tabs = [
 <AdminLayout title="Suggestions">
   <div class="space-y-6">
     <div>
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Member petitions</p>
-      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Venue suggestions</h1>
-      <p class="mt-2 max-w-2xl text-sm text-[#3d3d3d]">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Member petitions</p>
+      <h1 class="mt-2 text-3xl font-bold text-ink">Venue suggestions</h1>
+      <p class="mt-2 max-w-2xl text-sm text-soot">
         Sent from the public “Suggest a Venue” form. Nothing here appears on the site. Accepting one opens the new-venue form; saving it creates a hidden venue with a To Be Assessed proposal that a different Chair must approve.
       </p>
     </div>
@@ -39,7 +39,7 @@ const tabs = [
       {tabs.map((tab) => (
         <a
           href={tab.status === 'new' ? '/admin/suggestions' : `/admin/suggestions?status=${tab.status}`}
-          class:list={['rounded-full border px-3 py-1.5 text-sm font-semibold', tab.active ? 'border-[#1B2F6B] bg-[#1B2F6B] text-white' : 'border-[#d9cfb8] bg-white text-[#1a1e24] hover:bg-[#f5efe5]']}
+          class:list={['rounded-full border px-3 py-1.5 text-sm font-semibold', tab.active ? 'border-navy bg-navy text-white' : 'border-hairline bg-white text-ink hover:bg-linen']}
           aria-current={tab.active ? 'page' : undefined}
         >
           {tab.label} <span class="ml-1 opacity-75">{tab.total}</span>

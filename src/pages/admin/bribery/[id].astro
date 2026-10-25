@@ -21,8 +21,8 @@ const venueOptions = await db.select({ id: venues.id, name: venues.name }).from(
 <AdminLayout title="Edit bribery record">
   <div class="space-y-6">
     <div>
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Hall of Shame</p>
-      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">{record.title || 'Edit record'}</h1>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Hall of Shame</p>
+      <h1 class="mt-2 text-3xl font-bold text-ink">{record.title || 'Edit record'}</h1>
     </div>
 
     <BriberyForm client:load mode="edit" record={serializeBribery(record)} venues={venueOptions} />

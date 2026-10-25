@@ -12,32 +12,32 @@ const incidentsData = await getPublishedIncidents();
   <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
     <!-- Breadcrumb -->
     <div class="text-xs">
-      <a href="/" class="text-[#8b1e22] hover:underline flex items-center gap-1 font-bold">
+      <a href="/" class="text-navy hover:underline flex items-center gap-1 font-bold">
         <span>←</span>
         <span>Return to Sovereign Map</span>
       </a>
     </div>
 
     <!-- Pompous Header Card -->
-    <div class="bg-[#1a1e24] text-[#f9f7f1] p-6 sm:p-10 rounded-2xl border-2 border-[#c59b27] shadow-2xl relative overflow-hidden">
+    <div class="bg-deep text-parchment p-6 sm:p-10 rounded-2xl border-2 border-gold shadow-2xl relative overflow-hidden">
       <div class="relative z-10 space-y-3">
         <div class="flex items-center gap-3">
           <span class="text-4xl">⚖️</span>
           <div>
-            <span class="text-xs uppercase tracking-widest text-[#c59b27] font-bold font-mono">
+            <span class="text-xs uppercase tracking-widest text-gold font-bold font-mono">
               Confidential Ledger &bull; Article 9.4
             </span>
-            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-[#f9f7f1]">
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-parchment">
               The Hall of Shame
             </h1>
           </div>
         </div>
 
-        <p class="text-sm sm:text-base text-stone-300 italic pt-1 border-t border-[#c59b27]/30 max-w-3xl">
+        <p class="text-sm sm:text-base text-stone-300 italic pt-1 border-t border-brass/30 max-w-3xl">
           “The Official Registry of Bribery, Improper Benefit Attempts, and Corrupt Solicitations documented in perpetuity to preserve the impartial integrity of the Chairs.”
         </p>
 
-        <div class="bg-amber-950/60 border border-[#c59b27]/40 p-4 rounded-xl text-base text-amber-200 font-sans leading-relaxed">
+        <div class="bg-amber-950/60 border border-brass/40 p-4 rounded-xl text-base text-amber-200 font-sans leading-relaxed">
           <strong class="font-serif-header text-amber-100 block mb-1">Preamble to the Register:</strong>
           As decreed in the Manifesto, members must respect the impartial authority of the Lunch Club Chairs and refrain from attempting to unduly influence their verdicts. Any member or petitioner who attempts to sway decisions, rescind terminations, or curry favor through gifts or improper benefits shall have their ignominy inscribed herein. The Chairs remain incorruptible; all confiscated tenders and items are retained as material evidence.
         </div>
@@ -51,10 +51,10 @@ const incidentsData = await getPublishedIncidents();
 
     <!-- Timeline of Impropriety -->
     <div class="space-y-6">
-      <div class="flex items-center justify-between border-b border-[#dcd6c8] pb-2">
-        <h2 class="text-xl font-bold text-[#1a1e24] flex items-center gap-2">
+      <div class="flex items-center justify-between border-b border-hairline pb-2">
+        <h2 class="text-xl font-bold text-ink flex items-center gap-2">
           <span>Inscribed Incidents</span>
-          <span class="text-xs font-mono font-bold bg-[#8b1e22] text-white px-2 py-0.5 rounded">
+          <span class="text-xs font-mono font-bold bg-navy text-white px-2 py-0.5 rounded">
             {incidentsData.length} Documented Offense{incidentsData.length === 1 ? '' : 's'}
           </span>
         </h2>
@@ -63,16 +63,16 @@ const incidentsData = await getPublishedIncidents();
         </span>
       </div>
 
-      <div class="relative border-l-2 border-[#c59b27] ml-4 sm:ml-6 pl-6 sm:pl-8 space-y-8 font-sans">
+      <div class="relative border-l-2 border-gold ml-4 sm:ml-6 pl-6 sm:pl-8 space-y-8 font-sans">
         {incidentsData.map((inc) => (
           <div class="relative group">
             <!-- Timeline Node Wax Seal Icon -->
-            <div class="absolute -left-[35px] sm:-left-[43px] top-1.5 w-6 h-6 rounded-full bg-[#8b1e22] border-2 border-[#c59b27] text-white flex items-center justify-center text-xs shadow">
+            <div class="absolute -left-[35px] sm:-left-[43px] top-1.5 w-6 h-6 rounded-full bg-navy border-2 border-gold text-white flex items-center justify-center text-xs shadow">
               🌹
             </div>
 
             <!-- Incident Card -->
-            <div class="bg-[#fdfcf9] rounded-2xl border border-[#dcd6c8] shadow-md p-6 space-y-4 hover:border-[#8b1e22] transition-colors">
+            <div class="bg-card rounded-2xl border border-hairline shadow-md p-6 space-y-4 hover:border-crimson transition-colors">
               <!-- Top Row: Date, Location, Value -->
               <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 pb-3 font-serif-header">
                 <div>
@@ -86,7 +86,7 @@ const incidentsData = await getPublishedIncidents();
                       </span>
                     )}
                   </div>
-                  <h3 class="text-xl font-bold text-[#8b1e22] mt-1">
+                  <h3 class="text-xl font-bold text-navy mt-1">
                     {inc.title}
                   </h3>
                 </div>
@@ -100,7 +100,7 @@ const incidentsData = await getPublishedIncidents();
               </div>
 
               <!-- Personnel Involved -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-base bg-[#f4efe4] p-3 rounded-xl border border-[#dcd6c8]">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-base bg-paper p-3 rounded-xl border border-hairline">
                 <div>
                   <span class="font-bold text-stone-700 font-serif-header block">People Involved:</span>
                   <span class="text-stone-900 font-mono font-semibold">{inc.peopleInvolved.join(' & ')}</span>
@@ -113,7 +113,7 @@ const incidentsData = await getPublishedIncidents();
 
               <!-- Benefit Offered -->
               <div class="text-xs">
-                <span class="font-bold text-[#8b1e22] font-serif-header block mb-0.5">
+                <span class="font-bold text-navy font-serif-header block mb-0.5">
                   Benefit Offered:
                 </span>
                 <p class="text-stone-800 italic bg-amber-50 p-2.5 rounded border border-amber-200/60 font-serif-header">

@@ -31,25 +31,25 @@ const navItems = ADMIN_NAV.map((item) => ({
     <meta name="apple-mobile-web-app-title" content="MCR Chairs" />
     <title>{pageTitle} | MCR Lunch Club</title>
   </head>
-  <body class="min-h-screen bg-[#FBF6EA] text-[#1e1b17] antialiased">
-    <a href="#admin-main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-[#1B2F6B] focus:shadow">
+  <body class="min-h-screen bg-parchment text-ink antialiased">
+    <a href="#admin-main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-navy focus:shadow">
       Skip to content
     </a>
-    <header class="border-b border-[#d9cfb8] bg-[#FBF6EA] shadow-sm">
+    <header class="border-b border-hairline bg-parchment shadow-sm">
       <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <a href="/" class="flex items-center gap-3 text-[#1a1e24] no-underline" aria-label="MCR Lunch Club home">
-          <img src="/brand/logo-96.webp" alt="" class="h-11 w-11 object-contain" />
+        <a href="/" class="flex items-center gap-3 text-ink no-underline" aria-label="MCR Lunch Club home">
+          <img src="/brand/logo-96.webp" width="96" height="96" alt="" class="h-11 w-11 object-contain" />
           <div>
             <div class="font-serif text-lg font-bold uppercase tracking-[0.08em]">MCR LUNCH CLUB</div>
-            <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-[#8a5100]">{ADMIN_AREA_NAME}</div>
+            <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-ochre">{ADMIN_AREA_NAME}</div>
           </div>
         </a>
 
-        <nav class="hidden items-center gap-2 rounded-full border border-[#d9cfb8] bg-[#f3ecdb] p-1 lg:flex" aria-label={`${ADMIN_AREA_NAME} navigation`}>
+        <nav class="hidden items-center gap-2 rounded-full border border-hairline bg-card p-1 lg:flex" aria-label={`${ADMIN_AREA_NAME} navigation`}>
           {navItems.map((item) => (
             <a
               href={item.href}
-              class:list={['rounded-full px-3 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2F6B]', item.active ? 'bg-white text-[#1B2F6B]' : 'text-[#1a1e24] hover:bg-[#f9f7f1]']}
+              class:list={['rounded-full px-3 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-navy', item.active ? 'bg-white text-navy' : 'text-ink hover:bg-cream']}
               aria-current={item.active ? 'page' : undefined}
             >
               {item.label}
@@ -60,13 +60,13 @@ const navItems = ADMIN_NAV.map((item) => ({
         <AdminUserMenu client:load userName={user?.name || user?.email || 'Chair'} />
       </div>
 
-      <nav class="border-t border-[#eadfca] lg:hidden" aria-label={`${ADMIN_AREA_NAME} navigation`}>
+      <nav class="border-t border-sand lg:hidden" aria-label={`${ADMIN_AREA_NAME} navigation`}>
         <ul class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 sm:px-6">
           {navItems.map((item) => (
             <li class="shrink-0">
               <a
                 href={item.href}
-                class:list={['block rounded-full px-3 py-1.5 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2F6B]', item.active ? 'bg-white text-[#1B2F6B] shadow-sm' : 'text-[#1a1e24] hover:bg-[#f3ecdb]']}
+                class:list={['block rounded-full px-3 py-1.5 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-navy', item.active ? 'bg-white text-navy shadow-sm' : 'text-ink hover:bg-card']}
                 aria-current={item.active ? 'page' : undefined}
               >
                 {item.label}

@@ -42,7 +42,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     v-if="open"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-[#1a1e24]/40 px-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/40 px-4"
     @click.self="emit('cancel')"
   >
     <div
@@ -50,16 +50,16 @@ onBeforeUnmount(() => {
       aria-modal="true"
       aria-labelledby="confirm-dialog-title"
       aria-describedby="confirm-dialog-message"
-      class="w-full max-w-md rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-xl"
+      class="w-full max-w-md rounded-2xl border border-hairline bg-parchment p-6 shadow-xl"
     >
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Confirm</p>
-      <h3 id="confirm-dialog-title" class="mt-2 text-2xl font-bold text-[#1a1e24]">{{ title || 'Are you sure?' }}</h3>
-      <p id="confirm-dialog-message" class="mt-3 text-sm text-[#3d3d3d]">{{ message || 'This action cannot be undone.' }}</p>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Confirm</p>
+      <h3 id="confirm-dialog-title" class="mt-2 text-2xl font-bold text-ink">{{ title || 'Are you sure?' }}</h3>
+      <p id="confirm-dialog-message" class="mt-3 text-sm text-soot">{{ message || 'This action cannot be undone.' }}</p>
       <div class="mt-6 flex justify-end gap-3">
         <button
           ref="cancelButton"
           type="button"
-          class="rounded-lg border border-[#d9cfb8] bg-white px-4 py-2 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2F6B]"
+          class="rounded-lg border border-hairline bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-linen focus:outline-none focus-visible:ring-2 focus-visible:ring-navy"
           @click="emit('cancel')"
         >
           {{ cancelLabel || 'Cancel' }}

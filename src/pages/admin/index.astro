@@ -63,41 +63,41 @@ const totalHidden = tierCounts.reduce((sum, row) => sum + row.hidden, 0);
 const stats = [
   { label: 'Public venues', value: totalVisible, href: '/admin/venues?status=public', tone: 'bg-[#E8F5EE] text-[#1E7A4E]' },
   { label: 'Hidden venues', value: totalHidden, href: '/admin/venues?status=hidden', tone: 'bg-[#fff4df] text-[#C27803]' },
-  { label: 'Pending tier changes', value: pendingChanges.total, href: '/admin/pending', tone: 'bg-[#fff4df] text-[#8a5100]' },
+  { label: 'Pending tier changes', value: pendingChanges.total, href: '/admin/pending', tone: 'bg-[#fff4df] text-ochre' },
   { label: 'New suggestions', value: suggestions.total, href: '/admin/suggestions', tone: 'bg-[#f1e8f3] text-[#7C3A82]' },
   { label: 'Bribery records', value: bribery.total, href: '/admin/bribery', tone: 'bg-[#FDECEC] text-[#B92B27]' },
-  { label: 'Active Chairs', value: activeChairs, href: '/admin/users', tone: 'bg-[#edf3ff] text-[#1B2F6B]' },
+  { label: 'Active Chairs', value: activeChairs, href: '/admin/users', tone: 'bg-[#edf3ff] text-navy' },
 ];
 ---
 
 <AdminLayout title="Dashboard">
   <div class="space-y-6">
-    <div class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm">
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Overview</p>
-      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Welcome back, {currentUser?.name || 'Chair'}.</h1>
+    <div class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Overview</p>
+      <h1 class="mt-2 text-3xl font-bold text-ink">Welcome back, {currentUser?.name || 'Chair'}.</h1>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {stats.map((stat) => (
-        <a href={stat.href} class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-5 shadow-sm transition hover:border-[#1B2F6B] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2F6B]">
+        <a href={stat.href} class="rounded-2xl border border-hairline bg-parchment p-5 shadow-sm transition hover:border-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy">
           <span class:list={[stat.tone, 'inline-flex rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]']}>{stat.label}</span>
-          <span class="mt-4 block text-3xl font-bold text-[#1a1e24]">{stat.value}</span>
+          <span class="mt-4 block text-3xl font-bold text-ink">{stat.value}</span>
         </a>
       ))}
     </div>
 
-    <section class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm" aria-labelledby="tiers-heading">
-      <h2 id="tiers-heading" class="text-xl font-bold text-[#1a1e24]">Venues by tier</h2>
+    <section class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm" aria-labelledby="tiers-heading">
+      <h2 id="tiers-heading" class="text-xl font-bold text-ink">Venues by tier</h2>
       <div class="mt-4 overflow-x-auto">
         <table class="min-w-full text-left text-sm">
-          <thead class="text-[#535353]">
+          <thead class="text-graphite">
             <tr>
               <th scope="col" class="py-2 pr-4 font-semibold">Tier</th>
               <th scope="col" class="py-2 pr-4 text-right font-semibold">Public</th>
               <th scope="col" class="py-2 text-right font-semibold">Hidden</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[#eadfca]">
+          <tbody class="divide-y divide-sand">
             {tiers.map((tier) => (
               <tr>
                 <td class="py-2 pr-4"><a href={`/admin/venues?tier=${tier.value}`} class="hover:underline"><TierBadge tier={tier.value} /></a></td>
@@ -111,16 +111,16 @@ const stats = [
     </section>
 
     <div class="grid gap-6 lg:grid-cols-2">
-      <section class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm" aria-labelledby="drafts-heading">
-        <h2 id="drafts-heading" class="text-xl font-bold text-[#1a1e24]">Hidden from the public site</h2>
-        <p class="mt-1 text-xs text-[#535353]">Venues without an approved tier or a location.</p>
+      <section class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm" aria-labelledby="drafts-heading">
+        <h2 id="drafts-heading" class="text-xl font-bold text-ink">Hidden from the public site</h2>
+        <p class="mt-1 text-xs text-graphite">Venues without an approved tier or a location.</p>
         {hiddenVenues.length === 0 ? (
-          <p class="mt-4 text-sm text-[#3d3d3d]">Nothing hidden. Every venue is on the public site.</p>
+          <p class="mt-4 text-sm text-soot">Nothing hidden. Every venue is on the public site.</p>
         ) : (
-          <ul class="mt-4 divide-y divide-[#eadfca] text-sm">
+          <ul class="mt-4 divide-y divide-sand text-sm">
             {hiddenVenues.map((venue) => (
               <li class="flex items-center justify-between gap-3 py-2">
-                <a href={`/admin/venues/${venue.id}`} class="font-semibold text-[#1a1e24] hover:underline">{venue.name}</a>
+                <a href={`/admin/venues/${venue.id}`} class="font-semibold text-ink hover:underline">{venue.name}</a>
                 <TierBadge tier={venue.tier} />
               </li>
             ))}
@@ -128,16 +128,16 @@ const stats = [
         )}
       </section>
 
-      <section class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm" aria-labelledby="recent-heading">
-        <h2 id="recent-heading" class="text-xl font-bold text-[#1a1e24]">Recently edited</h2>
-        <ul class="mt-4 divide-y divide-[#eadfca] text-sm">
+      <section class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm" aria-labelledby="recent-heading">
+        <h2 id="recent-heading" class="text-xl font-bold text-ink">Recently edited</h2>
+        <ul class="mt-4 divide-y divide-sand text-sm">
           {recent.map((venue) => (
             <li class="py-2">
               <div class="flex items-center justify-between gap-3">
-                <a href={`/admin/venues/${venue.id}`} class="font-semibold text-[#1a1e24] hover:underline">{venue.name}</a>
+                <a href={`/admin/venues/${venue.id}`} class="font-semibold text-ink hover:underline">{venue.name}</a>
                 {!isPubliclyVisible(venue) && <span class="text-xs font-semibold uppercase tracking-[0.12em] text-stone-600">Hidden</span>}
               </div>
-              <p class="text-xs text-[#535353]">{formatDateTime(venue.updatedAt)}{venue.editor ? ` by ${venue.editor}` : ''}</p>
+              <p class="text-xs text-graphite">{formatDateTime(venue.updatedAt)}{venue.editor ? ` by ${venue.editor}` : ''}</p>
             </li>
           ))}
         </ul>

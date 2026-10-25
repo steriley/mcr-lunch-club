@@ -104,7 +104,7 @@ const fieldShortcuts = [
           </div>
 
           <div class="field-panel-grid">
-            <ChairsDeliberation client:load />
+            <ChairsDeliberation client:idle />
 
             <WeatherCard client:visible />
           </div>
@@ -148,7 +148,7 @@ const fieldShortcuts = [
           <article class="bench-hero">
             <div class="bench-hero-media">
               <span class="bench-placeholder" aria-hidden="true">
-                <img src="/brand/approved-sticker-256.webp" alt="" />
+                <img src="/brand/approved-sticker-256.webp" width="256" height="256" alt="" />
               </span>
               {hero.image && (
                 <img
@@ -163,7 +163,7 @@ const fieldShortcuts = [
                 />
               )}
               <a class="bench-seal" href={hero.href} aria-label={`View ${hero.name}'s audit`}>
-                <img src="/brand/approved-sticker-256.webp" alt="" />
+                <img src="/brand/approved-sticker-256.webp" width="256" height="256" alt="" />
               </a>
             </div>
 

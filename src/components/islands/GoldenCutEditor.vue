@@ -103,9 +103,9 @@ function onBeforeUnload(event: BeforeUnloadEvent) {
 onMounted(() => window.addEventListener('beforeunload', onBeforeUnload));
 onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload));
 
-const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] outline-none focus:border-[#1B2F6B] focus-visible:ring-2 focus-visible:ring-[#1B2F6B]/30';
-const labelClass = 'block text-sm font-semibold text-[#1a1e24]';
-const smallButton = 'rounded-lg border border-[#d9cfb8] bg-[#f9f7f1] px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5] disabled:cursor-not-allowed disabled:opacity-50';
+const inputClass = 'w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink outline-none focus:border-navy focus-visible:ring-2 focus-visible:ring-navy/30';
+const labelClass = 'block text-sm font-semibold text-ink';
+const smallButton = 'rounded-lg border border-hairline bg-parchment px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:cursor-not-allowed disabled:opacity-50';
 </script>
 
 <template>
@@ -113,7 +113,7 @@ const smallButton = 'rounded-lg border border-[#d9cfb8] bg-[#f9f7f1] px-3 py-1.5
     <p v-if="message" role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{{ message }}</p>
     <p v-if="errorMessage" role="alert" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
 
-    <p v-if="rows.length === 0" class="rounded-2xl border border-dashed border-[#d9cfb8] bg-[#f9f7f1] p-6 text-sm text-[#3d3d3d]">
+    <p v-if="rows.length === 0" class="rounded-2xl border border-dashed border-hairline bg-parchment p-6 text-sm text-soot">
       The Golden Cut is empty, so the home page shows the nearest Approved venues instead. Add up to {{ GOLDEN_CUT_SIZE }} below.
     </p>
 
@@ -121,10 +121,10 @@ const smallButton = 'rounded-lg border border-[#d9cfb8] bg-[#f9f7f1] px-3 py-1.5
       <li
         v-for="(row, index) in rows"
         :key="row.venueId"
-        class="rounded-2xl border bg-[#f9f7f1] p-5 shadow-sm transition"
+        class="rounded-2xl border bg-parchment p-5 shadow-sm transition"
         :class="[
-          index === 0 ? 'border-[#c59b27] ring-1 ring-[#c59b27]/40' : 'border-[#d9cfb8]',
-          dropIndex === index && dragIndex !== index ? 'ring-2 ring-[#1B2F6B]' : '',
+          index === 0 ? 'border-gold ring-1 ring-brass/40' : 'border-hairline',
+          dropIndex === index && dragIndex !== index ? 'ring-2 ring-navy' : '',
           dragIndex === index ? 'opacity-60' : '',
         ]"
         @dragover.prevent="dropIndex = index"
@@ -133,16 +133,16 @@ const smallButton = 'rounded-lg border border-[#d9cfb8] bg-[#f9f7f1] px-3 py-1.5
       >
         <div class="flex flex-wrap items-center gap-3">
           <span
-            class="cursor-grab select-none rounded-md border border-[#d9cfb8] bg-white px-2 py-1 text-base text-[#535353] active:cursor-grabbing"
+            class="cursor-grab select-none rounded-md border border-hairline bg-white px-2 py-1 text-base text-graphite active:cursor-grabbing"
             draggable="true"
             title="Drag to reorder"
             aria-hidden="true"
             @dragstart="onDragStart(index, $event)"
             @dragend="dragIndex = null; dropIndex = null"
           >⠿</span>
-          <span class="rounded-md bg-[#1a1e24] px-2 py-1 font-mono text-xs font-bold text-[#f5c451]">{{ position(index) }}</span>
-          <span class="text-base font-semibold text-[#1a1e24]">{{ row.venueName }}</span>
-          <span v-if="index === 0" class="rounded-full border border-[#c59b27] bg-[#fff8e6] px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-[#8a5100]">Hero</span>
+          <span class="rounded-md bg-deep px-2 py-1 font-mono text-xs font-bold text-[#f5c451]">{{ position(index) }}</span>
+          <span class="text-base font-semibold text-ink">{{ row.venueName }}</span>
+          <span v-if="index === 0" class="rounded-full border border-gold bg-[#fff8e6] px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-ochre">Hero</span>
           <span v-if="row.notShownReason" class="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800">
             Not on the home page: {{ row.notShownReason }}
           </span>
@@ -157,7 +157,7 @@ const smallButton = 'rounded-lg border border-[#d9cfb8] bg-[#f9f7f1] px-3 py-1.5
           <label :class="labelClass">
             <span class="mb-2 block">{{ index === 0 ? 'Puff piece (shown in full on the hero)' : 'Hook (one punchy sentence)' }}</span>
             <textarea v-model="row.puffPiece" :rows="index === 0 ? 4 : 2" :maxlength="PUFF_PIECE_MAX" :class="inputClass" placeholder="Leave blank to use the venue's pull quote" />
-            <span class="mt-1 block text-xs font-normal text-[#535353]">{{ row.puffPiece.length }} / {{ PUFF_PIECE_MAX }}</span>
+            <span class="mt-1 block text-xs font-normal text-graphite">{{ row.puffPiece.length }} / {{ PUFF_PIECE_MAX }}</span>
           </label>
           <label :class="labelClass">
             <span class="mb-2 block">Anchor dish</span>
@@ -167,7 +167,7 @@ const smallButton = 'rounded-lg border border-[#d9cfb8] bg-[#f9f7f1] px-3 py-1.5
       </li>
     </ol>
 
-    <div class="flex flex-wrap items-end gap-3 rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-5">
+    <div class="flex flex-wrap items-end gap-3 rounded-2xl border border-hairline bg-parchment p-5">
       <label :class="[labelClass, 'min-w-64 flex-1']">
         <span class="mb-2 block">Add an Approved venue</span>
         <select v-model="addVenueId" :class="inputClass" :disabled="isFull || available.length === 0">
@@ -184,7 +184,7 @@ const smallButton = 'rounded-lg border border-[#d9cfb8] bg-[#f9f7f1] px-3 py-1.5
       <button
         type="button"
         :disabled="busy || !isDirty"
-        class="rounded-lg bg-[#1B2F6B] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#111E47] disabled:cursor-not-allowed disabled:opacity-70"
+        class="rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-deep disabled:cursor-not-allowed disabled:opacity-70"
         @click="save"
       >
         {{ busy ? 'Saving…' : 'Save The Golden Cut' }}

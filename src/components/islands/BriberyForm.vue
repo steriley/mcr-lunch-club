@@ -85,14 +85,14 @@ function onBeforeUnload(event: BeforeUnloadEvent) {
 onMounted(() => window.addEventListener('beforeunload', onBeforeUnload));
 onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload));
 
-const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] focus:border-[#1B2F6B] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1B2F6B]/30';
-const labelClass = 'block text-sm font-semibold text-[#1a1e24]';
-const hintClass = 'mt-1 block text-xs font-normal text-[#535353]';
+const inputClass = 'w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink focus:border-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/30';
+const labelClass = 'block text-sm font-semibold text-ink';
+const hintClass = 'mt-1 block text-xs font-normal text-graphite';
 const errorClass = 'mt-1 block text-xs font-medium text-red-700';
 </script>
 
 <template>
-  <form class="space-y-6 rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm" novalidate @submit.prevent="submit">
+  <form class="space-y-6 rounded-2xl border border-hairline bg-parchment p-6 shadow-sm" novalidate @submit.prevent="submit">
     <div v-if="formError" role="alert" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ formError }}</div>
 
     <div class="grid gap-5 lg:grid-cols-2">
@@ -174,21 +174,21 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
       <span v-if="errors.outcome" :class="errorClass">{{ errors.outcome }}</span>
     </label>
 
-    <label class="flex items-center gap-3 rounded-xl border border-[#d9cfb8] bg-white px-4 py-3 text-sm font-semibold text-[#1a1e24]">
-      <input v-model="form.published" type="checkbox" class="h-4 w-4 rounded border-[#d9cfb8]" />
+    <label class="flex items-center gap-3 rounded-xl border border-hairline bg-white px-4 py-3 text-sm font-semibold text-ink">
+      <input v-model="form.published" type="checkbox" class="h-4 w-4 rounded border-hairline" />
       Show on the public Hall of Shame
     </label>
 
-    <div class="flex flex-col-reverse gap-3 border-t border-[#d9cfb8] pt-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col-reverse gap-3 border-t border-hairline pt-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <button v-if="mode === 'edit'" type="button" :disabled="isSubmitting" class="w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-50 sm:w-auto" @click="showDeleteDialog = true">
           Delete record
         </button>
       </div>
       <div class="flex flex-col gap-3 sm:flex-row">
-        <span v-if="isDirty" class="self-center text-xs font-semibold text-[#8a5100]">Unsaved changes</span>
-        <a href="/admin/bribery" class="inline-flex items-center justify-center rounded-lg border border-[#d9cfb8] bg-white px-4 py-2.5 text-sm font-semibold text-[#1a1e24] hover:bg-[#f5efe5]">Cancel</a>
-        <button type="submit" :disabled="isSubmitting" class="inline-flex items-center justify-center rounded-lg bg-[#1B2F6B] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#111E47] disabled:opacity-70">
+        <span v-if="isDirty" class="self-center text-xs font-semibold text-ochre">Unsaved changes</span>
+        <a href="/admin/bribery" class="inline-flex items-center justify-center rounded-lg border border-hairline bg-white px-4 py-2.5 text-sm font-semibold text-ink hover:bg-linen">Cancel</a>
+        <button type="submit" :disabled="isSubmitting" class="inline-flex items-center justify-center rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-deep disabled:opacity-70">
           {{ isSubmitting ? 'Saving…' : mode === 'create' ? 'Create record' : 'Save changes' }}
         </button>
       </div>

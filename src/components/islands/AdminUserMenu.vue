@@ -19,8 +19,8 @@ async function signOut() {
 
 <template>
   <div class="flex items-center gap-3">
-    <span class="rounded-full bg-[#f3ecdb] px-3 py-1.5 text-sm font-semibold text-[#1a1e24]">{{ displayName }}</span>
-    <button type="button" class="rounded-full border border-[#d9cfb8] bg-[#f9f7f1] px-3 py-1.5 text-sm font-semibold text-[#1a1e24] transition hover:bg-[#f3ecdb]" @click="signOut">
+    <span class="rounded-full bg-card px-3 py-1.5 text-sm font-semibold text-ink">{{ displayName }}</span>
+    <button type="button" class="rounded-full border border-hairline bg-parchment px-3 py-1.5 text-sm font-semibold text-ink transition hover:bg-card" @click="signOut">
       Sign out
     </button>
   </div>

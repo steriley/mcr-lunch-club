@@ -229,7 +229,7 @@ const altFor = (image: SerializedVenueImage) => image.caption || props.venueName
             loading="lazy"
             decoding="async"
           />
-          <span v-if="image.isPrimary" class="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded bg-[var(--dossier-primary)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#FBF6EA]">
+          <span v-if="image.isPrimary" class="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded bg-[var(--dossier-primary)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-parchment">
             <DossierIcon name="badge" :size="11" /> Primary
           </span>
         </div>

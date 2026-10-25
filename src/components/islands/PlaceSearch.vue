@@ -76,24 +76,24 @@ function pick(candidate: PlaceCandidate) {
   status.value = 'idle';
 }
 
-const inputClass = 'w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] outline-none focus:border-[#1B2F6B] focus-visible:ring-2 focus-visible:ring-[#1B2F6B]/30';
+const inputClass = 'w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink outline-none focus:border-navy focus-visible:ring-2 focus-visible:ring-navy/30';
 </script>
 
 <template>
   <div class="space-y-2">
-    <label class="block text-sm font-semibold text-[#1a1e24]">
+    <label class="block text-sm font-semibold text-ink">
       <span class="mb-2 block">Find the venue</span>
       <input v-model="query" type="search" autocomplete="off" :class="inputClass" placeholder="Venue name or address, e.g. Crazy Pedro's Bridge Street" />
     </label>
-    <p v-if="status === 'idle' && query.trim().length < MIN_LENGTH" class="text-xs text-[#535353]">Type at least {{ MIN_LENGTH }} characters. Results are limited to Greater Manchester.</p>
-    <p v-if="status === 'loading'" role="status" class="text-xs text-[#535353]">Searching…</p>
+    <p v-if="status === 'idle' && query.trim().length < MIN_LENGTH" class="text-xs text-graphite">Type at least {{ MIN_LENGTH }} characters. Results are limited to Greater Manchester.</p>
+    <p v-if="status === 'loading'" role="status" class="text-xs text-graphite">Searching…</p>
     <p v-if="status === 'error'" role="alert" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{{ errorMessage }}</p>
-    <p v-if="status === 'done' && !results.length" role="status" class="text-sm text-[#535353]">No matches. Try another spelling, or enter the location manually.</p>
-    <ul v-if="results.length" class="divide-y divide-[#eadfca] overflow-hidden rounded-lg border border-[#d9cfb8] bg-white" aria-label="Search results">
+    <p v-if="status === 'done' && !results.length" role="status" class="text-sm text-graphite">No matches. Try another spelling, or enter the location manually.</p>
+    <ul v-if="results.length" class="divide-y divide-sand overflow-hidden rounded-lg border border-hairline bg-white" aria-label="Search results">
       <li v-for="candidate in results" :key="`${candidate.lat},${candidate.lng},${candidate.label}`">
-        <button type="button" class="block w-full px-3 py-2 text-left text-sm hover:bg-[#f5efe5] focus:bg-[#f5efe5] focus:outline-none" @click="pick(candidate)">
-          <span class="block font-semibold text-[#1a1e24]">{{ candidate.label }}</span>
-          <span class="block text-xs text-[#535353]">{{ candidate.address }} · {{ candidate.lat.toFixed(5) }}, {{ candidate.lng.toFixed(5) }}</span>
+        <button type="button" class="block w-full px-3 py-2 text-left text-sm hover:bg-linen focus:bg-linen focus:outline-none" @click="pick(candidate)">
+          <span class="block font-semibold text-ink">{{ candidate.label }}</span>
+          <span class="block text-xs text-graphite">{{ candidate.address }} · {{ candidate.lat.toFixed(5) }}, {{ candidate.lng.toFixed(5) }}</span>
         </button>
       </li>
     </ul>

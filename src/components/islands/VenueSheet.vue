@@ -10,7 +10,7 @@
       aria-modal="true"
       aria-labelledby="venue-sheet-title"
       tabindex="-1"
-      class="w-full md:max-w-xl max-h-[90vh] flex flex-col outline-none bg-[#fdfcf9] rounded-t-2xl md:rounded-2xl border border-[#dcd6c8] shadow-2xl overflow-hidden font-sans animate-in slide-in-from-bottom-6 duration-200"
+      class="w-full md:max-w-xl max-h-[90vh] flex flex-col outline-none bg-card rounded-t-2xl md:rounded-2xl border border-hairline shadow-2xl overflow-hidden font-sans animate-in slide-in-from-bottom-6 duration-200"
     >
       <!-- Header Bar / Manifesto Status Banner -->
       <div
@@ -20,7 +20,7 @@
         <div class="flex items-center gap-2.5">
           <img
             v-if="venue.tier === 'approved'"
-            src="/brand/approved-sticker-256.webp"
+            src="/brand/approved-sticker-256.webp" width="256" height="256"
             alt="MCR Lunch Club Approved"
             class="w-9 h-9 object-contain drop-shadow shrink-0"
           />
@@ -48,7 +48,7 @@
       </div>
 
       <!-- Main Body (Scrollable) -->
-      <div class="p-5 overflow-y-auto space-y-4 text-[#1a1e24]">
+      <div class="p-5 overflow-y-auto space-y-4 text-ink">
         <img
           v-if="venue.image"
           :src="venue.image.thumbUrl"
@@ -59,17 +59,17 @@
           loading="lazy"
           decoding="async"
           @error="($event.target as HTMLElement).style.display = 'none'"
-          class="aspect-[3/2] max-h-56 h-auto w-full rounded-xl border border-[#dcd6c8] object-cover"
+          class="aspect-[3/2] max-h-56 h-auto w-full rounded-xl border border-hairline object-cover"
         />
         <!-- Approved Prize Award Callout -->
-        <div v-if="venue.tier === 'approved'" class="bg-[#1a1e24] text-[#f9f7f1] border border-[#c59b27] p-3 rounded-xl flex items-center gap-3 shadow-xs">
+        <div v-if="venue.tier === 'approved'" class="bg-deep text-parchment border border-gold p-3 rounded-xl flex items-center gap-3 shadow-xs">
           <img
-            src="/brand/approved-sticker-256.webp"
+            src="/brand/approved-sticker-256.webp" width="256" height="256"
             alt="Official Approved Sticker"
             class="w-11 h-11 object-contain drop-shadow shrink-0"
           />
           <div class="text-xs">
-            <span class="text-xs font-mono font-bold text-[#c59b27] uppercase tracking-wider block">
+            <span class="text-xs font-mono font-bold text-gold uppercase tracking-wider block">
               Official Prize &bull; Manchester’s Lunch Star
             </span>
             <span class="text-base text-stone-200 font-serif-header">
@@ -81,7 +81,7 @@
         <!-- Title & Badges -->
         <div class="flex items-start justify-between gap-3">
           <div>
-            <h2 id="venue-sheet-title" class="text-2xl font-bold font-serif-header text-[#1a1e24] leading-tight">
+            <h2 id="venue-sheet-title" class="text-2xl font-bold font-serif-header text-ink leading-tight">
               {{ venue.name }}
             </h2>
             <p class="text-xs text-stone-600 mt-1 flex items-center gap-2 font-mono">
@@ -90,7 +90,7 @@
           </div>
 
           <div class="flex flex-col items-end">
-            <span class="text-lg font-mono font-bold text-[#8b1e22] bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
+            <span class="text-lg font-mono font-bold text-navy bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
               {{ venue.cost }}
             </span>
             <span class="text-xs text-stone-500 font-serif-header mt-1">
@@ -100,13 +100,13 @@
         </div>
 
         <!-- Distance & Walking Time Pill Bar -->
-        <div class="grid grid-cols-2 gap-2 bg-[#f4efe4] p-3 rounded-lg border border-[#dcd6c8] text-center font-serif-header">
+        <div class="grid grid-cols-2 gap-2 bg-paper p-3 rounded-lg border border-hairline text-center font-serif-header">
           <div>
             <span class="text-xs text-stone-600 uppercase tracking-wide block">Foot Journey</span>
-            <span class="text-base font-bold text-[#8b1e22]">{{ walkText(venue.walkingTimeMin, 'mins') }}</span>
+            <span class="text-base font-bold text-navy">{{ walkText(venue.walkingTimeMin, 'mins') }}</span>
             <span class="text-xs text-stone-500 block font-sans">from Spinningfields Base</span>
           </div>
-          <div class="border-l border-[#dcd6c8]">
+          <div class="border-l border-hairline">
             <span class="text-xs text-stone-600 uppercase tracking-wide block">Displacement</span>
             <span class="text-base font-bold text-stone-900">{{ milesText(venue.distanceMiles) }}</span>
             <span class="text-xs text-stone-500 block font-sans">within 2.5 mi limit</span>
@@ -114,8 +114,8 @@
         </div>
 
         <!-- "Eat Like Us" - Official Chairs' Recommendation -->
-        <div class="bg-amber-50/80 border-l-4 border-[#c59b27] p-3.5 rounded-r-lg shadow-xs">
-          <div class="flex items-center gap-1.5 text-xs font-bold text-[#8b1e22] uppercase tracking-wide font-serif-header">
+        <div class="bg-amber-50/80 border-l-4 border-gold p-3.5 rounded-r-lg shadow-xs">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-navy uppercase tracking-wide font-serif-header">
             <span>🛡</span>
             <span>Eat Like Us — The Chairs’ Prescribed Order</span>
           </div>
@@ -125,9 +125,9 @@
         </div>
 
         <!-- Inspection History (Log) -->
-        <div class="border-t border-[#dcd6c8] pt-3">
+        <div class="border-t border-hairline pt-3">
           <div class="flex items-center justify-between mb-2">
-            <h3 class="text-sm font-bold font-serif-header text-[#1a1e24] flex items-center gap-1.5">
+            <h3 class="text-sm font-bold font-serif-header text-ink flex items-center gap-1.5">
               <span>📋</span>
               <span>Official Inspection Ledger</span>
               <span class="text-xs text-stone-500 font-normal">({{ venueInspections.length }} {{ venueInspections.length === 1 ? 'inspection' : 'inspections' }})</span>
@@ -142,7 +142,7 @@
             <div
               v-for="insp in venueInspections"
               :key="insp.id"
-              class="p-2.5 rounded bg-white border border-[#dcd6c8] text-xs shadow-xs"
+              class="p-2.5 rounded bg-white border border-hairline text-xs shadow-xs"
             >
               <div class="flex items-center justify-between text-xs border-b border-stone-100 pb-1 mb-1">
                 <span class="font-mono text-stone-600">{{ formatDate(insp.date) }}</span>
@@ -169,12 +169,12 @@
       </div>
 
       <!-- Footer Buttons -->
-      <div class="p-4 bg-[#f4efe4] border-t border-[#dcd6c8] flex flex-wrap items-center justify-between gap-2">
+      <div class="p-4 bg-paper border-t border-hairline flex flex-wrap items-center justify-between gap-2">
         <a
           :href="venue.mapSearchLink || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(venue.name + ' Manchester')}`"
           target="_blank"
           rel="noopener noreferrer"
-          class="flex-1 bg-white hover:bg-stone-100 text-stone-900 border border-[#dcd6c8] py-2 px-3 rounded-md text-xs font-semibold text-center shadow-xs flex items-center justify-center gap-1.5"
+          class="flex-1 bg-white hover:bg-stone-100 text-stone-900 border border-hairline py-2 px-3 rounded-md text-xs font-semibold text-center shadow-xs flex items-center justify-center gap-1.5"
         >
           <span>🧭</span>
           <span>Google Maps Directions</span>
@@ -182,7 +182,7 @@
 
         <a
           :href="`/venues/${venue.slug}`"
-          class="flex-1 bg-[#8b1e22] hover:bg-[#70161a] text-white py-2 px-3 rounded-md text-xs font-serif-header font-bold text-center shadow flex items-center justify-center gap-1.5"
+          class="flex-1 bg-navy hover:bg-[#70161a] text-white py-2 px-3 rounded-md text-xs font-serif-header font-bold text-center shadow flex items-center justify-center gap-1.5"
         >
           <span>📜</span>
           <span>Full Stamped Dossier</span>
@@ -191,7 +191,7 @@
         <button
           type="button"
           @click="copyShareLink"
-          class="p-2 text-stone-600 hover:text-stone-900 bg-white border border-[#dcd6c8] rounded-md shadow-xs text-xs font-semibold"
+          class="p-2 text-stone-600 hover:text-stone-900 bg-white border border-hairline rounded-md shadow-xs text-xs font-semibold"
           title="Copy Link for Lunch Chat"
         >
           {{ copied ? "✓ Link Copied!" : "🔗 Share" }}

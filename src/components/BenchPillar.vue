@@ -47,7 +47,7 @@ function markBroken(event: Event) {
     <div class="bench-pillar-main">
       <div class="bench-thumb">
         <span class="bench-placeholder" aria-hidden="true">
-          <img src="/brand/approved-sticker-256.webp" alt="" />
+          <img src="/brand/approved-sticker-256.webp" width="256" height="256" alt="" />
         </span>
         <img
           v-if="card.image"

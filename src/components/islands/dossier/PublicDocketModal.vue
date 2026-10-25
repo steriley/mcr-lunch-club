@@ -64,14 +64,14 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[#1E1B17]/45 px-4 py-8" @click.self="emit('close')">
+  <div v-if="open" class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/45 px-4 py-8" @click.self="emit('close')">
     <article
       role="dialog"
       aria-modal="true"
       aria-labelledby="docket-slip-title"
       class="dossier docket-slip relative w-full max-w-xl overflow-hidden rounded-2xl border-2 border-[var(--dossier-primary-container)] bg-[var(--dossier-canvas)] shadow-2xl"
     >
-      <div class="flex items-center justify-between gap-3 bg-[var(--dossier-primary)] px-5 py-3 text-[#FBF6EA]">
+      <div class="flex items-center justify-between gap-3 bg-[var(--dossier-primary)] px-5 py-3 text-parchment">
         <span class="text-[11px] font-bold uppercase tracking-[0.16em]">MCR Lunch Club · Public docket</span>
         <span class="docket-slip-actions flex gap-2">
           <button type="button" class="dossier-btn is-small" @click="print"><DossierIcon name="printer" :size="14" /> Print</button>

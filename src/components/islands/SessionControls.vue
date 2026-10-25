@@ -28,11 +28,11 @@ async function signOutOtherSessions() {
 </script>
 
 <template>
-  <section class="space-y-4 rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm">
+  <section class="space-y-4 rounded-2xl border border-hairline bg-parchment p-6 shadow-sm">
     <div>
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Sessions</p>
-      <h2 class="mt-2 text-2xl font-bold text-[#1a1e24]">Other devices</h2>
-      <p class="mt-2 text-sm text-[#3d3d3d]">Sign out everywhere except this browser, for example after using a shared computer.</p>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Sessions</p>
+      <h2 class="mt-2 text-2xl font-bold text-ink">Other devices</h2>
+      <p class="mt-2 text-sm text-soot">Sign out everywhere except this browser, for example after using a shared computer.</p>
     </div>
 
     <p v-if="errorMessage" role="alert" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -45,7 +45,7 @@ async function signOutOtherSessions() {
     <button
       type="button"
       :disabled="isSubmitting"
-      class="inline-flex w-full items-center justify-center rounded-lg border border-[#d9cfb8] bg-white px-4 py-3 text-sm font-semibold text-[#1a1e24] transition hover:bg-[#f5efe5] disabled:cursor-not-allowed disabled:opacity-70"
+      class="inline-flex w-full items-center justify-center rounded-lg border border-hairline bg-white px-4 py-3 text-sm font-semibold text-ink transition hover:bg-linen disabled:cursor-not-allowed disabled:opacity-70"
       @click="signOutOtherSessions"
     >
       {{ isSubmitting ? 'Signing out…' : 'Sign out of other sessions' }}

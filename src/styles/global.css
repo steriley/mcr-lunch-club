@@ -1,26 +1,52 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-/* Tailwind's stone-500 (#79716b) is 4.2:1 on the parchment backgrounds; this passes WCAG AA (5:1+). */
-@theme {
+/*
+ * The palette. Use these as Tailwind utilities (text-ink, bg-parchment, border-hairline)
+ * or as CSS variables (var(--color-ink)) rather than hard-coding hex values. Tier colours
+ * live in src/lib/tiers.ts. `static` keeps every token in the output, so plain CSS can
+ * use them even where no utility does.
+ */
+@theme static {
+  --color-ink: #1e1b17; /* body text */
+  --color-charcoal: #1a1e24; /* headings and dark panels */
+  --color-soot: #3d3d3d; /* strong secondary text */
+  --color-graphite: #535353; /* secondary text */
+  --color-deep: #111e47; /* darkest navy: buttons, header */
+  --color-navy: #1b2f6b; /* links, focus rings */
+  --color-crimson: #8b1e22; /* emphasis and errors */
+  --color-ochre: #8a5100; /* amber text on light backgrounds */
+  --color-brass: #c59b27; /* gold rules and accents */
+  --color-gold: #f29a2e; /* brand orange */
+  --color-parchment: #fbf6ea; /* page background */
+  --color-paper: #f7f0df; /* raised surfaces */
+  --color-card: #f3ecdb; /* cards */
+  --color-linen: #f5efe5; /* soft panels */
+  --color-sand: #eadfca; /* muted fills */
+  --color-cream: #f9f7f1; /* text on dark, light fills */
+  --color-ivory: #fdfcf9; /* near-white fills */
+  --color-hairline: #d9cfb8; /* default borders */
+  --color-rule: #dcd6c8; /* dividers */
+
+  /* Tailwind's stone-500 (#79716b) is 4.2:1 on the parchment backgrounds; this passes WCAG AA (5:1+). */
   --color-stone-500: #6b645e;
 }
 
 @layer base {
   :root {
-    --ledger-parchment: #FBF6EA;
-    --ledger-paper: #F7F0DF;
-    --ledger-card: #F3ECDB;
-    --ledger-ink: #1e1b17;
-    --ledger-gold: #F29A2E;
-    --ledger-navy: #1B2F6B;
-    --ledger-deep: #111E47;
-    --ledger-border: #D9CFB8;
+    --ledger-parchment: var(--color-parchment);
+    --ledger-paper: var(--color-paper);
+    --ledger-card: var(--color-card);
+    --ledger-ink: var(--color-ink);
+    --ledger-gold: var(--color-gold);
+    --ledger-navy: var(--color-navy);
+    --ledger-deep: var(--color-deep);
+    --ledger-border: var(--color-hairline);
     --ledger-green: #1E7A4E;
     --bench-navy: #0e1b44;
     --bench-primary: #001854;
     --bench-peach: #ffdcbd;
-    --bench-amber: #8a5100;
+    --bench-amber: var(--color-ochre);
     --bench-pillar: #fbf2eb;
   }
 
@@ -47,22 +73,6 @@
     outline-offset: 2px;
   }
 }
-
-[class~="bg-[#f9f7f1]"] { background-color: var(--ledger-parchment); }
-[class~="bg-[#fdfcf9]"] { background-color: var(--ledger-card); }
-[class~="bg-[#f4efe4]"] { background-color: var(--ledger-paper); }
-[class~="bg-[#1a1e24]"],
-[class~="bg-[#16243b]"] { background-color: var(--ledger-deep); }
-[class~="bg-[#8b1e22]"] { background-color: var(--ledger-navy); }
-[class~="text-[#1a1e24]"] { color: var(--ledger-ink); }
-[class~="text-[#f9f7f1]"] { color: var(--ledger-parchment); }
-[class~="text-[#8b1e22]"] { color: var(--ledger-navy); }
-[class~="text-[#c59b27]"] { color: var(--ledger-gold); }
-[class~="border-[#dcd6c8]"] { border-color: var(--ledger-border); }
-[class~="border-[#c59b27]"] { border-color: var(--ledger-gold); }
-[class~="border-[#8b1e22]"] { border-color: var(--ledger-navy); }
-[class~="hover:bg-[#8b1e22]"]:hover { background-color: var(--ledger-deep); }
-[class~="hover:text-[#8b1e22]"]:hover { color: var(--ledger-deep); }
 
 .tier-header-gradient {
   background-image: linear-gradient(
