@@ -1,6 +1,8 @@
 ---
 import '@/styles/global.css';
 import FontLinks from '@/components/FontLinks.astro';
+import ThemeScript from '@/components/ThemeScript.astro';
+import ThemeToggle from '@/components/ThemeToggle.astro';
 import { countPublicInspections, countPublicInspectionsForBuild } from '@/lib/public-data';
 
 interface Props {
@@ -43,8 +45,8 @@ const navigation = [
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <ThemeScript />
     <FontLinks />
-    <meta name="theme-color" content="#FBF6EA" />
     <link rel="icon" type="image/png" href="/brand/favicon-64.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="MCR Lunch Club" />
@@ -91,6 +93,8 @@ const navigation = [
             );
           })}
         </nav>
+
+        <ThemeToggle />
 
         <details class="mobile-menu">
           <summary class="mobile-menu-trigger" aria-label="Menu">

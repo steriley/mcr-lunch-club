@@ -1,6 +1,8 @@
 ---
 import '@/styles/admin.css';
 import FontLinks from '@/components/FontLinks.astro';
+import ThemeScript from '@/components/ThemeScript.astro';
+import ThemeToggle from '@/components/ThemeToggle.astro';
 import AdminUserMenu from '@/components/admin/AdminUserMenu.vue';
 import { ADMIN_AREA_NAME, ADMIN_NAV } from '@/lib/admin-config';
 
@@ -24,6 +26,7 @@ const navItems = ADMIN_NAV.map((item) => ({
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <ThemeScript />
     <FontLinks />
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" type="image/png" href="/brand/favicon-64.png" />
@@ -57,7 +60,10 @@ const navItems = ADMIN_NAV.map((item) => ({
           ))}
         </nav>
 
-        <AdminUserMenu client:load userName={user?.name || user?.email || 'Chair'} />
+        <div class="flex items-center gap-2">
+          <ThemeToggle class="is-compact" />
+          <AdminUserMenu client:load userName={user?.name || user?.email || 'Chair'} />
+        </div>
       </div>
 
       <nav class="border-t border-sand lg:hidden" aria-label={`${ADMIN_AREA_NAME} navigation`}>

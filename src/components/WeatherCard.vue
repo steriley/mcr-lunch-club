@@ -453,7 +453,7 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 8px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgb(12 35 64 / 12%);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-weather-ink) 12%, transparent);
   color: var(--color-weather-ink);
   font-family: "Plus Jakarta Sans", sans-serif;
   font-variant-numeric: tabular-nums;
@@ -512,9 +512,9 @@ onMounted(async () => {
   width: 56px;
   height: 56px;
   place-items: center;
-  border: 1px solid rgb(12 35 64 / 14%);
+  border: 1px solid color-mix(in srgb, var(--color-weather-ink) 14%, transparent);
   border-radius: 12px;
-  background: rgb(255 255 255 / 65%);
+  background: color-mix(in srgb, var(--color-surface) 65%, transparent);
   color: var(--color-weather-ink);
 }
 
@@ -572,7 +572,7 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 8px;
   padding-top: 16px;
-  border-top: 1px solid rgb(12 35 64 / 12%);
+  border-top: 1px solid color-mix(in srgb, var(--color-weather-ink) 12%, transparent);
   color: var(--color-weather-footer);
   font-family: "Plus Jakarta Sans", sans-serif;
   font-variant-numeric: tabular-nums;

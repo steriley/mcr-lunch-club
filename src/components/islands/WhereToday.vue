@@ -18,7 +18,7 @@
             <h2 id="where-today-title" class="text-lg font-bold font-serif-header text-white leading-tight">
               The Executive Decision Oracle
             </h2>
-            <p class="text-xs text-stone-300 mt-0.5">
+            <p class="text-xs text-ash mt-0.5">
               When office consensus fractures and the clock ticks towards 11:59
             </p>
           </div>

@@ -188,7 +188,7 @@ const inputClass = 'w-full rounded-lg border border-hairline bg-surface px-3 py-
                 </span>
                 <span
                   v-if="venue.routeStatus === 'route_pending' || venue.routeStatus === 'estimated'"
-                  class="ml-1 inline-flex whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-800"
+                  class="ml-1 inline-flex whitespace-nowrap rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-pending-ink"
                 >
                   {{ ROUTE_STATUS_LABELS[venue.routeStatus] }}
                 </span>

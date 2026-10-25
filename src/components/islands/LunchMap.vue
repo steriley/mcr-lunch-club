@@ -87,6 +87,7 @@ import {
   bindVenuePopup,
   WALKING_ISOCHRONES,
 } from '@/lib/map';
+import { onThemeChange } from '@/lib/theme';
 
 const props = defineProps<{
   mapApiKey?: string;
@@ -180,8 +181,12 @@ function focusLinkedVenue() {
   mapContainer.value?.scrollIntoView({ block: 'center' });
 }
 
+// The rings' colours are resolved when drawn (SVG attributes), so redraw them for the new theme.
+const stopFollowingTheme = onThemeChange(() => drawBaseAndRings());
+
 onUnmounted(() => {
   cancelStart?.();
+  stopFollowingTheme();
   removeMap?.();
   removeMap = null;
   mapInstance = null;

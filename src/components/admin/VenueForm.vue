@@ -457,7 +457,7 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
 
         <DossierCard id="basics" title="Venue Basics" tag="Section I · Registry metadata" icon="building" :class="mobileOrder(3)">
           <div>
-            <label class="dossier-label" for="venue-name">Venue legal/public title <span class="text-[var(--dossier-danger)]">*</span></label>
+            <label class="dossier-label" for="venue-name">Venue legal/public title <span class="text-danger-ink">*</span></label>
             <input id="venue-name" v-model="form.name" type="text" required class="dossier-input" :aria-invalid="Boolean(errors.name)" />
             <span v-if="errors.name" class="dossier-error">{{ errors.name }}</span>
           </div>
@@ -711,7 +711,7 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
           <p class="flex min-w-0 items-center gap-2 text-[13px]" role="status">
             <span :class="['h-2.5 w-2.5 shrink-0 rounded-full', isDirty ? 'dossier-pulse bg-[var(--dossier-amber)]' : 'bg-[var(--dossier-green)]']" aria-hidden="true" />
             <strong class="hidden sm:inline">Docket status:</strong>
-            <span :class="['truncate', isDirty ? 'font-medium text-[var(--dossier-secondary)]' : 'text-[var(--dossier-green)]']">
+            <span :class="['truncate', isDirty ? 'font-medium text-[var(--dossier-secondary)]' : 'text-success-ink']">
               {{ isDirty ? 'Unsaved committee edits present' : mode === 'create' ? 'New entry, not yet filed' : 'All changes ratified & archived' }}
             </span>
           </p>
@@ -732,7 +732,7 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
       :role="toast.tone === 'error' ? 'alert' : 'status'"
       :class="[
         'fixed bottom-24 right-4 z-50 flex max-w-sm items-start gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg',
-        toast.tone === 'error' ? 'border-[var(--dossier-danger)]/40 bg-[var(--dossier-danger-bg)] text-[var(--dossier-danger)]' : 'border-[var(--dossier-green)]/40 bg-success-tint text-[var(--dossier-green)]',
+        toast.tone === 'error' ? 'border-[var(--dossier-danger)]/40 bg-[var(--dossier-danger-bg)] text-danger-ink' : 'border-[var(--dossier-green)]/40 bg-success-tint text-success-ink',
       ]"
     >
       <DossierIcon :name="toast.tone === 'error' ? 'alert' : 'checkCircle'" :size="16" class="mt-0.5" />

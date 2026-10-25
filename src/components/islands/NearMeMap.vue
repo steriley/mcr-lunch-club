@@ -754,7 +754,7 @@ onUnmounted(() => {
   display: block;
   width: 44px;
   height: 4.5px;
-  background-color: rgba(220, 214, 200, 0.5);
+  background-color: color-mix(in srgb, var(--color-rule) 50%, transparent);
   border-radius: 9999px;
   transition: background-color 0.15s ease;
 }
@@ -847,7 +847,7 @@ onUnmounted(() => {
 }
 
 .near-me-panel {
-  background-color: rgb(251 246 234 / 97%);
+  background-color: color-mix(in srgb, var(--color-parchment) 97%, transparent);
   color: var(--ledger-ink);
   border-color: var(--ledger-border);
   box-shadow: 0 6px 24px rgb(17 30 71 / 18%), 0 1px 3px rgb(22 19 15 / 8%);

@@ -33,6 +33,8 @@ describe('map config', () => {
   it('builds tile URLs with and without an API key', () => {
     assert.ok(!CARTO_VOYAGER_TILE_CONFIG.getUrl().includes('key='));
     assert.ok(CARTO_VOYAGER_TILE_CONFIG.getUrl('a b&c').endsWith('?key=a%20b%26c'));
+    assert.ok(CARTO_VOYAGER_TILE_CONFIG.getUrl().includes('/rastertiles/voyager/'));
+    assert.ok(CARTO_VOYAGER_TILE_CONFIG.getUrl(undefined, 'dark').includes('/dark_all/'));
   });
 
   it('createTileLayer passes the URL and options to Leaflet', () => {

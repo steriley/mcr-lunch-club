@@ -5,6 +5,7 @@ import DossierIcon from './DossierIcon.vue';
 import { BASE_LAT_LNG, createTileLayer } from '@/lib/map/config';
 import { createMapRemover } from '@/lib/map/removal';
 import { themeColor } from '@/lib/theme-color';
+import { onThemeChange } from '@/lib/theme';
 
 /**
  * A small, static map from HQ (Crown Square, Spinningfields) to the venue.
@@ -17,6 +18,7 @@ let map: LeafletMap | null = null;
 let removeMap: (() => void) | null = null;
 let venueMarker: CircleMarker | null = null;
 let axis: Polyline | null = null;
+let baseMarker: CircleMarker | null = null;
 let leaflet: typeof import('leaflet') | null = null;
 
 function draw() {
@@ -50,13 +52,26 @@ onMounted(async () => {
   });
   removeMap = createMapRemover(map);
   createTileLayer(leaflet, props.apiKey).addTo(map);
-  leaflet.circleMarker(BASE_LAT_LNG, { radius: 7, color: themeColor('parchment'), weight: 2, fillColor: themeColor('navy'), fillOpacity: 1 }).addTo(map);
+  drawBase();
+  draw();
+});
+
+function drawBase() {
+  if (!map || !leaflet) return;
+  baseMarker?.remove();
+  baseMarker = leaflet.circleMarker(BASE_LAT_LNG, { radius: 7, color: themeColor('parchment'), weight: 2, fillColor: themeColor('navy'), fillOpacity: 1 }).addTo(map);
+}
+
+// Marker and line colours are resolved when drawn (SVG attributes), so redraw them for the new theme.
+const stopFollowingTheme = onThemeChange(() => {
+  drawBase();
   draw();
 });
 
 watch(() => [props.lat, props.lng], draw);
 
 onBeforeUnmount(() => {
+  stopFollowingTheme();
   removeMap?.();
   removeMap = null;
   map = null;
@@ -68,7 +83,7 @@ onBeforeUnmount(() => {
     <div ref="container" class="h-full w-full" role="img" :aria-label="lat === null ? 'Map of Spinningfields; no venue location yet' : 'Map from Spinningfields to the venue'" />
     <div class="pointer-events-none absolute inset-x-2 top-2 z-[500] flex items-center justify-between gap-2">
       <span class="pointer-events-auto inline-flex items-center gap-1.5 rounded-full border border-[var(--dossier-border)] bg-[var(--dossier-canvas)]/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--dossier-primary)] shadow-sm">
-        <span class="h-2 w-2 rounded-full bg-[var(--dossier-primary-container)]" aria-hidden="true" />
+        <span class="h-2 w-2 rounded-full bg-[var(--dossier-primary-container-fill)]" aria-hidden="true" />
         Spinningfields departure axis
       </span>
       <a

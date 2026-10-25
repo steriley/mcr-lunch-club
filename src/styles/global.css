@@ -65,6 +65,11 @@
   gap: 22px;
 }
 
+/* The nav and the theme toggle sit together on the right. */
+.site-header-inner > .site-nav {
+  margin-left: auto;
+}
+
 .brand-lockup {
   display: inline-flex;
   align-items: center;
@@ -109,7 +114,7 @@
   align-items: center;
   gap: 2px;
   padding: 5px;
-  border: 1px solid rgb(217 207 184 / 80%);
+  border: 1px solid color-mix(in srgb, var(--color-hairline) 80%, transparent);
   border-radius: 999px;
   background: var(--ledger-card);
 }
@@ -152,7 +157,7 @@
   padding: 2px 5px;
   border-radius: 999px;
   background: var(--color-success-tint);
-  color: var(--ledger-green);
+  color: var(--color-success-ink);
   font-size: 12px;
   text-align: center;
 }
@@ -465,7 +470,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 10px 14px;
-  border-bottom: 1px solid rgb(138 81 0 / 30%);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ochre) 30%, transparent);
   background: var(--color-midnight);
   color: var(--color-white);
 }
@@ -519,7 +524,7 @@
 .map-header-count {
   flex: none;
   padding: 4px 10px;
-  border: 1px solid rgb(138 81 0 / 20%);
+  border: 1px solid color-mix(in srgb, var(--color-ochre) 20%, transparent);
   border-radius: 4px;
   background: rgb(37 49 91 / 80%);
   color: var(--color-peach);
@@ -537,7 +542,7 @@
   gap: 14px;
   min-width: 0;
   padding: 16px;
-  border: 1px solid rgb(217 207 184 / 40%);
+  border: 1px solid color-mix(in srgb, var(--color-hairline) 40%, transparent);
   border-radius: 16px;
   background: var(--bench-navy);
   color: var(--color-white);
@@ -556,7 +561,7 @@
   justify-content: space-between;
   gap: 8px 12px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgb(138 81 0 / 30%);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ochre) 30%, transparent);
 }
 
 .bench-header-copy {
@@ -705,7 +710,7 @@
 .bench-placeholder::before {
   position: absolute;
   inset: 5px;
-  border: 1px solid rgb(217 207 184 / 70%);
+  border: 1px solid color-mix(in srgb, var(--color-hairline) 70%, transparent);
   border-radius: 4px;
   content: "";
 }
@@ -785,7 +790,7 @@
   align-items: flex-start;
   gap: 8px;
   padding: 8px 12px;
-  border: 1px solid rgb(217 207 184 / 60%);
+  border: 1px solid color-mix(in srgb, var(--color-hairline) 60%, transparent);
   border-radius: 8px;
   background: var(--ledger-paper);
 }
@@ -817,9 +822,9 @@
 .bench-quote {
   margin: 0;
   padding: 10px;
-  border: 1px solid rgb(217 207 184 / 50%);
+  border: 1px solid color-mix(in srgb, var(--color-hairline) 50%, transparent);
   border-radius: 8px;
-  background: rgb(255 255 255 / 80%);
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
 }
 
 .bench-quote p {
@@ -847,7 +852,7 @@
   justify-content: space-between;
   gap: 6px 12px;
   padding-top: 8px;
-  border-top: 1px solid rgb(217 207 184 / 50%);
+  border-top: 1px solid color-mix(in srgb, var(--color-hairline) 50%, transparent);
 }
 
 .bench-walk {
@@ -881,8 +886,8 @@
   padding: 2px 8px;
   border: 1px solid var(--ledger-green);
   border-radius: 4px;
-  background: rgb(232 245 238 / 70%);
-  color: var(--ledger-green);
+  background: color-mix(in srgb, var(--color-success-wash) 70%, transparent);
+  color: var(--color-success-ink);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: .06em;
@@ -1175,7 +1180,7 @@ button.bench-pillar-link {
 }
 
 .field-icon.is-green {
-  color: var(--ledger-green);
+  color: var(--color-success-ink);
 }
 
 .decree-badge {
@@ -1271,7 +1276,7 @@ button.bench-pillar-link {
 
 .field-shortcut:hover,
 .field-shortcut:focus-visible {
-  border-color: rgb(17 30 71 / 45%);
+  border-color: color-mix(in srgb, var(--color-deep-ink) 45%, transparent);
   box-shadow: 0 3px 9px rgb(22 19 15 / 7%);
 }
 
@@ -1281,7 +1286,7 @@ button.bench-pillar-link {
 }
 
 .field-shortcut-label {
-  color: var(--ledger-green);
+  color: var(--color-success-ink);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .045em;
@@ -1324,6 +1329,15 @@ button.bench-pillar-link {
     display: block;
     flex: 0 0 auto;
     margin-left: auto;
+  }
+
+  /* With the nav folded away, the toggle sits beside the menu button. */
+  .site-header-inner > .theme-toggle {
+    margin-left: auto;
+  }
+
+  .site-header-inner > .theme-toggle + .mobile-menu {
+    margin-left: 0;
   }
 
   .home-workspace-grid {

@@ -97,8 +97,8 @@ defineProps<{
   justify-content: center;
   padding: 0 7px;
   border-radius: 999px;
-  background: rgb(30 27 23 / 7%);
-  color: rgb(30 27 23 / 70%);
+  background: color-mix(in srgb, var(--color-ink) 7%, transparent);
+  color: color-mix(in srgb, var(--color-ink) 70%, transparent);
   font: 700 11px/1 "Plus Jakarta Sans", sans-serif;
   font-variant-numeric: tabular-nums;
 }
