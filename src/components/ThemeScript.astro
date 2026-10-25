@@ -24,11 +24,18 @@
       root.dataset.theme = theme;
       if (meta) meta.setAttribute('content', meta.dataset[theme] || meta.content);
     };
-    apply(saved() ?? (system.matches ? 'dark' : 'light'));
-    // Follow the system setting until the visitor picks a theme themselves.
-    system.addEventListener('change', (event) => {
+    const resolve = () => saved() ?? (system.matches ? 'dark' : 'light');
+    apply(resolve());
+    // With no saved choice ("System"), follow the system setting as it changes.
+    system.addEventListener('change', () => {
       if (saved()) return;
-      apply(event.matches ? 'dark' : 'light');
+      apply(resolve());
+      window.dispatchEvent(new CustomEvent('mcr:themechange'));
+    });
+    // A choice made in another tab applies here too.
+    window.addEventListener('storage', (event) => {
+      if (event.key !== null && event.key !== 'mcr-theme') return;
+      apply(resolve());
       window.dispatchEvent(new CustomEvent('mcr:themechange'));
     });
     window.__mcrApplyTheme = apply;

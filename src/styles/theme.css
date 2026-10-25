@@ -354,69 +354,72 @@
   }
 }
 
-/* Light/dark switch in both footers, which are navy in either theme. */
+/* Light / System / Dark switch in both footers, which are navy in either theme. */
 .theme-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 32px;
-  padding: 4px 6px 4px 10px;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  padding: 3px;
   border: 1px solid var(--color-on-dark-rule);
   border-radius: 9999px;
-  background: transparent;
+}
+
+/* Named for screen readers ("Theme, radio group"); the options speak for themselves. */
+.theme-toggle-legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.theme-toggle-option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 4px 10px;
+  border-radius: 9999px;
   color: var(--color-on-dark-soft);
   font: 500 12px/1 "Plus Jakarta Sans", sans-serif;
   cursor: pointer;
-  transition: border-color 140ms ease, color 140ms ease;
+  transition: background-color 140ms ease, color 140ms ease;
 }
 
-.theme-toggle:hover {
-  border-color: var(--color-on-dark-faint);
+.theme-toggle-option input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.theme-toggle-option:hover {
   color: var(--color-on-dark);
 }
 
-.theme-toggle:focus-visible {
+.theme-toggle-option:has(input:checked) {
+  background: var(--color-gold);
+  color: var(--color-deep);
+}
+
+.theme-toggle-option:has(input:focus-visible) {
   outline: 2px solid var(--color-gold);
   outline-offset: 2px;
 }
 
 .theme-toggle-icon {
-  width: 15px;
-  height: 15px;
-}
-
-.theme-toggle-track {
-  position: relative;
-  width: 30px;
-  height: 18px;
-  border-radius: 9999px;
-  background: var(--color-on-dark-rule);
-  transition: background-color 160ms ease;
-}
-
-.theme-toggle-knob {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 12px;
-  height: 12px;
-  border-radius: 9999px;
-  background: var(--color-on-dark-soft);
-  transition: transform 160ms ease, background-color 160ms ease;
-}
-
-.theme-toggle[aria-pressed="true"] .theme-toggle-track {
-  background: var(--color-gold);
-}
-
-.theme-toggle[aria-pressed="true"] .theme-toggle-knob {
-  background: var(--color-deep);
-  transform: translateX(12px);
+  width: 14px;
+  height: 14px;
+  flex: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .theme-toggle-track,
-  .theme-toggle-knob {
+  .theme-toggle-option {
     transition: none;
   }
 }
