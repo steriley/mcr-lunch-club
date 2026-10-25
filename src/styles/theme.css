@@ -354,54 +354,78 @@
   }
 }
 
-/* Light/dark toggle in both headers: a moon in light mode, a sun in dark. */
+/* Light/dark switch in both footers, which are navy in either theme. */
 .theme-toggle {
-  width: 42px;
-  height: 42px;
-  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border: 1px solid var(--color-hairline);
-  border-radius: 8px;
-  background: var(--color-card);
-  color: var(--color-deep-ink);
+  gap: 8px;
+  min-height: 32px;
+  padding: 4px 6px 4px 10px;
+  border: 1px solid var(--color-on-dark-rule);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-on-dark-soft);
+  font: 500 12px/1 "Plus Jakarta Sans", sans-serif;
   cursor: pointer;
-  transition: background-color 140ms ease, border-color 140ms ease;
+  transition: border-color 140ms ease, color 140ms ease;
 }
 
 .theme-toggle:hover {
-  border-color: var(--color-navy);
-  background: var(--color-parchment);
+  border-color: var(--color-on-dark-faint);
+  color: var(--color-on-dark);
 }
 
 .theme-toggle:focus-visible {
-  outline: 2px solid var(--color-navy);
+  outline: 2px solid var(--color-gold);
   outline-offset: 2px;
 }
 
-.theme-toggle svg {
-  width: 20px;
-  height: 20px;
+.theme-toggle-icon {
+  width: 15px;
+  height: 15px;
 }
 
-.theme-toggle-sun,
-:root[data-theme="dark"] .theme-toggle-moon {
-  display: none;
-}
-
-:root[data-theme="dark"] .theme-toggle-sun {
-  display: block;
-}
-
-/* The Chairs' Area header: a round toggle the height of its pill buttons. */
-.theme-toggle.is-compact {
-  width: 34px;
-  height: 34px;
+.theme-toggle-track {
+  position: relative;
+  width: 30px;
+  height: 18px;
   border-radius: 9999px;
+  background: var(--color-on-dark-rule);
+  transition: background-color 160ms ease;
 }
 
-.theme-toggle.is-compact svg {
-  width: 17px;
-  height: 17px;
+.theme-toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  background: var(--color-on-dark-soft);
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+
+.theme-toggle[aria-pressed="true"] .theme-toggle-track {
+  background: var(--color-gold);
+}
+
+.theme-toggle[aria-pressed="true"] .theme-toggle-knob {
+  background: var(--color-deep);
+  transform: translateX(12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle-track,
+  .theme-toggle-knob {
+    transition: none;
+  }
+}
+
+/* The Chairs' Area footer: a slim navy strip like the public footer's legal row. */
+.admin-footer {
+  margin-top: 32px;
+  border-top: 1px solid var(--color-on-dark-rule);
+  background: var(--color-deep);
+  color: var(--color-on-dark-faint);
+  font-size: 12px;
 }

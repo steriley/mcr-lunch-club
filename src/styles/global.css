@@ -65,11 +65,6 @@
   gap: 22px;
 }
 
-/* The nav and the theme toggle sit together on the right. */
-.site-header-inner > .site-nav {
-  margin-left: auto;
-}
-
 .brand-lockup {
   display: inline-flex;
   align-items: center;
@@ -392,6 +387,11 @@
 
 .footer-codex {
   align-content: start;
+}
+
+.footer-theme-toggle {
+  justify-self: start;
+  margin-top: 16px;
 }
 
 .footer-links {
@@ -1329,15 +1329,6 @@ button.bench-pillar-link {
     display: block;
     flex: 0 0 auto;
     margin-left: auto;
-  }
-
-  /* With the nav folded away, the toggle sits beside the menu button. */
-  .site-header-inner > .theme-toggle {
-    margin-left: auto;
-  }
-
-  .site-header-inner > .theme-toggle + .mobile-menu {
-    margin-left: 0;
   }
 
   .home-workspace-grid {

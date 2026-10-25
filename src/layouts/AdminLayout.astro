@@ -60,10 +60,7 @@ const navItems = ADMIN_NAV.map((item) => ({
           ))}
         </nav>
 
-        <div class="flex items-center gap-2">
-          <ThemeToggle class="is-compact" />
-          <AdminUserMenu client:load userName={user?.name || user?.email || 'Chair'} />
-        </div>
+        <AdminUserMenu client:load userName={user?.name || user?.email || 'Chair'} />
       </div>
 
       <nav class="border-t border-sand lg:hidden" aria-label={`${ADMIN_AREA_NAME} navigation`}>
@@ -86,5 +83,12 @@ const navItems = ADMIN_NAV.map((item) => ({
     <main id="admin-main" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <slot />
     </main>
+
+    <footer class="admin-footer">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
+        <span>MCR Lunch Club · {ADMIN_AREA_NAME}</span>
+        <ThemeToggle />
+      </div>
+    </footer>
   </body>
 </html>
