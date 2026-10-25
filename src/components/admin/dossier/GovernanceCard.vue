@@ -76,7 +76,7 @@ defineExpose({ openClose });
 
     <div class="flex flex-col items-start justify-between gap-3 rounded-lg border sm:flex-row sm:items-center border-[var(--dossier-danger)]/30 bg-[var(--dossier-field)] p-4">
       <div class="min-w-0 sm:flex-1">
-        <p class="text-sm font-semibold text-[var(--dossier-danger)]">Expunge venue record (purge)</p>
+        <p class="text-sm font-semibold text-danger-ink">Expunge venue record (purge)</p>
         <p class="mt-0.5 text-[13px] text-[var(--dossier-muted)]">Deletes {{ venueName }} and its inspections, motions and history permanently.</p>
       </div>
       <button type="button" class="dossier-btn is-danger-solid" :disabled="busy" @click="showExpunge = true">Expunge record</button>

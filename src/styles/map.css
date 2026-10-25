@@ -114,7 +114,7 @@
 }
 
 .ring-label {
-  background: rgb(17 30 71 / 88%);
+  background: color-mix(in srgb, var(--color-deep-ink) 88%, transparent);
   color: var(--color-parchment-fixed);
   font-size: 12px;
   font-weight: 700;
@@ -151,7 +151,7 @@
   width: 22px;
   height: 22px;
   border-radius: 9999px;
-  background: rgb(251 246 234 / 90%);
+  background: color-mix(in srgb, var(--color-parchment) 90%, transparent);
   color: var(--bench-primary);
   font-size: 16px;
   line-height: 20px;
@@ -273,4 +273,25 @@
 .venue-popup-button:focus-visible {
   outline: 2px solid var(--ledger-gold);
   outline-offset: 2px;
+}
+
+/* Leaflet's own controls are white; in dark mode they take the dark surfaces. */
+:root[data-theme="dark"] .leaflet-bar a,
+:root[data-theme="dark"] .leaflet-bar a:hover {
+  border-bottom-color: var(--color-hairline);
+  background-color: var(--color-surface);
+  color: var(--color-deep-ink);
+}
+
+:root[data-theme="dark"] .leaflet-bar {
+  border-color: var(--color-hairline);
+}
+
+:root[data-theme="dark"] .leaflet-control-attribution {
+  background: rgb(18 21 29 / 80%);
+  color: var(--color-graphite);
+}
+
+:root[data-theme="dark"] .leaflet-control-attribution a {
+  color: var(--color-navy);
 }

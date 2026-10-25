@@ -2,6 +2,7 @@
  * Map configuration constants for MCR Lunch Club.
  * Base coordinates, default zoom levels, tile layer specifications, and walking isochrones.
  */
+import { currentTheme, onThemeChange, type Theme } from '@/lib/theme';
 
 export const BASE_LAT = 53.478997;
 export const BASE_LNG = -2.252024;
@@ -16,15 +17,16 @@ export const BASE_LAT_LNG: [number, number] = [BASE_LAT, BASE_LNG];
 export const DEFAULT_ZOOM = 15;
 
 export interface TileLayerConfig {
-  getUrl: (apiKey?: string) => string;
+  getUrl: (apiKey?: string, theme?: Theme) => string;
   attribution: string;
   subdomains: string;
   maxZoom: number;
 }
 
+/** CARTO Voyager in light mode, CARTO Dark Matter in dark mode. */
 export const CARTO_VOYAGER_TILE_CONFIG: TileLayerConfig = {
-  getUrl: (apiKey?: string) =>
-    `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${
+  getUrl: (apiKey?: string, theme: Theme = 'light') =>
+    `https://{s}.basemaps.cartocdn.com/${theme === 'dark' ? 'dark_all' : 'rastertiles/voyager'}/{z}/{x}/{y}{r}.png${
       apiKey ? `?key=${encodeURIComponent(apiKey)}` : ''
     }`,
   attribution:
@@ -69,12 +71,16 @@ export const WALKING_ISOCHRONES: IsochroneRing[] = [
 ];
 
 /**
- * Helper to construct a standard Leaflet TileLayer instance using CARTO Voyager.
+ * A Leaflet tile layer on the CARTO basemap for the current theme. It swaps
+ * basemaps when the theme changes, and stops listening once it leaves the map.
  */
 export function createTileLayer(L: any, apiKey?: string): any {
-  return L.tileLayer(CARTO_VOYAGER_TILE_CONFIG.getUrl(apiKey), {
+  const layer = L.tileLayer(CARTO_VOYAGER_TILE_CONFIG.getUrl(apiKey, currentTheme()), {
     attribution: CARTO_VOYAGER_TILE_CONFIG.attribution,
     subdomains: CARTO_VOYAGER_TILE_CONFIG.subdomains,
     maxZoom: CARTO_VOYAGER_TILE_CONFIG.maxZoom,
   });
+  const unsubscribe = onThemeChange((theme) => layer.setUrl(CARTO_VOYAGER_TILE_CONFIG.getUrl(apiKey, theme)));
+  layer.on?.('remove', unsubscribe);
+  return layer;
 }

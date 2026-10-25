@@ -46,8 +46,8 @@ onBeforeUnmount(() => {
       aria-describedby="expunge-message"
       class="dossier w-full max-w-md rounded-2xl border-2 border-[var(--dossier-danger)]/50 bg-[var(--dossier-canvas)] p-6 shadow-xl"
     >
-      <p class="dossier-overline text-[var(--dossier-danger)]">Irrevocable purge</p>
-      <h3 id="expunge-title" class="mt-2 text-2xl font-bold text-[var(--dossier-danger)]">Expunge {{ venueName }}?</h3>
+      <p class="dossier-overline text-danger-ink">Irrevocable purge</p>
+      <h3 id="expunge-title" class="mt-2 text-2xl font-bold text-danger-ink">Expunge {{ venueName }}?</h3>
       <p id="expunge-message" class="mt-3 text-sm leading-6 text-[var(--dossier-muted)]">
         This deletes the venue and its inspections, tier motions and history for good. Linked Hall of Shame records are kept but unlinked.
         It cannot be undone. Mark it permanently closed instead if it might come back.

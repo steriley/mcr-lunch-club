@@ -229,7 +229,7 @@ const altFor = (image: SerializedVenueImage) => image.caption || props.venueName
             loading="lazy"
             decoding="async"
           />
-          <span v-if="image.isPrimary" class="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded bg-[var(--dossier-primary)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-parchment-fixed">
+          <span v-if="image.isPrimary" class="absolute left-1.5 top-1.5 inline-flex items-center gap-1 rounded bg-[var(--dossier-primary-fill)] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-parchment-fixed">
             <DossierIcon name="badge" :size="11" /> Primary
           </span>
         </div>
@@ -299,7 +299,7 @@ const altFor = (image: SerializedVenueImage) => image.caption || props.venueName
             <span
               :class="[
                 'inline-flex items-center gap-1 font-semibold',
-                item.status === 'done' ? 'text-[var(--dossier-green)]' : item.status === 'failed' ? 'text-[var(--dossier-danger)]' : 'text-[var(--dossier-muted)]',
+                item.status === 'done' ? 'text-success-ink' : item.status === 'failed' ? 'text-danger-ink' : 'text-[var(--dossier-muted)]',
               ]"
             >
               <DossierIcon v-if="item.status === 'done'" name="checkCircle" :size="13" />

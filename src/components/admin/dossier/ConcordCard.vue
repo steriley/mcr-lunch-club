@@ -72,7 +72,7 @@ async function press() {
     <div class="dossier-inset space-y-3 bg-[var(--dossier-field)]" role="status">
       <div class="flex items-center justify-between gap-2">
         <span class="dossier-overline">Quorum concordance</span>
-        <span :class="['dossier-figures text-xs font-bold', signatures === 2 ? 'text-[var(--dossier-green)]' : 'text-[var(--dossier-secondary)]']">
+        <span :class="['dossier-figures text-xs font-bold', signatures === 2 ? 'text-success-ink' : 'text-[var(--dossier-secondary)]']">
           {{ signatures }} / 2 affirmed
         </span>
       </div>
@@ -86,14 +86,14 @@ async function press() {
       <ul class="space-y-1.5 text-[13px]">
         <li class="flex items-center justify-between gap-2">
           <span class="flex min-w-0 items-center gap-2">
-            <DossierIcon :name="first ? 'checkCircle' : 'circle'" :size="16" :class="first ? 'text-[var(--dossier-green)]' : 'text-[var(--dossier-border)]'" />
+            <DossierIcon :name="first ? 'checkCircle' : 'circle'" :size="16" :class="first ? 'text-success-ink' : 'text-[var(--dossier-border)]'" />
             <span :class="first ? 'font-semibold' : 'text-[var(--dossier-muted)]'">{{ first?.firstAdminName ?? 'Awaiting first Chair' }}</span>
           </span>
           <span v-if="first" class="dossier-figures shrink-0 text-[11px] text-[var(--dossier-muted)]">{{ formatDateTime(first.firstAt) }}</span>
         </li>
         <li class="flex items-center justify-between gap-2">
           <span class="flex min-w-0 items-center gap-2">
-            <DossierIcon :name="status.confirmed ? 'checkCircle' : 'circle'" :size="16" :class="status.confirmed ? 'text-[var(--dossier-green)]' : 'text-[var(--dossier-border)]'" />
+            <DossierIcon :name="status.confirmed ? 'checkCircle' : 'circle'" :size="16" :class="status.confirmed ? 'text-success-ink' : 'text-[var(--dossier-border)]'" />
             <span :class="status.confirmed ? 'font-semibold' : 'text-[var(--dossier-muted)]'">
               {{ status.confirmed?.secondAdminName ?? 'Awaiting second Chair cosigner' }}
             </span>
@@ -116,8 +116,8 @@ async function press() {
             'flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2.5 text-[13px] font-semibold',
             chosenOutcome === option
               ? option === 'below_par'
-                ? 'border-[var(--dossier-danger)] text-[var(--dossier-danger)]'
-                : 'border-[var(--dossier-green)] text-[var(--dossier-green)]'
+                ? 'border-[var(--dossier-danger)] text-danger-ink'
+                : 'border-[var(--dossier-green)] text-success-ink'
               : 'border-[var(--dossier-border)] text-[var(--dossier-ink)]',
           ]"
         >
@@ -143,7 +143,7 @@ async function press() {
     <p v-else-if="state === 'waiting_for_other'" class="dossier-inset text-[13px] text-[var(--dossier-ink)]">
       You've signed today's visit<template v-if="recordedOutcome"> as {{ recordedOutcome.toLowerCase() }}</template>. Waiting for a different Chair to cosign before midnight.
     </p>
-    <p v-else class="flex items-center gap-2 rounded-lg border border-[var(--dossier-green)]/40 bg-success-tint px-3 py-2.5 text-[13px] font-semibold text-[var(--dossier-green)]">
+    <p v-else class="flex items-center gap-2 rounded-lg border border-[var(--dossier-green)]/40 bg-success-tint px-3 py-2.5 text-[13px] font-semibold text-success-ink">
       <DossierIcon name="checkCircle" :size="16" />
       {{ justConfirmed ? 'Inspection verified. Concord complete.' : 'Inspected and verified today.' }}
       <template v-if="recordedOutcome">Outcome: {{ recordedOutcome.toLowerCase() }}.</template>
@@ -153,7 +153,7 @@ async function press() {
 
     <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-[var(--dossier-border)] pt-3 text-[12px]">
       <span class="text-[var(--dossier-muted)]">Latest verified inspection</span>
-      <span :class="['italic', latest ? 'text-[var(--dossier-ink)]' : 'text-[var(--dossier-danger)]']">{{ latest ?? 'None on record' }}</span>
+      <span :class="['italic', latest ? 'text-[var(--dossier-ink)]' : 'text-danger-ink']">{{ latest ?? 'None on record' }}</span>
     </div>
   </DossierCard>
 </template>

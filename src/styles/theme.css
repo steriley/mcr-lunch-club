@@ -46,7 +46,7 @@
   --color-tier-rejected: #b92b27;
   --color-tier-rejected-edge: #8f201d;
   --color-tier-rejected-tint: #fdf0f0;
-  --color-tier-gone-but-not-forgotten: #71717a;
+  --color-tier-gone-but-not-forgotten: #6d6d76; /* white text 5.1:1; as text, 4.5:1+ on pale surfaces */
   --color-tier-gone-but-not-forgotten-edge: #52525b;
   --color-tier-gone-but-not-forgotten-tint: #f4f4f5;
 
@@ -166,6 +166,7 @@
   --color-navy-mist: #eef1fa;
   --color-hairline-strong: #b9ae94;
   --color-ash: #d6d3d1;
+  --color-mist: #e7e5e4;
   --color-taupe: #57534e;
 
   /*
@@ -182,9 +183,133 @@
   --color-ink-fixed: #1e1b17;
   --color-deep-ink: #111e47;
   --color-royal-ink: #001854;
+  --color-success-ink: #1e7a4e;
+  --color-danger-ink: #b92b27;
+  --color-danger-wash: #fdf0f0;
+  --color-success-wash: #e8f5ee;
+  --color-ochre-fixed: #8a5100;
+  --color-pending-ink: #973c00; /* Tailwind amber-800, kept dark on the amber-100 pending pill */
 
   /* Tailwind's stone-500 (#79716b) is 4.2:1 on the parchment backgrounds; this passes WCAG AA (5:1+). */
   --color-stone-500: #6b645e;
+}
+
+/*
+ * Dark mode. Surfaces, text, borders and the stone scale flip; brand fills
+ * (navy and deep panels, tier chips, -fixed tokens) and the pastel status
+ * badges keep their colours, so they read the same in both themes.
+ */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces, darkest (the page) to lightest. */
+  --color-parchment: #12151d;
+  --color-vellum: #161a24;
+  --color-paper: #181c26;
+  --color-ivory: #1a1e29;
+  --color-linen: #1b202c;
+  --color-surface: #1c212d;
+  --color-card: #1d2230;
+  --color-blush: #1d212c;
+  --color-cream: #222838;
+  --color-sand: #2a3040;
+  --color-map-placeholder: #20242e;
+
+  /* Text, strongest to quietest. */
+  --color-charcoal: #f2ede3;
+  --color-ink: #ece6da;
+  --color-coal: #e3ddd2;
+  --color-ink-soft: #e0d9cc;
+  --color-soot: #d4cdc1;
+  --color-graphite: #bdb6aa;
+  --color-muted: #b9bbc6;
+  --color-muted-soft: #aeb0bb;
+  --color-dim: #a4a6b1;
+  --color-hint: #a2a4af;
+  --color-subtle: #9c9ea9;
+
+  /* Borders. */
+  --color-hairline: #353b4d;
+  --color-hairline-strong: #4c5368;
+  --color-rule: #2e3445;
+
+  /* Accent text: lighter so it reads on dark surfaces. */
+  --color-navy: #9fb4f2;
+  --color-deep-ink: #c3d0f7;
+  --color-royal-ink: #b9c8f6;
+  --color-ochre: #f0b45c;
+  --color-bronze: #e9a94e;
+  --color-copper: #f2b25c;
+  --color-crimson: #f28b82;
+  --color-navy-tint: #1d2640;
+  --color-navy-mist: #1e2436;
+  --color-ochre-wash: #2b2316;
+  --color-map-boundary: #f87171;
+  --color-success-ink: #74d39c;
+  --color-danger-ink: #f4978e;
+  --color-danger-wash: #2a1a1d;
+  --color-success-wash: #1a3a2a;
+
+  /* Tailwind's alert-box shades (pale fill, mid border, dark text), turned over.
+     amber-100, amber-200 and blue-100 stay: they are text on dark fills. */
+  --color-red-50: #2a1719;
+  --color-red-100: #351c1e;
+  --color-red-200: #5c2b2e;
+  --color-red-300: #7d3a3e;
+  --color-red-700: #ff9d96;
+  --color-red-800: #ffb7b1;
+  --color-emerald-50: #10241c;
+  --color-emerald-100: #143026;
+  --color-emerald-200: #1f4a39;
+  --color-emerald-300: #2b6a52;
+  --color-emerald-700: #74e3b4;
+  --color-emerald-800: #93ecc8;
+  --color-amber-50: #2a2214;
+  --color-amber-300: #7c6331;
+  --color-amber-800: #fcd28a;
+  --color-blue-50: #141e33;
+  --color-blue-200: #2c3f66;
+  --color-blue-900: #c7d6ff;
+  --color-rose-50: #2a161c;
+  --color-rose-900: #ffc2cf;
+  --color-rose-950: #ffd6de;
+
+  /* Tailwind's stone scale, turned over. */
+  --color-stone-50: #1f1d1b;
+  --color-stone-100: #26231f;
+  --color-stone-200: #34302b;
+  --color-stone-300: #4a4540;
+  --color-stone-400: #6b655e;
+  --color-stone-500: #a39b92;
+  --color-stone-600: #b8b0a7;
+  --color-stone-700: #cec7bf;
+  --color-stone-800: #e2ddd6;
+  --color-stone-900: #f0ece6;
+  --color-stone-950: #faf8f5;
+
+  /* The weather card. */
+  --color-weather-surface: #1b2030;
+  --color-weather-border: #343a4b;
+  --color-weather-sunny: #241f17;
+  --color-weather-sunny-border: #4a3e25;
+  --color-weather-sunny-rule: #4a3e25;
+  --color-weather-sunny-tile: #2a2419;
+  --color-weather-sunny-icon: #f0b45c;
+  --color-weather-night: #1a2030;
+  --color-weather-night-border: #343d50;
+  --color-weather-night-tile: #20283a;
+  --color-weather-rain: #1b2226;
+  --color-weather-rain-border: #34433f;
+  --color-weather-storm: #261b1a;
+  --color-weather-storm-border: #4f3631;
+  --color-weather-snow: #1a2230;
+  --color-weather-snow-border: #344457;
+  --color-weather-ink: #dfe7f0;
+  --color-weather-body: #b8c2cc;
+  --color-weather-footer: #a3adb6;
+  --color-weather-muted: #98a2ab;
+  --color-weather-dry: #74d39c;
+  --color-weather-wet: #f39886;
 }
 
 @layer base {
@@ -199,7 +324,7 @@
     --ledger-border: var(--color-hairline);
     --ledger-green: var(--color-success);
     --bench-navy: var(--color-midnight);
-    --bench-primary: var(--color-royal);
+    --bench-primary: var(--color-royal-ink);
     --bench-peach: var(--color-peach);
     --bench-amber: var(--color-ochre);
     --bench-pillar: var(--color-blush);
@@ -227,4 +352,56 @@
     outline: 2px solid var(--ledger-navy);
     outline-offset: 2px;
   }
+}
+
+/* Light/dark toggle in both headers: a moon in light mode, a sun in dark. */
+.theme-toggle {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-hairline);
+  border-radius: 8px;
+  background: var(--color-card);
+  color: var(--color-deep-ink);
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.theme-toggle:hover {
+  border-color: var(--color-navy);
+  background: var(--color-parchment);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.theme-toggle-sun,
+:root[data-theme="dark"] .theme-toggle-moon {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-toggle-sun {
+  display: block;
+}
+
+/* The Chairs' Area header: a round toggle the height of its pill buttons. */
+.theme-toggle.is-compact {
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+}
+
+.theme-toggle.is-compact svg {
+  width: 17px;
+  height: 17px;
 }

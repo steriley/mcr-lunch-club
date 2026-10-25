@@ -31,7 +31,7 @@
                 {{ tier?.label }}
               </span>
             </div>
-            <p class="text-xs text-stone-200 italic font-serif-header">
+            <p class="text-xs text-mist italic font-serif-header">
               “{{ tier?.quote }}”
             </p>
           </div>
@@ -72,7 +72,7 @@
             <span class="text-xs font-sans tabular-nums font-bold text-gold uppercase tracking-wider block">
               Official Prize &bull; Manchester’s Lunch Star
             </span>
-            <span class="text-base text-stone-200 font-serif-header">
+            <span class="text-base text-mist font-serif-header">
               Awarded the official MCR Lunch Club Approved physical sticker by the Chairs.
             </span>
           </div>
