@@ -1737,8 +1737,9 @@ button.bench-pillar-link {
     border-color: var(--dossier-danger);
   }
 
-  .dossier-mono {
-    font-family: ui-monospace, "Fira Code", SFMono-Regular, Menlo, monospace;
+  .dossier-figures {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-variant-numeric: tabular-nums;
   }
 
   .dossier-hint {

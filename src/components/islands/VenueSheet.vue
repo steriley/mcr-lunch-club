@@ -69,7 +69,7 @@
             class="w-11 h-11 object-contain drop-shadow shrink-0"
           />
           <div class="text-xs">
-            <span class="text-xs font-mono font-bold text-gold uppercase tracking-wider block">
+            <span class="text-xs font-sans tabular-nums font-bold text-gold uppercase tracking-wider block">
               Official Prize &bull; Manchester’s Lunch Star
             </span>
             <span class="text-base text-stone-200 font-serif-header">
@@ -84,13 +84,13 @@
             <h2 id="venue-sheet-title" class="text-2xl font-bold font-serif-header text-ink leading-tight">
               {{ venue.name }}
             </h2>
-            <p class="text-xs text-stone-600 mt-1 flex items-center gap-2 font-mono">
+            <p class="text-xs text-stone-600 mt-1 flex items-center gap-2 font-sans tabular-nums">
               <span>📍 {{ venue.address || 'Central Manchester' }}</span>
             </p>
           </div>
 
           <div class="flex flex-col items-end">
-            <span class="text-lg font-mono font-bold text-navy bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
+            <span class="text-lg font-sans tabular-nums font-bold text-navy bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
               {{ venue.cost }}
             </span>
             <span class="text-xs text-stone-500 font-serif-header mt-1">
@@ -145,7 +145,7 @@
               class="p-2.5 rounded bg-white border border-hairline text-xs shadow-xs"
             >
               <div class="flex items-center justify-between text-xs border-b border-stone-100 pb-1 mb-1">
-                <span class="font-mono text-stone-600">{{ formatDate(insp.date) }}</span>
+                <span class="font-sans tabular-nums text-stone-600">{{ formatDate(insp.date) }}</span>
                 <div class="flex items-center gap-1">
                   <span
                     v-if="insp.outcome"

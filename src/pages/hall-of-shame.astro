@@ -24,7 +24,7 @@ const incidentsData = await getPublishedIncidents();
         <div class="flex items-center gap-3">
           <span class="text-4xl">⚖️</span>
           <div>
-            <span class="text-xs uppercase tracking-widest text-gold font-bold font-mono">
+            <span class="text-xs uppercase tracking-widest text-gold font-bold font-sans tabular-nums">
               Confidential Ledger &bull; Article 9.4
             </span>
             <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-parchment">
@@ -54,7 +54,7 @@ const incidentsData = await getPublishedIncidents();
       <div class="flex items-center justify-between border-b border-hairline pb-2">
         <h2 class="text-xl font-bold text-ink flex items-center gap-2">
           <span>Inscribed Incidents</span>
-          <span class="text-xs font-mono font-bold bg-navy text-white px-2 py-0.5 rounded">
+          <span class="text-xs font-sans tabular-nums font-bold bg-navy text-white px-2 py-0.5 rounded">
             {incidentsData.length} Documented Offense{incidentsData.length === 1 ? '' : 's'}
           </span>
         </h2>
@@ -77,7 +77,7 @@ const incidentsData = await getPublishedIncidents();
               <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 pb-3 font-serif-header">
                 <div>
                   <div class="flex items-center gap-2">
-                    <span class="text-xs font-mono font-bold text-stone-500 block">
+                    <span class="text-xs font-sans tabular-nums font-bold text-stone-500 block">
                       Logged: {inc.formattedDate || inc.date}
                     </span>
                     {inc.location && (
@@ -93,7 +93,7 @@ const incidentsData = await getPublishedIncidents();
 
                 <div class="text-right">
                   <span class="text-xs text-stone-500 uppercase tracking-wider block font-sans">Illicit Value</span>
-                  <span class="text-sm font-bold font-mono text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+                  <span class="text-sm font-bold font-sans tabular-nums text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
                     {inc.value}
                   </span>
                 </div>
@@ -103,11 +103,11 @@ const incidentsData = await getPublishedIncidents();
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-base bg-paper p-3 rounded-xl border border-hairline">
                 <div>
                   <span class="font-bold text-stone-700 font-serif-header block">People Involved:</span>
-                  <span class="text-stone-900 font-mono font-semibold">{inc.peopleInvolved.join(' & ')}</span>
+                  <span class="text-stone-900 font-sans tabular-nums font-semibold">{inc.peopleInvolved.join(' & ')}</span>
                 </div>
                 <div>
                   <span class="font-bold text-stone-700 font-serif-header block">Witnesses:</span>
-                  <span class="text-stone-900 font-mono font-semibold">{inc.witnesses.join(', ')}</span>
+                  <span class="text-stone-900 font-sans tabular-nums font-semibold">{inc.witnesses.join(', ')}</span>
                 </div>
               </div>
 

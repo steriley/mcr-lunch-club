@@ -70,7 +70,7 @@
 
           <div>
             <label for="suggest-cost" class="block font-semibold mb-1 text-xs">Expected cost</label>
-            <select id="suggest-cost" v-model="form.cost" class="suggest-input font-mono font-bold">
+            <select id="suggest-cost" v-model="form.cost" class="suggest-input font-sans tabular-nums font-bold">
               <option value="£">£ (under £10)</option>
               <option value="££">££ (above £10)</option>
               <option value="£££">£££ (payday treat)</option>

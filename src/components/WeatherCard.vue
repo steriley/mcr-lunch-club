@@ -455,7 +455,8 @@ onMounted(async () => {
   padding-bottom: 16px;
   border-bottom: 1px solid rgb(12 35 64 / 12%);
   color: #0c2340;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-variant-numeric: tabular-nums;
 }
 
 .weather-card-brand {
@@ -573,7 +574,8 @@ onMounted(async () => {
   padding-top: 16px;
   border-top: 1px solid rgb(12 35 64 / 12%);
   color: #6c747c;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
 }
 
