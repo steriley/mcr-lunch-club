@@ -99,6 +99,75 @@
   --color-coal: #2d2d2d;
   --color-saffron: #f5c451;
 
+  /* Plain white and black, defined here so component styles (which Tailwind does not scan) can rely on them. */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* Map overlays: walking rings, the 2.5-mile boundary and the user's position. Leaflet reads these through themeColor(). */
+  --color-map-ring-5: #059669;
+  --color-map-ring-10: #d97706;
+  --color-map-ring-15: #2563eb;
+  --color-map-ring-20: #7c3aed;
+  --color-map-ring-25: #e11d48;
+  --color-map-boundary: #991b1b;
+  --color-map-you: #2563eb;
+  --color-map-you-manual: #9333ea;
+  --color-map-you-manual-ink: #7e22ce;
+  --color-map-placeholder: #e2dfd8;
+
+  /* The weather card: a surface and border per condition, and its own ink. */
+  --color-weather-surface: #f7f3e8;
+  --color-weather-border: #dfdac9;
+  --color-weather-sunny: #faf4e3;
+  --color-weather-sunny-border: #ebdcb5;
+  --color-weather-sunny-rule: #e2d5bc;
+  --color-weather-sunny-tile: #fdfcf7;
+  --color-weather-sunny-icon: #c97a14;
+  --color-weather-night: #eceff2;
+  --color-weather-night-border: #cfd7de;
+  --color-weather-night-tile: #fdfdfd;
+  --color-weather-rain: #f2f4f2;
+  --color-weather-rain-border: #d4deda;
+  --color-weather-storm: #faede8;
+  --color-weather-storm-border: #ecc9be;
+  --color-weather-snow: #f2f7fb;
+  --color-weather-snow-border: #d5e5f2;
+  --color-weather-ink: #0c2340;
+  --color-weather-body: #47525d;
+  --color-weather-footer: #6c747c;
+  --color-weather-muted: #7a8288;
+  --color-weather-dry: #1c6b44;
+  --color-weather-wet: #a63a2a;
+
+  /* Near Me: alert washes, the dark status pills and the map controls. */
+  --color-alert-warning: #fff1d6;
+  --color-alert-warning-ink: #543300;
+  --color-alert-error: #fbe9e7;
+  --color-alert-error-ink: #7b1f1a;
+  --color-alert-manual: #f2e8f5;
+  --color-alert-manual-ink: #51265b;
+  --color-pill-warning-edge: #d97706;
+  --color-pill-warning-text: #fef3c7;
+  --color-pill-error-edge: #dc2626;
+  --color-pill-error-text: #fee2e2;
+  --color-pill-manual-edge: #a855f7;
+  --color-pill-manual-text: #f3e8ff;
+  --color-control-active: #1d4ed8;
+  --color-control-active-edge: #93c5fd;
+  --color-signal-red: #b91c1c;
+  --color-gold-soft: #ffb454;
+  --color-on-dark-cool: #d0d6e5;
+  --color-on-dark-grey: #d1d5db;
+  --color-on-dark-dim: #9ca3af;
+
+  /* Filters and chips. */
+  --color-ochre-wash: #fff4e5;
+  --color-hint: #757681;
+  --color-navy-mist: #eef1fa;
+  --color-hairline-strong: #b9ae94;
+  --color-ash: #d6d3d1;
+  --color-taupe: #57534e;
+
   /* Tailwind's stone-500 (#79716b) is 4.2:1 on the parchment backgrounds; this passes WCAG AA (5:1+). */
   --color-stone-500: #6b645e;
 }

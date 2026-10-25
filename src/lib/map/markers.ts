@@ -3,6 +3,7 @@ import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES } from './config';
 import { tierInfo } from '@/lib/tiers';
 import { milesText, walkText } from '@/lib/route-display';
 import { focalStyle } from '@/lib/image-upload';
+import { themeColor } from '@/lib/theme-color';
 import { getWalkingDirectionsUrl } from './directions';
 
 /** What a screen reader announces for a pin: the cost badge alone ("££") says nothing. */
@@ -25,7 +26,7 @@ export function createVenueIconHtml(venue: Venue, rank?: number): string {
   return `
     <div class="group relative cursor-pointer transform transition-transform duration-200 hover:scale-125 hover:z-[9999]" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));">
       <div class="flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shadow-md border-2"
-           style="background-color: ${tier.color}; border-color: ${tier.border}; color: #ffffff;">
+           style="background-color: ${tier.color}; border-color: ${tier.border}; color: var(--color-white);">
         <span aria-hidden="true">${escapeHtml(badgeText)}</span>
       </div>
       <span class="sr-only">${escapeHtml(venuePinLabel(venue))}</span>
@@ -96,12 +97,13 @@ export function createBaseMarker(L: any): any {
  */
 export function createWalkingIsochrones(L: any): any[] {
   return WALKING_ISOCHRONES.map((ring) => {
+    const color = themeColor(ring.colorToken);
     return L.circle([BASE_LAT, BASE_LNG], {
       radius: ring.radius,
-      color: ring.color,
+      color,
       weight: ring.weight || 1.4,
       dashArray: ring.dash,
-      fillColor: ring.color,
+      fillColor: color,
       fillOpacity: 0.02,
       interactive: false,
     });

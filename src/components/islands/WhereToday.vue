@@ -265,7 +265,7 @@ function openDetails(venue: Venue) {
 .oracle-label {
   display: block;
   margin-bottom: 8px;
-  color: #8a5100;
+  color: var(--color-ochre);
   font: 700 11px/1.35 "Plus Jakarta Sans", sans-serif;
   letter-spacing: .09em;
   text-transform: uppercase;
@@ -277,7 +277,7 @@ function openDetails(venue: Venue) {
   height: 32px;
   place-items: center;
   border-radius: 999px;
-  color: #d6d3d1;
+  color: var(--color-ash);
   font-size: 16px;
   cursor: pointer;
   transition: background-color 140ms ease, color 140ms ease;
@@ -286,40 +286,40 @@ function openDetails(venue: Venue) {
 .oracle-close:hover,
 .oracle-close:focus-visible {
   background: rgb(255 255 255 / 12%);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .oracle-close:focus-visible {
-  outline: 2px solid #F29A2E;
+  outline: 2px solid var(--color-gold);
   outline-offset: 1px;
 }
 
 .oracle-option {
   padding: 8px 6px;
-  border: 1px solid #D9CFB8;
+  border: 1px solid var(--color-hairline);
   border-radius: 10px;
-  background: #fff;
-  color: #454650;
+  background: var(--color-white);
+  color: var(--color-muted);
   text-align: center;
   cursor: pointer;
   transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
 }
 
 .oracle-option:hover:not(.is-selected) {
-  border-color: #1B2F6B;
-  color: #1e1b17;
+  border-color: var(--color-navy);
+  color: var(--color-ink);
 }
 
 .oracle-option.is-selected {
-  border-color: #111E47;
-  background: #111E47;
-  color: #FBF6EA;
+  border-color: var(--color-deep);
+  background: var(--color-deep);
+  color: var(--color-parchment);
   box-shadow: 0 1px 3px rgb(17 30 71 / 35%);
 }
 
 .oracle-option:focus-visible,
 .oracle-cta:focus-visible {
-  outline: 2px solid #1B2F6B;
+  outline: 2px solid var(--color-navy);
   outline-offset: 2px;
 }
 
@@ -331,8 +331,8 @@ function openDetails(venue: Venue) {
   gap: 8px;
   padding: 12px 16px;
   border-radius: 12px;
-  background: #111E47;
-  color: #FBF6EA;
+  background: var(--color-deep);
+  color: var(--color-parchment);
   font: 700 14px/1.3 "Playfair Display", Georgia, serif;
   box-shadow: 0 2px 6px rgb(17 30 71 / 30%);
   cursor: pointer;
@@ -340,7 +340,7 @@ function openDetails(venue: Venue) {
 }
 
 .oracle-cta:hover:not(:disabled) {
-  background: #1B2F6B;
+  background: var(--color-navy);
 }
 
 .oracle-cta:active:not(:disabled) {
@@ -356,15 +356,15 @@ function openDetails(venue: Venue) {
 .oracle-result {
   position: relative;
   padding: 16px;
-  border: 1px solid #D9CFB8;
+  border: 1px solid var(--color-hairline);
   border-radius: 12px;
-  background: #fff;
+  background: var(--color-white);
   box-shadow: 0 4px 10px rgb(22 19 15 / 8%);
   transition: border-color 140ms ease, box-shadow 140ms ease;
 }
 
 .oracle-result:hover {
-  border-color: #1B2F6B;
+  border-color: var(--color-navy);
   box-shadow: 0 6px 14px rgb(22 19 15 / 12%);
 }
 
@@ -388,7 +388,7 @@ function openDetails(venue: Venue) {
 }
 
 .oracle-result-link:focus-visible::after {
-  outline: 2px solid #1B2F6B;
+  outline: 2px solid var(--color-navy);
   outline-offset: 2px;
 }
 

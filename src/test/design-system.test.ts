@@ -46,13 +46,18 @@ describe('design system', () => {
     }
   });
 
-  it('keeps raw hex in the stylesheets to the token definitions', () => {
-    for (const name of readdirSync(path.join(SRC, 'styles')).filter((file) => file.endsWith('.css'))) {
-      let css = readFileSync(path.join(SRC, 'styles', name), 'utf8');
-      // The tokens themselves are the one place hex belongs.
-      if (name === 'theme.css') css = css.slice(css.indexOf('@layer base'));
-      const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, '');
-      assert.deepEqual(withoutComments.match(/#[0-9a-f]{3,8}\b/gi) ?? [], [], `${name}: raw hex outside @theme: add a token instead`);
+  it('keeps raw hex to the token definitions', () => {
+    // The tokens themselves are the one place hex belongs, apart from theme-color
+    // meta tags, which browsers read before any CSS loads.
+    const hex = /(?<![&\w])#(?:[0-9a-f]{6}|[0-9a-f]{3})\b/i;
+    for (const file of sourceFiles(SRC)) {
+      let text = readFileSync(file, 'utf8');
+      if (path.basename(file) === 'theme.css') text = text.slice(text.indexOf('@layer base'));
+      text = text.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '));
+      text.split('\n').forEach((line, index) => {
+        if (line.includes('name="theme-color"') || /^\s*\/\//.test(line)) return;
+        assert.ok(!hex.test(line), `${path.relative(SRC, file)}:${index + 1} has a raw hex colour: use a token (src/styles/theme.css)`);
+      });
     }
   });
 });

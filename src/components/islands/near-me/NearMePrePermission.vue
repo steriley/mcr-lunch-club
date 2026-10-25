@@ -69,13 +69,13 @@ defineProps<{ visible: boolean }>();
   font-family: "Playfair Display", Georgia, serif;
   font-size: 1rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--color-white);
   margin: 0;
 }
 
 .near-me-prepermission-text {
   font-size: 0.78rem;
-  color: #d1d5db;
+  color: var(--color-on-dark-grey);
   line-height: 1.5;
   margin: 0;
 }

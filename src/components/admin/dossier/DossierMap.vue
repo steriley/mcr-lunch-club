@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { CircleMarker, Map as LeafletMap, Polyline } from 'leaflet';
 import DossierIcon from './DossierIcon.vue';
 import { BASE_LAT_LNG, createTileLayer } from '@/lib/map/config';
+import { themeColor } from '@/lib/theme-color';
 
 /**
  * A small, static map from HQ (Crown Square, Spinningfields) to the venue.
@@ -27,8 +28,8 @@ function draw() {
     return;
   }
   const venue: [number, number] = [props.lat, props.lng];
-  axis = leaflet.polyline([BASE_LAT_LNG, venue], { color: '#8A5100', weight: 3, dashArray: '6 6' }).addTo(map);
-  venueMarker = leaflet.circleMarker(venue, { radius: 8, color: '#FBF6EA', weight: 2, fillColor: '#FFA538', fillOpacity: 1 }).addTo(map);
+  axis = leaflet.polyline([BASE_LAT_LNG, venue], { color: themeColor('ochre'), weight: 3, dashArray: '6 6' }).addTo(map);
+  venueMarker = leaflet.circleMarker(venue, { radius: 8, color: themeColor('parchment'), weight: 2, fillColor: themeColor('gold-bright'), fillOpacity: 1 }).addTo(map);
   map.fitBounds(leaflet.latLngBounds([BASE_LAT_LNG, venue]), { padding: [28, 28], maxZoom: 16 });
 }
 
@@ -46,7 +47,7 @@ onMounted(async () => {
     touchZoom: false,
   });
   createTileLayer(leaflet, props.apiKey).addTo(map);
-  leaflet.circleMarker(BASE_LAT_LNG, { radius: 7, color: '#FBF6EA', weight: 2, fillColor: '#1B2F6B', fillOpacity: 1 }).addTo(map);
+  leaflet.circleMarker(BASE_LAT_LNG, { radius: 7, color: themeColor('parchment'), weight: 2, fillColor: themeColor('navy'), fillOpacity: 1 }).addTo(map);
   draw();
 });
 

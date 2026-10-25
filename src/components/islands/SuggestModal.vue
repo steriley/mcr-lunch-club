@@ -211,20 +211,20 @@ async function submitPetition() {
 <style scoped>
 .suggest-input {
   width: 100%;
-  background-color: #ffffff;
-  border: 1px solid #dcd6c8;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-rule);
   border-radius: 0.375rem;
   padding: 0.5rem;
   font-size: 16px; /* 16px stops iOS Safari zooming into the field. */
 }
 
 .suggest-input[aria-invalid='true'] {
-  border-color: #b92b27;
+  border-color: var(--color-danger);
 }
 
 .suggest-error {
   margin-top: 0.25rem;
   font-size: 0.75rem;
-  color: #b92b27;
+  color: var(--color-danger);
 }
 </style>

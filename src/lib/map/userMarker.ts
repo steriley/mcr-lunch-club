@@ -1,3 +1,4 @@
+import { themeColor } from '@/lib/theme-color';
 import type { UserPosition } from './useGeolocation';
 
 export interface UserMarkerLayers {
@@ -13,8 +14,8 @@ export function createUserMarkerLayers(
   pos: UserPosition,
   isManual = false
 ): UserMarkerLayers {
-  const fillColor = isManual ? '#9333ea' : '#2563eb';
-  const strokeColor = '#ffffff';
+  const fillColor = themeColor(isManual ? 'map-you-manual' : 'map-you');
+  const strokeColor = themeColor('white');
 
   // Pulsing / distinct outer halo via divIcon or styled circleMarker
   const accuracyCircle = L.circle([pos.lat, pos.lng], {
@@ -37,8 +38,8 @@ export function createUserMarkerLayers(
   });
 
   const tooltipText = isManual
-    ? '<b>Your Location</b><br/><span style="color:#7e22ce;">Manually set</span>'
-    : `<b>Your Location</b><br/><span style="color:#2563eb;">GPS fix (±${Math.round(pos.accuracy)}m)</span>`;
+    ? '<b>Your Location</b><br/><span style="color:var(--color-map-you-manual-ink);">Manually set</span>'
+    : `<b>Your Location</b><br/><span style="color:var(--color-map-you);">GPS fix (±${Math.round(pos.accuracy)}m)</span>`;
 
   marker.bindTooltip(tooltipText, {
     direction: 'top',

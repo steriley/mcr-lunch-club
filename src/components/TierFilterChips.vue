@@ -63,8 +63,8 @@ onMounted(() => {
   scrollbar-width: none;
   /* The fades hint that more tiers sit off-screen; the padding keeps it over empty space when every chip fits. */
   padding-right: 24px;
-  mask-image: linear-gradient(to right, transparent, #000 var(--fade-left, 0px), #000 calc(100% - 24px), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fade-left, 0px), #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(to right, transparent, var(--color-black) var(--fade-left, 0px), var(--color-black) calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, var(--color-black) var(--fade-left, 0px), var(--color-black) calc(100% - 24px), transparent);
 }
 
 .tier-filter-chips::-webkit-scrollbar {

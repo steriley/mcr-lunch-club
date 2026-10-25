@@ -415,35 +415,35 @@ onMounted(async () => {
   flex-direction: column;
   min-width: 0;
   padding: 20px;
-  border: 1px solid #dfdac9;
+  border: 1px solid var(--color-weather-border);
   border-radius: 16px;
-  background: #f7f3e8;
+  background: var(--color-weather-surface);
   box-shadow: 0 1px 3px rgb(0 0 0 / 4%), 0 1px 2px rgb(0 0 0 / 2%);
 }
 
 .weather-card.theme-sunny {
-  border-color: #ebdcb5;
-  background: #faf4e3;
+  border-color: var(--color-weather-sunny-border);
+  background: var(--color-weather-sunny);
 }
 
 .weather-card.theme-night {
-  border-color: #cfd7de;
-  background: #eceff2;
+  border-color: var(--color-weather-night-border);
+  background: var(--color-weather-night);
 }
 
 .weather-card.theme-rain {
-  border-color: #d4deda;
-  background: #f2f4f2;
+  border-color: var(--color-weather-rain-border);
+  background: var(--color-weather-rain);
 }
 
 .weather-card.theme-storm {
-  border-color: #ecc9be;
-  background: #faede8;
+  border-color: var(--color-weather-storm-border);
+  background: var(--color-weather-storm);
 }
 
 .weather-card.theme-snow {
-  border-color: #d5e5f2;
-  background: #f2f7fb;
+  border-color: var(--color-weather-snow-border);
+  background: var(--color-weather-snow);
 }
 
 .weather-card-header {
@@ -454,7 +454,7 @@ onMounted(async () => {
   gap: 8px;
   padding-bottom: 16px;
   border-bottom: 1px solid rgb(12 35 64 / 12%);
-  color: #0c2340;
+  color: var(--color-weather-ink);
   font-family: "Plus Jakarta Sans", sans-serif;
   font-variant-numeric: tabular-nums;
 }
@@ -487,13 +487,13 @@ onMounted(async () => {
 }
 
 .theme-sunny .weather-header-icon {
-  color: #c97a14;
+  color: var(--color-weather-sunny-icon);
 }
 
 .weather-card-window {
   flex: 0 0 auto;
   margin-left: auto;
-  color: #7a8288;
+  color: var(--color-weather-muted);
   font-size: 9px;
   white-space: nowrap;
 }
@@ -515,7 +515,7 @@ onMounted(async () => {
   border: 1px solid rgb(12 35 64 / 14%);
   border-radius: 12px;
   background: rgb(255 255 255 / 65%);
-  color: #0c2340;
+  color: var(--color-weather-ink);
 }
 
 .weather-condition-icon {
@@ -540,7 +540,7 @@ onMounted(async () => {
 .weather-current-copy h3,
 .weather-card-state h3 {
   margin: 0;
-  color: #0c2340;
+  color: var(--color-weather-ink);
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   font-size: 17px;
   font-weight: 700;
@@ -548,20 +548,20 @@ onMounted(async () => {
 }
 
 .weather-current-copy h3 span {
-  color: #7a8288;
+  color: var(--color-weather-muted);
   font-weight: 400;
 }
 
 .weather-current-copy p,
 .weather-card-state p {
   margin: 4px 0 0;
-  color: #47525d;
+  color: var(--color-weather-body);
   font-size: 14px;
   line-height: 1.5;
 }
 
 .weather-state-mark {
-  color: #0c2340;
+  color: var(--color-weather-ink);
   font-size: 26px;
   line-height: 1;
 }
@@ -573,54 +573,54 @@ onMounted(async () => {
   gap: 8px;
   padding-top: 16px;
   border-top: 1px solid rgb(12 35 64 / 12%);
-  color: #6c747c;
+  color: var(--color-weather-footer);
   font-family: "Plus Jakarta Sans", sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 12px;
 }
 
 .weather-rain {
-  color: #1c6b44;
+  color: var(--color-weather-dry);
   font-weight: 600;
 }
 
 .weather-rain.is-warning {
-  color: #a63a2a;
+  color: var(--color-weather-wet);
 }
 
 .theme-sunny .weather-card-header,
 .theme-sunny .weather-card-footer {
-  border-color: #e2d5bc;
+  border-color: var(--color-weather-sunny-rule);
 }
 
 .theme-sunny .weather-icon-tile {
-  border-color: #e2d5bc;
-  background: #fdfcf7;
+  border-color: var(--color-weather-sunny-rule);
+  background: var(--color-weather-sunny-tile);
 }
 
 .theme-night .weather-card-header,
 .theme-night .weather-card-footer {
-  border-color: #cfd7de;
+  border-color: var(--color-weather-night-border);
 }
 
 .theme-night .weather-icon-tile {
-  border-color: #cfd7de;
-  background: #fdfdfd;
+  border-color: var(--color-weather-night-border);
+  background: var(--color-weather-night-tile);
 }
 
 .theme-rain .weather-card-header,
 .theme-rain .weather-card-footer {
-  border-color: #d4deda;
+  border-color: var(--color-weather-rain-border);
 }
 
 .theme-storm .weather-card-header,
 .theme-storm .weather-card-footer {
-  border-color: #ecc9be;
+  border-color: var(--color-weather-storm-border);
 }
 
 .theme-snow .weather-card-header,
 .theme-snow .weather-card-footer {
-  border-color: #d5e5f2;
+  border-color: var(--color-weather-snow-border);
 }
 
 @keyframes weather-spin {

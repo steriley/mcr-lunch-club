@@ -20,7 +20,7 @@ describe('createUserMarkerLayers', () => {
   it('draws a blue GPS marker with the rounded accuracy', () => {
     const { L } = fakeLeaflet();
     const { marker, accuracyCircle } = createUserMarkerLayers(L, { lat: 53.48, lng: -2.24, accuracy: 24.6 });
-    assert.equal(marker.options.fillColor, '#2563eb');
+    assert.equal(marker.options.fillColor, 'var(--color-map-you)');
     assert.equal(accuracyCircle.options.radius, 24.6);
     assert.ok(marker.tooltip.html.includes('GPS fix (±25m)'));
   });
@@ -34,7 +34,7 @@ describe('createUserMarkerLayers', () => {
   it('uses the purple manual styling when the position was set by hand', () => {
     const { L } = fakeLeaflet();
     const { marker, accuracyCircle } = createUserMarkerLayers(L, { lat: 1, lng: 2, accuracy: 50 }, true);
-    assert.equal(marker.options.fillColor, '#9333ea');
+    assert.equal(marker.options.fillColor, 'var(--color-map-you-manual)');
     assert.equal(accuracyCircle.options.dashArray, '4, 4');
     assert.ok(marker.tooltip.html.includes('Manually set'));
   });

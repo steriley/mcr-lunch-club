@@ -220,8 +220,8 @@ function resetAll() {
 
 <style>
 .ledger-filters {
-  border-bottom: 1px solid #D9CFB8;
-  background: #F3ECDB;
+  border-bottom: 1px solid var(--color-hairline);
+  background: var(--color-card);
   box-shadow: 0 2px 8px rgb(22 19 15 / 5%);
 }
 
@@ -252,25 +252,25 @@ function resetAll() {
   width: 38px;
   height: 32px;
   padding: 0 4px;
-  border: 1px solid #D9CFB8;
+  border: 1px solid var(--color-hairline);
   border-radius: 7px;
-  background: #F7F0DF;
-  color: #454650;
+  background: var(--color-paper);
+  color: var(--color-muted);
   cursor: pointer;
 }
 
 .ledger-secondary-toggle:hover,
 .ledger-secondary-toggle[aria-expanded="true"] {
-  border-color: #1B2F6B;
-  background: #fff8f3;
-  color: #1B2F6B;
+  border-color: var(--color-navy);
+  background: var(--color-on-dark);
+  color: var(--color-navy);
 }
 
 .ledger-secondary-toggle:focus-visible,
 .ledger-select:focus-visible,
 .ledger-cost-button:focus-visible,
 .ledger-reset-button:focus-visible {
-  outline: 2px solid #1B2F6B;
+  outline: 2px solid var(--color-navy);
   outline-offset: 2px;
 }
 
@@ -299,8 +299,8 @@ function resetAll() {
   place-items: center;
   padding-inline: 3px;
   border-radius: 999px;
-  background: #1B2F6B;
-  color: #fff;
+  background: var(--color-navy);
+  color: var(--color-white);
   font-size: 9px;
   font-weight: 700;
   line-height: 1;
@@ -312,9 +312,9 @@ function resetAll() {
   flex-direction: column;
   gap: 12px;
   padding: 12px 14px 14px;
-  border: 1px solid #D9CFB8;
+  border: 1px solid var(--color-hairline);
   border-radius: 12px;
-  background: #FBF6EA;
+  background: var(--color-parchment);
   box-shadow: 0 6px 18px rgb(22 19 15 / 8%);
 }
 
@@ -351,7 +351,7 @@ function resetAll() {
   align-items: center;
   gap: 7px;
   margin: 0;
-  color: #8a5100;
+  color: var(--color-ochre);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .055em;
@@ -363,15 +363,15 @@ function resetAll() {
   flex: 0 0 17px;
   width: 17px;
   height: 17px;
-  color: #9a5a00;
+  color: var(--color-bronze);
 }
 
 .ledger-reset-button {
   padding: 4px 11px;
-  border: 1px solid #D9CFB8;
+  border: 1px solid var(--color-hairline);
   border-radius: 999px;
-  background: #fff;
-  color: #8a5100;
+  background: var(--color-white);
+  color: var(--color-ochre);
   font: 700 12px/1.2 "Plus Jakarta Sans", sans-serif;
   white-space: nowrap;
   cursor: pointer;
@@ -379,8 +379,8 @@ function resetAll() {
 }
 
 .ledger-reset-button:hover {
-  border-color: #8a5100;
-  background: #fff4e5;
+  border-color: var(--color-ochre);
+  background: var(--color-ochre-wash);
 }
 
 .ledger-search-wrap {
@@ -393,26 +393,26 @@ function resetAll() {
   width: 100%;
   min-height: 44px;
   padding: 10px 76px 10px 42px;
-  border: 1px solid #D9CFB8;
+  border: 1px solid var(--color-hairline);
   border-radius: 10px;
-  background: #fff;
+  background: var(--color-white);
   box-shadow: inset 0 1px 2px rgb(22 19 15 / 5%);
-  color: #1e1b17;
+  color: var(--color-ink);
   font: 500 13px/1.45 "Plus Jakarta Sans", sans-serif;
   transition: border-color 140ms ease, box-shadow 140ms ease;
 }
 
 .ledger-search-input::placeholder {
-  color: #757681;
+  color: var(--color-hint);
   opacity: 1;
 }
 
 .ledger-search-input:hover {
-  border-color: #1B2F6B;
+  border-color: var(--color-navy);
 }
 
 .ledger-search-input:focus {
-  border-color: #1B2F6B;
+  border-color: var(--color-navy);
   outline: none;
   box-shadow: 0 0 0 3px rgb(242 154 46 / 30%);
 }
@@ -426,7 +426,7 @@ function resetAll() {
   left: 14px;
   width: 17px;
   height: 17px;
-  stroke: #1B2F6B;
+  stroke: var(--color-navy);
   stroke-width: 2;
   pointer-events: none;
 }
@@ -435,11 +435,11 @@ function resetAll() {
   position: absolute;
   right: 10px;
   padding: 2px 7px;
-  border: 1px solid #D9CFB8;
+  border: 1px solid var(--color-hairline);
   border-bottom-width: 2px;
   border-radius: 5px;
-  background: #F7F0DF;
-  color: #454650;
+  background: var(--color-paper);
+  color: var(--color-muted);
   font: 700 11px/1.5 "Plus Jakarta Sans", sans-serif;
 }
 
@@ -468,7 +468,7 @@ function resetAll() {
 }
 
 .ledger-filter-label {
-  color: #8a5100;
+  color: var(--color-ochre);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: .09em;
@@ -480,9 +480,9 @@ function resetAll() {
   display: flex;
   gap: 2px;
   padding: 3px;
-  border: 1px solid #D9CFB8;
+  border: 1px solid var(--color-hairline);
   border-radius: 10px;
-  background: #F3ECDB;
+  background: var(--color-card);
 }
 
 .ledger-cost-button {
@@ -492,20 +492,20 @@ function resetAll() {
   border: 0;
   border-radius: 7px;
   background: transparent;
-  color: #454650;
+  color: var(--color-muted);
   font: 700 13px/1.2 "Plus Jakarta Sans", sans-serif;
   cursor: pointer;
   transition: background-color 140ms ease, color 140ms ease;
 }
 
 .ledger-cost-button:hover:not(.is-selected) {
-  color: #1e1b17;
-  background: #fff;
+  color: var(--color-ink);
+  background: var(--color-white);
 }
 
 .ledger-cost-button.is-selected {
-  background: #111E47;
-  color: #FBF6EA;
+  background: var(--color-deep);
+  color: var(--color-parchment);
   box-shadow: 0 1px 3px rgb(17 30 71 / 35%);
 }
 
@@ -513,29 +513,29 @@ function resetAll() {
   width: 100%;
   min-height: 38px;
   padding: 6px 34px 6px 12px;
-  border: 1px solid #D9CFB8;
+  border: 1px solid var(--color-hairline);
   border-radius: 10px;
   appearance: none;
-  background-color: #fff;
+  background-color: var(--color-white);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%231B2F6B' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 6 5 5 5-5'/%3E%3C/svg%3E");
   background-position: right 12px center;
   background-repeat: no-repeat;
   background-size: 12px;
-  color: #1e1b17;
+  color: var(--color-ink);
   font: 600 13px/1.2 "Plus Jakarta Sans", sans-serif;
   cursor: pointer;
   transition: border-color 140ms ease, background-color 140ms ease;
 }
 
 .ledger-select:hover {
-  border-color: #1B2F6B;
+  border-color: var(--color-navy);
 }
 
 /* A control that has moved off its default is picked out, so active filters are easy to spot. */
 .ledger-select.is-active {
-  border-color: #1B2F6B;
-  background-color: #eef1fa;
-  box-shadow: inset 0 0 0 1px #1B2F6B;
+  border-color: var(--color-navy);
+  background-color: var(--color-navy-mist);
+  box-shadow: inset 0 0 0 1px var(--color-navy);
 }
 
 @media (max-width: 720px) {

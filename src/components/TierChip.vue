@@ -47,10 +47,10 @@ defineProps<{
   gap: 7px;
   min-height: 27px;
   padding: 5px 10px;
-  border: 1px solid #D9CFB8;
+  border: 1px solid var(--color-hairline);
   border-radius: 999px;
-  background: #F7F0DF;
-  color: #1e1b17;
+  background: var(--color-paper);
+  color: var(--color-ink);
   font: 600 12px/1.2 "Plus Jakarta Sans", sans-serif;
   text-decoration: none;
   white-space: nowrap;
@@ -64,8 +64,8 @@ defineProps<{
 }
 
 .ledger-tier-chip:hover:not(.is-selected):not(.is-disabled) {
-  background: #fff8f3;
-  border-color: #b9ae94;
+  background: var(--color-on-dark);
+  border-color: var(--color-hairline-strong);
 }
 
 .ledger-tier-chip.is-selected {
@@ -84,7 +84,7 @@ defineProps<{
 }
 
 .ledger-tier-chip:focus-visible {
-  outline: 2px solid #1B2F6B;
+  outline: 2px solid var(--color-navy);
   outline-offset: 2px;
 }
 
@@ -106,7 +106,7 @@ defineProps<{
 /* A darker pill rather than a lighter one: white on a lightened tier colour fell below 4.5:1. */
 .ledger-tier-chip.is-selected .ledger-tier-count {
   background: rgb(0 0 0 / 22%);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .ledger-tier-check {
