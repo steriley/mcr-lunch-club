@@ -9,7 +9,7 @@ const label = computed(() => (isTierValue(props.tier) ? tierInfo(props.tier).lab
 // Semantic tier colours from the Sovereign Food Ledger palette; grey when there is no tier.
 const tone = computed(() => {
   const { color, tint } = tierInfo(isTierValue(props.tier) ? props.tier : 'gone_but_not_forgotten');
-  return { backgroundColor: tint, color, borderColor: `${color}80` };
+  return { backgroundColor: tint, color, borderColor: `color-mix(in srgb, ${color} 50%, transparent)` };
 });
 </script>
 

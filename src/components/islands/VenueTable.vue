@@ -197,7 +197,7 @@ const inputClass = 'w-full rounded-lg border border-hairline bg-white px-3 py-2.
               <td class="px-4 py-3">
                 <div class="flex justify-end gap-2">
                   <a :href="`/admin/venues/${venue.id}`" class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen">Edit</a>
-                  <button type="button" class="rounded-lg bg-[#B92B27] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60" :disabled="busy[venue.id]" @click="pendingDelete = venue">
+                  <button type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60" :disabled="busy[venue.id]" @click="pendingDelete = venue">
                     Delete
                   </button>
                 </div>

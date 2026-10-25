@@ -162,7 +162,7 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
                     Reset password
                   </button>
                   <template v-if="user.id !== currentUserId">
-                    <button v-if="!user.banned" type="button" class="rounded-lg bg-[#B92B27] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'ban' }">
+                    <button v-if="!user.banned" type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'ban' }">
                       Deactivate
                     </button>
                     <button v-else type="button" class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'unban' }">

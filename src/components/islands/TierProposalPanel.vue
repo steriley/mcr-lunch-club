@@ -53,7 +53,7 @@ async function propose() {
       <TierBadge :tier="currentTier" />
     </div>
 
-    <div v-if="pending" role="status" class="space-y-2 rounded-lg border border-[#C27803]/50 bg-[#FEF5E7] p-3">
+    <div v-if="pending" role="status" class="space-y-2 rounded-lg border border-warning/50 bg-warning-tint p-3">
       <p class="text-[13px] font-semibold text-[#7a4b02]">
         Motion: {{ label(pending.fromTier) }} → {{ label(pending.proposedTier) }}, tabled by {{ pending.proposedByName ?? 'a former admin' }}.
       </p>
@@ -61,7 +61,7 @@ async function propose() {
       <ProposalActions :proposal-id="pending.id" :proposed-by="pending.proposedBy" :current-user-id="currentUserId" :can-decide="activeAdmins >= 2" />
     </div>
 
-    <p v-if="activeAdmins < 2" class="rounded-lg border border-[#C27803]/40 bg-[#FEF5E7] px-3 py-2 text-[13px] text-[#7a4b02]">
+    <p v-if="activeAdmins < 2" class="rounded-lg border border-warning/40 bg-warning-tint px-3 py-2 text-[13px] text-[#7a4b02]">
       Only one active Chair exists. A second active Chair is required before any motion can pass.
     </p>
 

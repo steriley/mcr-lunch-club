@@ -19,10 +19,10 @@ const emit = defineEmits<{ (event: 'close'): void }>();
 
 const KIND_LABELS: Record<AuditEntry['kind'], string> = { inspection: 'Inspection', motion: 'Motion', amendment: 'Amendment', event: 'Action' };
 const KIND_TONES: Record<AuditEntry['kind'], string> = {
-  inspection: 'bg-[#E8F5EE] text-[#1E7A4E]',
-  motion: 'bg-[#FEF5E7] text-[#C27803]',
-  amendment: 'bg-[#F0F2F5] text-[#5A6474]',
-  event: 'bg-[#FDF0F0] text-[#B92B27]',
+  inspection: 'bg-success-tint text-success',
+  motion: 'bg-warning-tint text-warning',
+  amendment: 'bg-steel-tint text-steel',
+  event: 'bg-danger-tint text-danger',
 };
 
 const closeButton = ref<HTMLButtonElement | null>(null);

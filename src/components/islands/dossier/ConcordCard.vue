@@ -143,7 +143,7 @@ async function press() {
     <p v-else-if="state === 'waiting_for_other'" class="dossier-inset text-[13px] text-[var(--dossier-ink)]">
       You've signed today's visit<template v-if="recordedOutcome"> as {{ recordedOutcome.toLowerCase() }}</template>. Waiting for a different Chair to cosign before midnight.
     </p>
-    <p v-else class="flex items-center gap-2 rounded-lg border border-[var(--dossier-green)]/40 bg-[#E8F5EE] px-3 py-2.5 text-[13px] font-semibold text-[var(--dossier-green)]">
+    <p v-else class="flex items-center gap-2 rounded-lg border border-[var(--dossier-green)]/40 bg-success-tint px-3 py-2.5 text-[13px] font-semibold text-[var(--dossier-green)]">
       <DossierIcon name="checkCircle" :size="16" />
       {{ justConfirmed ? 'Inspection verified. Concord complete.' : 'Inspected and verified today.' }}
       <template v-if="recordedOutcome">Outcome: {{ recordedOutcome.toLowerCase() }}.</template>

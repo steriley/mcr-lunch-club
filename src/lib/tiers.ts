@@ -24,13 +24,17 @@ export interface Tier {
   label: string;
   /** URL segment used by the public `/tiers/[tier]` pages, e.g. `under-consideration`. */
   slug: string;
-  /** Accent colour: chips, map pins and banners. */
+  /**
+   * Accent colour: chips, map pins and banners. Tier colours are theme tokens
+   * (`--color-tier-<slug>` in src/styles/global.css), so these are `var()`
+   * references: use them in styles, not in colour arithmetic.
+   */
   color: string;
-  /** Darker edge for map pins and Near Me chips. */
+  /** Darker edge for map pins and Near Me chips (`--color-tier-<slug>-edge`). */
   border: string;
-  /** Pale fill for admin tier badges. */
+  /** Pale fill for admin tier badges (`--color-tier-<slug>-tint`). */
   tint: string;
-  /** Banner background as a literal Tailwind class, so Tailwind sees it. */
+  /** Banner background as a literal Tailwind class (`bg-tier-<slug>`), so Tailwind sees it. */
   bannerClass: string;
   icon: string;
   /** Long motto on the venue sheet and venue page banners. */
@@ -49,10 +53,10 @@ export const TIERS: readonly Tier[] = [
     value: 'approved',
     label: 'Approved',
     slug: 'approved',
-    color: '#1E7A4E',
-    border: '#155b39',
-    tint: '#E8F5EE',
-    bannerClass: 'bg-[#1E7A4E]',
+    color: 'var(--color-tier-approved)',
+    border: 'var(--color-tier-approved-edge)',
+    tint: 'var(--color-tier-approved-tint)',
+    bannerClass: 'bg-tier-approved',
     icon: '🏆',
     quote: 'The Highest Honour in Manchester Lunching: The Right to be Returned To',
     motto: 'The Highest Honour in Manchester Lunching: The Right to be Returned To',
@@ -64,10 +68,10 @@ export const TIERS: readonly Tier[] = [
     value: 'under_consideration',
     label: 'Under Consideration',
     slug: 'under-consideration',
-    color: '#C27803',
-    border: '#8a5100',
-    tint: '#FEF5E7',
-    bannerClass: 'bg-[#C27803]',
+    color: 'var(--color-tier-under-consideration)',
+    border: 'var(--color-tier-under-consideration-edge)',
+    tint: 'var(--color-tier-under-consideration-tint)',
+    bannerClass: 'bg-tier-under-consideration',
     icon: '⏳',
     quote: 'The Waiting Chamber of Judgement — Pending further evidence and appetite',
     motto: 'The Waiting Chamber of Judgement',
@@ -79,10 +83,10 @@ export const TIERS: readonly Tier[] = [
     value: 'to_be_assessed',
     label: 'To Be Assessed',
     slug: 'to-be-assessed',
-    color: '#5A6474',
-    border: '#454e5c',
-    tint: '#F0F2F5',
-    bannerClass: 'bg-[#5A6474]',
+    color: 'var(--color-tier-to-be-assessed)',
+    border: 'var(--color-tier-to-be-assessed-edge)',
+    tint: 'var(--color-tier-to-be-assessed-tint)',
+    bannerClass: 'bg-tier-to-be-assessed',
     icon: '📜',
     quote: 'Entered the Field of Vision — Fate remains undecided pending inspection',
     motto: 'Entered the Lunch Club’s Field of Vision',
@@ -94,10 +98,10 @@ export const TIERS: readonly Tier[] = [
     value: 'if_we_must',
     label: 'If We Must',
     slug: 'if-we-must',
-    color: '#7C3A82',
-    border: '#602d64',
-    tint: '#F7EEF8',
-    bannerClass: 'bg-[#7C3A82]',
+    color: 'var(--color-tier-if-we-must)',
+    border: 'var(--color-tier-if-we-must-edge)',
+    tint: 'var(--color-tier-if-we-must-tint)',
+    bannerClass: 'bg-tier-if-we-must',
     icon: '🌧',
     quote: 'Not Celebrated, But Tolerated — Acceptable only when circumstance forces our hand',
     motto: 'Not Celebrated, But Tolerated',
@@ -109,10 +113,10 @@ export const TIERS: readonly Tier[] = [
     value: 'rejected',
     label: 'Rejected',
     slug: 'rejected',
-    color: '#B92B27',
-    border: '#8f201d',
-    tint: '#FDF0F0',
-    bannerClass: 'bg-[#B92B27]',
+    color: 'var(--color-tier-rejected)',
+    border: 'var(--color-tier-rejected-edge)',
+    tint: 'var(--color-tier-rejected-tint)',
+    bannerClass: 'bg-tier-rejected',
     icon: '⛔',
     quote: 'Removed from the Sacred Lunch Rotation — Returnable only through exceptional redemption',
     motto: 'Removed from the Sacred Lunch Rotation',
@@ -124,10 +128,10 @@ export const TIERS: readonly Tier[] = [
     value: 'gone_but_not_forgotten',
     label: 'Gone But Not Forgotten',
     slug: 'gone-but-not-forgotten',
-    color: '#71717A',
-    border: '#52525b',
-    tint: '#F4F4F5',
-    bannerClass: 'bg-[#71717A]',
+    color: 'var(--color-tier-gone-but-not-forgotten)',
+    border: 'var(--color-tier-gone-but-not-forgotten-edge)',
+    tint: 'var(--color-tier-gone-but-not-forgotten-tint)',
+    bannerClass: 'bg-tier-gone-but-not-forgotten',
     icon: '🕊',
     quote: 'Doors Closed, But Legend Remains in the Lunching Annals',
     motto: 'Legend Remains in the Lunching Annals',
