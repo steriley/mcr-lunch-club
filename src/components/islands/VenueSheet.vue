@@ -41,7 +41,7 @@
           type="button"
           aria-label="Close"
           @click="closeSheet"
-          class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors text-lg"
+          class="text-white/80 hover:text-white p-1 rounded-full hover:bg-surface/10 transition-colors text-lg"
         >
           ✕
         </button>
@@ -62,7 +62,7 @@
           class="aspect-[3/2] max-h-56 h-auto w-full rounded-xl border border-hairline object-cover"
         />
         <!-- Approved Prize Award Callout -->
-        <div v-if="venue.tier === 'approved'" class="bg-deep text-parchment border border-gold p-3 rounded-xl flex items-center gap-3 shadow-xs">
+        <div v-if="venue.tier === 'approved'" class="bg-deep text-parchment-fixed border border-gold p-3 rounded-xl flex items-center gap-3 shadow-xs">
           <img
             src="/brand/approved-sticker-256.webp" width="256" height="256"
             alt="Official Approved Sticker"
@@ -142,7 +142,7 @@
             <div
               v-for="insp in venueInspections"
               :key="insp.id"
-              class="p-2.5 rounded bg-white border border-hairline text-xs shadow-xs"
+              class="p-2.5 rounded bg-surface border border-hairline text-xs shadow-xs"
             >
               <div class="flex items-center justify-between text-xs border-b border-stone-100 pb-1 mb-1">
                 <span class="font-sans tabular-nums text-stone-600">{{ formatDate(insp.date) }}</span>
@@ -174,7 +174,7 @@
           :href="directionsUrl"
           target="_blank"
           rel="noopener noreferrer"
-          class="flex-1 bg-white hover:bg-stone-100 text-stone-900 border border-hairline py-2 px-3 rounded-md text-xs font-semibold text-center shadow-xs flex items-center justify-center gap-1.5"
+          class="flex-1 bg-surface hover:bg-stone-100 text-stone-900 border border-hairline py-2 px-3 rounded-md text-xs font-semibold text-center shadow-xs flex items-center justify-center gap-1.5"
         >
           <span>🧭</span>
           <span>Walking directions</span>
@@ -182,7 +182,7 @@
 
         <a
           :href="`/venues/${venue.slug}`"
-          class="flex-1 bg-navy hover:bg-deep text-white py-2 px-3 rounded-md text-xs font-serif-header font-bold text-center shadow flex items-center justify-center gap-1.5"
+          class="flex-1 bg-navy-fixed hover:bg-deep text-white py-2 px-3 rounded-md text-xs font-serif-header font-bold text-center shadow flex items-center justify-center gap-1.5"
         >
           <span>📜</span>
           <span>Full dossier</span>
@@ -191,7 +191,7 @@
         <button
           type="button"
           @click="copyShareLink"
-          class="p-2 text-stone-600 hover:text-stone-900 bg-white border border-hairline rounded-md shadow-xs text-xs font-semibold"
+          class="p-2 text-stone-600 hover:text-stone-900 bg-surface border border-hairline rounded-md shadow-xs text-xs font-semibold"
           title="Copy Link for Lunch Chat"
         >
           {{ copied ? "✓ Link Copied!" : "🔗 Share" }}

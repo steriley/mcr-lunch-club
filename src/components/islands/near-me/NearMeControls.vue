@@ -108,7 +108,7 @@ const emit = defineEmits<{ recenter: []; home: []; pick: [] }>();
   border-radius: 9999px;
   background-color: rgba(26, 30, 36, 0.95);
   backdrop-filter: blur(8px);
-  color: var(--color-cream);
+  color: var(--color-cream-fixed);
   border: 1px solid rgba(197, 155, 39, 0.6);
   box-shadow: var(--near-me-shadow);
   cursor: pointer;
@@ -117,7 +117,7 @@ const emit = defineEmits<{ recenter: []; home: []; pick: [] }>();
 
 .near-me-control-btn:hover:not(:disabled) {
   background-color: var(--near-me-crimson);
-  border-color: var(--color-cream);
+  border-color: var(--color-cream-fixed);
   color: var(--color-white);
   transform: scale(1.05);
 }
@@ -142,19 +142,19 @@ const emit = defineEmits<{ recenter: []; home: []; pick: [] }>();
 
 .near-me-control-btn {
   background-color: var(--ledger-deep);
-  color: var(--ledger-parchment);
+  color: var(--color-parchment-fixed);
   border-color: var(--ledger-gold);
 }
 
 .near-me-control-btn:hover:not(:disabled) {
-  background-color: var(--ledger-navy);
+  background-color: var(--color-navy-fixed);
   border-color: var(--ledger-gold);
-  color: var(--ledger-parchment);
+  color: var(--color-parchment-fixed);
 }
 
 .near-me-control-btn.is-active {
   background-color: var(--ledger-green);
-  border-color: var(--ledger-parchment);
+  border-color: var(--color-parchment-fixed);
   color: var(--color-white);
   box-shadow: 0 0 0 2px rgb(30 122 78 / 22%);
 }

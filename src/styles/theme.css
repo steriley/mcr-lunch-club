@@ -168,6 +168,21 @@
   --color-ash: #d6d3d1;
   --color-taupe: #57534e;
 
+  /*
+   * Roles for dark mode. Names ending -fixed stay the same in both themes: text
+   * and borders on brand fills, and the fills themselves. surface is a card or
+   * field background (white in light mode); the *-ink tokens are text that
+   * lightens in dark mode.
+   */
+  --color-surface: #ffffff;
+  --color-parchment-fixed: #fbf6ea;
+  --color-cream-fixed: #f9f7f1;
+  --color-navy-fixed: #1b2f6b;
+  --color-charcoal-fixed: #1a1e24;
+  --color-ink-fixed: #1e1b17;
+  --color-deep-ink: #111e47;
+  --color-royal-ink: #001854;
+
   /* Tailwind's stone-500 (#79716b) is 4.2:1 on the parchment backgrounds; this passes WCAG AA (5:1+). */
   --color-stone-500: #6b645e;
 }

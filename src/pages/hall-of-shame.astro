@@ -19,7 +19,7 @@ const incidentsData = await getPublishedIncidents();
     </div>
 
     <!-- Pompous Header Card -->
-    <div class="bg-deep text-parchment p-6 sm:p-10 rounded-2xl border-2 border-gold shadow-2xl relative overflow-hidden">
+    <div class="bg-deep text-parchment-fixed p-6 sm:p-10 rounded-2xl border-2 border-gold shadow-2xl relative overflow-hidden">
       <div class="relative z-10 space-y-3">
         <div class="flex items-center gap-3">
           <span class="text-4xl">⚖️</span>
@@ -27,7 +27,7 @@ const incidentsData = await getPublishedIncidents();
             <span class="text-xs uppercase tracking-widest text-gold font-bold font-sans tabular-nums">
               Confidential Ledger &bull; Article 9.4
             </span>
-            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-parchment">
+            <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-parchment-fixed">
               The Hall of Shame
             </h1>
           </div>
@@ -54,7 +54,7 @@ const incidentsData = await getPublishedIncidents();
       <div class="flex items-center justify-between border-b border-hairline pb-2">
         <h2 class="text-xl font-bold text-ink flex items-center gap-2">
           <span>Inscribed Incidents</span>
-          <span class="text-xs font-sans tabular-nums font-bold bg-navy text-white px-2 py-0.5 rounded">
+          <span class="text-xs font-sans tabular-nums font-bold bg-navy-fixed text-white px-2 py-0.5 rounded">
             {incidentsData.length} Documented Offense{incidentsData.length === 1 ? '' : 's'}
           </span>
         </h2>
@@ -67,7 +67,7 @@ const incidentsData = await getPublishedIncidents();
         {incidentsData.map((inc) => (
           <div class="relative group">
             <!-- Timeline Node Wax Seal Icon -->
-            <div class="absolute -left-[35px] sm:-left-[43px] top-1.5 w-6 h-6 rounded-full bg-navy border-2 border-gold text-white flex items-center justify-center text-xs shadow">
+            <div class="absolute -left-[35px] sm:-left-[43px] top-1.5 w-6 h-6 rounded-full bg-navy-fixed border-2 border-gold text-white flex items-center justify-center text-xs shadow">
               🌹
             </div>
 

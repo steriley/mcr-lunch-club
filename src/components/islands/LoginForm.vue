@@ -59,12 +59,12 @@ async function handleSubmit() {
     <div class="space-y-4">
       <label class="block text-sm font-semibold text-ink">
         <span class="mb-2 block">Email</span>
-        <input v-model="email" type="email" autocomplete="email" class="w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" placeholder="chair@mcrlunch.club" />
+        <input v-model="email" type="email" autocomplete="email" class="w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" placeholder="chair@mcrlunch.club" />
       </label>
 
       <label class="block text-sm font-semibold text-ink">
         <span class="mb-2 block">Password</span>
-        <input v-model="password" type="password" autocomplete="current-password" class="w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" placeholder="••••••••••••" />
+        <input v-model="password" type="password" autocomplete="current-password" class="w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" placeholder="••••••••••••" />
       </label>
     </div>
 
@@ -75,7 +75,7 @@ async function handleSubmit() {
     <button
       type="submit"
       :disabled="isSubmitting"
-      class="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-navy px-4 py-3 text-sm font-semibold text-white transition hover:bg-deep disabled:cursor-not-allowed disabled:opacity-70"
+      class="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-navy-fixed px-4 py-3 text-sm font-semibold text-white transition hover:bg-deep disabled:cursor-not-allowed disabled:opacity-70"
     >
       {{ isSubmitting ? 'Signing in…' : 'Sign in' }}
     </button>

@@ -67,7 +67,7 @@ async function performDelete() {
             <a
               v-if="suggestion.venueId"
               :href="`/admin/venues/${suggestion.venueId}`"
-              class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen"
+              class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen"
             >
               Open venue
             </a>
@@ -77,13 +77,13 @@ async function performDelete() {
               <a
                 v-if="suggestion.status !== 'dismissed'"
                 :href="`/admin/venues/new?fromSuggestion=${suggestion.id}`"
-                class="rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-deep"
+                class="rounded-lg bg-navy-fixed px-3 py-1.5 text-xs font-semibold text-white hover:bg-deep"
               >
                 Accept…
               </a>
               <button
                 type="button"
-                class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60"
+                class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60"
                 :disabled="busy[suggestion.id]"
                 @click="setStatus(suggestion, suggestion.status === 'dismissed' ? 'new' : 'dismissed')"
               >

@@ -41,7 +41,7 @@ defineProps<{ banner: StatusBanner }>();
   gap: 8px;
   background-color: rgba(26, 30, 36, 0.95);
   backdrop-filter: blur(8px);
-  color: var(--color-cream);
+  color: var(--color-cream-fixed);
   padding: 6px 14px;
   border-radius: 9999px;
   border: 1px solid var(--near-me-gold);
@@ -88,7 +88,7 @@ defineProps<{ banner: StatusBanner }>();
 
 .near-me-status-pill {
   background-color: var(--ledger-card);
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   border-color: var(--ledger-border);
 }
 
@@ -113,11 +113,11 @@ defineProps<{ banner: StatusBanner }>();
 .near-me-status-action {
   background-color: var(--ledger-deep);
   border-color: var(--ledger-deep);
-  color: var(--ledger-parchment);
+  color: var(--color-parchment-fixed);
 }
 
 .near-me-status-action:hover {
-  background-color: var(--ledger-navy);
+  background-color: var(--color-navy-fixed);
   color: var(--color-white);
 }
 

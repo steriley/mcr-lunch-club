@@ -54,7 +54,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex justify-end bg-ink/35" @click.self="emit('close')">
+  <div v-if="open" class="fixed inset-0 z-50 flex justify-end bg-ink-fixed/35" @click.self="emit('close')">
     <aside
       role="dialog"
       aria-modal="true"

@@ -35,7 +35,7 @@ async function act(action: 'approve' | 'decline' | 'withdraw') {
 }
 
 const primary = 'rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-white hover:bg-success-strong disabled:opacity-60';
-const secondary = 'rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60';
+const secondary = 'rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60';
 const danger = 'rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60';
 </script>
 
@@ -53,7 +53,7 @@ const danger = 'rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-whit
       <div v-else class="space-y-2">
         <label class="block text-xs font-semibold text-ink">
           Reason for declining (internal, never shown publicly)
-          <textarea v-model="reason" rows="2" maxlength="1000" required class="mt-1 w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm"></textarea>
+          <textarea v-model="reason" rows="2" maxlength="1000" required class="mt-1 w-full rounded-lg border border-hairline bg-surface px-3 py-2 text-sm"></textarea>
         </label>
         <div class="flex gap-2">
           <button type="button" :class="danger" :disabled="busy" @click="act('decline')">Decline</button>

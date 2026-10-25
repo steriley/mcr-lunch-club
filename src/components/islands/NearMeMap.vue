@@ -567,7 +567,7 @@ onUnmounted(() => {
   --near-me-bg: var(--ledger-paper);
   --near-me-surface: var(--ledger-parchment);
   --near-me-header-bg: var(--ledger-deep);
-  --near-me-header-text: var(--ledger-parchment);
+  --near-me-header-text: var(--color-parchment-fixed);
   --near-me-border: var(--ledger-border);
   --near-me-gold: var(--ledger-gold);
   --near-me-crimson: var(--ledger-navy);
@@ -647,7 +647,7 @@ onUnmounted(() => {
   border-radius: 9999px;
   background-color: rgba(26, 30, 36, 0.95);
   backdrop-filter: blur(8px);
-  color: var(--color-cream);
+  color: var(--color-cream-fixed);
   border: 1px solid var(--near-me-gold);
   box-shadow: var(--near-me-shadow);
   cursor: pointer;
@@ -656,7 +656,7 @@ onUnmounted(() => {
 
 .near-me-close-btn:hover {
   background-color: var(--near-me-crimson);
-  border-color: var(--color-cream);
+  border-color: var(--color-cream-fixed);
   color: var(--color-white);
   transform: scale(1.05);
 }
@@ -673,7 +673,7 @@ onUnmounted(() => {
   background-color: rgba(26, 30, 36, 0.96);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  color: var(--color-cream);
+  color: var(--color-cream-fixed);
   border: 1px solid var(--near-me-gold);
   display: flex;
   flex-direction: column;
@@ -831,14 +831,14 @@ onUnmounted(() => {
 
 .near-me-close-btn {
   background-color: var(--ledger-deep);
-  color: var(--ledger-parchment);
+  color: var(--color-parchment-fixed);
   border-color: var(--ledger-gold);
 }
 
 .near-me-close-btn:hover {
-  background-color: var(--ledger-navy);
+  background-color: var(--color-navy-fixed);
   border-color: var(--ledger-gold);
-  color: var(--ledger-parchment);
+  color: var(--color-parchment-fixed);
 }
 
 .near-me-close-btn:focus-visible,

@@ -7,7 +7,7 @@
 }
 
 .leaflet-control-zoom a {
-  color: var(--ledger-deep) !important;
+  color: var(--color-deep-ink) !important;
 }
 
 .custom-ledger-pin {
@@ -35,7 +35,7 @@
   justify-content: center;
   border: 2px solid var(--color-brass);
   border-radius: 50%;
-  background: var(--color-charcoal);
+  background: var(--color-charcoal-fixed);
   box-shadow: 0 0 0 4px rgb(242 154 46 / 28%), 0 4px 12px rgb(14 27 68 / 45%);
   color: var(--color-brass);
 }
@@ -115,7 +115,7 @@
 
 .ring-label {
   background: rgb(17 30 71 / 88%);
-  color: var(--ledger-parchment);
+  color: var(--color-parchment-fixed);
   font-size: 12px;
   font-weight: 700;
   padding: 2px 6px;
@@ -231,7 +231,7 @@
   border: 0;
   border-radius: 8px;
   background: var(--ledger-deep);
-  color: var(--ledger-parchment);
+  color: var(--color-parchment-fixed);
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
@@ -239,7 +239,7 @@
 }
 
 .venue-popup-button:hover {
-  background: var(--ledger-navy);
+  background: var(--color-navy-fixed);
 }
 
 .venue-popup-actions {
@@ -261,13 +261,13 @@
   justify-content: center;
   border: 1px solid var(--ledger-deep);
   background: transparent;
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   text-decoration: none;
 }
 
 .ledger-popup a.venue-popup-button.is-secondary:hover {
   background: var(--ledger-deep);
-  color: var(--ledger-parchment);
+  color: var(--color-parchment-fixed);
 }
 
 .venue-popup-button:focus-visible {

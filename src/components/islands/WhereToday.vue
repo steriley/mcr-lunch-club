@@ -11,7 +11,7 @@
       class="w-full max-w-lg bg-parchment rounded-2xl border border-hairline shadow-2xl overflow-hidden font-sans flex flex-col max-h-[90vh]"
     >
       <!-- Header -->
-      <div class="bg-deep text-parchment px-5 py-4 flex items-center justify-between gap-3">
+      <div class="bg-deep text-parchment-fixed px-5 py-4 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
           <span class="text-3xl" aria-hidden="true">⚖️</span>
           <div>
@@ -107,7 +107,7 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <h3 class="text-xl font-bold font-serif-header text-royal leading-tight">
+            <h3 class="text-xl font-bold font-serif-header text-royal-ink leading-tight">
               <button type="button" class="oracle-result-link" @click="openDetails(pickedVenue)">{{ pickedVenue.name }}</button>
             </h3>
             <img
@@ -298,7 +298,7 @@ function openDetails(venue: Venue) {
   padding: 8px 6px;
   border: 1px solid var(--color-hairline);
   border-radius: 10px;
-  background: var(--color-white);
+  background: var(--color-surface);
   color: var(--color-muted);
   text-align: center;
   cursor: pointer;
@@ -313,7 +313,7 @@ function openDetails(venue: Venue) {
 .oracle-option.is-selected {
   border-color: var(--color-deep);
   background: var(--color-deep);
-  color: var(--color-parchment);
+  color: var(--color-parchment-fixed);
   box-shadow: 0 1px 3px rgb(17 30 71 / 35%);
 }
 
@@ -332,7 +332,7 @@ function openDetails(venue: Venue) {
   padding: 12px 16px;
   border-radius: 12px;
   background: var(--color-deep);
-  color: var(--color-parchment);
+  color: var(--color-parchment-fixed);
   font: 700 14px/1.3 "Playfair Display", Georgia, serif;
   box-shadow: 0 2px 6px rgb(17 30 71 / 30%);
   cursor: pointer;
@@ -340,7 +340,7 @@ function openDetails(venue: Venue) {
 }
 
 .oracle-cta:hover:not(:disabled) {
-  background: var(--color-navy);
+  background: var(--color-navy-fixed);
 }
 
 .oracle-cta:active:not(:disabled) {
@@ -358,7 +358,7 @@ function openDetails(venue: Venue) {
   padding: 16px;
   border: 1px solid var(--color-hairline);
   border-radius: 12px;
-  background: var(--color-white);
+  background: var(--color-surface);
   box-shadow: 0 4px 10px rgb(22 19 15 / 8%);
   transition: border-color 140ms ease, box-shadow 140ms ease;
 }

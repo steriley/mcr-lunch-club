@@ -66,17 +66,17 @@ async function handleSubmit() {
 
     <label class="block text-sm font-semibold text-ink">
       <span class="mb-2 block">Current password</span>
-      <input v-model="currentPassword" type="password" autocomplete="current-password" class="w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" />
+      <input v-model="currentPassword" type="password" autocomplete="current-password" class="w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" />
     </label>
 
     <label class="block text-sm font-semibold text-ink">
       <span class="mb-2 block">New password</span>
-      <input v-model="newPassword" type="password" autocomplete="new-password" class="w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" />
+      <input v-model="newPassword" type="password" autocomplete="new-password" class="w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" />
     </label>
 
     <label class="block text-sm font-semibold text-ink">
       <span class="mb-2 block">Confirm new password</span>
-      <input v-model="confirmPassword" type="password" autocomplete="new-password" class="w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" />
+      <input v-model="confirmPassword" type="password" autocomplete="new-password" class="w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" />
     </label>
 
     <p v-if="errorMessage" role="alert" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -90,7 +90,7 @@ async function handleSubmit() {
     <button
       type="submit"
       :disabled="isSubmitting"
-      class="inline-flex w-full items-center justify-center rounded-lg bg-navy px-4 py-3 text-sm font-semibold text-white transition hover:bg-deep disabled:cursor-not-allowed disabled:opacity-70"
+      class="inline-flex w-full items-center justify-center rounded-lg bg-navy-fixed px-4 py-3 text-sm font-semibold text-white transition hover:bg-deep disabled:cursor-not-allowed disabled:opacity-70"
     >
       {{ isSubmitting ? 'Updating…' : 'Update password' }}
     </button>

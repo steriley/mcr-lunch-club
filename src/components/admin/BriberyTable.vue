@@ -94,8 +94,8 @@ onMounted(() => {
               </td>
               <td class="px-4 py-3">
                 <div class="flex justify-end gap-2">
-                  <a :href="`/admin/bribery/${record.id}`" class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen">Edit</a>
-                  <button type="button" class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[record.id]" @click="togglePublished(record)">
+                  <a :href="`/admin/bribery/${record.id}`" class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen">Edit</a>
+                  <button type="button" class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[record.id]" @click="togglePublished(record)">
                     {{ record.published ? 'Unpublish' : 'Publish' }}
                   </button>
                   <button type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60" :disabled="busy[record.id]" @click="pendingDelete = record">

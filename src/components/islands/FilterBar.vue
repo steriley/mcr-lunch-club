@@ -299,7 +299,7 @@ function resetAll() {
   place-items: center;
   padding-inline: 3px;
   border-radius: 999px;
-  background: var(--color-navy);
+  background: var(--color-navy-fixed);
   color: var(--color-white);
   font-size: 9px;
   font-weight: 700;
@@ -370,7 +370,7 @@ function resetAll() {
   padding: 4px 11px;
   border: 1px solid var(--color-hairline);
   border-radius: 999px;
-  background: var(--color-white);
+  background: var(--color-surface);
   color: var(--color-ochre);
   font: 700 12px/1.2 "Plus Jakarta Sans", sans-serif;
   white-space: nowrap;
@@ -395,7 +395,7 @@ function resetAll() {
   padding: 10px 76px 10px 42px;
   border: 1px solid var(--color-hairline);
   border-radius: 10px;
-  background: var(--color-white);
+  background: var(--color-surface);
   box-shadow: inset 0 1px 2px rgb(22 19 15 / 5%);
   color: var(--color-ink);
   font: 500 13px/1.45 "Plus Jakarta Sans", sans-serif;
@@ -500,12 +500,12 @@ function resetAll() {
 
 .ledger-cost-button:hover:not(.is-selected) {
   color: var(--color-ink);
-  background: var(--color-white);
+  background: var(--color-surface);
 }
 
 .ledger-cost-button.is-selected {
   background: var(--color-deep);
-  color: var(--color-parchment);
+  color: var(--color-parchment-fixed);
   box-shadow: 0 1px 3px rgb(17 30 71 / 35%);
 }
 
@@ -516,7 +516,7 @@ function resetAll() {
   border: 1px solid var(--color-hairline);
   border-radius: 10px;
   appearance: none;
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%231B2F6B' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 6 5 5 5-5'/%3E%3C/svg%3E");
   background-position: right 12px center;
   background-repeat: no-repeat;

@@ -194,7 +194,7 @@
   .dossier-btn.is-primary {
     border-color: var(--dossier-primary-container);
     background: var(--dossier-primary-container);
-    color: var(--color-parchment);
+    color: var(--color-parchment-fixed);
   }
 
   .dossier-btn.is-primary:hover:not(:disabled) {
@@ -209,13 +209,13 @@
 
   .dossier-btn.is-danger:hover:not(:disabled) {
     background: var(--dossier-danger);
-    color: var(--color-parchment);
+    color: var(--color-parchment-fixed);
   }
 
   .dossier-btn.is-danger-solid {
     border-color: var(--dossier-danger);
     background: var(--dossier-danger);
-    color: var(--color-parchment);
+    color: var(--color-parchment-fixed);
   }
 
   .dossier-btn.is-danger-solid:hover:not(:disabled) {
