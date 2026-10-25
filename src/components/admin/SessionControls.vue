@@ -45,7 +45,7 @@ async function signOutOtherSessions() {
     <button
       type="button"
       :disabled="isSubmitting"
-      class="inline-flex w-full items-center justify-center rounded-lg border border-hairline bg-white px-4 py-3 text-sm font-semibold text-ink transition hover:bg-linen disabled:cursor-not-allowed disabled:opacity-70"
+      class="inline-flex w-full items-center justify-center rounded-lg border border-hairline bg-surface px-4 py-3 text-sm font-semibold text-ink transition hover:bg-linen disabled:cursor-not-allowed disabled:opacity-70"
       @click="signOutOtherSessions"
     >
       {{ isSubmitting ? 'Signing out…' : 'Sign out of other sessions' }}

@@ -121,7 +121,7 @@ async function submitReset() {
   message.value = `Temporary password set for ${user.email}. They have been signed out everywhere.`;
 }
 
-const inputClass = 'w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink focus:border-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/30';
+const inputClass = 'w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink focus:border-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/30';
 const errorClass = 'mt-1 block text-xs font-medium text-red-700';
 </script>
 
@@ -158,14 +158,14 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
               </td>
               <td class="px-4 py-3">
                 <div class="flex justify-end gap-2">
-                  <button type="button" class="whitespace-nowrap rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[user.id]" @click="openReset(user)">
+                  <button type="button" class="whitespace-nowrap rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[user.id]" @click="openReset(user)">
                     Reset password
                   </button>
                   <template v-if="user.id !== currentUserId">
                     <button v-if="!user.banned" type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'ban' }">
                       Deactivate
                     </button>
-                    <button v-else type="button" class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'unban' }">
+                    <button v-else type="button" class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'unban' }">
                       Reactivate
                     </button>
                   </template>
@@ -208,7 +208,7 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
         </label>
       </div>
       <div class="mt-5 flex justify-end">
-        <button type="submit" :disabled="isCreating" class="inline-flex items-center justify-center rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white hover:bg-deep disabled:opacity-70">
+        <button type="submit" :disabled="isCreating" class="inline-flex items-center justify-center rounded-lg bg-navy-fixed px-4 py-2.5 text-sm font-semibold text-white hover:bg-deep disabled:opacity-70">
           {{ isCreating ? 'Creating…' : 'Create account' }}
         </button>
       </div>
@@ -223,7 +223,7 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
       @confirm="performAction"
     />
 
-    <div v-if="resetTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/40 px-4" @click.self="resetTarget = null" @keydown.esc="resetTarget = null">
+    <div v-if="resetTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-charcoal-fixed/40 px-4" @click.self="resetTarget = null" @keydown.esc="resetTarget = null">
       <form role="dialog" aria-modal="true" aria-labelledby="reset-title" class="w-full max-w-md rounded-2xl border border-hairline bg-parchment p-6 shadow-xl" novalidate @submit.prevent="submitReset">
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Reset password</p>
         <h3 id="reset-title" class="mt-2 text-xl font-bold text-ink">{{ resetTarget.email }}</h3>
@@ -234,8 +234,8 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
           <span v-if="resetError" role="alert" :class="errorClass">{{ resetError }}</span>
         </label>
         <div class="mt-6 flex justify-end gap-3">
-          <button type="button" class="rounded-lg border border-hairline bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-linen" @click="resetTarget = null">Cancel</button>
-          <button type="submit" :disabled="busy[resetTarget.id]" class="rounded-lg bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-deep disabled:opacity-70">Set password</button>
+          <button type="button" class="rounded-lg border border-hairline bg-surface px-4 py-2 text-sm font-semibold text-ink hover:bg-linen" @click="resetTarget = null">Cancel</button>
+          <button type="submit" :disabled="busy[resetTarget.id]" class="rounded-lg bg-navy-fixed px-4 py-2 text-sm font-semibold text-white hover:bg-deep disabled:opacity-70">Set password</button>
         </div>
       </form>
     </div>

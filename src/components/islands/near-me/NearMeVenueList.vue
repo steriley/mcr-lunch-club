@@ -160,7 +160,7 @@ function rowWalkUrl(rv: RankedVenue): string | null {
 }
 
 .near-me-list-title {
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
 }
 
 .near-me-empty-state {
@@ -168,7 +168,7 @@ function rowWalkUrl(rv: RankedVenue): string | null {
 }
 
 .near-me-empty-title {
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
 }
 
 .near-me-empty-text {
@@ -192,7 +192,7 @@ function rowWalkUrl(rv: RankedVenue): string | null {
   border: 1px solid var(--ledger-border);
   border-radius: 9999px;
   background: var(--ledger-card);
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   font-family: "Plus Jakarta Sans", sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
@@ -203,7 +203,7 @@ function rowWalkUrl(rv: RankedVenue): string | null {
 .near-me-cost-chip.is-selected {
   background: var(--ledger-deep);
   border-color: var(--ledger-deep);
-  color: var(--ledger-parchment);
+  color: var(--color-parchment-fixed);
 }
 
 .near-me-cost-chip:focus-visible {

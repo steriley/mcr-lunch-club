@@ -11,7 +11,7 @@
       class="w-full max-w-md bg-card rounded-2xl border-2 border-navy shadow-2xl overflow-hidden font-sans flex flex-col max-h-[90vh]"
     >
       <!-- Header -->
-      <div class="bg-navy text-white p-4 flex items-center justify-between">
+      <div class="bg-navy-fixed text-white p-4 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="text-xl" aria-hidden="true">📜</span>
           <div>
@@ -33,7 +33,7 @@
         <button
           ref="doneButton"
           type="button"
-          class="w-full bg-navy hover:bg-deep text-white py-2.5 px-4 rounded-lg font-serif-header font-bold text-sm"
+          class="w-full bg-navy-fixed hover:bg-deep text-white py-2.5 px-4 rounded-lg font-serif-header font-bold text-sm"
           @click="closeModal"
         >
           Done
@@ -114,7 +114,7 @@
           <button
             type="submit"
             :disabled="submitting"
-            class="w-full bg-navy hover:bg-deep disabled:opacity-60 text-white py-2.5 px-4 rounded-lg font-serif-header font-bold text-sm shadow transition-colors cursor-pointer"
+            class="w-full bg-navy-fixed hover:bg-deep disabled:opacity-60 text-white py-2.5 px-4 rounded-lg font-serif-header font-bold text-sm shadow transition-colors cursor-pointer"
           >
             {{ submitting ? 'Sending…' : 'Submit petition to the Chairs' }}
           </button>
@@ -211,7 +211,7 @@ async function submitPetition() {
 <style scoped>
 .suggest-input {
   width: 100%;
-  background-color: var(--color-white);
+  background-color: var(--color-surface);
   border: 1px solid var(--color-rule);
   border-radius: 0.375rem;
   padding: 0.5rem;

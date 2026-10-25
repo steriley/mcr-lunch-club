@@ -103,7 +103,7 @@ function onBeforeUnload(event: BeforeUnloadEvent) {
 onMounted(() => window.addEventListener('beforeunload', onBeforeUnload));
 onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload));
 
-const inputClass = 'w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink outline-none focus:border-navy focus-visible:ring-2 focus-visible:ring-navy/30';
+const inputClass = 'w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none focus:border-navy focus-visible:ring-2 focus-visible:ring-navy/30';
 const labelClass = 'block text-sm font-semibold text-ink';
 const smallButton = 'rounded-lg border border-hairline bg-parchment px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:cursor-not-allowed disabled:opacity-50';
 </script>
@@ -133,7 +133,7 @@ const smallButton = 'rounded-lg border border-hairline bg-parchment px-3 py-1.5 
       >
         <div class="flex flex-wrap items-center gap-3">
           <span
-            class="cursor-grab select-none rounded-md border border-hairline bg-white px-2 py-1 text-base text-graphite active:cursor-grabbing"
+            class="cursor-grab select-none rounded-md border border-hairline bg-surface px-2 py-1 text-base text-graphite active:cursor-grabbing"
             draggable="true"
             title="Drag to reorder"
             aria-hidden="true"
@@ -149,7 +149,7 @@ const smallButton = 'rounded-lg border border-hairline bg-parchment px-3 py-1.5 
           <span class="ml-auto flex gap-2">
             <button type="button" :class="smallButton" :disabled="index === 0" :aria-label="`Move ${row.venueName} up`" @click="move(index, index - 1)">↑ Up</button>
             <button type="button" :class="smallButton" :disabled="index === rows.length - 1" :aria-label="`Move ${row.venueName} down`" @click="move(index, index + 1)">↓ Down</button>
-            <button type="button" class="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" :aria-label="`Remove ${row.venueName}`" @click="remove(index)">Remove</button>
+            <button type="button" class="rounded-lg border border-red-200 bg-surface px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" :aria-label="`Remove ${row.venueName}`" @click="remove(index)">Remove</button>
           </span>
         </div>
 
@@ -184,7 +184,7 @@ const smallButton = 'rounded-lg border border-hairline bg-parchment px-3 py-1.5 
       <button
         type="button"
         :disabled="busy || !isDirty"
-        class="rounded-lg bg-navy px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-deep disabled:cursor-not-allowed disabled:opacity-70"
+        class="rounded-lg bg-navy-fixed px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-deep disabled:cursor-not-allowed disabled:opacity-70"
         @click="save"
       >
         {{ busy ? 'Saving…' : 'Save The Golden Cut' }}

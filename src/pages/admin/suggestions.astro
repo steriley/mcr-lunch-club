@@ -39,7 +39,7 @@ const tabs = [
       {tabs.map((tab) => (
         <a
           href={tab.status === 'new' ? '/admin/suggestions' : `/admin/suggestions?status=${tab.status}`}
-          class:list={['rounded-full border px-3 py-1.5 text-sm font-semibold', tab.active ? 'border-navy bg-navy text-white' : 'border-hairline bg-white text-ink hover:bg-linen']}
+          class:list={['rounded-full border px-3 py-1.5 text-sm font-semibold', tab.active ? 'border-navy bg-navy-fixed text-white' : 'border-hairline bg-surface text-ink hover:bg-linen']}
           aria-current={tab.active ? 'page' : undefined}
         >
           {tab.label} <span class="ml-1 opacity-75">{tab.total}</span>

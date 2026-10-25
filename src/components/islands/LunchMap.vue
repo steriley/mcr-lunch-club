@@ -23,7 +23,7 @@
         <button
           id="btn-near-me"
           @click="openNearMe"
-          class="bg-deep hover:bg-deep text-parchment px-5 py-3 rounded-full shadow-lg border border-gold transition-all flex items-center gap-2 text-sm font-bold tracking-wide cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-brass"
+          class="bg-deep hover:bg-deep text-parchment-fixed px-5 py-3 rounded-full shadow-lg border border-gold transition-all flex items-center gap-2 text-sm font-bold tracking-wide cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-brass"
           title="Open Near Me locate mode"
           aria-label="Open Near Me locate mode"
         >

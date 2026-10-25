@@ -121,7 +121,7 @@ watch([query, tierFilter, statusFilter], () => {
   window.history.replaceState(null, '', search ? `?${search}` : window.location.pathname);
 });
 
-const inputClass = 'w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink outline-none focus:border-navy';
+const inputClass = 'w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none focus:border-navy';
 </script>
 
 <template>
@@ -196,7 +196,7 @@ const inputClass = 'w-full rounded-lg border border-hairline bg-white px-3 py-2.
               <td class="whitespace-nowrap px-4 py-3 text-soot">{{ formatDate(venue.updatedAt) }}</td>
               <td class="px-4 py-3">
                 <div class="flex justify-end gap-2">
-                  <a :href="`/admin/venues/${venue.id}`" class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen">Edit</a>
+                  <a :href="`/admin/venues/${venue.id}`" class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen">Edit</a>
                   <button type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60" :disabled="busy[venue.id]" @click="pendingDelete = venue">
                     Delete
                   </button>

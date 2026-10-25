@@ -42,7 +42,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     v-if="open"
-    class="fixed inset-0 z-50 flex items-center justify-center bg-charcoal/40 px-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-charcoal-fixed/40 px-4"
     @click.self="emit('cancel')"
   >
     <div
@@ -59,7 +59,7 @@ onBeforeUnmount(() => {
         <button
           ref="cancelButton"
           type="button"
-          class="rounded-lg border border-hairline bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-linen focus:outline-none focus-visible:ring-2 focus-visible:ring-navy"
+          class="rounded-lg border border-hairline bg-surface px-4 py-2 text-sm font-semibold text-ink hover:bg-linen focus:outline-none focus-visible:ring-2 focus-visible:ring-navy"
           @click="emit('cancel')"
         >
           {{ cancelLabel || 'Cancel' }}

@@ -56,7 +56,7 @@ function truncate(text: string, max: number): string {
             <span class="text-3xl sm:text-4xl">{tier.icon}</span>
             <div>
               <div class="flex items-center gap-3">
-                <span class="text-xs sm:text-sm font-bold uppercase tracking-widest text-parchment">
+                <span class="text-xs sm:text-sm font-bold uppercase tracking-widest text-parchment-fixed">
                   {tier.label}
                 </span>
               </div>
@@ -137,7 +137,7 @@ function truncate(text: string, max: number): string {
 
         <!-- Official Approved Sticker Award Plaque (Manchester Michelin Star) -->
         {venue.tier === 'approved' && (
-          <div class="bg-gradient-to-r from-charcoal via-charcoal-soft to-charcoal text-parchment p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-5 font-serif-header relative overflow-hidden">
+          <div class="bg-gradient-to-r from-charcoal-fixed via-charcoal-soft to-charcoal-fixed text-parchment-fixed p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-5 font-serif-header relative overflow-hidden">
             <div class="shrink-0 relative z-10">
               <img
                 src="/brand/approved-sticker-256.webp" width="256" height="256"
@@ -215,7 +215,7 @@ function truncate(text: string, max: number): string {
           ) : (
             <div class="space-y-3 font-sans">
               {venueInspections.map((insp) => (
-                <div class="px-4 py-2.5 rounded-xl bg-white border border-hairline shadow-xs">
+                <div class="px-4 py-2.5 rounded-xl bg-surface border border-hairline shadow-xs">
                   <div class="flex items-center justify-between gap-2">
                     <span class="font-sans tabular-nums text-xs font-bold text-stone-800">{formatDate(insp.date)}</span>
                     <div class="flex items-center gap-1.5">

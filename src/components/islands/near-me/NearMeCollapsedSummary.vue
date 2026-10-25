@@ -58,13 +58,13 @@ const emit = defineEmits<{ expand: [] }>();
 
 .near-me-btn-walk {
   background-color: var(--ledger-gold);
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   box-shadow: 0 1px 3px rgb(17 30 71 / 20%);
 }
 
 .near-me-btn-walk:hover {
   background-color: var(--color-gold-soft);
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
 }
 
 .near-me-btn-walk {
@@ -93,7 +93,7 @@ const emit = defineEmits<{ expand: [] }>();
   background: none;
   border: none;
   padding: 0;
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   text-align: left;
   cursor: pointer;
 }

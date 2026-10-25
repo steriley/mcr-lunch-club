@@ -76,7 +76,7 @@ function pick(candidate: PlaceCandidate) {
   status.value = 'idle';
 }
 
-const inputClass = 'w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink outline-none focus:border-navy focus-visible:ring-2 focus-visible:ring-navy/30';
+const inputClass = 'w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none focus:border-navy focus-visible:ring-2 focus-visible:ring-navy/30';
 </script>
 
 <template>
@@ -89,7 +89,7 @@ const inputClass = 'w-full rounded-lg border border-hairline bg-white px-3 py-2.
     <p v-if="status === 'loading'" role="status" class="text-xs text-graphite">Searching…</p>
     <p v-if="status === 'error'" role="alert" class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">{{ errorMessage }}</p>
     <p v-if="status === 'done' && !results.length" role="status" class="text-sm text-graphite">No matches. Try another spelling, or enter the location manually.</p>
-    <ul v-if="results.length" class="divide-y divide-sand overflow-hidden rounded-lg border border-hairline bg-white" aria-label="Search results">
+    <ul v-if="results.length" class="divide-y divide-sand overflow-hidden rounded-lg border border-hairline bg-surface" aria-label="Search results">
       <li v-for="candidate in results" :key="`${candidate.lat},${candidate.lng},${candidate.label}`">
         <button type="button" class="block w-full px-3 py-2 text-left text-sm hover:bg-linen focus:bg-linen focus:outline-none" @click="pick(candidate)">
           <span class="block font-semibold text-ink">{{ candidate.label }}</span>

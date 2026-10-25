@@ -36,7 +36,7 @@
   padding: 10px 16px;
   border-radius: 8px;
   background: var(--ledger-deep);
-  color: var(--ledger-parchment);
+  color: var(--color-parchment-fixed);
   font-weight: 700;
   transform: translateY(-200%);
   transition: transform .15s ease;
@@ -70,7 +70,7 @@
   align-items: center;
   gap: 12px;
   flex: 0 0 auto;
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   text-decoration: none;
 }
 
@@ -131,7 +131,7 @@
 
 .site-nav-link:hover,
 .site-nav-link.is-active {
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   background: var(--ledger-parchment);
 }
 
@@ -170,7 +170,7 @@
   border: 1px solid var(--ledger-border);
   border-radius: 8px;
   background: var(--ledger-card);
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   cursor: pointer;
   list-style: none;
   transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 100ms ease;
@@ -202,12 +202,12 @@
 .mobile-menu[open] .mobile-menu-trigger {
   border-color: var(--ledger-deep);
   background: var(--ledger-deep);
-  color: var(--ledger-parchment);
+  color: var(--color-parchment-fixed);
 }
 
 .mobile-menu[open] .mobile-menu-trigger:hover,
 .mobile-menu[open] .mobile-menu-trigger:focus-visible {
-  background: var(--ledger-navy);
+  background: var(--color-navy-fixed);
   border-color: var(--ledger-navy);
 }
 
@@ -1027,7 +1027,7 @@ button.bench-pillar-link {
   border: 1px solid var(--ledger-border);
   border-radius: 6px;
   background: var(--ledger-card);
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   font: 700 12px "Plus Jakarta Sans", sans-serif;
   cursor: pointer;
 }
@@ -1100,7 +1100,7 @@ button.bench-pillar-link {
   padding: 7px 10px;
   border: 1px solid var(--ledger-border);
   border-radius: 6px;
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
@@ -1152,7 +1152,7 @@ button.bench-pillar-link {
   gap: 7px;
   min-width: 0;
   margin: 0;
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .055em;
@@ -1209,7 +1209,7 @@ button.bench-pillar-link {
 
 .field-panel-footer a {
   flex: 0 0 auto;
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   font-weight: 700;
   text-decoration: none;
 }
@@ -1294,7 +1294,7 @@ button.bench-pillar-link {
 
 .field-shortcut strong {
   overflow: hidden;
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   font: 600 12px/1.25 "Playfair Display", Georgia, serif;
   text-overflow: ellipsis;
 }
@@ -1617,7 +1617,7 @@ button.bench-pillar-link {
   padding: 0 16px;
   border: 1px solid var(--ledger-deep);
   border-radius: 999px;
-  color: var(--ledger-deep);
+  color: var(--color-deep-ink);
   font: 700 14px/1 "Plus Jakarta Sans", sans-serif;
   text-decoration: none;
   transition: background-color .15s ease, color .15s ease;
@@ -1630,11 +1630,11 @@ button.bench-pillar-link {
 .dossier-action:hover,
 .dossier-action.is-primary {
   background: var(--ledger-deep);
-  color: var(--ledger-parchment);
+  color: var(--color-parchment-fixed);
 }
 
 .dossier-action.is-primary:hover {
-  background: var(--ledger-navy);
+  background: var(--color-navy-fixed);
 }
 
 .dossier-action:focus-visible {
