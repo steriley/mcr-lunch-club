@@ -28,6 +28,39 @@
   --color-hairline: #d9cfb8; /* default borders */
   --color-rule: #dcd6c8; /* dividers */
 
+  /* Tiers (src/lib/tiers.ts reads these): accent, darker edge for pins, pale tint for badges. */
+  --color-tier-approved: #1e7a4e;
+  --color-tier-approved-edge: #155b39;
+  --color-tier-approved-tint: #e8f5ee;
+  --color-tier-under-consideration: #c27803;
+  --color-tier-under-consideration-edge: #8a5100;
+  --color-tier-under-consideration-tint: #fef5e7;
+  --color-tier-to-be-assessed: #5a6474;
+  --color-tier-to-be-assessed-edge: #454e5c;
+  --color-tier-to-be-assessed-tint: #f0f2f5;
+  --color-tier-if-we-must: #7c3a82;
+  --color-tier-if-we-must-edge: #602d64;
+  --color-tier-if-we-must-tint: #f7eef8;
+  --color-tier-rejected: #b92b27;
+  --color-tier-rejected-edge: #8f201d;
+  --color-tier-rejected-tint: #fdf0f0;
+  --color-tier-gone-but-not-forgotten: #71717a;
+  --color-tier-gone-but-not-forgotten-edge: #52525b;
+  --color-tier-gone-but-not-forgotten-tint: #f4f4f5;
+
+  /* Status colours borrow the tier palette, so they move with it. */
+  --color-success: var(--color-tier-approved);
+  --color-success-tint: var(--color-tier-approved-tint);
+  --color-warning: var(--color-tier-under-consideration);
+  --color-warning-tint: var(--color-tier-under-consideration-tint);
+  --color-danger: var(--color-tier-rejected);
+  --color-danger-tint: var(--color-tier-rejected-tint);
+  --color-steel: var(--color-tier-to-be-assessed);
+  --color-steel-tint: var(--color-tier-to-be-assessed-tint);
+  --color-plum: var(--color-tier-if-we-must);
+  --color-pewter: var(--color-tier-gone-but-not-forgotten);
+  --color-pewter-tint: var(--color-tier-gone-but-not-forgotten-tint);
+
   /* Tailwind's stone-500 (#79716b) is 4.2:1 on the parchment backgrounds; this passes WCAG AA (5:1+). */
   --color-stone-500: #6b645e;
 }

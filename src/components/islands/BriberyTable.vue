@@ -98,7 +98,7 @@ onMounted(() => {
                   <button type="button" class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[record.id]" @click="togglePublished(record)">
                     {{ record.published ? 'Unpublish' : 'Publish' }}
                   </button>
-                  <button type="button" class="rounded-lg bg-[#B92B27] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60" :disabled="busy[record.id]" @click="pendingDelete = record">
+                  <button type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60" :disabled="busy[record.id]" @click="pendingDelete = record">
                     Delete
                   </button>
                 </div>

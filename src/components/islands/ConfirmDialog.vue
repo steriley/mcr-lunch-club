@@ -66,7 +66,7 @@ onBeforeUnmount(() => {
         </button>
         <button
           type="button"
-          class="rounded-lg bg-[#B92B27] px-4 py-2 text-sm font-semibold text-white hover:bg-[#8e201d] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B92B27] focus-visible:ring-offset-2"
+          class="rounded-lg bg-danger px-4 py-2 text-sm font-semibold text-white hover:bg-[#8e201d] focus:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2"
           @click="emit('confirm')"
         >
           {{ confirmLabel || 'Confirm' }}

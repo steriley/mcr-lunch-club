@@ -141,10 +141,10 @@ const isRetrying = ref(false);
 const routeMessage = ref('');
 
 const ROUTE_BADGES: Record<RouteStatus, { text: string; tone: string }> = {
-  routed: { text: 'Routed & locked', tone: 'bg-[#E8F5EE] text-[#1E7A4E]' },
-  estimated: { text: 'Estimated, not routed', tone: 'bg-[#FEF5E7] text-[#C27803]' },
-  route_pending: { text: 'Route pending', tone: 'bg-[#FEF5E7] text-[#C27803]' },
-  needs_location: { text: 'Needs location', tone: 'bg-[#F4F4F5] text-[#71717A]' },
+  routed: { text: 'Routed & locked', tone: 'bg-success-tint text-success' },
+  estimated: { text: 'Estimated, not routed', tone: 'bg-warning-tint text-warning' },
+  route_pending: { text: 'Route pending', tone: 'bg-warning-tint text-warning' },
+  needs_location: { text: 'Needs location', tone: 'bg-pewter-tint text-pewter' },
 };
 
 const mapPoint = computed(() => {
@@ -427,7 +427,7 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
             <span class="rounded border border-[var(--dossier-border)] bg-[var(--dossier-card)] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--dossier-muted)]">
               {{ currentCuisine }}
             </span>
-            <span v-if="dossier?.closed" class="rounded border border-[#71717A]/50 bg-[#F4F4F5] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-[#71717A]">Permanently closed</span>
+            <span v-if="dossier?.closed" class="rounded border border-pewter/50 bg-pewter-tint px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] text-pewter">Permanently closed</span>
           </div>
           <p class="max-w-3xl text-[15px] leading-[23px] text-[var(--dossier-muted)]">{{ visibilityText }}</p>
         </div>
@@ -651,10 +651,10 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
           </template>
           <span v-if="errors.address && !manualEntry" class="dossier-error mt-0">{{ errors.address }}</span>
           <span v-if="errors.latitude || errors.longitude" class="dossier-error mt-0">{{ errors.latitude || errors.longitude }}</span>
-          <p v-if="!hasLocation" class="rounded-lg border border-[#C27803]/40 bg-[#FEF5E7] px-3 py-2 text-[13px] text-[#7a4b02]">
+          <p v-if="!hasLocation" class="rounded-lg border border-warning/40 bg-warning-tint px-3 py-2 text-[13px] text-[#7a4b02]">
             Without a location the venue is saved but stays hidden from the public site (“Needs location”).
           </p>
-          <p v-if="coordinateWarning" class="rounded-lg border border-[#C27803]/40 bg-[#FEF5E7] px-3 py-2 text-[13px] text-[#7a4b02]">{{ coordinateWarning }}</p>
+          <p v-if="coordinateWarning" class="rounded-lg border border-warning/40 bg-warning-tint px-3 py-2 text-[13px] text-[#7a4b02]">{{ coordinateWarning }}</p>
 
           <div class="dossier-inset space-y-3 bg-[var(--dossier-field)]">
             <div class="flex items-center justify-between gap-2">
@@ -732,7 +732,7 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
       :role="toast.tone === 'error' ? 'alert' : 'status'"
       :class="[
         'fixed bottom-24 right-4 z-50 flex max-w-sm items-start gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg',
-        toast.tone === 'error' ? 'border-[var(--dossier-danger)]/40 bg-[var(--dossier-danger-bg)] text-[var(--dossier-danger)]' : 'border-[var(--dossier-green)]/40 bg-[#E8F5EE] text-[var(--dossier-green)]',
+        toast.tone === 'error' ? 'border-[var(--dossier-danger)]/40 bg-[var(--dossier-danger-bg)] text-[var(--dossier-danger)]' : 'border-[var(--dossier-green)]/40 bg-success-tint text-[var(--dossier-green)]',
       ]"
     >
       <DossierIcon :name="toast.tone === 'error' ? 'alert' : 'checkCircle'" :size="16" class="mt-0.5" />

@@ -53,7 +53,7 @@ describe('createVenueIconHtml', () => {
   });
 
   it('uses the tier colour for the pin', () => {
-    assert.ok(createVenueIconHtml(venue({ tier: 'rejected' })).includes('#B92B27'));
+    assert.ok(createVenueIconHtml(venue({ tier: 'rejected' })).includes('var(--color-tier-rejected)'));
   });
 
   it('escapes the badge text', () => {

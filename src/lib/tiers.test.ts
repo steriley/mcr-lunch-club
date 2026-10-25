@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   DEFAULT_HOME_TIERS,
   NEAR_ME_DEFAULT_TIERS,
@@ -27,9 +28,20 @@ describe('tiers', () => {
 
   it('gives every tier a colour, banner and motto', () => {
     for (const tier of TIERS) {
-      for (const colour of [tier.color, tier.border, tier.tint]) assert.match(colour, /^#[0-9A-F]{6}$/i);
-      assert.equal(tier.bannerClass, `bg-[${tier.color}]`);
+      assert.equal(tier.color, `var(--color-tier-${tier.slug})`);
+      assert.equal(tier.border, `var(--color-tier-${tier.slug}-edge)`);
+      assert.equal(tier.tint, `var(--color-tier-${tier.slug}-tint)`);
+      assert.equal(tier.bannerClass, `bg-tier-${tier.slug}`);
       for (const text of [tier.icon, tier.quote, tier.motto, tier.description, tier.rule]) assert.ok(text.trim());
+    }
+  });
+
+  it('defines every tier colour token in the theme', () => {
+    const css = readFileSync('src/styles/global.css', 'utf8');
+    for (const tier of TIERS) {
+      for (const suffix of ['', '-edge', '-tint']) {
+        assert.match(css, new RegExp(`--color-tier-${tier.slug}${suffix}: #[0-9a-f]{6};`), `${tier.slug}${suffix} has no token`);
+      }
     }
   });
 

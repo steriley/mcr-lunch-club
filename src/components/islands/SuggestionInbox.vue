@@ -92,7 +92,7 @@ async function performDelete() {
             </template>
             <button
               type="button"
-              class="rounded-lg bg-[#B92B27] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60"
+              class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60"
               :disabled="busy[suggestion.id]"
               @click="pendingDelete = suggestion"
             >

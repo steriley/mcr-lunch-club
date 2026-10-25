@@ -79,7 +79,7 @@ onBeforeUnmount(() => {
         </span>
       </div>
 
-      <p v-if="unsaved || preview.hiddenText" class="docket-slip-actions border-b border-[var(--dossier-border)] bg-[#FEF5E7] px-5 py-2 text-[12px] text-[#7a4b02]">
+      <p v-if="unsaved || preview.hiddenText" class="docket-slip-actions border-b border-[var(--dossier-border)] bg-warning-tint px-5 py-2 text-[12px] text-[#7a4b02]">
         {{ unsaved ? 'Preview includes unsaved edits. ' : '' }}{{ preview.hiddenText ?? '' }}
       </p>
 
