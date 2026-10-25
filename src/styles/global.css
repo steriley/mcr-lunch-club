@@ -61,6 +61,42 @@
   --color-pewter: var(--color-tier-gone-but-not-forgotten);
   --color-pewter-tint: var(--color-tier-gone-but-not-forgotten-tint);
 
+
+  /* Text and rules on the navy footer, header and bench panels. */
+  --color-on-dark: #fff8f3;
+  --color-on-dark-warm: #efe7e0;
+  --color-on-dark-soft: #e9e1da;
+  --color-on-dark-muted: #d6d8e0;
+  --color-on-dark-subtle: #c5c6d1;
+  --color-on-dark-faint: #aeb1c0;
+  --color-on-dark-rule: #25315b;
+  /* The home page bench and field panels. */
+  --color-midnight: #0e1b44;
+  --color-royal: #001854;
+  --color-peach: #ffdcbd;
+  --color-peach-pale: #ffdec1;
+  --color-blush: #fbf2eb;
+  --color-umber: #49321b;
+  --color-bronze: #9a5a00;
+  --color-copper: #b36b00;
+  --color-gold-bright: #ffa538;
+  --color-vellum: #fffcf4;
+  /* Muted greys for secondary text on light surfaces. */
+  --color-ink-soft: #302b28;
+  --color-muted: #454650;
+  --color-muted-soft: #5a5b64;
+  --color-dim: #666974;
+  --color-subtle: #797b85;
+  /* Status hovers, text and washes beyond the tier palette. */
+  --color-danger-strong: var(--color-tier-rejected-edge);
+  --color-success-strong: #17603d;
+  --color-warning-ink: #7a4b02;
+  --color-plum-tint: var(--color-tier-if-we-must-tint);
+  --color-navy-tint: #edf3ff;
+  --color-charcoal-soft: #242b35;
+  --color-coal: #2d2d2d;
+  --color-saffron: #f5c451;
+
   /* Tailwind's stone-500 (#79716b) is 4.2:1 on the parchment backgrounds; this passes WCAG AA (5:1+). */
   --color-stone-500: #6b645e;
 }
@@ -75,12 +111,12 @@
     --ledger-navy: var(--color-navy);
     --ledger-deep: var(--color-deep);
     --ledger-border: var(--color-hairline);
-    --ledger-green: #1E7A4E;
-    --bench-navy: #0e1b44;
-    --bench-primary: #001854;
-    --bench-peach: #ffdcbd;
+    --ledger-green: var(--color-success);
+    --bench-navy: var(--color-midnight);
+    --bench-primary: var(--color-royal);
+    --bench-peach: var(--color-peach);
     --bench-amber: var(--color-ochre);
-    --bench-pillar: #fbf2eb;
+    --bench-pillar: var(--color-blush);
   }
 
   html {
@@ -187,7 +223,7 @@
 }
 
 .brand-caption {
-  color: #8a5100;
+  color: var(--color-ochre);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .13em;
@@ -211,7 +247,7 @@
   min-height: 34px;
   padding: 6px 12px;
   border-radius: 999px;
-  color: #454650;
+  color: var(--color-muted);
   font-size: 12px;
   font-weight: 600;
   text-decoration: none;
@@ -241,7 +277,7 @@
   min-width: 20px;
   padding: 2px 5px;
   border-radius: 999px;
-  background: #E8F5EE;
+  background: var(--color-success-tint);
   color: var(--ledger-green);
   font-size: 12px;
   text-align: center;
@@ -397,8 +433,8 @@
 
 .site-footer {
   background: var(--ledger-deep);
-  color: #d6d8e0;
-  border-top: 2px solid #F29A2E;
+  color: var(--color-on-dark-muted);
+  border-top: 2px solid var(--color-gold);
   padding: 30px 20px;
 }
 
@@ -420,17 +456,17 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  color: #fff8f3;
+  color: var(--color-on-dark);
   font: 700 14px/1.4 "Playfair Display", Georgia, serif;
 }
 
 .footer-column-icon {
-  color: #ffdcbd;
+  color: var(--color-peach);
   font: 600 20px/1 "Plus Jakarta Sans", sans-serif;
 }
 
 .footer-section-title {
-  color: #ffdcbd;
+  color: var(--color-peach);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: .1em;
@@ -439,13 +475,13 @@
 
 .footer-creed {
   margin: 0;
-  color: #fff8f3;
+  color: var(--color-on-dark);
   font: italic 12px/1.6 "Playfair Display", Georgia, serif;
 }
 
 .footer-detail {
   margin: 0;
-  color: #c5c6d1;
+  color: var(--color-on-dark-subtle);
   font-size: 12px;
   line-height: 1.6;
 }
@@ -458,21 +494,21 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  color: #e9e1da;
+  color: var(--color-on-dark-soft);
   font-size: 12px;
   line-height: 1.6;
 }
 
 .footer-fact-icon {
   flex: 0 0 15px;
-  color: #ffdcbd;
+  color: var(--color-peach);
   font-size: 13px;
   font-weight: 700;
   text-align: center;
 }
 
 .footer-fact strong {
-  color: #fff8f3;
+  color: var(--color-on-dark);
 }
 
 .footer-codex {
@@ -489,7 +525,7 @@
   align-items: center;
   gap: 8px;
   min-height: 24px;
-  color: #e9e1da;
+  color: var(--color-on-dark-soft);
   font-size: 12px;
   font-weight: 500;
   text-decoration: none;
@@ -497,12 +533,12 @@
 }
 
 .footer-links a:hover {
-  color: #fff8f3;
+  color: var(--color-on-dark);
 }
 
 .footer-links a span {
   width: 14px;
-  color: #F29A2E;
+  color: var(--color-gold);
   font-size: 12px;
   text-align: center;
 }
@@ -514,8 +550,8 @@
   justify-content: space-between;
   gap: 6px 16px;
   padding-top: 11px;
-  border-top: 1px solid #25315b;
-  color: #aeb1c0;
+  border-top: 1px solid var(--color-on-dark-rule);
+  color: var(--color-on-dark-faint);
   font-size: 12px;
   line-height: 1.5;
 }
@@ -556,8 +592,8 @@
   gap: 12px;
   padding: 10px 14px;
   border-bottom: 1px solid rgb(138 81 0 / 30%);
-  background: #0e1b44;
-  color: #fff;
+  background: var(--color-midnight);
+  color: var(--color-white);
 }
 
 .map-header-title {
@@ -571,7 +607,7 @@
   flex: none;
   overflow: hidden;
   width: 22px;
-  color: #ffdcbd;
+  color: var(--color-peach);
   font-size: 22px;
   user-select: none;
 }
@@ -580,7 +616,7 @@
   flex: none;
   overflow: hidden;
   width: 22px;
-  color: #c59b27;
+  color: var(--color-brass);
   font-size: 22px;
   user-select: none;
 }
@@ -592,7 +628,7 @@
 }
 
 .map-header-kicker {
-  color: #ffdcbd;
+  color: var(--color-peach);
   font: 700 11px/1.3 "Plus Jakarta Sans", sans-serif;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -600,7 +636,7 @@
 
 .map-header-subtitle {
   overflow: hidden;
-  color: #fff8f3;
+  color: var(--color-on-dark);
   font: 600 12px/1.4 "Playfair Display", Georgia, serif;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -612,7 +648,7 @@
   border: 1px solid rgb(138 81 0 / 20%);
   border-radius: 4px;
   background: rgb(37 49 91 / 80%);
-  color: #ffdcbd;
+  color: var(--color-peach);
   font: 700 13px/1.4 "Plus Jakarta Sans", sans-serif;
   white-space: nowrap;
 }
@@ -630,7 +666,7 @@
   border: 1px solid rgb(217 207 184 / 40%);
   border-radius: 16px;
   background: var(--bench-navy);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .bench .material-symbols-outlined {
@@ -673,7 +709,7 @@
 
 .bench-title {
   margin: 2px 0 0;
-  color: #fff8f3;
+  color: var(--color-on-dark);
   font: 700 clamp(20px, 4vw, 24px)/1.2 "Playfair Display", Georgia, serif;
   letter-spacing: -.01em;
 }
@@ -717,7 +753,7 @@
 }
 
 .bench-pillar:hover {
-  border-color: #1b2f6b;
+  border-color: var(--color-navy);
 }
 
 /* The overlay makes the whole card the click target; the walk link and seal sit above it. */
@@ -944,7 +980,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #454650;
+  color: var(--color-muted);
   font-size: 12px;
   font-weight: 500;
 }
@@ -988,7 +1024,7 @@
 
 .bench-pillars-label {
   margin: 0;
-  color: #efe7e0;
+  color: var(--color-on-dark-warm);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: .08em;
@@ -1052,7 +1088,7 @@
   display: -webkit-box;
   margin: 2px 0 0;
   overflow: hidden;
-  color: #454650;
+  color: var(--color-muted);
   font-size: 12px;
   line-height: 1.4;
   -webkit-box-orient: vertical;
@@ -1153,8 +1189,8 @@ button.bench-pillar-link {
   place-items: center;
   border: 1px solid var(--ledger-border);
   border-radius: 50%;
-  background: #ffdec1;
-  color: #8a5100;
+  background: var(--color-peach-pale);
+  color: var(--color-ochre);
 }
 
 .bulletin-icon .material-symbols-outlined {
@@ -1172,7 +1208,7 @@ button.bench-pillar-link {
 .weekly-bulletin strong {
   display: block;
   margin-bottom: 2px;
-  color: #8a5100;
+  color: var(--color-ochre);
   font-size: 12px;
   letter-spacing: .08em;
   text-transform: uppercase;
@@ -1251,7 +1287,7 @@ button.bench-pillar-link {
 }
 
 .field-panel-heading h2 {
-  color: #8a5100;
+  color: var(--color-ochre);
 }
 
 .field-icon {
@@ -1261,7 +1297,7 @@ button.bench-pillar-link {
 }
 
 .field-icon.is-gold {
-  color: #9a5a00;
+  color: var(--color-bronze);
 }
 
 .field-icon.is-green {
@@ -1272,8 +1308,8 @@ button.bench-pillar-link {
   flex: 0 0 auto;
   padding: 4px 6px;
   border-radius: 4px;
-  background: #ffdec1;
-  color: #49321b;
+  background: var(--color-peach-pale);
+  color: var(--color-umber);
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -1282,7 +1318,7 @@ button.bench-pillar-link {
 .deliberation-quote {
   flex: 1;
   margin: 0;
-  color: #302b28;
+  color: var(--color-ink-soft);
   font: italic 14px/1.4 "Playfair Display", Georgia, serif;
 }
 
@@ -1293,7 +1329,7 @@ button.bench-pillar-link {
   gap: 8px;
   padding-top: 7px;
   border-top: 1px solid rgb(213 204 183 / 45%);
-  color: #666974;
+  color: var(--color-dim);
   font-size: 12px;
 }
 
@@ -1313,7 +1349,7 @@ button.bench-pillar-link {
 
 .field-panel-time {
   flex: 0 0 auto;
-  color: #797b85;
+  color: var(--color-subtle);
   font-size: 12px;
 }
 
@@ -1330,12 +1366,12 @@ button.bench-pillar-link {
 }
 
 .field-shortcuts-heading h2 {
-  color: #8a5100;
+  color: var(--color-ochre);
 }
 
 .field-shortcuts-heading > span {
   flex: 0 0 auto;
-  color: #797b85;
+  color: var(--color-subtle);
   font-size: 12px;
 }
 
@@ -1379,7 +1415,7 @@ button.bench-pillar-link {
 }
 
 .field-shortcut.is-consideration .field-shortcut-label {
-  color: #b36b00;
+  color: var(--color-copper);
 }
 
 .field-shortcut strong {
@@ -1392,7 +1428,7 @@ button.bench-pillar-link {
 .field-shortcut-detail {
   display: -webkit-box;
   overflow: hidden;
-  color: #5a5b64;
+  color: var(--color-muted-soft);
   font-size: 12px;
   line-height: 1.35;
   -webkit-box-orient: vertical;
@@ -1431,17 +1467,17 @@ button.bench-pillar-link {
   height: 32px;
   align-items: center;
   justify-content: center;
-  border: 2px solid #c59b27;
+  border: 2px solid var(--color-brass);
   border-radius: 50%;
-  background: #1a1e24;
+  background: var(--color-charcoal);
   box-shadow: 0 0 0 4px rgb(242 154 46 / 28%), 0 4px 12px rgb(14 27 68 / 45%);
-  color: #c59b27;
+  color: var(--color-brass);
 }
 
 .hq-hotspot-wave {
   position: absolute;
   inset: 0;
-  border: 2px solid #f29a2e;
+  border: 2px solid var(--color-gold);
   border-radius: 50%;
   background: rgb(242 154 46 / 30%);
   opacity: 0;
@@ -1502,7 +1538,7 @@ button.bench-pillar-link {
 }
 
 .hq-label-title {
-  color: #fff8f3;
+  color: var(--color-on-dark);
   font: 700 15px/1.25 "Playfair Display", Georgia, serif;
 }
 
@@ -1654,20 +1690,20 @@ button.bench-pillar-link {
 /* In the components layer so Tailwind utilities on the same element win. */
 @layer components {
   .dossier {
-    --dossier-canvas: #FBF6EA;
-    --dossier-card: #F3ECDB;
-    --dossier-paper: #F7F0DF;
-    --dossier-field: #FFFCF4;
-    --dossier-border: #D9CFB8;
-    --dossier-primary: #001854;
-    --dossier-primary-container: #1B2F6B;
-    --dossier-secondary: #8A5100;
-    --dossier-amber: #FFA538;
-    --dossier-ink: #1E1B17;
-    --dossier-muted: #454650;
-    --dossier-danger: #B92B27;
-    --dossier-danger-bg: #FDF0F0;
-    --dossier-green: #1E7A4E;
+    --dossier-canvas: var(--color-parchment);
+    --dossier-card: var(--color-card);
+    --dossier-paper: var(--color-paper);
+    --dossier-field: var(--color-vellum);
+    --dossier-border: var(--color-hairline);
+    --dossier-primary: var(--color-royal);
+    --dossier-primary-container: var(--color-navy);
+    --dossier-secondary: var(--color-ochre);
+    --dossier-amber: var(--color-gold-bright);
+    --dossier-ink: var(--color-ink);
+    --dossier-muted: var(--color-muted);
+    --dossier-danger: var(--color-danger);
+    --dossier-danger-bg: var(--color-danger-tint);
+    --dossier-green: var(--color-success);
     color: var(--dossier-ink);
   }
 
@@ -1829,7 +1865,7 @@ button.bench-pillar-link {
   .dossier-btn.is-primary {
     border-color: var(--dossier-primary-container);
     background: var(--dossier-primary-container);
-    color: #FBF6EA;
+    color: var(--color-parchment);
   }
 
   .dossier-btn.is-primary:hover:not(:disabled) {
@@ -1844,17 +1880,17 @@ button.bench-pillar-link {
 
   .dossier-btn.is-danger:hover:not(:disabled) {
     background: var(--dossier-danger);
-    color: #FBF6EA;
+    color: var(--color-parchment);
   }
 
   .dossier-btn.is-danger-solid {
     border-color: var(--dossier-danger);
     background: var(--dossier-danger);
-    color: #FBF6EA;
+    color: var(--color-parchment);
   }
 
   .dossier-btn.is-danger-solid:hover:not(:disabled) {
-    background: #8e201d;
+    background: var(--color-danger-strong);
   }
 
   .dossier-btn.is-quiet {
@@ -1970,9 +2006,9 @@ button.bench-pillar-link {
 }
 
 .bench-count.is-legacy {
-  border-color: #d6d3d1;
-  background: #f5f5f4;
-  color: #57534e;
+  border-color: var(--color-stone-300);
+  background: var(--color-stone-100);
+  color: var(--color-stone-600);
 }
 
 /* Map pin popups (home map and Near Me): the same card language as the bench pillars. */
@@ -2149,9 +2185,9 @@ button.bench-pillar-link {
 }
 
 .bench-inspection-badges > .bench-count:not(.is-legacy) {
-  border-color: #7c3a82;
-  background: #7c3a82;
-  color: #fff;
+  border-color: var(--color-plum);
+  background: var(--color-plum);
+  color: var(--color-white);
 }
 
 /* Chairs' Deliberation: the decrees share one grid cell and fade between each other. */
@@ -2189,8 +2225,8 @@ button.bench-pillar-link {
   overflow-x: auto;
   padding-inline: max(24px, calc((100% - 72rem) / 2 + 16px));
   scrollbar-width: none;
-  mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  mask-image: linear-gradient(to right, transparent, var(--color-black) 24px, var(--color-black) calc(100% - 24px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, var(--color-black) 24px, var(--color-black) calc(100% - 24px), transparent);
 }
 
 .tier-nav-scroll::-webkit-scrollbar {
@@ -2211,7 +2247,7 @@ button.bench-pillar-link {
   border: 1px solid rgb(255 255 255 / 20%);
   border-radius: 8px;
   background: rgb(0 0 0 / 30%);
-  color: #e7e5e4;
+  color: var(--color-stone-200);
   font: 400 12px/1.5 "Plus Jakarta Sans", sans-serif;
 }
 

@@ -651,10 +651,10 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
           </template>
           <span v-if="errors.address && !manualEntry" class="dossier-error mt-0">{{ errors.address }}</span>
           <span v-if="errors.latitude || errors.longitude" class="dossier-error mt-0">{{ errors.latitude || errors.longitude }}</span>
-          <p v-if="!hasLocation" class="rounded-lg border border-warning/40 bg-warning-tint px-3 py-2 text-[13px] text-[#7a4b02]">
+          <p v-if="!hasLocation" class="rounded-lg border border-warning/40 bg-warning-tint px-3 py-2 text-[13px] text-warning-ink">
             Without a location the venue is saved but stays hidden from the public site (“Needs location”).
           </p>
-          <p v-if="coordinateWarning" class="rounded-lg border border-warning/40 bg-warning-tint px-3 py-2 text-[13px] text-[#7a4b02]">{{ coordinateWarning }}</p>
+          <p v-if="coordinateWarning" class="rounded-lg border border-warning/40 bg-warning-tint px-3 py-2 text-[13px] text-warning-ink">{{ coordinateWarning }}</p>
 
           <div class="dossier-inset space-y-3 bg-[var(--dossier-field)]">
             <div class="flex items-center justify-between gap-2">

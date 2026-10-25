@@ -79,7 +79,7 @@ onBeforeUnmount(() => {
         </span>
       </div>
 
-      <p v-if="unsaved || preview.hiddenText" class="docket-slip-actions border-b border-[var(--dossier-border)] bg-warning-tint px-5 py-2 text-[12px] text-[#7a4b02]">
+      <p v-if="unsaved || preview.hiddenText" class="docket-slip-actions border-b border-[var(--dossier-border)] bg-warning-tint px-5 py-2 text-[12px] text-warning-ink">
         {{ unsaved ? 'Preview includes unsaved edits. ' : '' }}{{ preview.hiddenText ?? '' }}
       </p>
 
@@ -95,7 +95,7 @@ onBeforeUnmount(() => {
             <p v-if="preview.address" class="mt-1 text-sm text-[var(--dossier-muted)]">{{ preview.address }}</p>
           </div>
           <div
-            class="flex h-20 w-20 shrink-0 rotate-[-8deg] flex-col items-center justify-center rounded-full border-4 border-double border-[var(--dossier-secondary)] bg-[#FFDCBD] text-center text-[var(--dossier-secondary)] shadow-inner"
+            class="flex h-20 w-20 shrink-0 rotate-[-8deg] flex-col items-center justify-center rounded-full border-4 border-double border-[var(--dossier-secondary)] bg-peach text-center text-[var(--dossier-secondary)] shadow-inner"
             aria-label="Wax seal"
           >
             <span class="text-[9px] font-bold uppercase tracking-[0.12em]">Sealed</span>
@@ -118,7 +118,7 @@ onBeforeUnmount(() => {
           </div>
         </div>
 
-        <div v-if="preview.lunchSpecial" class="rounded-lg border border-[var(--dossier-secondary)]/40 bg-[#FFF6E6] p-4">
+        <div v-if="preview.lunchSpecial" class="rounded-lg border border-[var(--dossier-secondary)]/40 bg-warning-tint p-4">
           <p class="dossier-overline text-[var(--dossier-secondary)]">Eat like us</p>
           <p class="dossier-serif mt-1 italic">“{{ preview.lunchSpecial }}”</p>
         </div>

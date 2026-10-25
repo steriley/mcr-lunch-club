@@ -62,11 +62,11 @@ const totalHidden = tierCounts.reduce((sum, row) => sum + row.hidden, 0);
 
 const stats = [
   { label: 'Public venues', value: totalVisible, href: '/admin/venues?status=public', tone: 'bg-success-tint text-success' },
-  { label: 'Hidden venues', value: totalHidden, href: '/admin/venues?status=hidden', tone: 'bg-[#fff4df] text-warning' },
-  { label: 'Pending tier changes', value: pendingChanges.total, href: '/admin/pending', tone: 'bg-[#fff4df] text-ochre' },
-  { label: 'New suggestions', value: suggestions.total, href: '/admin/suggestions', tone: 'bg-[#f1e8f3] text-plum' },
-  { label: 'Bribery records', value: bribery.total, href: '/admin/bribery', tone: 'bg-[#FDECEC] text-danger' },
-  { label: 'Active Chairs', value: activeChairs, href: '/admin/users', tone: 'bg-[#edf3ff] text-navy' },
+  { label: 'Hidden venues', value: totalHidden, href: '/admin/venues?status=hidden', tone: 'bg-warning-tint text-warning' },
+  { label: 'Pending tier changes', value: pendingChanges.total, href: '/admin/pending', tone: 'bg-warning-tint text-ochre' },
+  { label: 'New suggestions', value: suggestions.total, href: '/admin/suggestions', tone: 'bg-plum-tint text-plum' },
+  { label: 'Bribery records', value: bribery.total, href: '/admin/bribery', tone: 'bg-danger-tint text-danger' },
+  { label: 'Active Chairs', value: activeChairs, href: '/admin/users', tone: 'bg-navy-tint text-navy' },
 ];
 ---
 

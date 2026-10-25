@@ -68,7 +68,7 @@ onMounted(() => {
 
     <div class="overflow-hidden rounded-2xl border border-hairline bg-parchment shadow-sm">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-hairline text-left text-sm text-[#2d2d2d]">
+        <table class="min-w-full divide-y divide-hairline text-left text-sm text-coal">
           <thead class="bg-card text-ink">
             <tr>
               <th scope="col" class="px-4 py-3 font-semibold">Incident</th>
@@ -98,7 +98,7 @@ onMounted(() => {
                   <button type="button" class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[record.id]" @click="togglePublished(record)">
                     {{ record.published ? 'Unpublish' : 'Publish' }}
                   </button>
-                  <button type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60" :disabled="busy[record.id]" @click="pendingDelete = record">
+                  <button type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60" :disabled="busy[record.id]" @click="pendingDelete = record">
                     Delete
                   </button>
                 </div>
