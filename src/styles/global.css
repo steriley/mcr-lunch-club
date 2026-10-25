@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+/* Tailwind's stone-500 (#79716b) is 4.2:1 on the parchment backgrounds; this passes WCAG AA (5:1+). */
+@theme {
+  --color-stone-500: #6b645e;
+}
+
 @layer base {
   :root {
     --ledger-parchment: #FBF6EA;
@@ -67,6 +72,27 @@
     transparent 62%,
     rgb(0 0 0 / 9%) 100%
   );
+}
+
+/* Hidden until a keyboard user tabs to it, then pinned above the sticky header. */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 10000;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: var(--ledger-deep);
+  color: var(--ledger-parchment);
+  font-weight: 700;
+  transform: translateY(-200%);
+  transition: transform .15s ease;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--ledger-gold);
+  outline-offset: 2px;
 }
 
 .site-header {
@@ -419,6 +445,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-height: 24px;
   color: #e9e1da;
   font-size: 12px;
   font-weight: 500;
@@ -2021,6 +2048,34 @@ button.bench-pillar-link {
   background: var(--ledger-navy);
 }
 
+.venue-popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.venue-popup-actions .venue-popup-button {
+  box-sizing: border-box;
+  margin-top: 0;
+}
+
+/* Leaflet colours every link in the map blue; the extra class outranks it. */
+.ledger-popup a.venue-popup-button.is-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--ledger-deep);
+  background: transparent;
+  color: var(--ledger-deep);
+  text-decoration: none;
+}
+
+.ledger-popup a.venue-popup-button.is-secondary:hover {
+  background: var(--ledger-deep);
+  color: var(--ledger-parchment);
+}
+
 .venue-popup-button:focus-visible {
   outline: 2px solid var(--ledger-gold);
   outline-offset: 2px;
@@ -2163,4 +2218,45 @@ button.bench-pillar-link {
 /* Until the opening decree is picked, hold the badge's space without showing a number. */
 .decree-badge.is-pending {
   visibility: hidden;
+}
+
+/* Venue dossier: the two things people want once they've picked a place. */
+.dossier-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.dossier-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--ledger-deep);
+  border-radius: 999px;
+  color: var(--ledger-deep);
+  font: 700 14px/1 "Plus Jakarta Sans", sans-serif;
+  text-decoration: none;
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.dossier-action .material-symbols-outlined {
+  font-size: 20px;
+}
+
+.dossier-action:hover,
+.dossier-action.is-primary {
+  background: var(--ledger-deep);
+  color: var(--ledger-parchment);
+}
+
+.dossier-action.is-primary:hover {
+  background: var(--ledger-navy);
+}
+
+.dossier-action:focus-visible {
+  outline: 2px solid var(--ledger-gold);
+  outline-offset: 2px;
 }

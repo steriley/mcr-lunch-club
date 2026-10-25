@@ -8,6 +8,7 @@ import {
   createVenuePopupContent,
   createWalkingIsochrones,
   escapeHtml,
+  venuePinLabel,
 } from './markers';
 import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES } from './config';
 import type { Venue } from '@/types';
@@ -47,8 +48,8 @@ const L = {
 
 describe('createVenueIconHtml', () => {
   it('shows the cost band on every pin', () => {
-    assert.ok(createVenueIconHtml(venue()).includes('<span>££</span>'));
-    assert.ok(createVenueIconHtml(venue({ tier: 'rejected' })).includes('<span>££</span>'));
+    assert.ok(createVenueIconHtml(venue()).includes('<span aria-hidden="true">££</span>'));
+    assert.ok(createVenueIconHtml(venue({ tier: 'rejected' })).includes('<span aria-hidden="true">££</span>'));
   });
 
   it('uses the tier colour for the pin', () => {
@@ -65,7 +66,20 @@ describe('createVenueIconHtml', () => {
 describe('createVenueIconHtml rank badge', () => {
   it('adds a numbered badge only when a rank is given', () => {
     assert.ok(createVenueIconHtml(venue(), 3).includes('>3</span>'));
-    assert.ok(!createVenueIconHtml(venue()).includes('aria-hidden="true">'));
+    assert.ok(!createVenueIconHtml(venue()).includes('-top-2 -right-2'));
+  });
+});
+
+describe('venue pin accessible name', () => {
+  it('names the venue, tier, cost and walk instead of announcing only the cost', () => {
+    assert.equal(venuePinLabel(venue()), 'Chip Shop, Approved, ££, 6 min walk');
+    assert.equal(venuePinLabel(venue({ walkingTimeMin: null })), 'Chip Shop, Approved, ££');
+  });
+
+  it('hides the cost badge from screen readers and adds the escaped label', () => {
+    const html = createVenueIconHtml(venue({ name: 'Fish <&> Chips' }));
+    assert.ok(html.includes('<span aria-hidden="true">££</span>'));
+    assert.ok(html.includes('<span class="sr-only">Fish &lt;&amp;&gt; Chips, Approved, ££, 6 min walk</span>'));
   });
 });
 
@@ -137,6 +151,16 @@ describe('createVenuePopupContent', () => {
     assert.ok(!element.innerHTML.includes('<img'));
     assert.ok(!element.innerHTML.includes('<script>'));
     assert.ok(element.innerHTML.includes('&lt;img src=x onerror=&quot;alert(1)&quot;&gt;'));
+  });
+
+  it('adds a walking directions link, and none without coordinates', () => {
+    const element: any = {};
+    (globalThis as any).document = { createElement: () => element };
+    createVenuePopupContent(venue());
+    assert.ok(element.innerHTML.includes('href="https://www.google.com/maps/dir/?api=1&amp;destination=53.48,-2.25&amp;travelmode=walking"'));
+    assert.ok(element.innerHTML.includes('aria-label="Walking directions to Chip Shop"'));
+    createVenuePopupContent(venue({ lat: null }));
+    assert.ok(!element.innerHTML.includes('Walk there'));
   });
 
   it('binds the dossier button to the callback', () => {

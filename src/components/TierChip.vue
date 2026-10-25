@@ -103,8 +103,9 @@ defineProps<{
   font-variant-numeric: tabular-nums;
 }
 
+/* A darker pill rather than a lighter one: white on a lightened tier colour fell below 4.5:1. */
 .ledger-tier-chip.is-selected .ledger-tier-count {
-  background: rgb(255 255 255 / 24%);
+  background: rgb(0 0 0 / 22%);
   color: #fff;
 }
 

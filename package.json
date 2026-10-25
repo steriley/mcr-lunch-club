@@ -24,6 +24,7 @@
     "test:db": "tsx ./scripts/test-db.ts"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
     "@astrojs/vercel": "11.0.15",
     "@astrojs/vue": "^7.1.0",
     "@better-auth/drizzle-adapter": "^1.7.10",

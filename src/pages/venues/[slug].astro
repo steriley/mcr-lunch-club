@@ -4,6 +4,7 @@ import { formatDate } from '@/lib/dates';
 import { focalStyle } from '@/lib/image-upload';
 import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import { getPublicInspections, getPublicVenueDetails, type PublicVenueDetail } from '@/lib/public-data';
+import { getWalkingDirectionsUrl } from '@/lib/map/directions';
 import { milesText, walkText } from '@/lib/route-display';
 import { COST_LABELS } from '@/lib/cost-display';
 import { tierInfo } from '@/lib/tiers';
@@ -31,9 +32,22 @@ interface Props {
 const { venue, venueInspections } = Astro.props;
 
 const tier = tierInfo(venue.tier);
+const hasLocation = venue.lat !== null && venue.lng !== null;
+// The link preview when someone drops this page into the lunch chat.
+const walk = venue.walkingTimeMin == null ? null : `${walkText(venue.walkingTimeMin)} from Spinningfields`;
+const pageDescription = truncate(
+  [`${tier.label} by the MCR Lunch Club.`, [venue.cuisine, venue.cost, walk].filter(Boolean).join(' · ') + '.', venue.eatLikeUs && `Eat like us: ${venue.eatLikeUs}`]
+    .filter(Boolean)
+    .join(' '),
+  200,
+);
+
+function truncate(text: string, max: number): string {
+  return text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`;
+}
 ---
 
-<Layout title={`${venue.name} — Official Ledger Dossier | MCR Lunch Club`}>
+<Layout title={`${venue.name} — Official Ledger Dossier | MCR Lunch Club`} description={pageDescription} image={venue.image?.url}>
   <article class="w-full font-serif-header">
       <!-- Status Banner: runs edge to edge, content stays within the page width -->
       <div class={`${tier.bannerClass} tier-header-gradient text-white`}>
@@ -77,6 +91,27 @@ const tier = tierInfo(venue.tier);
           <p class="text-sm text-stone-600 mt-2 font-sans flex items-center gap-2">
             <span>📍 {venue.address || 'Address unrecorded; approximate Manchester zone'}</span>
           </p>
+
+          {hasLocation && !venue.closed && (
+            <div class="dossier-actions">
+              <a
+                class="dossier-action is-primary"
+                href={getWalkingDirectionsUrl(venue.lat!, venue.lng!, 'server')}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-walk-directions
+                data-lat={venue.lat}
+                data-lng={venue.lng}
+              >
+                <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
+                Walk there{venue.walkingTimeMin !== null && ` · ${walkText(venue.walkingTimeMin)}`}
+              </a>
+              <a class="dossier-action" href={`/?venue=${encodeURIComponent(venue.slug)}`}>
+                <span class="material-symbols-outlined" aria-hidden="true">explore</span>
+                Show on the map
+              </a>
+            </div>
+          )}
         </div>
 
         {venue.image && (
@@ -88,7 +123,8 @@ const tier = tierInfo(venue.tier);
             style={{ objectPosition: focalStyle(venue.image) }}
             loading="lazy"
             decoding="async"
-            class="w-full max-h-96 object-cover rounded-xl border border-[#dcd6c8]"
+            onerror="this.remove()"
+            class="w-full max-h-96 object-cover rounded-xl border border-[#dcd6c8] bg-[#f4efe4]"
           />
         )}
 
