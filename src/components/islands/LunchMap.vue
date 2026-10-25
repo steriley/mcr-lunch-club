@@ -76,6 +76,7 @@ import { whenIdle } from '@/lib/idle';
 import { londonDate } from '@/lib/london-date';
 import { $venuesList } from '@/stores/ledger';
 import {
+  createMapRemover,
   BASE_LAT,
   BASE_LNG,
   DEFAULT_ZOOM,
@@ -98,6 +99,7 @@ const filters = useStore($filters);
 const venuesList = useStore($venuesList);
 
 let mapInstance: any = null;
+let removeMap: (() => void) | null = null;
 let leafletModule: any = null;
 let markersLayer: any = null;
 let ringsLayer: any = null;
@@ -139,6 +141,7 @@ async function startMap() {
     zoom: DEFAULT_ZOOM,
     zoomControl: false,
   });
+  removeMap = createMapRemover(mapInstance);
 
   // Custom Zoom Control top-right
   L.control.zoom({ position: 'topright' }).addTo(mapInstance);
@@ -179,10 +182,9 @@ function focusLinkedVenue() {
 
 onUnmounted(() => {
   cancelStart?.();
-  if (mapInstance) {
-    mapInstance.remove();
-    mapInstance = null;
-  }
+  removeMap?.();
+  removeMap = null;
+  mapInstance = null;
 });
 
 // Watch filters or venues changes
