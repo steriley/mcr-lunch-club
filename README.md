@@ -37,6 +37,7 @@ Every public page carries a canonical URL and Open Graph / Twitter card tags (`s
   - `/api/weather/[step]` — Weather forecast for the home page card
   - `/api/cron/weekly-bulletin` — Vercel Cron: rebuilds the site when the Wednesday bulletin goes out
   - `/admin/*` — The Chairs' Area (sign-in required; see below)
+- **Styles**: the public site and the Chairs' Area each have their own stylesheet (`src/styles/global.css`, `src/styles/admin.css`), and Tailwind scans only that side's files, so visitors never download admin styles. Both import `theme.css` (the colour tokens) and `map.css`. A new admin component goes in `src/components/admin/`; a new public page directory is picked up by `global.css` automatically.
 - **Vue 3 Islands (`src/components/islands/`)**:
   - `LunchMap.vue` (`client:load`) — Leaflet map with custom tier pins, walking isochrones, and the 2.5-mile boundary. Leaflet starts once the browser is idle (a grey box until then), or straight away for a `/?venue=` link.
   - `FilterBar.vue` (`client:load`) — Search, tier badges, cost (`£`/`££`/`£££`), walking time slider, and recency filter.
@@ -338,7 +339,8 @@ not sign you in on the `vercel.app` address; sign in on each separately.
 mcr-lunch-club/
 ├── src/
 │   ├── components/
-│   │   ├── islands/           # Vue 3 interactive islands (public site and Chairs' Area)
+│   │   ├── admin/             # Chairs' Area components (dossier/: the venue form's cards)
+│   │   ├── islands/           # Vue 3 interactive islands for the public site (near-me/: Near Me's pieces)
 │   │   ├── LedgerCanon.astro  # Embeds the public venues for the islands
 │   │   └── WeatherCard.vue
 │   ├── data/                  # Original datasets: import source; inspections still read from here
@@ -356,7 +358,11 @@ mcr-lunch-club/
 │   │   ├── tiers/[tier].astro # Tier pages
 │   │   └── venues/[slug].astro# Venue dossiers
 │   ├── stores/                # Nanostores: filters, modal state and the venue ledger
-│   ├── styles/global.css      # Tailwind CSS & Leaflet custom rules
+│   ├── styles/
+│   │   ├── theme.css          # Colour tokens (@theme) and base styles, shared
+│   │   ├── map.css            # Leaflet pins, HQ marker and popups, shared
+│   │   ├── global.css         # The public site (Layout.astro); Tailwind scans public files only
+│   │   └── admin.css          # The Chairs' Area (AdminLayout.astro); Tailwind scans admin files only
 │   └── types/index.ts         # Shared TypeScript interfaces
 ├── drizzle/                   # Committed SQL migrations
 ├── scripts/
