@@ -34,8 +34,8 @@
   --color-tier-approved: #1e7a4e;
   --color-tier-approved-edge: #155b39;
   --color-tier-approved-tint: #e8f5ee;
-  --color-tier-under-consideration: #c27803;
-  --color-tier-under-consideration-edge: #8a5100;
+  --color-tier-under-consideration: #975e02; /* white text 5.4:1; as text, 4.5:1+ on every pale surface */
+  --color-tier-under-consideration-edge: #714501;
   --color-tier-under-consideration-tint: #fef5e7;
   --color-tier-to-be-assessed: #5a6474;
   --color-tier-to-be-assessed-edge: #454e5c;
