@@ -108,7 +108,7 @@ const emit = defineEmits<{ recenter: []; home: []; pick: [] }>();
   border-radius: 9999px;
   background-color: rgba(26, 30, 36, 0.95);
   backdrop-filter: blur(8px);
-  color: #f9f7f1;
+  color: var(--color-cream);
   border: 1px solid rgba(197, 155, 39, 0.6);
   box-shadow: var(--near-me-shadow);
   cursor: pointer;
@@ -117,15 +117,15 @@ const emit = defineEmits<{ recenter: []; home: []; pick: [] }>();
 
 .near-me-control-btn:hover:not(:disabled) {
   background-color: var(--near-me-crimson);
-  border-color: #f9f7f1;
-  color: #ffffff;
+  border-color: var(--color-cream);
+  color: var(--color-white);
   transform: scale(1.05);
 }
 
 .near-me-control-btn.is-active {
-  background-color: #1d4ed8;
-  border-color: #93c5fd;
-  color: #ffffff;
+  background-color: var(--color-control-active);
+  border-color: var(--color-control-active-edge);
+  color: var(--color-white);
   box-shadow: 0 0 12px rgba(37, 99, 235, 0.6);
 }
 
@@ -155,7 +155,7 @@ const emit = defineEmits<{ recenter: []; home: []; pick: [] }>();
 .near-me-control-btn.is-active {
   background-color: var(--ledger-green);
   border-color: var(--ledger-parchment);
-  color: #ffffff;
+  color: var(--color-white);
   box-shadow: 0 0 0 2px rgb(30 122 78 / 22%);
 }
 

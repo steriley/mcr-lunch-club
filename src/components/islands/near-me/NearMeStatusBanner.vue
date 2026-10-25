@@ -41,7 +41,7 @@ defineProps<{ banner: StatusBanner }>();
   gap: 8px;
   background-color: rgba(26, 30, 36, 0.95);
   backdrop-filter: blur(8px);
-  color: #f9f7f1;
+  color: var(--color-cream);
   padding: 6px 14px;
   border-radius: 9999px;
   border: 1px solid var(--near-me-gold);
@@ -51,27 +51,27 @@ defineProps<{ banner: StatusBanner }>();
 }
 
 .near-me-status-pill.warning {
-  border-color: #d97706;
+  border-color: var(--color-pill-warning-edge);
   background-color: rgba(69, 26, 3, 0.95);
-  color: #fef3c7;
+  color: var(--color-pill-warning-text);
 }
 
 .near-me-status-pill.error {
-  border-color: #dc2626;
+  border-color: var(--color-pill-error-edge);
   background-color: rgba(69, 10, 10, 0.95);
-  color: #fee2e2;
+  color: var(--color-pill-error-text);
 }
 
 .near-me-status-pill.manual {
-  border-color: #a855f7;
+  border-color: var(--color-pill-manual-edge);
   background-color: rgba(59, 7, 100, 0.95);
-  color: #f3e8ff;
+  color: var(--color-pill-manual-text);
 }
 
 .near-me-status-action {
   background-color: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #ffffff;
+  color: var(--color-white);
   padding: 2px 8px;
   border-radius: 9999px;
   font-weight: 600;
@@ -83,7 +83,7 @@ defineProps<{ banner: StatusBanner }>();
 
 .near-me-status-action:hover {
   background-color: var(--near-me-gold);
-  color: #1a1e24;
+  color: var(--color-charcoal);
 }
 
 .near-me-status-pill {
@@ -101,13 +101,13 @@ defineProps<{ banner: StatusBanner }>();
 .near-me-status-pill.error {
   background-color: var(--near-me-error-bg);
   color: var(--near-me-error-ink);
-  border-color: #b92b27;
+  border-color: var(--color-danger);
 }
 
 .near-me-status-pill.manual {
   background-color: var(--near-me-manual-bg);
   color: var(--near-me-manual-ink);
-  border-color: #7c3a82;
+  border-color: var(--color-plum);
 }
 
 .near-me-status-action {
@@ -118,7 +118,7 @@ defineProps<{ banner: StatusBanner }>();
 
 .near-me-status-action:hover {
   background-color: var(--ledger-navy);
-  color: #ffffff;
+  color: var(--color-white);
 }
 
 .near-me-status-action {

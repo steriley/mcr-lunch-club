@@ -39,7 +39,7 @@ const emit = defineEmits<{ expand: [] }>();
   align-items: center;
   gap: 4px;
   background-color: var(--near-me-crimson);
-  color: #ffffff;
+  color: var(--color-white);
   font-size: 0.68rem;
   font-weight: 700;
   padding: 3px 8px;
@@ -49,7 +49,7 @@ const emit = defineEmits<{ expand: [] }>();
 }
 
 .near-me-btn-walk:hover {
-  background-color: #b91c1c;
+  background-color: var(--color-signal-red);
 }
 
 .near-me-card-index {
@@ -63,7 +63,7 @@ const emit = defineEmits<{ expand: [] }>();
 }
 
 .near-me-btn-walk:hover {
-  background-color: #ffb454;
+  background-color: var(--color-gold-soft);
   color: var(--ledger-deep);
 }
 

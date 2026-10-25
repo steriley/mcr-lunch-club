@@ -135,7 +135,7 @@ function rowWalkUrl(rv: RankedVenue): string | null {
 .near-me-empty-state {
   text-align: center;
   padding: 24px 12px;
-  color: #dcd6c8;
+  color: var(--color-rule);
 }
 
 .near-me-empty-icon {
@@ -148,13 +148,13 @@ function rowWalkUrl(rv: RankedVenue): string | null {
   font-family: "Playfair Display", Georgia, serif;
   font-size: 0.95rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--color-white);
   margin: 0 0 4px 0;
 }
 
 .near-me-empty-text {
   font-size: 0.72rem;
-  color: #9ca3af;
+  color: var(--color-on-dark-dim);
   margin: 0;
   line-height: 1.4;
 }
@@ -216,7 +216,7 @@ function rowWalkUrl(rv: RankedVenue): string | null {
 }
 
 .near-me-far-note {
-  color: #8a5100;
+  color: var(--color-ochre);
   font-size: 0.8rem;
   font-weight: 600;
 }

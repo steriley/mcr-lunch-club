@@ -572,14 +572,14 @@ onUnmounted(() => {
   --near-me-gold: var(--ledger-gold);
   --near-me-crimson: var(--ledger-navy);
   --near-me-ink: var(--ledger-ink);
-  --near-me-muted: #5a5b64;
-  --near-me-muted-on-dark: #d0d6e5;
-  --near-me-warning-bg: #fff1d6;
-  --near-me-warning-ink: #543300;
-  --near-me-error-bg: #fbe9e7;
-  --near-me-error-ink: #7b1f1a;
-  --near-me-manual-bg: #f2e8f5;
-  --near-me-manual-ink: #51265b;
+  --near-me-muted: var(--color-muted-soft);
+  --near-me-muted-on-dark: var(--color-on-dark-cool);
+  --near-me-warning-bg: var(--color-alert-warning);
+  --near-me-warning-ink: var(--color-alert-warning-ink);
+  --near-me-error-bg: var(--color-alert-error);
+  --near-me-error-ink: var(--color-alert-error-ink);
+  --near-me-manual-bg: var(--color-alert-manual);
+  --near-me-manual-ink: var(--color-alert-manual-ink);
   --near-me-radius-sm: 6px;
   --near-me-radius-card: 10px;
   --near-me-radius-panel: 12px;
@@ -647,7 +647,7 @@ onUnmounted(() => {
   border-radius: 9999px;
   background-color: rgba(26, 30, 36, 0.95);
   backdrop-filter: blur(8px);
-  color: #f9f7f1;
+  color: var(--color-cream);
   border: 1px solid var(--near-me-gold);
   box-shadow: var(--near-me-shadow);
   cursor: pointer;
@@ -656,8 +656,8 @@ onUnmounted(() => {
 
 .near-me-close-btn:hover {
   background-color: var(--near-me-crimson);
-  border-color: #f9f7f1;
-  color: #ffffff;
+  border-color: var(--color-cream);
+  color: var(--color-white);
   transform: scale(1.05);
 }
 
@@ -673,7 +673,7 @@ onUnmounted(() => {
   background-color: rgba(26, 30, 36, 0.96);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  color: #f9f7f1;
+  color: var(--color-cream);
   border: 1px solid var(--near-me-gold);
   display: flex;
   flex-direction: column;
@@ -826,7 +826,7 @@ onUnmounted(() => {
 }
 
 :deep(.custom-ledger-pin.is-selected-pin .rounded-full) {
-  box-shadow: 0 0 0 3px #c59b27, 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 0 0 3px var(--color-brass), 0 4px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
 .near-me-close-btn {

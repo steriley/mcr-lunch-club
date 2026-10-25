@@ -56,7 +56,7 @@
               <div v-for="ring in WALKING_ISOCHRONES" :key="ring.radius" class="flex items-center gap-1.5">
                 <span
                   class="w-2.5 h-0"
-                  :style="{ borderTop: `${ring.weight ? 1 : 2}px ${ring.weight ? 'dashed' : 'solid'} ${ring.color}` }"
+                  :style="{ borderTop: `${ring.weight ? 1 : 2}px ${ring.weight ? 'dashed' : 'solid'} var(--color-${ring.colorToken})` }"
                 ></span>
                 {{ ring.legend }}
               </div>
@@ -230,7 +230,7 @@ function renderMarkers() {
 
 <style scoped>
 .map-loading {
-  background-color: #e2dfd8;
+  background-color: var(--color-map-placeholder);
 }
 
 .isochrone-toggle {
@@ -241,7 +241,7 @@ function renderMarkers() {
   padding: 6px 8px;
   border-radius: 6px;
   cursor: pointer;
-  color: #1a1e24;
+  color: var(--color-charcoal);
   text-align: left;
 }
 
@@ -259,7 +259,7 @@ function renderMarkers() {
   width: 14px;
   height: 14px;
   margin-left: auto;
-  color: #57534e;
+  color: var(--color-taupe);
   transition: transform 160ms ease;
 }
 
