@@ -107,7 +107,7 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <h3 class="text-xl font-bold font-serif-header text-[#001854] leading-tight">
+            <h3 class="text-xl font-bold font-serif-header text-royal leading-tight">
               <button type="button" class="oracle-result-link" @click="openDetails(pickedVenue)">{{ pickedVenue.name }}</button>
             </h3>
             <img

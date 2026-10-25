@@ -54,14 +54,14 @@ async function propose() {
     </div>
 
     <div v-if="pending" role="status" class="space-y-2 rounded-lg border border-warning/50 bg-warning-tint p-3">
-      <p class="text-[13px] font-semibold text-[#7a4b02]">
+      <p class="text-[13px] font-semibold text-warning-ink">
         Motion: {{ label(pending.fromTier) }} → {{ label(pending.proposedTier) }}, tabled by {{ pending.proposedByName ?? 'a former admin' }}.
       </p>
-      <p class="text-[12px] text-[#7a4b02]">{{ proposedWhen }} · awaiting a different Chair</p>
+      <p class="text-[12px] text-warning-ink">{{ proposedWhen }} · awaiting a different Chair</p>
       <ProposalActions :proposal-id="pending.id" :proposed-by="pending.proposedBy" :current-user-id="currentUserId" :can-decide="activeAdmins >= 2" />
     </div>
 
-    <p v-if="activeAdmins < 2" class="rounded-lg border border-warning/40 bg-warning-tint px-3 py-2 text-[13px] text-[#7a4b02]">
+    <p v-if="activeAdmins < 2" class="rounded-lg border border-warning/40 bg-warning-tint px-3 py-2 text-[13px] text-warning-ink">
       Only one active Chair exists. A second active Chair is required before any motion can pass.
     </p>
 

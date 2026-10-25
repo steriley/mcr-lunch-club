@@ -34,9 +34,9 @@ async function act(action: 'approve' | 'decline' | 'withdraw') {
   window.location.reload();
 }
 
-const primary = 'rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#17603d] disabled:opacity-60';
+const primary = 'rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-white hover:bg-success-strong disabled:opacity-60';
 const secondary = 'rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60';
-const danger = 'rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60';
+const danger = 'rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60';
 </script>
 
 <template>

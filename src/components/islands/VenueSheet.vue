@@ -182,7 +182,7 @@
 
         <a
           :href="`/venues/${venue.slug}`"
-          class="flex-1 bg-navy hover:bg-[#70161a] text-white py-2 px-3 rounded-md text-xs font-serif-header font-bold text-center shadow flex items-center justify-center gap-1.5"
+          class="flex-1 bg-navy hover:bg-deep text-white py-2 px-3 rounded-md text-xs font-serif-header font-bold text-center shadow flex items-center justify-center gap-1.5"
         >
           <span>📜</span>
           <span>Full dossier</span>

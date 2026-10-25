@@ -132,7 +132,7 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
 
     <div class="overflow-hidden rounded-2xl border border-hairline bg-parchment shadow-sm">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-hairline text-left text-sm text-[#2d2d2d]">
+        <table class="min-w-full divide-y divide-hairline text-left text-sm text-coal">
           <thead class="bg-card text-ink">
             <tr>
               <th scope="col" class="px-4 py-3 font-semibold">Name</th>
@@ -162,7 +162,7 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
                     Reset password
                   </button>
                   <template v-if="user.id !== currentUserId">
-                    <button v-if="!user.banned" type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'ban' }">
+                    <button v-if="!user.banned" type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'ban' }">
                       Deactivate
                     </button>
                     <button v-else type="button" class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'unban' }">

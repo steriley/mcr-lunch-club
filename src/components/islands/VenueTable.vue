@@ -157,7 +157,7 @@ const inputClass = 'w-full rounded-lg border border-hairline bg-white px-3 py-2.
         <template v-if="tierFilter && isTierValue(tierFilter)"> in {{ tierLabel(tierFilter) }}</template>
       </p>
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-hairline text-left text-sm text-[#2d2d2d]">
+        <table class="min-w-full divide-y divide-hairline text-left text-sm text-coal">
           <thead class="bg-card text-ink">
             <tr>
               <th v-for="column in ([['name', 'Venue'], ['tier', 'Tier'], ['status', 'Status'], ['updatedAt', 'Updated']] as const)" :key="column[0]" scope="col" class="px-4 py-3 font-semibold" :aria-sort="ariaSort(column[0])">
@@ -197,7 +197,7 @@ const inputClass = 'w-full rounded-lg border border-hairline bg-white px-3 py-2.
               <td class="px-4 py-3">
                 <div class="flex justify-end gap-2">
                   <a :href="`/admin/venues/${venue.id}`" class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen">Edit</a>
-                  <button type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60" :disabled="busy[venue.id]" @click="pendingDelete = venue">
+                  <button type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60" :disabled="busy[venue.id]" @click="pendingDelete = venue">
                     Delete
                   </button>
                 </div>

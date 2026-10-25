@@ -92,7 +92,7 @@ async function performDelete() {
             </template>
             <button
               type="button"
-              class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60"
+              class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60"
               :disabled="busy[suggestion.id]"
               @click="pendingDelete = suggestion"
             >
@@ -101,7 +101,7 @@ async function performDelete() {
           </div>
         </div>
 
-        <dl class="mt-4 space-y-2 text-sm text-[#2d2d2d]">
+        <dl class="mt-4 space-y-2 text-sm text-coal">
           <div v-if="suggestion.recommendedOrder">
             <dt class="text-xs font-bold uppercase tracking-[0.14em] text-ochre">Recommended order</dt>
             <dd class="mt-0.5">{{ suggestion.recommendedOrder }}</dd>
