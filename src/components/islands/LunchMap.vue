@@ -1,5 +1,5 @@
 <template>
-  <div class="relative isolate flex flex-col w-full h-full overflow-hidden bg-[#f4efe4] rounded-2xl border border-[#dcd6c8] shadow-inner">
+  <div class="relative isolate flex flex-col w-full h-full overflow-hidden bg-paper rounded-2xl border border-hairline shadow-inner">
     <!-- Map Header Strip -->
     <header class="map-header">
       <div class="map-header-title">
@@ -23,7 +23,7 @@
         <button
           id="btn-near-me"
           @click="openNearMe"
-          class="bg-[#1a1e24] hover:bg-[#8b1e22] text-[#f9f7f1] px-5 py-3 rounded-full shadow-lg border border-[#c59b27] transition-all flex items-center gap-2 text-sm font-bold tracking-wide cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-[#c59b27]"
+          class="bg-deep hover:bg-deep text-parchment px-5 py-3 rounded-full shadow-lg border border-gold transition-all flex items-center gap-2 text-sm font-bold tracking-wide cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-brass"
           title="Open Near Me locate mode"
           aria-label="Open Near Me locate mode"
         >
@@ -35,7 +35,7 @@
 
     <!-- Walking rings legend: collapsed to a small pill until someone wants the key -->
     <div class="absolute bottom-4 left-4 z-[1000] hidden sm:block">
-      <div class="isochrone-card bg-[#f9f7f1]/95 backdrop-blur-sm border border-[#dcd6c8] rounded-md text-xs shadow-md font-serif-header" :class="{ 'is-collapsed': !legendOpen }">
+      <div class="isochrone-card bg-cream/95 backdrop-blur-sm border border-hairline rounded-md text-xs shadow-md font-serif-header" :class="{ 'is-collapsed': !legendOpen }">
         <button
           type="button"
           class="isochrone-toggle"
@@ -43,7 +43,7 @@
           aria-controls="isochrone-legend"
           @click="legendOpen = !legendOpen"
         >
-          <span class="font-bold text-[#1a1e24]">Walking Isochrones</span>
+          <span class="font-bold text-ink">Walking Isochrones</span>
           <span v-if="legendOpen" class="text-xs text-stone-500 font-sans">from Base</span>
           <svg class="isochrone-chevron" :class="{ 'is-open': legendOpen }" viewBox="0 0 20 20" fill="none" aria-hidden="true">
             <path d="m5 12 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -51,7 +51,7 @@
         </button>
         <div id="isochrone-legend" class="isochrone-body" :class="{ 'is-open': legendOpen }" :inert="!legendOpen">
           <div class="isochrone-body-inner">
-            <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-stone-700 font-sans text-xs border-t border-[#dcd6c8] mx-2 pt-1.5 pb-2">
+            <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-stone-700 font-sans text-xs border-t border-hairline mx-2 pt-1.5 pb-2">
               <!-- Same colours as the rings on the map; the heavier boundary ring shows dashed. -->
               <div v-for="ring in WALKING_ISOCHRONES" :key="ring.radius" class="flex items-center gap-1.5">
                 <span

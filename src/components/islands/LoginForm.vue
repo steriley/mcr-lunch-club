@@ -50,21 +50,21 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <form class="mx-auto max-w-md rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm" @submit.prevent="handleSubmit">
+  <form class="mx-auto max-w-md rounded-2xl border border-hairline bg-parchment p-6 shadow-sm" @submit.prevent="handleSubmit">
     <div class="mb-5">
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Chairs' Area</p>
-      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Sign in</h1>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Chairs' Area</p>
+      <h1 class="mt-2 text-3xl font-bold text-ink">Sign in</h1>
     </div>
 
     <div class="space-y-4">
-      <label class="block text-sm font-semibold text-[#1a1e24]">
+      <label class="block text-sm font-semibold text-ink">
         <span class="mb-2 block">Email</span>
-        <input v-model="email" type="email" autocomplete="email" class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] outline-none ring-0 focus:border-[#1B2F6B]" placeholder="chair@mcrlunch.club" />
+        <input v-model="email" type="email" autocomplete="email" class="w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" placeholder="chair@mcrlunch.club" />
       </label>
 
-      <label class="block text-sm font-semibold text-[#1a1e24]">
+      <label class="block text-sm font-semibold text-ink">
         <span class="mb-2 block">Password</span>
-        <input v-model="password" type="password" autocomplete="current-password" class="w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2.5 text-base text-[#1a1e24] outline-none ring-0 focus:border-[#1B2F6B]" placeholder="••••••••••••" />
+        <input v-model="password" type="password" autocomplete="current-password" class="w-full rounded-lg border border-hairline bg-white px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" placeholder="••••••••••••" />
       </label>
     </div>
 
@@ -75,7 +75,7 @@ async function handleSubmit() {
     <button
       type="submit"
       :disabled="isSubmitting"
-      class="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-[#1B2F6B] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#111E47] disabled:cursor-not-allowed disabled:opacity-70"
+      class="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-navy px-4 py-3 text-sm font-semibold text-white transition hover:bg-deep disabled:cursor-not-allowed disabled:opacity-70"
     >
       {{ isSubmitting ? 'Signing in…' : 'Sign in' }}
     </button>

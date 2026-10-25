@@ -10,10 +10,10 @@ const user = Astro.locals.user;
 
 <AdminLayout title="Account">
   <div class="mx-auto max-w-2xl space-y-6">
-    <div class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-6 shadow-sm">
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Account</p>
-      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Personal settings</h1>
-      <p class="mt-3 text-sm text-[#3d3d3d]">Signed in as <strong>{user?.email}</strong>.</p>
+    <div class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm">
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Account</p>
+      <h1 class="mt-2 text-3xl font-bold text-ink">Personal settings</h1>
+      <p class="mt-3 text-sm text-soot">Signed in as <strong>{user?.email}</strong>.</p>
     </div>
 
     <ChangePasswordForm client:load />

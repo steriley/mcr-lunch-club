@@ -16,21 +16,21 @@ interface Props {
   width?: string;
 }
 
-const { icon, kicker, title, quote, description, bannerClass = 'bg-[#1a1e24]', width = 'max-w-6xl' } = Astro.props;
+const { icon, kicker, title, quote, description, bannerClass = 'bg-deep', width = 'max-w-6xl' } = Astro.props;
 const quoteLines = (quote === undefined ? [] : Array.isArray(quote) ? quote : [quote]).map((line) =>
   typeof line === 'string' ? { text: line, accent: false } : { text: line.text, accent: line.accent ?? false }
 );
-const onTier = bannerClass !== 'bg-[#1a1e24]';
+const onTier = bannerClass !== 'bg-deep';
 ---
 
 <!-- One ribbon for the Manifesto, Tiers and Inspections pages, so their type and spacing match. -->
-<div class={`${bannerClass} tier-header-gradient text-[#f9f7f1] w-full font-serif-header`}>
+<div class={`${bannerClass} tier-header-gradient text-parchment w-full font-serif-header`}>
   <div class={`${width} mx-auto px-4 w-full`}>
     <div class="p-6 sm:p-8 space-y-4">
       <div class="flex items-center gap-3">
         <span class="text-3xl sm:text-4xl">{icon}</span>
         <div>
-          <span class={`text-xs uppercase tracking-widest font-bold ${onTier ? 'text-[#f9f7f1]' : 'text-[#c59b27]'}`}>
+          <span class={`text-xs uppercase tracking-widest font-bold ${onTier ? 'text-parchment' : 'text-gold'}`}>
             {kicker}
           </span>
           <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">{title}</h1>
@@ -39,7 +39,7 @@ const onTier = bannerClass !== 'bg-[#1a1e24]';
 
       {quoteLines.length > 0 && (
         <div class="space-y-2 pt-1 max-w-3xl text-base sm:text-lg italic leading-snug">
-          {quoteLines.map((line) => <p class:list={[line.accent && 'text-[#F29A2E]']}>“{line.text}”</p>)}
+          {quoteLines.map((line) => <p class:list={[line.accent && 'text-gold']}>“{line.text}”</p>)}
         </div>
       )}
 

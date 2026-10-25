@@ -42,7 +42,7 @@ const tierCounts = countVenuesByTier(publicVenues);
 
   <div class="w-full pt-6 sm:pt-8 font-serif-header">
     <!-- Tier Navigation Tabs: below the ribbon, edge to edge, fading out at both sides -->
-    <div class="border-b border-[#dcd6c8]">
+    <div class="border-b border-hairline">
       <nav class="tier-nav-scroll pb-2" aria-label="Browse by verdict">
         {TIERS.map((t) => (
           <TierChip
@@ -60,17 +60,17 @@ const tierCounts = countVenuesByTier(publicVenues);
   <div class="max-w-6xl mx-auto px-4 pt-8 pb-8 sm:pt-10 sm:pb-12 w-full space-y-8 font-serif-header">
     <!-- Approved Tier Michelin Star Style Prize Banner -->
     {tier.value === 'approved' && (
-      <div class="bg-[#1a1e24] text-[#f9f7f1] p-6 sm:p-7 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-6 font-serif-header relative overflow-hidden">
+      <div class="bg-deep text-parchment p-6 sm:p-7 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-6 font-serif-header relative overflow-hidden">
         <div class="relative z-10 shrink-0">
           <img
-            src="/brand/approved-sticker-256.webp"
+            src="/brand/approved-sticker-256.webp" width="256" height="256"
             alt="Official MCR Lunch Club Approved Sticker"
             class="w-28 h-28 sm:w-32 sm:h-32 object-contain drop-shadow-[0_0_20px_rgba(197,155,39,0.4)] select-none hover:scale-105 transition-transform"
           />
         </div>
         <div class="space-y-2 text-center sm:text-left relative z-10">
           <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-            <span class="text-xs uppercase tracking-widest text-[#c59b27] font-mono font-bold">
+            <span class="text-xs uppercase tracking-widest text-gold font-mono font-bold">
               The Official Prize of Excellence
             </span>
           </div>
@@ -90,8 +90,8 @@ const tierCounts = countVenuesByTier(publicVenues);
     <!-- Venue Grid -->
     <div class="space-y-4">
       <div class="space-y-2 font-serif-header">
-        <div class="border-b border-[#dcd6c8] pb-2 space-y-1">
-          <h2 class="text-xl font-bold text-[#1a1e24]">Enrolled Establishments</h2>
+        <div class="border-b border-hairline pb-2 space-y-1">
+          <h2 class="text-xl font-bold text-ink">Enrolled Establishments</h2>
           <p class="text-xs font-mono text-stone-500">Origin: Spinningfields Base Quorum</p>
         </div>
         <div class="flex justify-end">

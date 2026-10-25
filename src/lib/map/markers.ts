@@ -19,7 +19,7 @@ export function createVenueIconHtml(venue: Venue, rank?: number): string {
   const badgeText = venue.cost;
   // Near Me numbers its nearest pins so they match the list rows.
   const rankBadge = rank
-    ? `<span class="absolute -top-2 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full border border-[#111e47] bg-[#f29a2e] px-1 text-[10px] font-extrabold leading-none text-[#111e47]" aria-hidden="true">${Math.trunc(rank)}</span>`
+    ? `<span class="absolute -top-2 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full border border-deep bg-gold px-1 text-[10px] font-extrabold leading-none text-deep" aria-hidden="true">${Math.trunc(rank)}</span>`
     : '';
 
   return `

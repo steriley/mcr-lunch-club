@@ -38,7 +38,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-[#1E1B17]/45 px-4" @click.self="emit('cancel')">
+  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-ink/45 px-4" @click.self="emit('cancel')">
     <div
       role="alertdialog"
       aria-modal="true"

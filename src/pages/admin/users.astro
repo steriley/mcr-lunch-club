@@ -23,8 +23,8 @@ const users = entries.map((entry) => ({
 <AdminLayout title="Users">
   <div class="space-y-6">
     <div>
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#8a5100]">Chair management</p>
-      <h1 class="mt-2 text-3xl font-bold text-[#1a1e24]">Users</h1>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Chair management</p>
+      <h1 class="mt-2 text-3xl font-bold text-ink">Users</h1>
     </div>
 
     <UserManagement client:load users={users} currentUserId={currentUser.id} />

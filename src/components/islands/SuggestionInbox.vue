@@ -45,21 +45,21 @@ async function performDelete() {
     <p v-if="message" role="status" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{{ message }}</p>
     <p v-if="errorMessage" role="alert" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
 
-    <p v-if="!rows.length" class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] px-4 py-10 text-center text-sm text-[#3d3d3d]">
+    <p v-if="!rows.length" class="rounded-2xl border border-hairline bg-parchment px-4 py-10 text-center text-sm text-soot">
       Nothing here. The petition box is empty.
     </p>
 
     <ul v-else class="space-y-4">
-      <li v-for="suggestion in rows" :key="suggestion.id" class="rounded-2xl border border-[#d9cfb8] bg-[#f9f7f1] p-5 shadow-sm">
+      <li v-for="suggestion in rows" :key="suggestion.id" class="rounded-2xl border border-hairline bg-parchment p-5 shadow-sm">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div class="min-w-0">
-            <h2 class="text-xl font-bold text-[#1a1e24]">{{ suggestion.name }}</h2>
-            <p class="mt-1 text-sm text-[#3d3d3d]">
+            <h2 class="text-xl font-bold text-ink">{{ suggestion.name }}</h2>
+            <p class="mt-1 text-sm text-soot">
               {{ suggestion.address }}
               <template v-if="suggestion.cuisine"> · {{ suggestion.cuisine }}</template>
               <template v-if="suggestion.cost"> · {{ suggestion.cost }}</template>
             </p>
-            <p class="mt-1 text-xs text-[#535353]">
+            <p class="mt-1 text-xs text-graphite">
               {{ suggestion.submitterName || 'Anonymous member' }} · {{ formatDateTime(suggestion.createdAt) }}
             </p>
           </div>
@@ -67,7 +67,7 @@ async function performDelete() {
             <a
               v-if="suggestion.venueId"
               :href="`/admin/venues/${suggestion.venueId}`"
-              class="rounded-lg border border-[#d9cfb8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5]"
+              class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen"
             >
               Open venue
             </a>
@@ -77,13 +77,13 @@ async function performDelete() {
               <a
                 v-if="suggestion.status !== 'dismissed'"
                 :href="`/admin/venues/new?fromSuggestion=${suggestion.id}`"
-                class="rounded-lg bg-[#1B2F6B] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#111E47]"
+                class="rounded-lg bg-navy px-3 py-1.5 text-xs font-semibold text-white hover:bg-deep"
               >
                 Accept…
               </a>
               <button
                 type="button"
-                class="rounded-lg border border-[#d9cfb8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5] disabled:opacity-60"
+                class="rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60"
                 :disabled="busy[suggestion.id]"
                 @click="setStatus(suggestion, suggestion.status === 'dismissed' ? 'new' : 'dismissed')"
               >
@@ -103,11 +103,11 @@ async function performDelete() {
 
         <dl class="mt-4 space-y-2 text-sm text-[#2d2d2d]">
           <div v-if="suggestion.recommendedOrder">
-            <dt class="text-xs font-bold uppercase tracking-[0.14em] text-[#8a5100]">Recommended order</dt>
+            <dt class="text-xs font-bold uppercase tracking-[0.14em] text-ochre">Recommended order</dt>
             <dd class="mt-0.5">{{ suggestion.recommendedOrder }}</dd>
           </div>
           <div>
-            <dt class="text-xs font-bold uppercase tracking-[0.14em] text-[#8a5100]">Why</dt>
+            <dt class="text-xs font-bold uppercase tracking-[0.14em] text-ochre">Why</dt>
             <dd class="mt-0.5 whitespace-pre-line">{{ suggestion.rationale }}</dd>
           </div>
         </dl>

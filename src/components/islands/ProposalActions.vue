@@ -35,14 +35,14 @@ async function act(action: 'approve' | 'decline' | 'withdraw') {
 }
 
 const primary = 'rounded-lg bg-[#1E7A4E] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#17603d] disabled:opacity-60';
-const secondary = 'rounded-lg border border-[#d9cfb8] bg-white px-3 py-1.5 text-xs font-semibold text-[#1a1e24] hover:bg-[#f5efe5] disabled:opacity-60';
+const secondary = 'rounded-lg border border-hairline bg-white px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60';
 const danger = 'rounded-lg bg-[#B92B27] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#8e201d] disabled:opacity-60';
 </script>
 
 <template>
   <div class="space-y-2">
     <div v-if="isMine" class="flex flex-wrap items-center gap-2">
-      <span class="text-xs text-[#535353]">You proposed this. A different admin must approve or decline it.</span>
+      <span class="text-xs text-graphite">You proposed this. A different admin must approve or decline it.</span>
       <button type="button" :class="secondary" :disabled="busy" @click="act('withdraw')">Withdraw</button>
     </div>
     <template v-else-if="canDecide">
@@ -51,9 +51,9 @@ const danger = 'rounded-lg bg-[#B92B27] px-3 py-1.5 text-xs font-semibold text-w
         <button type="button" :class="secondary" :disabled="busy" @click="declining = true">Decline…</button>
       </div>
       <div v-else class="space-y-2">
-        <label class="block text-xs font-semibold text-[#1a1e24]">
+        <label class="block text-xs font-semibold text-ink">
           Reason for declining (internal, never shown publicly)
-          <textarea v-model="reason" rows="2" maxlength="1000" required class="mt-1 w-full rounded-lg border border-[#d9cfb8] bg-white px-3 py-2 text-sm"></textarea>
+          <textarea v-model="reason" rows="2" maxlength="1000" required class="mt-1 w-full rounded-lg border border-hairline bg-white px-3 py-2 text-sm"></textarea>
         </label>
         <div class="flex gap-2">
           <button type="button" :class="danger" :disabled="busy" @click="act('decline')">Decline</button>
@@ -61,7 +61,7 @@ const danger = 'rounded-lg bg-[#B92B27] px-3 py-1.5 text-xs font-semibold text-w
         </div>
       </div>
     </template>
-    <p v-else class="text-xs text-[#535353]">A second active admin is needed to decide this.</p>
+    <p v-else class="text-xs text-graphite">A second active admin is needed to decide this.</p>
     <p v-if="errorMessage" role="alert" class="text-xs text-red-700">{{ errorMessage }}</p>
   </div>
 </template>
