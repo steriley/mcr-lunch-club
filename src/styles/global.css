@@ -734,11 +734,12 @@
 .bench-seal {
   position: absolute;
   z-index: 2;
-  top: 10px;
-  right: 10px;
-  width: 44px;
-  height: 44px;
+  top: 12px;
+  right: 12px;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
+  filter: drop-shadow(0 3px 8px rgb(0 0 0 / 35%));
 }
 
 .bench-seal:focus-visible {
@@ -793,7 +794,7 @@
 
 .bench-eat {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   padding: 8px 12px;
   border: 1px solid color-mix(in srgb, var(--color-hairline) 60%, transparent);
@@ -805,12 +806,19 @@
   flex: none;
   width: 18px;
   height: 18px;
-  margin-top: 2px;
   color: var(--bench-amber);
 }
 
+/* The label and the dish share one line ("EAT LIKE US  3 Meats & rice"), wrapping only if the dish is long. */
+.bench-eat > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+
 .bench-eat-label {
-  display: block;
+  display: inline;
   color: var(--bench-amber);
   font-size: 11px;
   font-weight: 700;
@@ -819,7 +827,7 @@
 }
 
 .bench-eat-dish {
-  display: block;
+  display: inline;
   font-size: 13px;
   font-weight: 600;
   line-height: 1.3;
