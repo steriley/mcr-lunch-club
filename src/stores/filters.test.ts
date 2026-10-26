@@ -152,4 +152,10 @@ describe('matchesFilters', () => {
     assert.equal(matchesFilters(place(), filters({ searchQuery: 'sushi' }), today), false);
     assert.equal(matchesFilters(place(), filters({ searchQuery: '   ' }), today), true);
   });
+
+  it('finds a venue by its order only when it is Approved, the one verdict that shows one', () => {
+    assert.equal(matchesFilters(place(), filters({ searchQuery: 'pudding' }), today), true);
+    assert.equal(matchesFilters(place({ tier: 'under_consideration' }), filters({ searchQuery: 'pudding', tiers: ['under_consideration'] }), today), false);
+    assert.equal(matchesFilters(place({ tier: 'under_consideration' }), filters({ searchQuery: 'pie', tiers: ['under_consideration'] }), today), true);
+  });
 });

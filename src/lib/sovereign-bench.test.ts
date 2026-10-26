@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildSovereignBench } from './sovereign-bench';
+import { buildSovereignBench, toCard } from './sovereign-bench';
 import type { GoldenCutVenue, PublicVenue } from './public-data';
 import type { Inspection } from '@/types';
 
@@ -144,6 +144,14 @@ describe('buildSovereignBench: text', () => {
     assert.equal(bench.hero?.eatLikeUs, 'Pie');
     assert.equal(bench.pillars[0].eatLikeUs, 'Special');
     assert.equal(bench.pillars[1].eatLikeUs, null);
+  });
+
+  it('only gives Approved venues an Eat Like Us order', () => {
+    const verdicts = ['approved', 'under_consideration', 'to_be_assessed', 'if_we_must', 'rejected', 'gone_but_not_forgotten'] as const;
+    for (const tier of verdicts) {
+      const card = toCard({ venue: venue('x', { tier, eatLikeUs: 'Pie' }), puffPiece: null, anchorDish: 'Chef special' }, []);
+      assert.equal(card.eatLikeUs, tier === 'approved' ? 'Chef special' : null, tier);
+    }
   });
 
   it('uses the lunch special in fallback mode, where there is no quote', () => {

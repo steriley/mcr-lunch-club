@@ -36,7 +36,7 @@ const hasLocation = venue.lat !== null && venue.lng !== null;
 // The link preview when someone drops this page into the lunch chat.
 const walk = venue.walkingTimeMin == null ? null : `${walkText(venue.walkingTimeMin)} from Spinningfields`;
 const pageDescription = truncate(
-  [`${tier.label} by the MCR Lunch Club.`, [venue.cuisine, venue.cost, walk].filter(Boolean).join(' · ') + '.', venue.eatLikeUs && `Eat like us: ${venue.eatLikeUs}`]
+  [`${tier.label} by the MCR Lunch Club.`, [venue.cuisine, venue.cost, walk].filter(Boolean).join(' · ') + '.', venue.tier === 'approved' && venue.eatLikeUs && `Eat like us: ${venue.eatLikeUs}`]
     .filter(Boolean)
     .join(' '),
   200,
@@ -181,7 +181,7 @@ function truncate(text: string, max: number): string {
         </div>
 
         <!-- Eat Like Us Box (Wax Seal Styling) -->
-        {venue.eatLikeUs && (
+        {venue.tier === 'approved' && venue.eatLikeUs && (
         <div class="relative bg-amber-50/90 border-2 border-gold p-6 rounded-xl shadow-md">
           <div class="flex items-center gap-2 text-xs font-bold text-navy uppercase tracking-wider">
             <span>🛡</span>

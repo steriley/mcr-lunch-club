@@ -78,7 +78,8 @@ export function toCard(pick: Pick, inspections: Inspection[]): BenchCard {
     inspectionCount: own.length,
     walk: walkFor(venue),
     quote: clean(pick.puffPiece),
-    eatLikeUs: clean(pick.anchorDish) ?? clean(venue.eatLikeUs),
+    // The prescribed order is an Approved honour: no other verdict ever shows one.
+    eatLikeUs: venue.tier === 'approved' ? clean(pick.anchorDish) ?? clean(venue.eatLikeUs) : null,
   };
 }
 

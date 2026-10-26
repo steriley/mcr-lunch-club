@@ -47,7 +47,9 @@ export function matchesFilters(
 
   const query = filters.searchQuery.trim().toLowerCase();
   if (query) {
-    const haystack = [venue.name, venue.cuisine, venue.eatLikeUs, venue.address].map((text) => (text || '').toLowerCase());
+    // The prescribed order is only shown for Approved venues, so only they are found by it.
+    const order = venue.tier === 'approved' ? venue.eatLikeUs : '';
+    const haystack = [venue.name, venue.cuisine, order, venue.address].map((text) => (text || '').toLowerCase());
     if (!haystack.some((text) => text.includes(query))) return false;
   }
   return true;
