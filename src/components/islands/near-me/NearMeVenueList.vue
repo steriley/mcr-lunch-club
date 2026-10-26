@@ -219,6 +219,12 @@ function rowWalkUrl(rv: RankedVenue): string | null {
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.near-me-cost-chip:hover:not(.is-selected) {
+  border-color: var(--color-navy);
+  background: var(--color-ivory);
 }
 
 .near-me-cost-chip.is-selected {
@@ -227,8 +233,18 @@ function rowWalkUrl(rv: RankedVenue): string | null {
   color: var(--color-parchment-fixed);
 }
 
+.near-me-cost-chip.is-selected:hover {
+  background: var(--color-navy-fixed);
+  border-color: var(--color-navy-fixed);
+}
+
+/* The deep navy fill is nearly the dark panel's own colour, so a chosen chip gets a lighter edge in dark mode. */
+:root[data-theme="dark"] .near-me-cost-chip.is-selected {
+  border-color: var(--color-navy);
+}
+
 .near-me-cost-chip:focus-visible {
-  outline: 2px solid var(--ledger-navy);
+  outline: 2px solid var(--color-navy);
   outline-offset: 2px;
 }
 

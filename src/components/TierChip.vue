@@ -63,9 +63,16 @@ defineProps<{
   cursor: not-allowed;
 }
 
+/* --color-ivory is near-white in light mode and a raised dark surface in dark mode;
+   --color-on-dark (a fixed light colour) left light text on a light fill in dark mode. */
 .ledger-tier-chip:hover:not(.is-selected):not(.is-disabled) {
-  background: var(--color-on-dark);
+  background: var(--color-ivory);
   border-color: var(--color-hairline-strong);
+}
+
+/* A chosen chip is already filled, so hovering it lifts the fill a touch instead. */
+.ledger-tier-chip.is-selected:hover:not(.is-disabled) {
+  filter: brightness(1.12);
 }
 
 .ledger-tier-chip.is-selected {
@@ -86,6 +93,12 @@ defineProps<{
 .ledger-tier-chip:focus-visible {
   outline: 2px solid var(--color-navy);
   outline-offset: 2px;
+}
+
+/* Keyboard focus on an unchosen chip also takes the hover fill, so it reads from across the panel. */
+.ledger-tier-chip:focus-visible:not(.is-selected):not(.is-disabled) {
+  background: var(--color-ivory);
+  border-color: var(--color-navy);
 }
 
 /* The count: a pill a shade off the chip it sits in, so it reads as part of the chip. */

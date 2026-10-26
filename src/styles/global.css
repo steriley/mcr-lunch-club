@@ -157,8 +157,9 @@
   text-align: center;
 }
 
-/* The tint stays pale in dark mode, so the lightened green ink washes out on it: use the deep green. */
-:root[data-theme="dark"] .nav-count {
+/* The tint stays pale in dark mode, so the lightened green ink washes out on it: use the deep green.
+   (Not the tier chips' counts: they have their own translucent pill, on a dark chip.) */
+:root[data-theme="dark"] .nav-count:not(.ledger-tier-count) {
   color: var(--color-success-strong);
   font-weight: 700;
 }
