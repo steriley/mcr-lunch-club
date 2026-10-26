@@ -2,6 +2,8 @@ import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   createBaseMarker,
+  createClusterIconHtml,
+  createClusterMarker,
   createVenueIconHtml,
   createVenueMarker,
   createWalkingIsochrones,
@@ -9,6 +11,7 @@ import {
   venuePinLabel,
 } from './markers';
 import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES } from './config';
+import { TIERS } from '@/lib/tiers';
 import type { Venue } from '@/types';
 
 function venue(overrides: Partial<Venue> = {}): Venue {
@@ -45,19 +48,30 @@ const L = {
 };
 
 describe('createVenueIconHtml', () => {
-  it('shows the cost band on every pin', () => {
-    assert.ok(createVenueIconHtml(venue()).includes('<span aria-hidden="true">££</span>'));
-    assert.ok(createVenueIconHtml(venue({ tier: 'rejected' })).includes('<span aria-hidden="true">££</span>'));
+  it('shows the tier glyph on every pin, and not the price', () => {
+    for (const tier of TIERS) {
+      const html = createVenueIconHtml(venue({ tier: tier.value }));
+      assert.ok(html.includes(`<path d="${tier.glyph}"/>`), `${tier.value} has its glyph`);
+    }
+    assert.ok(!createVenueIconHtml(venue()).includes('>££<'), 'no price on the pin');
+  });
+
+  it('gives every tier a different glyph, so tier reads in greyscale', () => {
+    assert.equal(new Set(TIERS.map((tier) => tier.glyph)).size, TIERS.length);
+  });
+
+  it('keeps every pin the same 28 px size', () => {
+    for (const tier of TIERS) assert.ok(createVenueIconHtml(venue({ tier: tier.value })).includes('w-7 h-7'));
   });
 
   it('uses the tier colour for the pin', () => {
     assert.ok(createVenueIconHtml(venue({ tier: 'rejected' })).includes('var(--color-tier-rejected)'));
   });
 
-  it('escapes the badge text', () => {
-    const html = createVenueIconHtml(venue({ tier: 'to_be_assessed', cost: '<b>£</b>' as Venue['cost'] }));
-    assert.ok(html.includes('&lt;b&gt;£&lt;/b&gt;'));
-    assert.ok(!html.includes('<b>'));
+  it('hides the glyph from screen readers, which get the name, tier and price instead', () => {
+    const html = createVenueIconHtml(venue());
+    assert.ok(html.includes('aria-hidden="true" focusable="false"><path'));
+    assert.ok(html.includes('Chip Shop, Approved, ££, 6 min walk'));
   });
 });
 
@@ -74,9 +88,8 @@ describe('venue pin accessible name', () => {
     assert.equal(venuePinLabel(venue({ walkingTimeMin: null })), 'Chip Shop, Approved, ££');
   });
 
-  it('hides the cost badge from screen readers and adds the escaped label', () => {
+  it('adds the escaped label for screen readers', () => {
     const html = createVenueIconHtml(venue({ name: 'Fish <&> Chips' }));
-    assert.ok(html.includes('<span aria-hidden="true">££</span>'));
     assert.ok(html.includes('<span class="sr-only">Fish &lt;&amp;&gt; Chips, Approved, ££, 6 min walk</span>'));
   });
 });
@@ -124,5 +137,47 @@ describe('escapeHtml', () => {
   it('renders null and undefined as empty text', () => {
     assert.equal(escapeHtml(null), '');
     assert.equal(escapeHtml(undefined), '');
+  });
+});
+
+describe('cluster markers', () => {
+  const cluster = {
+    count: 5,
+    tiers: [
+      { tier: 'approved' as const, count: 3 },
+      { tier: 'under_consideration' as const, count: 2 },
+    ],
+  };
+
+  it('shows the count in a ring with one segment per tier, sized by share', () => {
+    const html = createClusterIconHtml(cluster, '5 venues');
+    assert.ok(html.includes('>5</span>'));
+    assert.equal((html.match(/<circle[^>]*pathLength/g) ?? []).length, 2);
+    assert.ok(html.includes('var(--color-tier-approved)') && html.includes('var(--color-tier-under-consideration)'));
+    // 3 of 5 is 60 percent, less a hairline gap; it starts at 0, the next picks up at 60.
+    assert.ok(html.includes('stroke-dasharray="58.50 41.50" stroke-dashoffset="0.00"'));
+    assert.ok(html.includes('stroke-dashoffset="-60.00"'));
+  });
+
+  it('draws one unbroken ring for a single tier', () => {
+    const html = createClusterIconHtml({ count: 3, tiers: [{ tier: 'rejected', count: 3 }] }, '3 venues');
+    assert.ok(html.includes('stroke-dasharray="100.00 0.00"'));
+  });
+
+  it('names itself for screen readers and hides the drawing', () => {
+    const html = createClusterIconHtml(cluster, '5 venues: 3 Approved, 2 Under Consideration. Zoom in');
+    assert.ok(html.includes('<span class="sr-only">5 venues: 3 Approved, 2 Under Consideration. Zoom in</span>'));
+    assert.ok(html.includes('aria-hidden="true" focusable="false"'));
+  });
+
+  it('escapes the label', () => {
+    assert.ok(!createClusterIconHtml(cluster, '<img onerror=x>').includes('<img'));
+  });
+
+  it('is a 44 px marker centred on the cluster', () => {
+    const marker = createClusterMarker(L, { ...cluster, kind: 'cluster', key: 'a|b', lat: 53.48, lng: -2.25, venues: [], expansionZoom: 16 }, 'label');
+    assert.deepEqual(marker.latlng, [53.48, -2.25]);
+    assert.deepEqual(marker.options.icon.divIcon.iconSize, [44, 44]);
+    assert.deepEqual(marker.options.icon.divIcon.iconAnchor, [22, 22]);
   });
 });

@@ -18,6 +18,12 @@
       <!-- A grey box until Leaflet has started (see onMounted). Leaflet owns the container's classes, so it sits on top instead. -->
       <div v-if="!mapReady" class="map-loading absolute inset-0 z-[1]" aria-hidden="true"></div>
 
+      <!-- Nothing matches the filters: say so, with the way out, rather than leave an empty map. -->
+      <div v-if="mapReady && visibleVenuesCount === 0" class="map-empty" role="status">
+        <p class="map-empty-title">No venues match these filters</p>
+        <button type="button" class="map-empty-button" @click="resetFilters">Reset filters</button>
+      </div>
+
       <!-- Quick Map Controls (Floating top left) -->
       <div class="absolute top-3 left-3 z-[1000]">
         <button
@@ -81,12 +87,12 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
-import { $filters, matchesFilters, openNearMe, toggleTier } from '@/stores/filters';
+import { $filters, matchesFilters, openNearMe, resetFilters, toggleTier } from '@/stores/filters';
 import { whenIdle } from '@/lib/idle';
 import { londonDate } from '@/lib/london-date';
 import { $inspectionsList, $venuesList } from '@/stores/ledger';
 import BenchPillar from '@/components/BenchPillar.vue';
-import type { Venue } from '@/types';
+import type { Inspection, Venue } from '@/types';
 import {
   createMapRemover,
   BASE_LAT,
@@ -96,9 +102,22 @@ import {
   createBaseMarker,
   createWalkingIsochrones,
   createVenueMarker,
+  createVenueIcon,
+  createClusterMarker,
   WALKING_ISOCHRONES,
 } from '@/lib/map';
+import {
+  CLUSTER_MAX_ZOOM,
+  clusterLabel,
+  createClusterIndex,
+  spiderfyOffsets,
+  type ClusterIndex,
+  type ClusterItem,
+  type MapItem,
+} from '@/lib/map/clusters';
+import { anyOutsideView, frameFor } from '@/lib/map/framing';
 import { onThemeChange } from '@/lib/theme';
+import { themeColor } from '@/lib/theme-color';
 
 const props = defineProps<{
   mapApiKey?: string;
@@ -109,7 +128,9 @@ const mapReady = ref(false);
 const legendOpen = ref(false);
 const filters = useStore($filters);
 const venuesList = useStore($venuesList);
-const inspectionsList = useStore($inspectionsList);
+const inspectionsStore = useStore($inspectionsList);
+// The store hands back a deep-readonly copy; the card only reads it (Near Me does the same).
+const inspectionsList = computed(() => inspectionsStore.value as Inspection[]);
 
 let mapInstance: any = null;
 let removeMap: (() => void) | null = null;
@@ -117,6 +138,28 @@ let leafletModule: any = null;
 let markersLayer: any = null;
 const markersById = new Map<string, any>();
 let ringsLayer: any = null;
+
+// Clusters are redrawn at every zoom; single pins are kept between zooms, so a focused pin stays focused.
+let clusterLayer: any = null;
+let clusterIndex: ClusterIndex | null = null;
+// The pins of a cluster that can't zoom any further (several venues in one building), fanned out around it.
+let spiderLayer: any = null;
+const spiderMarkers = new Map<string, any>();
+let spiderfied: { key: string; lat: number; lng: number; venues: Venue[] } | null = null;
+// A cluster that can never split (one building) was tapped from afar: it fans out once the map has zoomed in.
+let pendingFanOut: { key: string; until: number } | null = null;
+// How long a tap's zoom may take before its fan-out is forgotten (a user who zooms away shouldn't get one later).
+const FAN_OUT_WAIT_MS = 3000;
+// True while the selected venue is pulled out of a cluster it would otherwise hide in.
+let pinnedOutsideClusters = false;
+// Set while a ?venue= link positions the map itself, so a filter change it causes doesn't reframe.
+let suppressReframe = false;
+
+// Room to keep clear when framing: the Near Me button above, the venue card below.
+const FRAME_PADDING = { top: 72, right: 48, bottom: 48, left: 48 };
+// A phone's narrow map must zoom out to fit every venue; never closer than street level.
+const FRAME_MIN_ZOOM = 12;
+const FRAME_MAX_ZOOM = 16;
 
 const filteredVenues = computed(() => {
   const today = londonDate();
@@ -168,30 +211,109 @@ async function startMap() {
   // CartoDB Positron / Voyager Muted Archival Tile Layer
   createTileLayer(L, props.mapApiKey).addTo(mapInstance);
 
+  addResetControl(L);
+
   // Layer groups
   ringsLayer = L.layerGroup().addTo(mapInstance);
   markersLayer = L.layerGroup().addTo(mapInstance);
+  clusterLayer = L.layerGroup().addTo(mapInstance);
+  spiderLayer = L.layerGroup().addTo(mapInstance);
 
-  // Tapping empty map puts the card away (a pin tap doesn't reach the map).
-  mapInstance.on('click', clearPin);
+  // Tapping empty map puts the card and any fanned-out pins away (a pin tap doesn't reach the map).
+  mapInstance.on('click', () => {
+    collapseSpider();
+    clearPin();
+  });
 
   // Draw Base & Walking Rings
   drawBaseAndRings();
 
-  // Render Venue Markers
+  // A ?venue= link positions the map itself; otherwise fit every venue the filters match.
+  clusterIndex = createClusterIndex(filteredVenues.value);
+  if (!new URLSearchParams(window.location.search).has('venue')) frameAll({ animate: false });
+
+  // Clusters depend on the zoom: regroup whenever it changes (and drop a fan-out as it starts).
+  mapInstance.on('zoomstart', collapseSpider);
+  mapInstance.on('zoomend', renderMarkers);
   renderMarkers();
   mapReady.value = true;
 
-  focusLinkedVenue();
+  void focusLinkedVenue();
+}
+
+function leaflet() {
+  return leafletModule.default || leafletModule;
+}
+
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** Centre and zoom the map on every venue the filters match, plus Base. */
+function frameAll({ animate }: { animate: boolean }) {
+  if (!mapInstance) return;
+  const venues = filteredVenues.value;
+  const options = { animate: animate && !prefersReducedMotion() };
+  if (venues.length === 0) {
+    mapInstance.setView([BASE_LAT, BASE_LNG], DEFAULT_ZOOM, options);
+    return;
+  }
+  const size = mapInstance.getSize();
+  const frame = frameFor(
+    [{ lat: BASE_LAT, lng: BASE_LNG }, ...venues.map((venue) => ({ lat: venue.lat!, lng: venue.lng! }))],
+    { width: size.x, height: size.y, padding: FRAME_PADDING, minZoom: FRAME_MIN_ZOOM, maxZoom: FRAME_MAX_ZOOM }
+  );
+  if (frame) mapInstance.setView([frame.lat, frame.lng], frame.zoom, options);
+}
+
+/** After a filter change: reframe only if a matching venue is off screen, so a small tweak doesn't make the map jump. */
+function reframeIfNeeded() {
+  if (!mapInstance || filteredVenues.value.length === 0) return;
+  const view = mapInstance.getBounds();
+  const outside = anyOutsideView(
+    filteredVenues.value.map((venue) => ({ lat: venue.lat!, lng: venue.lng! })),
+    { south: view.getSouth(), west: view.getWest(), north: view.getNorth(), east: view.getEast() }
+  );
+  if (outside) frameAll({ animate: true });
+}
+
+/** A button under the zoom buttons that returns to the framing on every matching venue. */
+function addResetControl(L: any) {
+  const ResetControl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd() {
+      const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control ledger-reset-control');
+      const button = L.DomUtil.create('a', '', container) as HTMLAnchorElement;
+      button.href = '#';
+      button.setAttribute('role', 'button');
+      button.setAttribute('aria-label', 'Reset map view');
+      button.title = 'Reset view';
+      button.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.on(button, 'click', (event: Event) => {
+        L.DomEvent.preventDefault(event);
+        frameAll({ animate: true });
+      });
+      // Links activate on Enter by themselves; a button role should answer to Space too.
+      L.DomEvent.on(button, 'keydown', (event: KeyboardEvent) => {
+        if (event.key !== ' ') return;
+        L.DomEvent.preventDefault(event);
+        frameAll({ animate: true });
+      });
+      return container;
+    },
+  });
+  new ResetControl().addTo(mapInstance);
 }
 
 /** `/?venue=<slug>` (from a dossier's "Locate on Ledger Map") centres on that venue and shows its card. */
-function focusLinkedVenue() {
+async function focusLinkedVenue() {
   const slug = new URLSearchParams(window.location.search).get('venue');
   if (!slug || !mapInstance) return;
   const venue = venuesList.value.find((candidate) => candidate.slug === slug);
   if (!venue) return;
 
+  // Showing the venue's tier is a filter change, but the link already says where to look.
+  suppressReframe = true;
   if (!filters.value.tiers.includes(venue.tier)) {
     toggleTier(venue.tier);
   }
@@ -200,10 +322,15 @@ function focusLinkedVenue() {
   }
   showPin(venue);
   mapContainer.value?.scrollIntoView({ block: 'center' });
+  await nextTick();
+  suppressReframe = false;
 }
 
 // The rings' colours are resolved when drawn (SVG attributes), so redraw them for the new theme.
-const stopFollowingTheme = onThemeChange(() => drawBaseAndRings());
+const stopFollowingTheme = onThemeChange(() => {
+  drawBaseAndRings();
+  drawSpider();
+});
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onMapKeydown);
@@ -214,11 +341,13 @@ onUnmounted(() => {
   mapInstance = null;
 });
 
-// Watch filters or venues changes
-watch([filteredVenues], () => {
-  if (mapInstance && leafletModule) {
-    renderMarkers();
-  }
+// A filter change regroups the clusters, then brings any matching venue that is off screen into view.
+watch(filteredVenues, () => {
+  if (!mapInstance || !leafletModule) return;
+  clusterIndex = createClusterIndex(filteredVenues.value);
+  spiderfied = null;
+  renderMarkers();
+  if (!suppressReframe) reframeIfNeeded();
 });
 
 function drawBaseAndRings() {
@@ -228,6 +357,8 @@ function drawBaseAndRings() {
 
   // 1. Spinningfields Base Origin Marker
   const baseMarker = createBaseMarker(L);
+  // Venues near HQ would otherwise sit under its marker: keep it beneath the pins and clusters.
+  baseMarker.setZIndexOffset(-1000);
   ringsLayer.addLayer(baseMarker);
 
   // 2. Walking Time Isochrones (Rings)
@@ -236,38 +367,151 @@ function drawBaseAndRings() {
   });
 }
 
+/** What to draw at `zoom`. A selected venue never hides inside a cluster: it comes out as its own pin. */
+function itemsToShow(zoom: number): MapItem[] {
+  pinnedOutsideClusters = false;
+  const items = clusterIndex?.itemsAt(zoom) ?? [];
+  const selected = pinVenue.value;
+  if (!selected || !filteredVenues.value.some((venue) => venue.id === selected.id)) return items;
+
+  const shownAlone = items.some((item) => item.kind === 'venue' && item.venue.id === selected.id);
+  const fannedOut = spiderfied?.venues.some((venue) => venue.id === selected.id);
+  if (shownAlone || fannedOut) return items;
+
+  pinnedOutsideClusters = true;
+  const others = createClusterIndex(filteredVenues.value.filter((venue) => venue.id !== selected.id));
+  return [...others.itemsAt(zoom), { kind: 'venue', venue: selected }];
+}
+
 function renderMarkers() {
-  if (!mapInstance || !leafletModule || !markersLayer) return;
-  const L = leafletModule.default || leafletModule;
-  markersLayer.clearLayers();
-  markersById.clear();
+  if (!mapInstance || !leafletModule || !markersLayer || !clusterLayer) return;
+  const L = leaflet();
+  const items = itemsToShow(mapInstance.getZoom());
+  const maxZoom = Math.min(mapInstance.getMaxZoom(), CLUSTER_MAX_ZOOM);
 
-  filteredVenues.value.forEach((venue) => {
-    if (!venue.lat || !venue.lng) return;
+  // A tapped one-building cluster fans out as soon as the map is deep enough to show it honestly.
+  if (pendingFanOut && Date.now() > pendingFanOut.until) pendingFanOut = null;
+  if (pendingFanOut && mapInstance.getZoom() >= maxZoom) {
+    const target = items.find((item): item is ClusterItem => item.kind === 'cluster' && item.key === pendingFanOut!.key);
+    pendingFanOut = null;
+    if (target) spiderfied = { key: target.key, lat: target.lat, lng: target.lng, venues: target.venues };
+  }
 
+  clusterLayer.clearLayers();
+  const singles = new Map<string, Venue>();
+  let fanOutStillThere = false;
+  for (const item of items) {
+    if (item.kind === 'venue') {
+      singles.set(item.venue.id, item.venue);
+    } else if (spiderfied && item.key === spiderfied.key) {
+      fanOutStillThere = true; // the fan-out draws its venues in its place
+    } else {
+      const label = clusterLabel(item, mapInstance.getZoom() < maxZoom ? 'Zoom in' : 'Spread out');
+      const marker = createClusterMarker(L, item, label);
+      onActivate(marker, () => openCluster(item));
+      clusterLayer.addLayer(marker);
+    }
+  }
+  if (spiderfied && !fanOutStillThere) spiderfied = null;
+  drawSpider();
+
+  // Single pins stay put between zooms; only the ones that appear or vanish change.
+  markersById.forEach((marker, id) => {
+    if (singles.has(id)) return;
+    markersLayer.removeLayer(marker);
+    markersById.delete(id);
+  });
+  singles.forEach((venue, id) => {
+    if (markersById.has(id)) return;
     const marker = createVenueMarker(L, venue);
     if (!marker) return;
-
     // Tapping a pin shows its card at the bottom of the map; the card links to the venue's page.
-    marker.on('click', () => showPin(venue));
-    markersById.set(venue.id, marker);
-
+    onActivate(marker, () => showPin(venue));
+    markersById.set(id, marker);
     markersLayer.addLayer(marker);
   });
 
-  // A filter change can take the selected pin off the map: drop its card, or keep its highlight.
-  if (pinVenue.value && !markersById.has(pinVenue.value.id)) pinVenue.value = null;
+  // A filter change can take the selected venue off the map: drop its card.
+  if (pinVenue.value && !filteredVenues.value.some((venue) => venue.id === pinVenue.value?.id)) pinVenue.value = null;
   highlightPin();
 }
 
-function highlightPin() {
-  markersById.forEach((marker, id) => {
-    marker.getElement()?.classList.toggle('is-selected-pin', id === pinVenue.value?.id);
+/**
+ * Runs `handler` when a marker is tapped, or when Enter or Space is pressed on it. Leaflet only
+ * turns Enter into a click for popups, and a marker is a button, so it must answer to both keys.
+ */
+function onActivate(marker: any, handler: () => void) {
+  marker.on('click', handler);
+  marker.on('keydown', (event: any) => {
+    const key = event.originalEvent?.key;
+    if (key !== 'Enter' && key !== ' ') return;
+    event.originalEvent.preventDefault();
+    handler();
   });
+}
+
+/** Tapping a cluster zooms to its venues; one that can't split by zooming (one building) zooms in and fans out. */
+function openCluster(cluster: ClusterItem) {
+  if (!mapInstance) return;
+  const maxZoom = Math.min(mapInstance.getMaxZoom(), CLUSTER_MAX_ZOOM);
+  if (cluster.expansionZoom > maxZoom) {
+    if (mapInstance.getZoom() >= maxZoom) {
+      spiderfied = { key: cluster.key, lat: cluster.lat, lng: cluster.lng, venues: cluster.venues };
+      renderMarkers();
+    } else {
+      // Zooming never splits it: go to street level, then fan it out (see renderMarkers).
+      pendingFanOut = { key: cluster.key, until: Date.now() + FAN_OUT_WAIT_MS };
+      mapInstance.setView([cluster.lat, cluster.lng], maxZoom, { animate: !prefersReducedMotion() });
+    }
+    return;
+  }
+  const L = leaflet();
+  const bounds = L.latLngBounds(cluster.venues.map((venue) => [venue.lat!, venue.lng!]));
+  const fit = mapInstance.getBoundsZoom(bounds, false, L.point(64, 64));
+  const zoom = Math.min(maxZoom, Math.max(fit, cluster.expansionZoom));
+  mapInstance.setView(bounds.getCenter(), zoom, { animate: !prefersReducedMotion() });
+}
+
+function collapseSpider() {
+  if (!spiderfied) return;
+  spiderfied = null;
+  renderMarkers();
+}
+
+/** Draws the fan-out: each venue's pin on a circle around the cluster's spot, joined to it by a leg. */
+function drawSpider() {
+  if (!spiderLayer) return;
+  spiderLayer.clearLayers();
+  spiderMarkers.clear();
+  if (!spiderfied || !mapInstance) return;
+
+  const L = leaflet();
+  const { lat, lng, venues } = spiderfied;
+  const centre = mapInstance.latLngToContainerPoint([lat, lng]);
+  const offsets = spiderfyOffsets(venues.length);
+  const ink = themeColor('graphite');
+
+  spiderLayer.addLayer(L.circleMarker([lat, lng], { className: 'ledger-spider', radius: 4, color: ink, weight: 1.5, fillColor: ink, fillOpacity: 1, interactive: false }));
+  venues.forEach((venue, i) => {
+    const spot = mapInstance.containerPointToLatLng(L.point(centre.x + offsets[i].x, centre.y + offsets[i].y));
+    spiderLayer.addLayer(L.polyline([[lat, lng], spot], { className: 'ledger-spider', color: ink, weight: 1.5, opacity: 0.7, interactive: false }));
+    const marker = L.marker(spot, { icon: createVenueIcon(L, venue) });
+    onActivate(marker, () => showPin(venue));
+    spiderMarkers.set(venue.id, marker);
+    spiderLayer.addLayer(marker);
+  });
+}
+
+function highlightPin() {
+  const mark = (marker: any, id: string) => marker.getElement()?.classList.toggle('is-selected-pin', id === pinVenue.value?.id);
+  markersById.forEach(mark);
+  spiderMarkers.forEach(mark);
 }
 
 function showPin(venue: Venue) {
   pinVenue.value = venue;
+  // A venue that isn't on the map as a pin of its own (it sits in a cluster) comes out of it.
+  if (!markersById.has(venue.id) && !spiderMarkers.has(venue.id)) renderMarkers();
   highlightPin();
   // Once the card has rendered, nudge the map so the pin isn't hidden behind it or the controls up top.
   nextTick(() => revealPin(venue));
@@ -275,6 +519,8 @@ function showPin(venue: Venue) {
 
 function clearPin() {
   pinVenue.value = null;
+  // If the venue had been pulled out of a cluster, let it rejoin.
+  if (pinnedOutsideClusters) renderMarkers();
   highlightPin();
 }
 
@@ -291,7 +537,9 @@ function revealPin(venue: Venue) {
 }
 
 function onMapKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape' && pinVenue.value) clearPin();
+  if (event.key !== 'Escape') return;
+  if (spiderfied) collapseSpider();
+  else if (pinVenue.value) clearPin();
 }
 
 </script>
@@ -387,6 +635,52 @@ function onMapKeydown(event: KeyboardEvent) {
 
 .map-loading {
   background-color: var(--color-map-placeholder);
+}
+
+/* No venue matches the filters: a card in the middle of the empty map. */
+.map-empty {
+  position: absolute;
+  z-index: 1100;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: max-content;
+  max-width: calc(100% - 48px);
+  padding: 18px 22px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 14px;
+  background: var(--color-surface);
+  box-shadow: 0 10px 28px rgb(17 30 71 / 22%);
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.map-empty-title {
+  margin: 0;
+  color: var(--color-ink);
+  font: 700 16px/1.3 "Playfair Display", Georgia, serif;
+}
+
+.map-empty-button {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-deep);
+  color: var(--color-parchment-fixed);
+  font: 700 13px/1 "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+}
+
+.map-empty-button:hover {
+  background: var(--color-navy-fixed);
+}
+
+.map-empty-button:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
 }
 
 .isochrone-toggle {
