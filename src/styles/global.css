@@ -1073,7 +1073,9 @@ button.bench-pillar-link {
   border: 1px solid var(--ledger-border);
   border-radius: 50%;
   background: var(--color-peach-pale);
-  color: var(--color-ochre);
+  /* A -fixed colour: the peach circle stays pale in dark mode, so the icon must stay dark
+     (the plain ochre token lightens in dark mode and fell to 1.45:1 here). */
+  color: var(--color-ochre-fixed);
 }
 
 .bulletin-icon .material-symbols-outlined {
