@@ -1,9 +1,10 @@
 import type { Venue } from '@/types';
-import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES } from './config';
+import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES, WALKING_RING_TOKEN } from './config';
 import { tierInfo } from '@/lib/tiers';
 import { walkText } from '@/lib/route-display';
 import { themeColor } from '@/lib/theme-color';
 import type { ClusterItem } from './clusters';
+import { nameLabelText } from './labels';
 
 /** What a screen reader announces for a pin: the cost badge alone ("££") says nothing. */
 export function venuePinLabel(venue: Venue): string {
@@ -19,7 +20,8 @@ function tierGlyphSvg(glyph: string): string {
 /**
  * Generate the HTML string for a venue marker pin: a 28 px disc in the tier's
  * colour with the tier's glyph in it, so tier reads without colour. The price is
- * not on the pin; it is in the accessible name and on the venue's card.
+ * not on the pin; it is in the accessible name and on the venue's card. Its name
+ * shows beside it on hover or keyboard focus at any zoom (see map.css).
  */
 export function createVenueIconHtml(venue: Venue, rank?: number): string {
   const tier = tierInfo(venue.tier);
@@ -35,6 +37,7 @@ export function createVenueIconHtml(venue: Venue, rank?: number): string {
         ${tierGlyphSvg(tier.glyph)}
       </div>
       <span class="sr-only">${escapeHtml(venuePinLabel(venue))}</span>
+      <span class="ledger-pin-name" aria-hidden="true">${escapeHtml(nameLabelText(venue))}</span>
       ${rankBadge}
       <div class="w-1.5 h-1.5 mx-auto bg-stone-900 rounded-full mt-[-1px]"></div>
     </div>
@@ -147,20 +150,42 @@ export function createBaseMarker(L: any): any {
 }
 
 /**
- * Factory for creating the walking time isochrone circles around Spinningfields base.
+ * Factory for creating the walking time isochrone circles around Spinningfields base:
+ * thin and one quiet grey, with the 2.5-mile boundary a little heavier and dashed.
  */
 export function createWalkingIsochrones(L: any): any[] {
-  return WALKING_ISOCHRONES.map((ring) => {
-    const color = themeColor(ring.colorToken);
-    return L.circle([BASE_LAT, BASE_LNG], {
+  const color = themeColor(WALKING_RING_TOKEN);
+  return WALKING_ISOCHRONES.map((ring) =>
+    L.circle([BASE_LAT, BASE_LNG], {
       radius: ring.radius,
       color,
-      weight: ring.weight || 1.4,
+      weight: ring.weight,
+      opacity: 0.75,
       dashArray: ring.dash,
-      fillColor: color,
-      fillOpacity: 0.02,
+      fill: false,
       interactive: false,
-    });
+    })
+  );
+}
+
+/**
+ * A piece of text on the map that can't be touched or focused: a venue's name
+ * beside its pin, or a walking ring's minutes on the ring. The marker is centred
+ * on `latlng` and `size` is the box it fills. Screen readers get the same facts
+ * from the pins and the list, so the text is hidden from them.
+ */
+export function createLabelMarker(L: any, latlng: [number, number], text: string, size: { width: number; height: number }, kind: 'name' | 'ring'): any {
+  return L.marker(latlng, {
+    icon: L.divIcon({
+      html: `<span class="ledger-label-text" aria-hidden="true">${escapeHtml(text)}</span>`,
+      className: `ledger-label ledger-label-${kind}`,
+      iconSize: [size.width, size.height],
+      iconAnchor: [size.width / 2, size.height / 2],
+    }),
+    interactive: false,
+    keyboard: false,
+    // Pins and clusters stay above the text.
+    zIndexOffset: -500,
   });
 }
 

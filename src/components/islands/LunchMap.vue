@@ -53,39 +53,6 @@
         </div>
       </Transition>
     </div>
-
-    <!-- Walking rings legend: collapsed to a small pill until someone wants the key -->
-    <div class="absolute bottom-4 left-4 z-[1000] hidden sm:block">
-      <div class="isochrone-card bg-cream/95 backdrop-blur-sm border border-hairline rounded-md text-xs shadow-md font-serif-header" :class="{ 'is-collapsed': !legendOpen }">
-        <button
-          type="button"
-          class="isochrone-toggle"
-          :aria-expanded="legendOpen"
-          aria-controls="isochrone-legend"
-          @click="legendOpen = !legendOpen"
-        >
-          <span class="font-bold text-ink">Walking Isochrones</span>
-          <span v-if="legendOpen" class="text-xs text-stone-500 font-sans">from Base</span>
-          <svg class="isochrone-chevron" :class="{ 'is-open': legendOpen }" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-            <path d="m5 12 5-5 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </button>
-        <div id="isochrone-legend" class="isochrone-body" :class="{ 'is-open': legendOpen }" :inert="!legendOpen">
-          <div class="isochrone-body-inner">
-            <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-stone-700 font-sans text-xs border-t border-hairline mx-2 pt-1.5 pb-2">
-              <!-- Same colours as the rings on the map; the heavier boundary ring shows dashed. -->
-              <div v-for="ring in WALKING_ISOCHRONES" :key="ring.radius" class="flex items-center gap-1.5">
-                <span
-                  class="w-2.5 h-0"
-                  :style="{ borderTop: `${ring.weight ? 1 : 2}px ${ring.weight ? 'dashed' : 'solid'} var(--color-${ring.colorToken})` }"
-                ></span>
-                {{ ring.legend }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -106,6 +73,7 @@ import {
   createTileLayer,
   createBaseMarker,
   createWalkingIsochrones,
+  createLabelMarker,
   createVenueMarker,
   createVenueIcon,
   createClusterMarker,
@@ -121,6 +89,20 @@ import {
   type MapItem,
 } from '@/lib/map/clusters';
 import { anyOutsideView, frameFor } from '@/lib/map/framing';
+import {
+  NAME_HEIGHT_PX,
+  NAME_MIN_ZOOM,
+  byNamePriority,
+  clusterRect,
+  labelWidth,
+  nameLabelText,
+  nameOptions,
+  pinRect,
+  placeLabels,
+  ringLabelOptions,
+  type LabelCandidate,
+  type Rect,
+} from '@/lib/map/labels';
 import { tierInfo } from '@/lib/tiers';
 import { onThemeChange } from '@/lib/theme';
 import { themeColor } from '@/lib/theme-color';
@@ -131,7 +113,6 @@ const props = defineProps<{
 
 const mapContainer = ref<HTMLElement | null>(null);
 const mapReady = ref(false);
-const legendOpen = ref(false);
 const filters = useStore($filters);
 const venuesList = useStore($venuesList);
 const inspectionsStore = useStore($inspectionsList);
@@ -143,7 +124,18 @@ let removeMap: (() => void) | null = null;
 let leafletModule: any = null;
 let markersLayer: any = null;
 const markersById = new Map<string, any>();
+// The walking rings and their labels come and go together with the "Walking rings" switch.
 let ringsLayer: any = null;
+let ringLabelsLayer: any = null;
+let baseLayer: any = null;
+// Venue names beside their pins, from zoom 16.
+let namesLayer: any = null;
+let namedPins: Set<string> = new Set();
+// The rect each placed name takes, in the map's pixel space: the walking-ring labels steer clear of them.
+let placedNameRects: Rect[] = [];
+let ringsButton: HTMLAnchorElement | null = null;
+const RINGS_STORAGE_KEY = 'mcr-map-rings';
+const ringsVisible = ref(true);
 
 // Clusters are redrawn at every zoom; single pins are kept between zooms, so a focused pin stays focused.
 let clusterLayer: any = null;
@@ -239,8 +231,15 @@ async function startMap() {
 
   addResetControl(L);
 
+  addRingsControl(L);
+
   // Layer groups
-  ringsLayer = L.layerGroup().addTo(mapInstance);
+  baseLayer = L.layerGroup().addTo(mapInstance);
+  ringsLayer = L.layerGroup();
+  ringLabelsLayer = L.layerGroup();
+  namesLayer = L.layerGroup().addTo(mapInstance);
+  ringsVisible.value = readRingsChoice();
+  showRings(ringsVisible.value);
   markersLayer = L.layerGroup().addTo(mapInstance);
   clusterLayer = L.layerGroup().addTo(mapInstance);
   spiderLayer = L.layerGroup().addTo(mapInstance);
@@ -261,6 +260,8 @@ async function startMap() {
   // Clusters depend on the zoom: regroup whenever it changes (and drop a fan-out as it starts).
   mapInstance.on('zoomstart', collapseSpider);
   mapInstance.on('zoomend', renderMarkers);
+  // Ring labels sit where they can be seen, so they follow the view; names don't depend on it.
+  mapInstance.on('moveend resize', updateRingLabels);
   renderMarkers();
   mapReady.value = true;
 
@@ -377,20 +378,192 @@ watch(filteredVenues, () => {
 });
 
 function drawBaseAndRings() {
-  if (!mapInstance || !leafletModule || !ringsLayer) return;
+  if (!mapInstance || !leafletModule || !ringsLayer || !baseLayer) return;
   const L = leafletModule.default || leafletModule;
   ringsLayer.clearLayers();
+  baseLayer.clearLayers();
 
   // 1. Spinningfields Base Origin Marker
   const baseMarker = createBaseMarker(L);
   // Venues near HQ would otherwise sit under its marker: keep it beneath the pins and clusters.
   baseMarker.setZIndexOffset(-1000);
-  ringsLayer.addLayer(baseMarker);
+  baseLayer.addLayer(baseMarker);
 
   // 2. Walking Time Isochrones (Rings)
   createWalkingIsochrones(L).forEach((circle) => {
     ringsLayer.addLayer(circle);
   });
+}
+
+/** The visitor's saved choice for the rings; they show unless switched off. */
+function readRingsChoice(): boolean {
+  try {
+    return localStorage.getItem(RINGS_STORAGE_KEY) !== 'off';
+  } catch {
+    return true;
+  }
+}
+
+function rememberRingsChoice(visible: boolean) {
+  try {
+    localStorage.setItem(RINGS_STORAGE_KEY, visible ? 'on' : 'off');
+  } catch {
+    // Private windows and blocked storage just forget the choice.
+  }
+}
+
+/** Shows or hides the rings and their labels (the Base marker stays). */
+function showRings(visible: boolean) {
+  if (!mapInstance || !ringsLayer || !ringLabelsLayer) return;
+  ringsVisible.value = visible;
+  if (visible) {
+    mapInstance.addLayer(ringsLayer);
+    mapInstance.addLayer(ringLabelsLayer);
+    updateRingLabels();
+  } else {
+    mapInstance.removeLayer(ringsLayer);
+    mapInstance.removeLayer(ringLabelsLayer);
+  }
+  ringsButton?.setAttribute('aria-pressed', String(visible));
+  ringsButton?.setAttribute('title', visible ? 'Hide walking rings' : 'Show walking rings');
+}
+
+/** A switch under the reset button that hides the walking rings; the choice is remembered. */
+function addRingsControl(L: any) {
+  const RingsControl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd() {
+      const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control ledger-rings-control');
+      const button = L.DomUtil.create('a', '', container) as HTMLAnchorElement;
+      button.href = '#';
+      button.setAttribute('role', 'button');
+      button.setAttribute('aria-label', 'Walking rings');
+      button.setAttribute('aria-pressed', 'true');
+      button.title = 'Hide walking rings';
+      button.innerHTML =
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="2 3"/></svg>';
+      ringsButton = button;
+      const toggle = () => {
+        showRings(!ringsVisible.value);
+        rememberRingsChoice(ringsVisible.value);
+      };
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.on(button, 'click', (event: Event) => {
+        L.DomEvent.preventDefault(event);
+        toggle();
+      });
+      // Links activate on Enter by themselves; a button role should answer to Space too.
+      L.DomEvent.on(button, 'keydown', (event: KeyboardEvent) => {
+        if (event.key !== ' ') return;
+        L.DomEvent.preventDefault(event);
+        toggle();
+      });
+      return container;
+    },
+  });
+  new RingsControl().addTo(mapInstance);
+}
+
+const NAME_FONT = '600 12px "Playfair Display", Georgia, serif';
+const RING_FONT = '600 11px "Playfair Display", Georgia, serif';
+const RING_LABEL_HEIGHT_PX = 14;
+const EARTH_CIRCUMFERENCE_M = 40_075_016.686;
+
+/** Where the map's own controls sit over the tiles, in container pixels: ring labels keep out from under them. */
+function controlZones(size: { x: number; y: number }): Rect[] {
+  return [
+    { x: 0, y: 0, width: 170, height: 64 }, // Near Me
+    { x: size.x - 54, y: 0, width: 54, height: 160 }, // zoom, reset and rings
+    { x: 0, y: size.y - 28, width: size.x, height: 28 }, // attribution
+  ];
+}
+
+/**
+ * Names beside the pins, from zoom 16. Every pin, cluster and the Base marker is an
+ * obstacle; a name that would touch one, or another name, is left out. Approved
+ * venues get first pick, then the nearest to Base. Placement doesn't depend on what is
+ * in view, so names stay put as the map is dragged.
+ */
+function updateNames() {
+  if (!mapInstance || !namesLayer) return;
+  const L = leaflet();
+  namesLayer.clearLayers();
+  namedPins.forEach((id) => (markersById.get(id) ?? spiderMarkers.get(id))?.getElement()?.classList.remove('has-name-label'));
+  namedPins = new Set();
+  placedNameRects = [];
+
+  const zoom = mapInstance.getZoom();
+  if (zoom < NAME_MIN_ZOOM) return;
+  const project = (latlng: any) => mapInstance.project(latlng, zoom);
+
+  const obstacles: Rect[] = [];
+  const basePoint = project([BASE_LAT, BASE_LNG]);
+  obstacles.push({ x: basePoint.x - 16, y: basePoint.y - 16, width: 32, height: 32 });
+  markersById.forEach((marker) => obstacles.push(pinRect(project(marker.getLatLng()))));
+  spiderMarkers.forEach((marker) => obstacles.push(pinRect(project(marker.getLatLng()))));
+  clusterLayer.eachLayer((marker: any) => obstacles.push(clusterRect(project(marker.getLatLng()))));
+
+  const byId = new Map(filteredVenues.value.map((venue) => [venue.id, venue]));
+  const shown = [...markersById.keys()].map((id) => byId.get(id)).filter((venue): venue is Venue => !!venue);
+  const candidates: Array<LabelCandidate & { venue: Venue }> = byNamePriority(shown).map((venue) => {
+    const text = nameLabelText(venue);
+    const width = labelWidth(text, NAME_FONT);
+    return { id: venue.id, venue, options: nameOptions(project([venue.lat!, venue.lng!]), width) };
+  });
+
+  const placed = placeLabels(candidates, obstacles);
+  for (const candidate of candidates) {
+    const index = placed.get(candidate.id);
+    if (index === undefined) continue;
+    const box = candidate.options[index];
+    placedNameRects.push(box);
+    namedPins.add(candidate.id);
+    markersById.get(candidate.id)?.getElement()?.classList.add('has-name-label');
+    const centre = mapInstance.unproject([box.x + box.width / 2, box.y + box.height / 2], zoom);
+    namesLayer.addLayer(createLabelMarker(L, [centre.lat, centre.lng], nameLabelText(candidate.venue), { width: box.width, height: NAME_HEIGHT_PX }, 'name'));
+  }
+}
+
+/**
+ * Each walking ring's minutes, printed on the ring where it is on screen and clear of pins,
+ * clusters, names and the map's own buttons. Recomputed as the map moves.
+ */
+function updateRingLabels() {
+  if (!mapInstance || !ringLabelsLayer || !ringsVisible.value) return;
+  const L = leaflet();
+  ringLabelsLayer.clearLayers();
+
+  const zoom = mapInstance.getZoom();
+  const project = (latlng: any) => mapInstance.project(latlng, zoom);
+  const size = mapInstance.getSize();
+  // The view in the same pixel space as project(), wherever the map has been dragged to.
+  const origin = mapInstance.getPixelBounds().min;
+  const view: Rect = { x: origin.x, y: origin.y, width: size.x, height: size.y };
+  const inset = (rect: Rect, by: number): Rect => ({ x: rect.x + by, y: rect.y + by, width: rect.width - by * 2, height: rect.height - by * 2 });
+
+  const obstacles: Rect[] = [...placedNameRects];
+  markersById.forEach((marker) => obstacles.push(pinRect(project(marker.getLatLng()))));
+  spiderMarkers.forEach((marker) => obstacles.push(pinRect(project(marker.getLatLng()))));
+  clusterLayer?.eachLayer((marker: any) => obstacles.push(clusterRect(project(marker.getLatLng()))));
+  obstacles.push(...controlZones(size).map((zone) => ({ ...zone, x: zone.x + origin.x, y: zone.y + origin.y })));
+
+  const centre = project([BASE_LAT, BASE_LNG]);
+  // Web Mercator: a metre is this many pixels at Base's latitude.
+  const pixelsPerMetre = (256 * 2 ** zoom) / (EARTH_CIRCUMFERENCE_M * Math.cos((BASE_LAT * Math.PI) / 180));
+  const candidates = WALKING_ISOCHRONES.map((ring) => {
+    const width = labelWidth(ring.shortLabel, RING_FONT, 80);
+    const options = ringLabelOptions(centre, ring.radius * pixelsPerMetre, { width, height: RING_LABEL_HEIGHT_PX }, inset(view, 6));
+    return { id: ring.shortLabel, ring, options };
+  });
+
+  const placed = placeLabels(candidates, obstacles);
+  for (const candidate of candidates) {
+    const index = placed.get(candidate.id);
+    if (index === undefined) continue;
+    const box = candidate.options[index];
+    const at = mapInstance.unproject([box.x + box.width / 2, box.y + box.height / 2], zoom);
+    ringLabelsLayer.addLayer(createLabelMarker(L, [at.lat, at.lng], candidate.ring.shortLabel, { width: box.width, height: RING_LABEL_HEIGHT_PX }, 'ring'));
+  }
 }
 
 /** What to draw at `zoom`. A selected venue never hides inside a cluster: it comes out as its own pin. */
@@ -468,6 +641,8 @@ function renderMarkers() {
   markHovered();
   orderMarkersForKeyboard();
   keepFocusInMap();
+  updateNames();
+  updateRingLabels();
 }
 
 /**
@@ -697,15 +872,6 @@ function onMapKeydown(event: KeyboardEvent) {
   margin-inline: auto;
 }
 
-/* The legend key stays in the bottom-left corner, so on wider maps the card sits to its right. */
-@media (min-width: 640px) {
-  .pin-card {
-    left: 176px;
-    margin-right: 0;
-    margin-left: auto;
-  }
-}
-
 .pin-card :deep(.bench-pillar) {
   box-shadow: 0 10px 28px rgb(17 30 71 / 28%);
 }
@@ -852,68 +1018,5 @@ function onMapKeydown(event: KeyboardEvent) {
 .map-empty-button:focus-visible {
   outline: 2px solid var(--color-gold);
   outline-offset: 2px;
-}
-
-.isochrone-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  padding: 6px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  color: var(--color-charcoal);
-  text-align: left;
-}
-
-.isochrone-toggle:hover {
-  background: rgb(27 47 107 / 6%);
-}
-
-.isochrone-toggle:focus-visible {
-  outline: 2px solid var(--ledger-navy);
-  outline-offset: -2px;
-}
-
-.isochrone-chevron {
-  flex: none;
-  width: 14px;
-  height: 14px;
-  margin-left: auto;
-  color: var(--color-taupe);
-  transition: transform 160ms ease;
-}
-
-/* The chevron points up while the key is folded away, down once it is open. */
-.isochrone-chevron.is-open {
-  transform: rotate(180deg);
-}
-
-/* Grid-rows trick: animates the height to and from its natural size. */
-.isochrone-body {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 180ms ease;
-}
-
-.isochrone-body.is-open {
-  grid-template-rows: 1fr;
-}
-
-.isochrone-body-inner {
-  overflow: hidden;
-}
-
-/* Folded away, the key shouldn't hold the pill at its full width. */
-.isochrone-card.is-collapsed .isochrone-body-inner {
-  width: 0;
-  min-width: 100%;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .isochrone-body,
-  .isochrone-chevron {
-    transition: none;
-  }
 }
 </style>

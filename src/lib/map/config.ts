@@ -38,13 +38,12 @@ export const CARTO_VOYAGER_TILE_CONFIG: TileLayerConfig = {
 
 export interface IsochroneRing {
   radius: number; // in metres
-  /** Colour token (`--color-<token>` in src/styles/theme.css). */
-  colorToken: string;
   label: string;
-  /** Text in the homepage map's legend. */
-  legend: string;
-  dash: string;
-  weight?: number;
+  /** What is printed on the ring itself. */
+  shortLabel: string;
+  /** Leaflet `dashArray`; the rings are solid, the boundary is dashed. */
+  dash?: string;
+  weight: number;
 }
 
 /**
@@ -53,21 +52,26 @@ export interface IsochroneRing {
  */
 export const WALKING_METRES_PER_MINUTE = 80;
 
-const walkRing = (minutes: number, miles: string, dash: string): IsochroneRing => ({
+/** The rings are one quiet grey (`--color-map-ring`), so the pins stay the strongest thing on the map. */
+export const WALKING_RING_TOKEN = 'map-ring';
+
+const RING_WEIGHT = 1;
+const BOUNDARY_WEIGHT = 2;
+
+const walkRing = (minutes: number): IsochroneRing => ({
   radius: minutes * WALKING_METRES_PER_MINUTE,
-  colorToken: `map-ring-${minutes}`,
   label: `${minutes} min walk`,
-  legend: `${minutes} min (${miles} mi)`,
-  dash,
+  shortLabel: `${minutes} min`,
+  weight: RING_WEIGHT,
 });
 
 export const WALKING_ISOCHRONES: IsochroneRing[] = [
-  walkRing(5, '0.25', '3, 4'),
-  walkRing(10, '0.50', '3, 5'),
-  walkRing(15, '0.75', '4, 6'),
-  walkRing(20, '1.00', '4, 6'),
-  walkRing(25, '1.25', '5, 7'),
-  { radius: 4023, colorToken: 'map-boundary', label: '2.5-Mile Central Boundary', legend: '2.5 mi Boundary', dash: '8, 8', weight: 2.5 },
+  walkRing(5),
+  walkRing(10),
+  walkRing(15),
+  walkRing(20),
+  walkRing(25),
+  { radius: 4023, label: '2.5-Mile Central Boundary', shortLabel: '2.5 mi', dash: '8, 8', weight: BOUNDARY_WEIGHT },
 ];
 
 /**

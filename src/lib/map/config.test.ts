@@ -30,6 +30,13 @@ describe('map config', () => {
     );
   });
 
+  it('prints each ring\'s minutes on the ring, and the boundary in miles', () => {
+    assert.deepEqual(
+      WALKING_ISOCHRONES.map((ring) => ring.shortLabel),
+      ['5 min', '10 min', '15 min', '20 min', '25 min', '2.5 mi']
+    );
+  });
+
   it('builds tile URLs with and without an API key', () => {
     assert.ok(!CARTO_VOYAGER_TILE_CONFIG.getUrl().includes('key='));
     assert.ok(CARTO_VOYAGER_TILE_CONFIG.getUrl('a b&c').endsWith('?key=a%20b%26c'));
