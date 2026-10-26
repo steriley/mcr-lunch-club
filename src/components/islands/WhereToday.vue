@@ -119,7 +119,7 @@
             />
           </div>
           <div class="mt-2">
-            <span class="venue-popup-tier" :style="{ '--tier-color': tierInfo(pickedVenue.tier).color }">{{ tierInfo(pickedVenue.tier).label }}</span>
+            <span class="venue-tier-badge" :style="{ '--tier-color': tierInfo(pickedVenue.tier).color }">{{ tierInfo(pickedVenue.tier).label }}</span>
           </div>
 
           <div class="mt-3 p-3 bg-card rounded-lg border border-hairline text-xs">

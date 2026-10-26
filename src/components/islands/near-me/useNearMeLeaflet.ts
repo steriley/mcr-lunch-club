@@ -4,7 +4,6 @@ import {
   BASE_LNG,
   DEFAULT_ZOOM,
   FAR_FROM_BASE_METRES,
-  bindVenuePopup,
   createBaseMarker,
   createMapRemover,
   createTileLayer,
@@ -22,11 +21,8 @@ import type { BottomSheet } from './useBottomSheet';
 /** The nearest few pins carry their list number. */
 const PIN_RANK_LIMIT = 5;
 
-/**
- * Share of the uncovered map, from its top edge, where a selected pin sits. A
- * little below the middle leaves room above the pin for its popup.
- */
-const SELECTED_PIN_VISIBLE_FRACTION = 0.6;
+/** Share of the uncovered map, from its top edge, where a selected pin sits: the middle. */
+const SELECTED_PIN_VISIBLE_FRACTION = 0.5;
 
 /** Programmatic moves end before this, so they aren't mistaken for the user's own panning. */
 const MOVE_SETTLE_MS = 400;
@@ -49,8 +45,6 @@ interface NearMeLeafletOptions {
   isLowAccuracy: Ref<boolean>;
   /** A pin was tapped. */
   onPinSelect: (venue: Venue) => void;
-  /** A pin popup's dossier button was pressed. */
-  onPinDetails: (venue: Venue) => void;
 }
 
 /**
@@ -68,7 +62,7 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
   let venueMarkersLayer: any = null;
   let userLayersGroup: any = null;
   const venueMarkersMap = new Map<string, any>();
-  // Swap a pin's icon only when its rank changed, so open popups survive re-ranking.
+  // Swap a pin's icon only when its rank changed, so pins aren't rebuilt needlessly on re-ranking.
   const pinRanks = new Map<string, number | undefined>();
   let isProgrammaticMove = false;
 
@@ -129,10 +123,7 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
       venueMarkersMap.set(venue.id, marker);
       pinRanks.set(venue.id, rank);
 
-      // 56px keeps the popup clear of the Near Me header.
-      // On a phone selectVenueItem centres the pin above the sheet itself; the popup's own
-      // auto-pan would fight it, so only the desktop layout leaves panning to the popup.
-      bindVenuePopup(marker, venue, () => options.onPinDetails(venue), 56, sheet.isDesktop.value);
+      // The selected venue's card shows in the panel (Your selection), not on the map.
       marker.on('click', () => options.onPinSelect(venue));
       venueMarkersLayer.addLayer(marker);
     });
@@ -191,17 +182,13 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
     }, 500);
   }
 
-  /** Pans so the venue's pin sits above the sheet (or beside the panel); optionally opens its popup. */
-  function focusVenue(venue: Venue, { pan, openPopup, sheetState }: { pan: boolean; openPopup: boolean; sheetState: SheetSnap }) {
-    const marker = venueMarkersMap.get(venue.id);
-    if (!marker) return;
-    if (pan && mapInstance && venue.lat != null && venue.lng != null) {
-      moveProgrammatically(() => {
-        const zoom = mapInstance.getZoom();
-        mapInstance.panTo(centreForVisibleMap(venue.lat!, venue.lng!, zoom, sheetState, SELECTED_PIN_VISIBLE_FRACTION), { animate: true });
-      });
-    }
-    if (openPopup) marker.openPopup();
+  /** Pans so the venue's pin sits in the clear part of the map: above the sheet, or beside the panel. */
+  function focusVenue(venue: Venue, { sheetState }: { sheetState: SheetSnap }) {
+    if (!mapInstance || !venueMarkersMap.has(venue.id) || venue.lat == null || venue.lng == null) return;
+    moveProgrammatically(() => {
+      const zoom = mapInstance.getZoom();
+      mapInstance.panTo(centreForVisibleMap(venue.lat!, venue.lng!, zoom, sheetState, SELECTED_PIN_VISIBLE_FRACTION), { animate: true });
+    });
   }
 
   /** Recentre on the user; false when there is no position yet. */

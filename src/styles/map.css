@@ -125,87 +125,8 @@
   white-space: nowrap;
 }
 
-/* Map pin popups (home map and Near Me): the same card language as the bench pillars. */
-.ledger-popup .leaflet-popup-content-wrapper {
-  padding: 0;
-  overflow: hidden;
-  border: 1px solid var(--ledger-border);
-  border-radius: 12px;
-  background: var(--bench-pillar);
-  box-shadow: 0 10px 25px -5px rgb(17 30 71 / 25%);
-}
-
-.ledger-popup .leaflet-popup-content {
-  width: 240px !important;
-  margin: 0;
-  line-height: 1.4;
-}
-
-.ledger-popup .leaflet-popup-tip {
-  background: var(--bench-pillar);
-}
-
-.ledger-popup a.leaflet-popup-close-button {
-  top: 6px;
-  right: 6px;
-  width: 22px;
-  height: 22px;
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--color-parchment) 90%, transparent);
-  color: var(--bench-primary);
-  font-size: 16px;
-  line-height: 20px;
-  text-align: center;
-}
-
-.venue-popup-image {
-  display: block;
-  width: 100%;
-  height: auto;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
-}
-
-.venue-popup-body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 12px;
-}
-
-.venue-popup-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-}
-
-/* Without a photo the close button sits over the title row, so leave it room. */
-.venue-popup:not(:has(.venue-popup-image)) .venue-popup-title-row {
-  padding-right: 18px;
-}
-
-.venue-popup-name {
-  min-width: 0;
-  margin: 0;
-  color: var(--bench-primary);
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-}
-
-.venue-popup-cost {
-  flex: none;
-  color: var(--bench-amber);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.venue-popup-tier {
+/* A verdict badge in the venue's own colour (set as --tier-color). */
+.venue-tier-badge {
   padding: 2px 8px;
   border: 1px solid var(--tier-color);
   border-radius: 4px;
@@ -215,64 +136,6 @@
   font-weight: 700;
   letter-spacing: .06em;
   text-transform: uppercase;
-}
-
-/* Leaflet gives every paragraph in the map a 1em margin; the extra class outranks it. */
-.ledger-popup .venue-popup-walk {
-  margin: 0;
-  color: var(--bench-amber);
-  font: italic 400 13px/1.4 "Playfair Display", Georgia, serif;
-}
-
-.venue-popup-button {
-  width: 100%;
-  margin-top: 4px;
-  padding: 8px 12px;
-  border: 0;
-  border-radius: 8px;
-  background: var(--ledger-deep);
-  color: var(--color-parchment-fixed);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background-color .15s ease;
-}
-
-.venue-popup-button:hover {
-  background: var(--color-navy-fixed);
-}
-
-.venue-popup-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-.venue-popup-actions .venue-popup-button {
-  box-sizing: border-box;
-  margin-top: 0;
-}
-
-/* Leaflet colours every link in the map blue; the extra class outranks it. */
-.ledger-popup a.venue-popup-button.is-secondary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--ledger-deep);
-  background: transparent;
-  color: var(--color-deep-ink);
-  text-decoration: none;
-}
-
-.ledger-popup a.venue-popup-button.is-secondary:hover {
-  background: var(--ledger-deep);
-  color: var(--color-parchment-fixed);
-}
-
-.venue-popup-button:focus-visible {
-  outline: 2px solid var(--ledger-gold);
-  outline-offset: 2px;
 }
 
 /* Leaflet's own controls are white; in dark mode they take the dark surfaces. */

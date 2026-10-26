@@ -114,12 +114,14 @@
               :nearest="nearestVenue"
               :others="listVenues"
               :inspections="inspections"
+              :selection="selection"
               :selected-venue-id="selectedVenueId"
               :selected-costs="selectedCosts"
               :far-from-manchester="isUserFarFromManchester"
               :from-base="isRankedFromBase"
               @select="(venue) => selectVenueItem(venue, false)"
               @details="selectVenue"
+              @clear-selection="clearSelection"
               @toggle-cost="toggleCostFilter"
             />
           </div>
@@ -236,6 +238,14 @@ const nearestVenue = computed(() =>
 // The nearest venue is the hero card, so the list carries the rest.
 const listVenues = computed(() => rankedVenues.value.slice(1));
 
+// The selected venue, with its place in the ranking (null while nothing is selected).
+const selection = computed(() => {
+  const index = rankedVenues.value.findIndex((rv) => rv.venue.id === selectedVenueId.value);
+  if (index >= 0) return { venue: rankedVenues.value[index].venue, rv: rankedVenues.value[index], rank: index + 1 };
+  const venue = venuesList.value.find((candidate) => candidate.id === selectedVenueId.value);
+  return venue ? { venue, rv: null, rank: undefined } : null;
+});
+
 // What the collapsed sheet shows: the selected venue, else the nearest.
 const previewVenue = computed(() => {
   if (rankedVenues.value.length === 0) return null;
@@ -261,7 +271,6 @@ const map = useNearMeLeaflet({
   isUserFarFromManchester,
   isLowAccuracy,
   onPinSelect: (venue) => selectVenueItem(venue, true),
-  onPinDetails: (venue) => selectVenue(venue),
 });
 
 let previousActiveElement: HTMLElement | null = null;
@@ -318,6 +327,12 @@ function updateRanking(force = false) {
   }
 }
 
+// Put the selection away; the pin loses its highlight.
+function clearSelection() {
+  selectedVenueId.value = null;
+  map.highlightSelectedPin();
+}
+
 // Select a venue item from list or pin click
 function selectVenueItem(venue: Venue, fromPinClick = false) {
   selectedVenueId.value = venue.id;
@@ -329,17 +344,10 @@ function selectVenueItem(venue: Venue, fromPinClick = false) {
 
   // Tapping a pin on a collapsed sheet opens it to half height (below), so aim for that.
   const opensSheet = fromPinClick && !sheet.isDesktop.value && sheet.snap.value === 'collapsed';
-  map.focusVenue(venue, {
-    // On desktop a tapped pin's popup pans the map itself.
-    pan: !fromPinClick || !sheet.isDesktop.value,
-    openPopup: !fromPinClick,
-    sheetState: opensSheet ? 'half' : sheet.snap.value,
-  });
+  map.focusVenue(venue, { sheetState: opensSheet ? 'half' : sheet.snap.value });
 
-  // Scroll corresponding row into view
-  nextTick(() => {
-    document.getElementById(`near-me-row-${venue.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  });
+  // "Your selection" is the top of the list: bring it into view.
+  nextTick(() => listContainerRef.value?.scrollTo({ top: 0, behavior: 'smooth' }));
 
   // On mobile, expand from collapsed so user can see details
   if (opensSheet) sheet.snap.value = 'half';

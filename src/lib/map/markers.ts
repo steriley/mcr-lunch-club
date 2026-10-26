@@ -1,10 +1,8 @@
 import type { Venue } from '@/types';
 import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES } from './config';
 import { tierInfo } from '@/lib/tiers';
-import { milesText, walkText } from '@/lib/route-display';
-import { focalStyle } from '@/lib/image-upload';
+import { walkText } from '@/lib/route-display';
 import { themeColor } from '@/lib/theme-color';
-import { getWalkingDirectionsUrl } from './directions';
 
 /** What a screen reader announces for a pin: the cost badge alone ("££") says nothing. */
 export function venuePinLabel(venue: Venue): string {
@@ -118,70 +116,4 @@ export function escapeHtml(value: unknown): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-}
-
-/**
- * Generate popup DOM content for a venue. `onViewDossier` runs when the
- * popup's dossier button is pressed.
- */
-export function createVenuePopupContent(venue: Venue, onViewDossier?: () => void): HTMLElement {
-  const tier = tierInfo(venue.tier);
-
-  const popupContent = document.createElement('div');
-  popupContent.className = 'venue-popup';
-  const image = venue.image
-    ? `<img src="${escapeHtml(venue.image.thumbUrl)}" alt="${escapeHtml(venue.image.alt)}" width="640" height="427" loading="lazy" decoding="async" onerror="this.style.display='none'"
-           style="object-position: ${escapeHtml(focalStyle(venue.image))};" class="venue-popup-image" />`
-    : '';
-  const directions = venue.lat != null && venue.lng != null
-    ? `<a href="${escapeHtml(getWalkingDirectionsUrl(venue.lat, venue.lng))}" target="_blank" rel="noopener noreferrer" class="venue-popup-button is-secondary" aria-label="Walking directions to ${escapeHtml(venue.name)}">Walk there</a>`
-    : '';
-  popupContent.innerHTML = `
-    ${image}
-    <div class="venue-popup-body">
-      <div class="venue-popup-title-row">
-        <h3 class="venue-popup-name">${escapeHtml(venue.name)}</h3>
-        <span class="venue-popup-cost">${escapeHtml(venue.cost)}</span>
-      </div>
-      <span class="venue-popup-tier" style="--tier-color: ${tier.color};">${escapeHtml(tier.label)}</span>
-      <p class="venue-popup-walk">${escapeHtml(walkText(venue.walkingTimeMin, 'min walk from Base'))} (${escapeHtml(milesText(venue.distanceMiles, 'mi'))})</p>
-      <div class="venue-popup-actions">
-        <button type="button" data-view-dossier class="venue-popup-button">View Ledger Dossier</button>
-        ${directions}
-      </div>
-    </div>
-  `;
-
-  if (onViewDossier) {
-    popupContent.querySelector('[data-view-dossier]')?.addEventListener('click', onViewDossier);
-  }
-
-  return popupContent;
-}
-
-/**
- * Binds the venue popup to a marker, so tapping the pin opens only the popup.
- * The popup's dossier button closes it before running `onViewDossier`, so
- * nothing is left behind on the map once the venue panel is closed.
- * `overlayClearance` is the height in px of the controls floating over the
- * top of the map; the map pans so the popup opens below them. Pass
- * `autoPan` false when the caller positions the map itself.
- */
-export function bindVenuePopup(
-  marker: any,
-  venue: Venue,
-  onViewDossier: () => void,
-  overlayClearance = 0,
-  autoPan = true
-): void {
-  const popupContent = createVenuePopupContent(venue, () => {
-    marker.closePopup();
-    onViewDossier();
-  });
-  marker.bindPopup(popupContent, {
-    maxWidth: 280,
-    className: 'ledger-popup',
-    autoPan,
-    autoPanPaddingTopLeft: [10, overlayClearance + 10],
-  });
 }

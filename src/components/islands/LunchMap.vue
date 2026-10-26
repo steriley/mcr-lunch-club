@@ -31,6 +31,23 @@
           <span>Near Me</span>
         </button>
       </div>
+
+      <!-- The selected pin's card: fixed to the bottom of the map, not floating over the pin -->
+      <Transition name="pin-card">
+        <div v-if="pinVenue" ref="pinCardRef" class="pin-card" role="group" :aria-label="`${pinVenue.name}`">
+          <button type="button" class="pin-card-close" aria-label="Close venue card" @click="clearPin">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" /></svg>
+          </button>
+          <BenchPillar
+            :venue="pinVenue"
+            :inspections="inspectionsList"
+            selectable
+            :show-details="false"
+            show-tier
+            @select="openDossier(pinVenue)"
+          />
+        </div>
+      </Transition>
     </div>
 
     <!-- Walking rings legend: collapsed to a small pill until someone wants the key -->
@@ -69,12 +86,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $filters, matchesFilters, selectVenue, openNearMe, toggleTier } from '@/stores/filters';
 import { whenIdle } from '@/lib/idle';
 import { londonDate } from '@/lib/london-date';
-import { $venuesList } from '@/stores/ledger';
+import { $inspectionsList, $venuesList } from '@/stores/ledger';
+import BenchPillar from '@/components/BenchPillar.vue';
+import type { Venue } from '@/types';
 import {
   createMapRemover,
   BASE_LAT,
@@ -84,7 +103,6 @@ import {
   createBaseMarker,
   createWalkingIsochrones,
   createVenueMarker,
-  bindVenuePopup,
   WALKING_ISOCHRONES,
 } from '@/lib/map';
 import { onThemeChange } from '@/lib/theme';
@@ -98,17 +116,23 @@ const mapReady = ref(false);
 const legendOpen = ref(false);
 const filters = useStore($filters);
 const venuesList = useStore($venuesList);
+const inspectionsList = useStore($inspectionsList);
 
 let mapInstance: any = null;
 let removeMap: (() => void) | null = null;
 let leafletModule: any = null;
 let markersLayer: any = null;
+const markersById = new Map<string, any>();
 let ringsLayer: any = null;
 
 const filteredVenues = computed(() => {
   const today = londonDate();
   return venuesList.value.filter((venue) => matchesFilters(venue, filters.value, today));
 });
+
+// The pin whose card is showing, at the bottom of the map.
+const pinVenue = ref<Venue | null>(null);
+const pinCardRef = ref<HTMLElement | null>(null);
 
 const visibleVenuesCount = computed(() => filteredVenues.value.length);
 const totalVenuesCount = computed(() => venuesList.value.length);
@@ -117,6 +141,7 @@ let cancelStart: (() => void) | null = null;
 
 onMounted(() => {
   if (typeof window === 'undefined' || !mapContainer.value) return;
+  window.addEventListener('keydown', onMapKeydown);
 
   // Leaflet is the heaviest script on the page, so it starts once the browser is
   // idle and the rest of the page has rendered. A ?venue= link came for the map,
@@ -154,6 +179,9 @@ async function startMap() {
   ringsLayer = L.layerGroup().addTo(mapInstance);
   markersLayer = L.layerGroup().addTo(mapInstance);
 
+  // Tapping empty map puts the card away (a pin tap doesn't reach the map).
+  mapInstance.on('click', clearPin);
+
   // Draw Base & Walking Rings
   drawBaseAndRings();
 
@@ -185,6 +213,7 @@ function focusLinkedVenue() {
 const stopFollowingTheme = onThemeChange(() => drawBaseAndRings());
 
 onUnmounted(() => {
+  window.removeEventListener('keydown', onMapKeydown);
   cancelStart?.();
   stopFollowingTheme();
   removeMap?.();
@@ -218,6 +247,7 @@ function renderMarkers() {
   if (!mapInstance || !leafletModule || !markersLayer) return;
   const L = leafletModule.default || leafletModule;
   markersLayer.clearLayers();
+  markersById.clear();
 
   filteredVenues.value.forEach((venue) => {
     if (!venue.lat || !venue.lng) return;
@@ -225,17 +255,148 @@ function renderMarkers() {
     const marker = createVenueMarker(L, venue);
     if (!marker) return;
 
-    // Tapping the pin opens the popup; its dossier button opens the venue panel.
-    // 70px keeps the popup clear of the Base pill and zoom buttons.
-    bindVenuePopup(marker, venue, () => selectVenue(venue), 70);
+    // Tapping a pin shows its card at the bottom of the map; the card opens the venue panel.
+    marker.on('click', () => showPin(venue));
+    markersById.set(venue.id, marker);
 
     markersLayer.addLayer(marker);
   });
+
+  // A filter change can take the selected pin off the map: drop its card, or keep its highlight.
+  if (pinVenue.value && !markersById.has(pinVenue.value.id)) pinVenue.value = null;
+  highlightPin();
+}
+
+function highlightPin() {
+  markersById.forEach((marker, id) => {
+    marker.getElement()?.classList.toggle('is-selected-pin', id === pinVenue.value?.id);
+  });
+}
+
+function showPin(venue: Venue) {
+  pinVenue.value = venue;
+  highlightPin();
+  // Once the card has rendered, nudge the map so the pin isn't hidden behind it or the controls up top.
+  nextTick(() => revealPin(venue));
+}
+
+function clearPin() {
+  pinVenue.value = null;
+  highlightPin();
+}
+
+function openDossier(venue: Venue) {
+  clearPin();
+  selectVenue(venue);
+}
+
+/** Pan just enough to keep the pin in the clear part of the map: below the controls, above the card. */
+function revealPin(venue: Venue) {
+  if (!mapInstance || venue.lat == null || venue.lng == null) return;
+  const size = mapInstance.getSize();
+  const point = mapInstance.latLngToContainerPoint([venue.lat, venue.lng]);
+  const cardTop = size.y - (pinCardRef.value?.offsetHeight ?? 0) - 24;
+  const lowest = cardTop - 24;
+  const highest = 72;
+  if (point.y > lowest) mapInstance.panBy([0, point.y - lowest], { animate: true });
+  else if (point.y < highest) mapInstance.panBy([0, point.y - highest], { animate: true });
+}
+
+function onMapKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && pinVenue.value) clearPin();
 }
 
 </script>
 
 <style scoped>
+/* The selected pin's card, fixed to the bottom of the map. */
+.pin-card {
+  position: absolute;
+  z-index: 1100;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  max-width: 440px;
+  margin-inline: auto;
+}
+
+/* The legend key stays in the bottom-left corner, so on wider maps the card sits to its right. */
+@media (min-width: 640px) {
+  .pin-card {
+    left: 176px;
+    margin-right: 0;
+    margin-left: auto;
+  }
+}
+
+.pin-card :deep(.bench-pillar) {
+  box-shadow: 0 10px 28px rgb(17 30 71 / 28%);
+}
+
+.pin-card-close {
+  position: absolute;
+  z-index: 3;
+  top: -10px;
+  right: -6px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid var(--ledger-border);
+  border-radius: 999px;
+  background: var(--color-parchment);
+  color: var(--color-charcoal);
+  box-shadow: 0 2px 6px rgb(17 30 71 / 25%);
+  cursor: pointer;
+}
+
+.pin-card-close svg {
+  width: 12px;
+  height: 12px;
+}
+
+.pin-card-close:hover {
+  border-color: var(--ledger-navy);
+  color: var(--ledger-navy);
+}
+
+.pin-card-close:focus-visible {
+  outline: 2px solid var(--ledger-navy);
+  outline-offset: 2px;
+}
+
+.pin-card-enter-active,
+.pin-card-leave-active {
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.pin-card-enter-from,
+.pin-card-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pin-card-enter-active,
+  .pin-card-leave-active {
+    transition: none;
+  }
+}
+
+/* The selected pin stands out and sits above its neighbours. */
+:deep(.custom-ledger-pin.is-selected-pin) {
+  z-index: 9999 !important;
+}
+
+:deep(.custom-ledger-pin.is-selected-pin > div) {
+  transform: scale(1.35) !important;
+  filter: drop-shadow(0 0 8px rgba(197, 155, 39, 0.95)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6)) !important;
+}
+
+:deep(.custom-ledger-pin.is-selected-pin .rounded-full) {
+  box-shadow: 0 0 0 3px var(--color-brass), 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+}
+
 .map-loading {
   background-color: var(--color-map-placeholder);
 }

@@ -1,4 +1,23 @@
 <template>
+  <!-- The venue picked on the map or in the list, above the rest -->
+  <div v-if="selection" class="near-me-list-section near-me-selection">
+    <div class="near-me-list-header">
+      <span class="near-me-list-title">Your selection</span>
+      <button type="button" class="near-me-clear-selection" @click="emit('clearSelection')">Clear</button>
+    </div>
+    <BenchPillar
+      :venue="selection.venue"
+      :inspections="inspections"
+      :rank="selection.rank"
+      :walk-label="selection.rv ? rowWalkLabel(selection.rv) : undefined"
+      :walk-url="selection.rv ? rowWalkUrl(selection.rv) : undefined"
+      selectable
+      :show-details="false"
+      show-tier
+      @select="emit('details', selection.venue)"
+    />
+  </div>
+
   <!-- Nearest venue -->
   <div v-if="nearest" class="near-me-list-section">
     <div class="near-me-list-header">
@@ -82,6 +101,8 @@ const props = defineProps<{
   /** The rest, nearest first. */
   others: RankedVenue[];
   inspections: Inspection[];
+  /** The selected venue and its place in the ranking; null when nothing is selected. */
+  selection: { venue: Venue; rv: RankedVenue | null; rank?: number } | null;
   selectedVenueId: string | null;
   selectedCosts: CostTier[];
   /** The user is too far from Manchester, so distances are from Spinningfields. */
@@ -90,7 +111,7 @@ const props = defineProps<{
   fromBase: boolean;
 }>();
 
-const emit = defineEmits<{ select: [venue: Venue]; details: [venue: Venue]; toggleCost: [cost: CostTier] }>();
+const emit = defineEmits<{ select: [venue: Venue]; details: [venue: Venue]; toggleCost: [cost: CostTier]; clearSelection: [] }>();
 
 function rowWalkLabel(rv: RankedVenue): string {
   return `${rv.formattedDistance} · ${estimateWalkMinutes(rv.distanceMetres)} min walk from ${props.fromBase ? 'Base' : 'you'}`;
@@ -213,6 +234,26 @@ function rowWalkUrl(rv: RankedVenue): string | null {
 
 .near-me-list-header {
   align-items: center;
+}
+
+.near-me-clear-selection {
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  color: var(--color-deep-ink);
+  font: 700 0.75rem "Plus Jakarta Sans", sans-serif;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  cursor: pointer;
+}
+
+.near-me-clear-selection:hover {
+  color: var(--ledger-navy);
+}
+
+.near-me-clear-selection:focus-visible {
+  outline: 2px solid var(--ledger-navy);
+  outline-offset: 2px;
 }
 
 .near-me-far-note {

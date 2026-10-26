@@ -10,7 +10,7 @@ import type { Inspection, Venue } from '@/types';
  * Vue twin of BenchPillar.astro for islands (Near Me): same markup and
  * classes, so the card looks the same as on the tier pages and homepage.
  */
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   venue: Venue;
   inspections: readonly Inspection[];
   /** Position in a ranked list, shown before the name. */
@@ -21,10 +21,12 @@ const props = defineProps<{
   walkUrl?: string | null;
   /** The card picks the venue instead of linking to its page, and offers Details. */
   selectable?: boolean;
+  /** With `selectable`, set false to leave out the Details button (the whole card already picks the venue). */
+  showDetails?: boolean;
   selected?: boolean;
   /** Names the venue's tier, for lists that mix tiers. */
   showTier?: boolean;
-}>();
+}>(), { showDetails: true });
 
 const emit = defineEmits<{ select: []; details: [] }>();
 
@@ -93,7 +95,7 @@ function markBroken(event: Event) {
         <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
         {{ walk.label }}
       </span>
-      <button v-if="selectable" type="button" class="bench-details" :aria-label="`Details for ${card.name}`" @click="emit('details')">
+      <button v-if="selectable && showDetails" type="button" class="bench-details" :aria-label="`Details for ${card.name}`" @click="emit('details')">
         Details
       </button>
       <span v-else-if="card.inspectionCount > 0" class="bench-count">
