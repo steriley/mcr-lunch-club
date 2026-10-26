@@ -712,6 +712,8 @@
   display: grid;
   place-items: center;
   border: 1px solid var(--ledger-border);
+  /* Follow the thumbnail's rounded corners, or its square border corners are clipped off. */
+  border-radius: inherit;
 }
 
 /* A burger silhouette stands in for a missing photo: faint, and not an Approved award. */
