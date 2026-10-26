@@ -713,22 +713,19 @@
   border: 1px solid var(--ledger-border);
 }
 
-.bench-placeholder::before {
-  position: absolute;
-  inset: 5px;
-  border: 1px solid color-mix(in srgb, var(--color-hairline) 70%, transparent);
-  border-radius: 4px;
+/* A burger silhouette stands in for a missing photo: faint, and not an Approved award. */
+.bench-placeholder::after {
+  width: 88px;
+  height: 88px;
+  background: var(--color-hairline);
   content: "";
+  -webkit-mask: url("/brand/burger-silhouette.svg") center / contain no-repeat;
+  mask: url("/brand/burger-silhouette.svg") center / contain no-repeat;
 }
 
-.bench-placeholder img {
-  width: 104px;
-  height: 104px;
-}
-
-.bench-thumb .bench-placeholder img {
-  width: 48px;
-  height: 48px;
+.bench-thumb .bench-placeholder::after {
+  width: 40px;
+  height: 40px;
 }
 
 .bench-seal {

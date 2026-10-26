@@ -46,9 +46,7 @@ function markBroken(event: Event) {
   <article class="bench-pillar" :class="{ 'is-selected': selected }">
     <div class="bench-pillar-main">
       <div class="bench-thumb">
-        <span class="bench-placeholder" aria-hidden="true">
-          <img src="/brand/approved-sticker-256.webp" width="256" height="256" alt="" />
-        </span>
+        <span class="bench-placeholder" aria-hidden="true"></span>
         <img
           v-if="card.image"
           class="bench-image"
