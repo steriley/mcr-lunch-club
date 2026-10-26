@@ -571,8 +571,9 @@
   border-bottom: 1px solid color-mix(in srgb, var(--color-ochre) 30%, transparent);
 }
 
+/* With no badge beside it, the kicker and title run the full width of the section. */
 .bench-header-copy {
-  flex: 1 1 260px;
+  flex: 1 1 100%;
 }
 
 .bench-kicker {
@@ -598,17 +599,6 @@
   color: var(--color-on-dark);
   font: 700 clamp(20px, 4vw, 24px)/1.2 "Playfair Display", Georgia, serif;
   letter-spacing: -.01em;
-}
-
-.bench-header-pill {
-  padding: 4px 10px;
-  border-radius: 8px;
-  background: rgb(37 49 91 / 80%);
-  color: var(--bench-peach);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
 }
 
 .bench-empty {
