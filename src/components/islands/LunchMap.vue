@@ -1,5 +1,10 @@
 <template>
-  <div class="relative isolate flex flex-col w-full h-full overflow-hidden bg-paper rounded-2xl border border-hairline shadow-inner">
+  <div ref="rootRef" class="relative isolate flex flex-col w-full h-full overflow-hidden bg-paper rounded-2xl border border-hairline shadow-inner">
+    <!-- A map is a poor way through 56 venues for anyone not using a pointer: the list is the other route. -->
+    <a href="#venue-results" class="skip-link" @click.prevent="skipToList">Skip the map and go to the venue list</a>
+    <!-- Announces the card for screen readers; it appears beside the map, away from where focus is. -->
+    <p class="sr-only" role="status" aria-live="polite">{{ announcement }}</p>
+
     <!-- Map Header Strip -->
     <header class="map-header">
       <div class="map-header-title">
@@ -40,11 +45,11 @@
 
       <!-- The selected pin's card: fixed to the bottom of the map, not floating over the pin -->
       <Transition name="pin-card">
-        <div v-if="pinVenue" ref="pinCardRef" class="pin-card" role="group" :aria-label="`${pinVenue.name}`">
-          <button type="button" class="pin-card-close" aria-label="Close venue card" @click="clearPin">
+        <div v-if="pinVenue" ref="pinCardRef" class="pin-card" role="group" tabindex="-1" :aria-label="`${pinVenue.name}`">
+          <button type="button" class="pin-card-close" aria-label="Close venue card" @click="onCloseClick">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" /></svg>
           </button>
-          <BenchPillar :venue="pinVenue" :inspections="inspectionsList" show-tier />
+          <BenchPillar :venue="pinVenue" :inspections="inspectionsList" show-tier detailed />
         </div>
       </Transition>
     </div>
@@ -87,9 +92,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
-import { $filters, matchesFilters, openNearMe, resetFilters, toggleTier } from '@/stores/filters';
+import { $filteredVenues, $filters, openNearMe, resetFilters, toggleTier } from '@/stores/filters';
+import { $hoveredVenueId, $mapSelection, selectMapVenue } from '@/stores/results';
 import { whenIdle } from '@/lib/idle';
-import { londonDate } from '@/lib/london-date';
 import { $inspectionsList, $venuesList } from '@/stores/ledger';
 import BenchPillar from '@/components/BenchPillar.vue';
 import type { Inspection, Venue } from '@/types';
@@ -116,6 +121,7 @@ import {
   type MapItem,
 } from '@/lib/map/clusters';
 import { anyOutsideView, frameFor } from '@/lib/map/framing';
+import { tierInfo } from '@/lib/tiers';
 import { onThemeChange } from '@/lib/theme';
 import { themeColor } from '@/lib/theme-color';
 
@@ -161,14 +167,29 @@ const FRAME_PADDING = { top: 72, right: 48, bottom: 48, left: 48 };
 const FRAME_MIN_ZOOM = 12;
 const FRAME_MAX_ZOOM = 16;
 
-const filteredVenues = computed(() => {
-  const today = londonDate();
-  return venuesList.value.filter((venue) => matchesFilters(venue, filters.value, today));
-});
+// The venues the filters match: the store's, so the list beside the map shows exactly these.
+const filteredVenues = useStore($filteredVenues);
 
 // The pin whose card is showing, at the bottom of the map.
 const pinVenue = ref<Venue | null>(null);
 const pinCardRef = ref<HTMLElement | null>(null);
+const rootRef = ref<HTMLElement | null>(null);
+
+const announcement = computed(() =>
+  pinVenue.value ? `Showing ${pinVenue.value.name}, ${tierInfo(pinVenue.value.tier).label}, ${pinVenue.value.cost}` : ''
+);
+
+// What shares the pick with the list: the venue chosen there (or here), and the row being pointed at.
+const selection = useStore($mapSelection);
+const hovered = useStore($hoveredVenueId);
+// The cluster marker each venue currently sits in, so a hovered row can light up its cluster.
+const clusterMarkerByVenue = new Map<string, any>();
+// Where focus goes back to when the card closes: the pin that opened it.
+let returnFocusTo: HTMLElement | null = null;
+// A cluster was opened from the keyboard: its markers are about to be redrawn, so focus would be lost.
+// Good for a couple of seconds, so a zoom that changes nothing can't claim focus on some later redraw.
+let keepKeyboardInMapUntil = 0;
+const KEEP_FOCUS_MS = 2000;
 
 const visibleVenuesCount = computed(() => filteredVenues.value.length);
 const totalVenuesCount = computed(() => venuesList.value.length);
@@ -202,6 +223,11 @@ async function startMap() {
     center: [BASE_LAT, BASE_LNG],
     zoom: DEFAULT_ZOOM,
     zoomControl: false,
+    // Reduced motion: no animated zooms, fades or inertia on the map.
+    zoomAnimation: !prefersReducedMotion(),
+    fadeAnimation: !prefersReducedMotion(),
+    markerZoomAnimation: !prefersReducedMotion(),
+    inertia: !prefersReducedMotion(),
   });
   removeMap = createMapRemover(mapInstance);
 
@@ -398,6 +424,7 @@ function renderMarkers() {
   }
 
   clusterLayer.clearLayers();
+  clusterMarkerByVenue.clear();
   const singles = new Map<string, Venue>();
   let fanOutStillThere = false;
   for (const item of items) {
@@ -408,8 +435,9 @@ function renderMarkers() {
     } else {
       const label = clusterLabel(item, mapInstance.getZoom() < maxZoom ? 'Zoom in' : 'Spread out');
       const marker = createClusterMarker(L, item, label);
-      onActivate(marker, () => openCluster(item));
+      onActivate(marker, (viaKeyboard) => openCluster(item, viaKeyboard));
       clusterLayer.addLayer(marker);
+      item.venues.forEach((venue) => clusterMarkerByVenue.set(venue.id, marker));
     }
   }
   if (spiderfied && !fanOutStillThere) spiderfied = null;
@@ -426,33 +454,67 @@ function renderMarkers() {
     const marker = createVenueMarker(L, venue);
     if (!marker) return;
     // Tapping a pin shows its card at the bottom of the map; the card links to the venue's page.
-    onActivate(marker, () => showPin(venue));
+    onActivate(marker, (viaKeyboard) => showPin(venue, viaKeyboard));
     markersById.set(id, marker);
     markersLayer.addLayer(marker);
   });
 
   // A filter change can take the selected venue off the map: drop its card.
-  if (pinVenue.value && !filteredVenues.value.some((venue) => venue.id === pinVenue.value?.id)) pinVenue.value = null;
+  if (pinVenue.value && !filteredVenues.value.some((venue) => venue.id === pinVenue.value?.id)) {
+    pinVenue.value = null;
+    selectMapVenue(null);
+  }
   highlightPin();
+  markHovered();
+  orderMarkersForKeyboard();
+  keepFocusInMap();
+}
+
+/**
+ * Opening a cluster redraws the markers, which would drop a keyboard user's focus onto the page.
+ * Keep it in the map instead: on the first of a fan-out's pins, or on the map itself after a zoom.
+ */
+function keepFocusInMap() {
+  if (Date.now() > keepKeyboardInMapUntil) return;
+  keepKeyboardInMapUntil = 0;
+  const firstPin = spiderMarkers.values().next().value?.getElement() as HTMLElement | undefined;
+  (firstPin ?? (mapInstance?.getContainer() as HTMLElement | undefined))?.focus({ preventScroll: true });
+}
+
+/**
+ * Tab order should follow the map, top to bottom. Leaflet adds markers in the order they are drawn,
+ * which is no order a person would find, so put the markers back in reading order after every draw.
+ * (A marker that has focus stays where it is: moving it would drop the focus.)
+ */
+function orderMarkersForKeyboard() {
+  const pane = mapInstance?.getPane('markerPane');
+  if (!pane || (document.activeElement && document.activeElement !== pane && pane.contains(document.activeElement))) return;
+  const markers = [...markersById.values(), ...(clusterLayer?.getLayers() ?? []), ...spiderMarkers.values()];
+  markers
+    .map((marker) => ({ element: marker.getElement() as HTMLElement | undefined, at: marker.getLatLng() }))
+    .filter((entry): entry is { element: HTMLElement; at: { lat: number; lng: number } } => Boolean(entry.element))
+    .sort((a, b) => b.at.lat - a.at.lat || a.at.lng - b.at.lng)
+    .forEach((entry) => pane.appendChild(entry.element));
 }
 
 /**
  * Runs `handler` when a marker is tapped, or when Enter or Space is pressed on it. Leaflet only
  * turns Enter into a click for popups, and a marker is a button, so it must answer to both keys.
  */
-function onActivate(marker: any, handler: () => void) {
-  marker.on('click', handler);
+function onActivate(marker: any, handler: (viaKeyboard: boolean) => void) {
+  marker.on('click', () => handler(false));
   marker.on('keydown', (event: any) => {
     const key = event.originalEvent?.key;
     if (key !== 'Enter' && key !== ' ') return;
     event.originalEvent.preventDefault();
-    handler();
+    handler(true);
   });
 }
 
 /** Tapping a cluster zooms to its venues; one that can't split by zooming (one building) zooms in and fans out. */
-function openCluster(cluster: ClusterItem) {
+function openCluster(cluster: ClusterItem, viaKeyboard = false) {
   if (!mapInstance) return;
+  keepKeyboardInMapUntil = viaKeyboard ? Date.now() + KEEP_FOCUS_MS : 0;
   const maxZoom = Math.min(mapInstance.getMaxZoom(), CLUSTER_MAX_ZOOM);
   if (cluster.expansionZoom > maxZoom) {
     if (mapInstance.getZoom() >= maxZoom) {
@@ -496,7 +558,7 @@ function drawSpider() {
     const spot = mapInstance.containerPointToLatLng(L.point(centre.x + offsets[i].x, centre.y + offsets[i].y));
     spiderLayer.addLayer(L.polyline([[lat, lng], spot], { className: 'ledger-spider', color: ink, weight: 1.5, opacity: 0.7, interactive: false }));
     const marker = L.marker(spot, { icon: createVenueIcon(L, venue) });
-    onActivate(marker, () => showPin(venue));
+    onActivate(marker, (viaKeyboard) => showPin(venue, viaKeyboard));
     spiderMarkers.set(venue.id, marker);
     spiderLayer.addLayer(marker);
   });
@@ -508,20 +570,99 @@ function highlightPin() {
   spiderMarkers.forEach(mark);
 }
 
-function showPin(venue: Venue) {
+/** A pin was picked on the map: show its card and tell the list. */
+function showPin(venue: Venue, viaKeyboard = false) {
+  applyPin(venue, 'map', viaKeyboard);
+  selectMapVenue(venue.id, 'map');
+}
+
+/** Shows the card for `venue`, however it was picked (a pin here, a row in the list, a ?venue= link). */
+function applyPin(venue: Venue, source: 'map' | 'list', viaKeyboard = false) {
+  const focused = document.activeElement;
+  returnFocusTo = focused instanceof HTMLElement && rootRef.value?.contains(focused) ? focused : null;
   pinVenue.value = venue;
   // A venue that isn't on the map as a pin of its own (it sits in a cluster) comes out of it.
   if (!markersById.has(venue.id) && !spiderMarkers.has(venue.id)) renderMarkers();
   highlightPin();
-  // Once the card has rendered, nudge the map so the pin isn't hidden behind it or the controls up top.
-  nextTick(() => revealPin(venue));
+  if (source === 'list') {
+    bringIntoView(venue);
+    return;
+  }
+  // Once the card has rendered, nudge the map so the pin isn't hidden behind it or the controls up top,
+  // and (for a keyboard user, who would otherwise have to Tab past every other pin to reach it) move focus in.
+  nextTick(() => {
+    revealPin(venue);
+    if (viaKeyboard) pinCardRef.value?.focus();
+  });
 }
 
-function clearPin() {
+/** A venue picked in the list: fly to it unless its pin is already well on screen, and bring the map into view. */
+function bringIntoView(venue: Venue) {
+  if (!mapInstance || venue.lat == null || venue.lng == null) return;
+  const animate = !prefersReducedMotion();
+  const spot: [number, number] = [venue.lat, venue.lng];
+  // On a phone the list sits under the map: bring the map back into view.
+  mapContainer.value?.scrollIntoView({ block: 'nearest', behavior: animate ? 'smooth' : 'auto' });
+  if (markersById.has(venue.id) && mapInstance.getBounds().pad(-0.08).contains(spot)) {
+    nextTick(() => revealPin(venue));
+    return;
+  }
+  mapInstance.once('moveend', () => revealPin(venue));
+  mapInstance.setView(spot, Math.max(mapInstance.getZoom(), 16), { animate });
+}
+
+/** The card closes. From the keyboard, focus goes back to the pin that opened it. */
+function clearPin({ restoreFocus = false } = {}) {
+  const hadCard = pinVenue.value !== null;
   pinVenue.value = null;
   // If the venue had been pulled out of a cluster, let it rejoin.
   if (pinnedOutsideClusters) renderMarkers();
   highlightPin();
+  selectMapVenue(null);
+  if (restoreFocus && hadCard) {
+    nextTick(() => {
+      const target = returnFocusTo?.isConnected ? returnFocusTo : (mapInstance?.getContainer() as HTMLElement | undefined);
+      target?.focus();
+      returnFocusTo = null;
+    });
+  }
+}
+
+// A click with no pointer behind it (detail 0) is the keyboard: its focus was on the button that just vanished.
+function onCloseClick(event: MouseEvent) {
+  clearPin({ restoreFocus: event.detail === 0 });
+}
+
+// The venue picked or cleared elsewhere, in the list.
+watch(selection, (current) => {
+  if (!current) {
+    if (!pinVenue.value) return;
+    pinVenue.value = null;
+    if (pinnedOutsideClusters) renderMarkers();
+    highlightPin();
+    return;
+  }
+  if (pinVenue.value?.id === current.id) return; // our own pick, already showing
+  const venue = venuesList.value.find((candidate) => candidate.id === current.id);
+  if (venue && mapInstance) applyPin(venue, current.source);
+});
+
+/** Lights up the pin (or the cluster it sits in) of the list row being pointed at. */
+function markHovered() {
+  const id = hovered.value;
+  const lit = id ? (markersById.get(id) ?? spiderMarkers.get(id) ?? clusterMarkerByVenue.get(id) ?? null) : null;
+  const all = new Set<any>([...markersById.values(), ...spiderMarkers.values(), ...clusterMarkerByVenue.values()]);
+  all.forEach((marker) => marker.getElement()?.classList.toggle('is-hovered-pin', marker === lit));
+}
+watch(hovered, markHovered);
+
+/** The skip link: open the list (the bench's "All venues" tab, or the disclosure under a phone's map) and land on it. */
+function skipToList() {
+  window.dispatchEvent(new CustomEvent('mcr:show-results'));
+  // Two frames: one for the list to open, one for its heading to exist.
+  requestAnimationFrame(() =>
+    requestAnimationFrame(() => document.querySelector<HTMLElement>('[data-results-heading]')?.focus())
+  );
 }
 
 /** Pan just enough to keep the pin in the clear part of the map: below the controls, above the card. */
@@ -532,14 +673,14 @@ function revealPin(venue: Venue) {
   const cardTop = size.y - (pinCardRef.value?.offsetHeight ?? 0) - 24;
   const lowest = cardTop - 24;
   const highest = 72;
-  if (point.y > lowest) mapInstance.panBy([0, point.y - lowest], { animate: true });
-  else if (point.y < highest) mapInstance.panBy([0, point.y - highest], { animate: true });
+  if (point.y > lowest) mapInstance.panBy([0, point.y - lowest], { animate: !prefersReducedMotion() });
+  else if (point.y < highest) mapInstance.panBy([0, point.y - highest], { animate: !prefersReducedMotion() });
 }
 
 function onMapKeydown(event: KeyboardEvent) {
   if (event.key !== 'Escape') return;
   if (spiderfied) collapseSpider();
-  else if (pinVenue.value) clearPin();
+  else if (pinVenue.value) clearPin({ restoreFocus: Boolean(rootRef.value?.contains(document.activeElement)) });
 }
 
 </script>
@@ -617,6 +758,36 @@ function onMapKeydown(event: KeyboardEvent) {
   .pin-card-leave-active {
     transition: none;
   }
+}
+
+/* The venue card takes focus when a pin is chosen from the keyboard. */
+.pin-card:focus-visible {
+  border-radius: 16px;
+  outline: 2px solid var(--color-navy);
+  outline-offset: 3px;
+}
+
+/* Big enough to hit with a thumb: the walking-directions link, and the close button's invisible margin. */
+.pin-card :deep(.bench-walk.is-link) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.pin-card-close::before {
+  content: '';
+  position: absolute;
+  inset: -9px;
+}
+
+/* The pin (or cluster) of the list row being pointed at glows, so a row finds its place on the map. */
+:deep(.custom-ledger-pin.is-hovered-pin) {
+  z-index: 9000 !important;
+}
+
+:deep(.custom-ledger-pin.is-hovered-pin > div) {
+  transform: scale(1.3) !important;
+  filter: drop-shadow(0 0 7px rgba(242, 154, 46, 0.95)) drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5)) !important;
 }
 
 /* The selected pin stands out and sits above its neighbours. */

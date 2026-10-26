@@ -159,3 +159,21 @@ describe('matchesFilters', () => {
     assert.equal(matchesFilters(place({ tier: 'under_consideration' }), filters({ searchQuery: 'pie', tiers: ['under_consideration'] }), today), true);
   });
 });
+
+describe('$filteredVenues', () => {
+  it('is the venues the filters match, and follows them', async () => {
+    const { $filteredVenues } = await import('./filters');
+    const { seedLedgerVenues } = await import('./ledger');
+    const make = (id: string, tier: Venue['tier'], cost: Venue['cost']): Venue => ({
+      id, name: id, slug: id, tier, lat: 53.48, lng: -2.25, distanceMiles: 0.3, walkingTimeMin: 6, cost,
+      cuisine: 'British', eatLikeUs: '', lastInspectionDate: '2026-09-01', address: '', mapSearchLink: '',
+    });
+    seedLedgerVenues([make('a', 'approved', '£'), make('b', 'approved', '££'), make('c', 'rejected', '£')]);
+    assert.deepEqual($filteredVenues.get().map((v) => v.id), ['a', 'b']);
+    setCost('£');
+    assert.deepEqual($filteredVenues.get().map((v) => v.id), ['a']);
+    setTiers(['rejected']);
+    setCost('all');
+    assert.deepEqual($filteredVenues.get().map((v) => v.id), ['c']);
+  });
+});

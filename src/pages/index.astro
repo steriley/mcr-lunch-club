@@ -7,6 +7,8 @@ import WhereToday from '@/components/islands/WhereToday.vue';
 import WeatherCard from '@/components/WeatherCard.vue';
 import ChairsDeliberation from '@/components/ChairsDeliberation.vue';
 import SuggestModal from '@/components/islands/SuggestModal.vue';
+import BenchTabs from '@/components/islands/BenchTabs.vue';
+import VenueResults from '@/components/islands/VenueResults.vue';
 import BenchPillar from '@/components/BenchPillar.astro';
 import BenchWalk from '@/components/BenchWalk.astro';
 import LedgerCanon from '@/components/LedgerCanon.astro';
@@ -18,6 +20,7 @@ import { getRecentTierChanges } from '@/lib/recent-tier-changes';
 import { walkText } from '@/lib/route-display';
 import { buildSovereignBench } from '@/lib/sovereign-bench';
 import { bulletinIssue, bulletinText, changesInIssue, gazetteLabel } from '@/lib/weekly-bulletin';
+import { initialFilterState, matchesFilters } from '@/stores/filters';
 import { seedLedgerInspections, seedLedgerVenues } from '@/stores/ledger';
 
 // Built with the site; admin saves trigger a rebuild (src/lib/rebuild.ts), and so does the
@@ -34,6 +37,9 @@ const [venuesData, inspectionsData, goldenCut, recentTierChanges] = await Promis
 ]);
 seedLedgerVenues(venuesData);
 seedLedgerInspections(inspectionsData);
+
+// What the "All venues" tab counts before the browser takes over: the default filters' matches.
+const initialResultsCount = venuesData.filter((venue) => matchesFilters(venue, initialFilterState)).length;
 
 const publicMapApiKey = getPublicMapApiKey();
 const bulletin = bulletinText(changesInIssue(recentTierChanges, issue));
@@ -89,6 +95,9 @@ const fieldShortcuts = [
           <SuggestModal client:idle />
         </section>
 
+        <!-- On a phone: the venues the map is showing, as a list under it. Beside the map on wide screens it is the bench's "All venues" tab. -->
+        <VenueResults client:idle placement="inline" />
+
         <section class="field-dispatch" aria-label="Tribunal field dispatch">
           <div class="weekly-bulletin">
             <span class="bulletin-icon" aria-hidden="true">
@@ -133,7 +142,7 @@ const fieldShortcuts = [
       <aside class="bench" aria-labelledby="bench-title">
         <div class="bench-header">
           <div class="bench-header-copy">
-            <p class="bench-kicker">
+            <p class="bench-kicker" data-golden-only>
               <span class="material-symbols-outlined" aria-hidden="true">award_star</span>
               {isGoldenCut ? "The Golden Cut // The Chairs’ Permanent Quintet" : 'Gazetted roll call // Nearest approved'}
             </p>
@@ -141,6 +150,9 @@ const fieldShortcuts = [
           </div>
         </div>
 
+        <BenchTabs client:load initialCount={initialResultsCount} />
+
+        <div class="bench-panel" id="bench-panel-golden" role="tabpanel" aria-labelledby="bench-tab-golden">
         {hero ? (
           <article class="bench-hero">
             <div class="bench-hero-media">
@@ -210,6 +222,11 @@ const fieldShortcuts = [
             </div>
           </div>
         )}
+        </div>
+
+        <div class="bench-panel" id="bench-panel-all" role="tabpanel" aria-labelledby="bench-tab-all" hidden>
+          <VenueResults client:idle placement="rail" />
+        </div>
       </aside>
     </div>
   </div>

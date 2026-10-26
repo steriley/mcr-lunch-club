@@ -3,6 +3,8 @@ import { computed } from 'vue';
 import { focalStyle } from '@/lib/image-upload';
 import type { PublicVenue } from '@/lib/public-data';
 import { toCard } from '@/lib/sovereign-bench';
+import { COST_LABELS } from '@/lib/cost-display';
+import { DEFAULT_CUISINE, cuisineLabel } from '@/lib/cuisines';
 import { tierInfo } from '@/lib/tiers';
 import type { Inspection, Venue } from '@/types';
 
@@ -26,6 +28,10 @@ const props = withDefaults(defineProps<{
   selected?: boolean;
   /** Names the venue's tier, for lists that mix tiers. */
   showTier?: boolean;
+  /** With `selectable`, makes Details a link to the venue's page instead of a button. */
+  detailsHref?: string;
+  /** Adds what you need to decide at a glance: the tier's glyph, the cuisine, and the cost with its meaning. */
+  detailed?: boolean;
 }>(), { showDetails: true });
 
 const emit = defineEmits<{ select: []; details: [] }>();
@@ -34,6 +40,8 @@ const card = computed(() =>
   toCard({ venue: { ...props.venue, image: props.venue.image ?? null, closed: false } as PublicVenue }, [...props.inspections]),
 );
 const tier = computed(() => tierInfo(props.venue.tier));
+// "Other" is the catch-all, not a cuisine worth saying.
+const cuisine = computed(() => (props.venue.cuisine && props.venue.cuisine !== cuisineLabel(DEFAULT_CUISINE) ? props.venue.cuisine : ''));
 const walk = computed(() => ({
   label: props.walkLabel ?? card.value.walk.label,
   url: props.walkLabel === undefined ? card.value.walk.directionsUrl : (props.walkUrl ?? null),
@@ -72,7 +80,12 @@ function markBroken(event: Event) {
           <span class="bench-cost">{{ card.cost }}</span>
         </div>
         <p v-if="showTier" class="bench-tier" :style="{ color: tier.color }">
-          <span class="bench-tier-dot" :style="{ backgroundColor: tier.color }" aria-hidden="true"></span>{{ tier.label }}
+          <span class="bench-tier-glyph" :style="{ backgroundColor: tier.color }" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path :d="tier.glyph" /></svg>
+          </span>{{ tier.label }}
+        </p>
+        <p v-if="detailed" class="bench-meta">
+          <template v-if="cuisine">{{ cuisine }} · </template>{{ venue.cost }} · {{ COST_LABELS[venue.cost] }}
         </p>
         <p v-if="card.lastInspection" class="bench-last">Last Inspection: {{ card.lastInspection }}</p>
         <p v-if="card.quote" class="bench-pillar-text is-quote">{{ card.quote }}</p>
@@ -95,7 +108,8 @@ function markBroken(event: Event) {
         <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
         {{ walk.label }}
       </span>
-      <button v-if="selectable && showDetails" type="button" class="bench-details" :aria-label="`Details for ${card.name}`" @click="emit('details')">
+      <a v-if="selectable && showDetails && detailsHref" class="bench-details" :href="detailsHref" :aria-label="`Details for ${card.name}`">Details</a>
+      <button v-else-if="selectable && showDetails" type="button" class="bench-details" :aria-label="`Details for ${card.name}`" @click="emit('details')">
         Details
       </button>
       <span v-else-if="card.inspectionCount > 0" class="bench-count">
