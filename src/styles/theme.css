@@ -104,12 +104,8 @@
   --color-black: #000000;
 
   /* Map overlays: walking rings, the 2.5-mile boundary and the user's position. Leaflet reads these through themeColor(). */
-  --color-map-ring-5: #059669;
-  --color-map-ring-10: #d97706;
-  --color-map-ring-15: #2563eb;
-  --color-map-ring-20: #7c3aed;
-  --color-map-ring-25: #e11d48;
-  --color-map-boundary: #991b1b;
+  --color-map-ring: #7d766d;
+  --color-map-ring-ink: #4a443e;
   --color-map-you: #2563eb;
   --color-map-you-manual: #9333ea;
   --color-map-you-manual-ink: #7e22ce;
@@ -244,7 +240,8 @@
   --color-navy-tint: #1d2640;
   --color-navy-mist: #1e2436;
   --color-ochre-wash: #2b2316;
-  --color-map-boundary: #f87171;
+  --color-map-ring: #9a9389;
+  --color-map-ring-ink: #cfc8bd;
   --color-success-ink: #74d39c;
   --color-danger-ink: #f4978e;
   --color-danger-wash: #2a1a1d;

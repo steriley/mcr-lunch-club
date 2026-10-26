@@ -4,6 +4,7 @@ import {
   createBaseMarker,
   createClusterIconHtml,
   createClusterMarker,
+  createLabelMarker,
   createVenueIconHtml,
   createVenueMarker,
   createWalkingIsochrones,
@@ -120,9 +121,38 @@ describe('createWalkingIsochrones', () => {
   it('creates one non-interactive circle per ring, defaulting the weight', () => {
     const circles = createWalkingIsochrones(L);
     assert.equal(circles.length, WALKING_ISOCHRONES.length);
-    assert.equal(circles[0].options.weight, 1.4);
-    assert.equal(circles.at(-1).options.weight, 2.5);
+    assert.ok(circles.slice(0, -1).every((circle) => circle.options.weight === 1 && !circle.options.dashArray));
+    assert.ok(circles.at(-1).options.weight > circles[0].options.weight, 'the boundary is heavier');
+    assert.ok(circles.at(-1).options.dashArray, 'and dashed');
+    assert.equal(new Set(circles.map((circle) => circle.options.color)).size, 1, 'one colour for every ring');
     assert.ok(circles.every((circle) => circle.options.interactive === false));
+  });
+});
+
+describe('createLabelMarker', () => {
+  it('centres an untouchable, unfocusable marker on the point', () => {
+    const marker = createLabelMarker(L, [53.48, -2.25], 'Chip Shop · ££', { width: 80, height: 16 }, 'name');
+    assert.deepEqual(marker.latlng, [53.48, -2.25]);
+    assert.equal(marker.options.interactive, false);
+    assert.equal(marker.options.keyboard, false);
+    assert.deepEqual(marker.options.icon.divIcon.iconSize, [80, 16]);
+    assert.deepEqual(marker.options.icon.divIcon.iconAnchor, [40, 8]);
+    assert.ok(marker.options.icon.divIcon.className.includes('ledger-label-name'));
+  });
+
+  it('hides its text from screen readers and escapes it', () => {
+    const marker = createLabelMarker(L, [0, 0], '<b>Fish & Chips</b>', { width: 80, height: 16 }, 'ring');
+    const { html } = marker.options.icon.divIcon;
+    assert.ok(html.includes('aria-hidden="true"'));
+    assert.ok(html.includes('&lt;b&gt;Fish &amp; Chips&lt;/b&gt;'));
+    assert.ok(marker.options.icon.divIcon.className.includes('ledger-label-ring'));
+  });
+});
+
+describe('the pin name tag', () => {
+  it('carries the name and price, hidden from screen readers (the pin already announces them)', () => {
+    const html = createVenueIconHtml(venue({ name: "Crazy Pedro's", cost: '££' }));
+    assert.ok(html.includes('<span class="ledger-pin-name" aria-hidden="true">Crazy Pedro&#39;s · ££</span>'));
   });
 });
 
