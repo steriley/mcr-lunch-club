@@ -36,6 +36,12 @@ describe('tiers', () => {
     }
   });
 
+  it('gives every tier its own glyph, as drawable path data', () => {
+    const glyphs = TIERS.map((tier) => tier.glyph);
+    assert.equal(new Set(glyphs).size, TIERS.length);
+    for (const glyph of glyphs) assert.match(glyph, /^[MmLlHhVvCcSsAaZz0-9.,\s-]+$/);
+  });
+
   it('defines every tier colour token in the theme', () => {
     const css = readFileSync('src/styles/theme.css', 'utf8');
     for (const tier of TIERS) {
