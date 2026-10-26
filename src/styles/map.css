@@ -158,3 +158,55 @@
 :root[data-theme="dark"] .leaflet-control-attribution a {
   color: var(--color-navy);
 }
+
+/* Cluster markers: a count inside a ring split by tier share. */
+.ledger-cluster-inner {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 35%));
+  transition: transform 160ms ease;
+}
+
+.ledger-cluster:hover .ledger-cluster-inner,
+.ledger-cluster:focus-visible .ledger-cluster-inner {
+  transform: scale(1.1);
+}
+
+.ledger-cluster-inner svg {
+  display: block;
+}
+
+.ledger-cluster-disc {
+  fill: var(--color-surface);
+}
+
+.ledger-cluster-count {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--color-ink);
+  font: 700 14px/1 "Plus Jakarta Sans", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ledger-cluster-inner {
+    transition: none;
+  }
+}
+
+/* The map's own "Reset view" button sits under the zoom buttons. */
+.ledger-reset-control a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-deep-ink);
+}
+
+.ledger-reset-control svg {
+  width: 16px;
+  height: 16px;
+}
