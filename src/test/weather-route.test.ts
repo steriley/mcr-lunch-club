@@ -78,7 +78,7 @@ describe('GET /api/weather/[step]', () => {
     const first = await call('hourly');
     assert.equal(first.status, 200);
     assert.equal(first.headers.get('X-Weather-Cache'), 'miss');
-    assert.match(first.headers.get('Cache-Control')!, /^public, .*s-maxage=900/);
+    assert.match(first.headers.get('Cache-Control')!, /^public, .*s-maxage=3600/);
     assert.deepEqual(await first.json(), forecast);
 
     assert.equal(fetchCalls.length, 1);
@@ -89,7 +89,7 @@ describe('GET /api/weather/[step]', () => {
 
     const second = await call('hourly');
     assert.equal(second.headers.get('X-Weather-Cache'), 'hit');
-    assert.match(second.headers.get('Cache-Control')!, /s-maxage=900/);
+    assert.match(second.headers.get('Cache-Control')!, /s-maxage=3600/);
     assert.equal(fetchCalls.length, 1);
   });
 
@@ -100,7 +100,7 @@ describe('GET /api/weather/[step]', () => {
 
   it('serves stale data when the cache has expired and the upstream fails', async () => {
     const realNow = Date.now;
-    Date.now = () => realNow() + 31 * 60 * 1000;
+    Date.now = () => realNow() + 61 * 60 * 1000;
     try {
       nextFetch = () => Promise.resolve(new Response('no', { status: 500 }));
       const response = await call('hourly');

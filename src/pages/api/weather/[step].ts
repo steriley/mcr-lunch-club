@@ -10,9 +10,9 @@ interface CachedForecast {
   expiresAt: number;
 }
 
-const cacheDurationMs = 30 * 60 * 1000;
+const cacheDurationMs = 60 * 60 * 1000;
 // Lets Vercel's CDN share a forecast across visitors instead of every page view invoking the function.
-const forecastCacheControl = 'public, max-age=0, s-maxage=900, stale-while-revalidate=1800';
+const forecastCacheControl = 'public, max-age=0, s-maxage=3600, stale-while-revalidate=1800';
 const cache = new Map<ForecastStep, CachedForecast>();
 const apiBase = 'https://data.hub.api.metoffice.gov.uk/sitespecific/v0/point';
 

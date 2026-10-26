@@ -21,7 +21,6 @@
         </svg>
         <span>Atmospheric Dispatch</span>
       </div>
-      <span class="weather-card-window">12:00 - 14:30</span>
     </header>
 
     <div v-if="loading || error || !weather" class="weather-card-state">
@@ -490,14 +489,6 @@ onMounted(async () => {
   color: var(--color-weather-sunny-icon);
 }
 
-.weather-card-window {
-  flex: 0 0 auto;
-  margin-left: auto;
-  color: var(--color-weather-muted);
-  font-size: 9px;
-  white-space: nowrap;
-}
-
 .weather-current,
 .weather-card-state {
   display: flex;
@@ -508,19 +499,18 @@ onMounted(async () => {
 
 .weather-icon-tile {
   display: grid;
-  flex: 0 0 56px;
-  width: 56px;
-  height: 56px;
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
   place-items: center;
-  border: 1px solid color-mix(in srgb, var(--color-weather-ink) 14%, transparent);
-  border-radius: 12px;
+  border-radius: 14px;
   background: color-mix(in srgb, var(--color-surface) 65%, transparent);
   color: var(--color-weather-ink);
 }
 
 .weather-condition-icon {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -594,7 +584,6 @@ onMounted(async () => {
 }
 
 .theme-sunny .weather-icon-tile {
-  border-color: var(--color-weather-sunny-rule);
   background: var(--color-weather-sunny-tile);
 }
 
@@ -604,7 +593,6 @@ onMounted(async () => {
 }
 
 .theme-night .weather-icon-tile {
-  border-color: var(--color-weather-night-border);
   background: var(--color-weather-night-tile);
 }
 
