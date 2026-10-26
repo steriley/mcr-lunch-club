@@ -1021,6 +1021,30 @@ button.bench-pillar-link {
   font-weight: 700;
 }
 
+/* The tier's glyph on a disc, as on the map's pins. */
+.bench-tier-glyph {
+  display: inline-grid;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--color-white);
+}
+
+.bench-tier-glyph svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Cuisine and the cost key, under the tier on a detailed card. */
+.bench-meta {
+  margin: 0;
+  color: var(--color-graphite);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .bench-tier-dot {
   width: 7px;
   height: 7px;
@@ -1043,6 +1067,260 @@ button.bench-pillar-link {
 
 .bench-details:hover {
   border-color: var(--ledger-navy);
+}
+
+/* A Details link looks like the button beside it. */
+a.bench-details {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+/* ---- The bench's tabs, and the list of every venue the filters match ---- */
+
+.bench-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--color-on-dark-rule);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-black) 18%, transparent);
+}
+
+.bench-tab {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-on-dark-soft);
+  font: 700 13px/1 "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.bench-tab:hover {
+  color: var(--color-on-dark);
+}
+
+.bench-tab.is-selected {
+  background: var(--color-parchment-fixed);
+  color: var(--color-deep);
+}
+
+.bench-tab:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.bench-tab-count {
+  min-width: 24px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.bench-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* The "All venues" view has no use for the Golden Cut's kicker. */
+.bench[data-tab="all"] [data-golden-only] {
+  display: none;
+}
+
+.venue-results {
+  min-width: 0;
+}
+
+.venue-results-body {
+  display: grid;
+  gap: 12px;
+}
+
+.venue-results-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.venue-results-title {
+  margin: 0;
+  color: var(--color-on-dark);
+  font: 700 18px/1.2 "Playfair Display", Georgia, serif;
+}
+
+.venue-results-title:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 4px;
+}
+
+.venue-results-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-on-dark-soft);
+  font: 600 12px/1 "Plus Jakarta Sans", sans-serif;
+}
+
+.venue-results-sort select {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--color-on-dark-rule);
+  border-radius: 8px;
+  background: var(--color-midnight);
+  color: var(--color-on-dark);
+  font: 600 13px "Plus Jakarta Sans", sans-serif;
+}
+
+.venue-results-sort select:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.venue-results-rows {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Beside the map, a long list scrolls inside the panel rather than stretching the page. */
+.venue-results.is-rail .venue-results-rows {
+  max-height: min(78vh, 880px);
+  padding-right: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.venue-results-empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 18px 12px;
+  color: var(--color-on-dark);
+  text-align: center;
+}
+
+.venue-results-empty p {
+  margin: 0;
+  font: 700 15px/1.3 "Playfair Display", Georgia, serif;
+}
+
+.venue-results-empty button {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-parchment-fixed);
+  color: var(--color-deep);
+  font: 700 13px/1 "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+}
+
+.venue-results-empty button:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* On a phone the list folds under the map, on the page's own surface. */
+.venue-results.is-inline {
+  margin-top: 12px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 14px;
+  background: var(--color-card);
+}
+
+.venue-results.is-inline .venue-results-heading {
+  margin: 0;
+}
+
+.venue-results-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--color-ink);
+  font: 700 14px/1.2 "Plus Jakarta Sans", sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.venue-results-toggle:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: -2px;
+}
+
+.venue-results-chevron {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  transition: transform 160ms ease;
+}
+
+.venue-results-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.venue-results.is-inline .venue-results-body {
+  padding: 0 12px 12px;
+}
+
+.venue-results.is-inline .venue-results-title,
+.venue-results.is-inline .venue-results-sort,
+.venue-results.is-inline .venue-results-empty {
+  color: var(--color-ink);
+}
+
+.venue-results.is-inline .venue-results-sort select {
+  border-color: var(--color-hairline);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.venue-results.is-inline .venue-results-empty button {
+  background: var(--color-deep);
+  color: var(--color-parchment-fixed);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bench-tab,
+  .venue-results-chevron {
+    transition: none;
+  }
+}
+
+/* Stacked, the tabs have nothing to switch between: the Golden Cut shows, and the list lives under the map. */
+@media (max-width: 1000px) {
+  .bench-tabs,
+  #bench-panel-all {
+    display: none !important;
+  }
+
+  #bench-panel-golden[hidden] {
+    display: flex;
+  }
 }
 
 .field-dispatch {

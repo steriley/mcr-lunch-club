@@ -1,7 +1,8 @@
-import { atom } from 'nanostores';
+import { atom, computed } from 'nanostores';
 import type { FilterState, CostTier, Venue } from '@/types';
 import { londonDate } from '@/lib/london-date';
 import { DEFAULT_HOME_TIERS, type TierValue } from '@/lib/tiers';
+import { $venuesList } from '@/stores/ledger';
 
 export const initialFilterState: FilterState = {
   tiers: [...DEFAULT_HOME_TIERS],
@@ -54,6 +55,12 @@ export function matchesFilters(
   }
   return true;
 }
+
+/** The venues the filters match: what the home map pins, and what the results list shows. */
+export const $filteredVenues = computed([$venuesList, $filters], (venues, filters) => {
+  const today = londonDate();
+  return venues.filter((venue) => matchesFilters(venue, filters, today));
+});
 
 // Active venue currently selected for the slide-up sheet
 

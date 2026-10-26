@@ -210,3 +210,9 @@
   width: 16px;
   height: 16px;
 }
+
+/* Leaflet gives its own container no focus style, but the keyboard lands there after a zoom. */
+.leaflet-container:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: -3px;
+}
