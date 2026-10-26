@@ -157,6 +157,12 @@
   text-align: center;
 }
 
+/* The tint stays pale in dark mode, so the lightened green ink washes out on it: use the deep green. */
+:root[data-theme="dark"] .nav-count {
+  color: var(--color-success-strong);
+  font-weight: 700;
+}
+
 .mobile-menu {
   display: none;
 }

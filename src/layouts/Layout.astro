@@ -3,6 +3,7 @@ import '@/styles/global.css';
 import FontLinks from '@/components/FontLinks.astro';
 import ThemeScript from '@/components/ThemeScript.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
+import { isNavActive } from '@/lib/nav';
 import { countPublicInspections, countPublicInspectionsForBuild } from '@/lib/public-data';
 
 interface Props {
@@ -76,9 +77,7 @@ const navigation = [
 
         <nav class="site-nav" aria-label="Main navigation">
           {navigation.map((item) => {
-            const active = item.href === '/tiers/approved'
-              ? currentPath.startsWith('/tiers')
-              : currentPath === item.href;
+            const active = isNavActive(currentPath, item.href);
             return (
               <a
                 href={item.href}
@@ -101,9 +100,7 @@ const navigation = [
           <div class="mobile-menu-panel">
             <nav class="site-nav" aria-label="Mobile navigation">
               {navigation.map((item) => {
-                const active = item.href === '/tiers/approved'
-                  ? currentPath.startsWith('/tiers')
-                  : currentPath === item.href;
+                const active = isNavActive(currentPath, item.href);
                 return (
                   <a
                     href={item.href}
