@@ -54,7 +54,6 @@ export function matchesFilters(
 }
 
 // Active venue currently selected for the slide-up sheet
-export const $activeVenue = atom<Venue | null>(null);
 
 // Modal states
 export const $isWhereTodayOpen = atom<boolean>(false);
@@ -102,10 +101,6 @@ export function setSearchQuery(searchQuery: string) {
 
 export function resetFilters() {
   $filters.set(initialFilterState);
-}
-
-export function selectVenue(venue: Venue | null) {
-  $activeVenue.set(venue);
 }
 
 export function openWhereToday() {

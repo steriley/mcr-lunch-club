@@ -1,7 +1,6 @@
 import { beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  $activeVenue,
   $filters,
   $isNearMeOpen,
   $isSuggestModalOpen,
@@ -15,7 +14,6 @@ import {
   openSuggestModal,
   openWhereToday,
   resetFilters,
-  selectVenue,
   setCost,
   setCuisine,
   setInspectedDays,
@@ -27,7 +25,6 @@ import {
 import { DEFAULT_HOME_TIERS } from '@/lib/tiers';
 import type { Venue } from '@/types';
 
-const venue = { id: 'v', slug: 'v', name: 'V' } as Venue;
 
 beforeEach(() => {
   resetFilters();
@@ -86,13 +83,6 @@ describe('filter state', () => {
 });
 
 describe('UI state', () => {
-  it('selects and clears the active venue', () => {
-    selectVenue(venue);
-    assert.equal($activeVenue.get(), venue);
-    selectVenue(null);
-    assert.equal($activeVenue.get(), null);
-  });
-
   it('opens and closes the modals', () => {
     openWhereToday();
     assert.equal($isWhereTodayOpen.get(), true);

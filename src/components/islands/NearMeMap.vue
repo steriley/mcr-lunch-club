@@ -120,7 +120,7 @@
               :far-from-manchester="isUserFarFromManchester"
               :from-base="isRankedFromBase"
               @select="(venue) => selectVenueItem(venue, false)"
-              @details="selectVenue"
+              @details="goToVenuePage"
               @clear-selection="clearSelection"
               @toggle-cost="toggleCostFilter"
             />
@@ -135,7 +135,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useStore } from '@nanostores/vue';
-import { $isNearMeOpen, closeNearMe, selectVenue } from '@/stores/filters';
+import { $isNearMeOpen, closeNearMe } from '@/stores/filters';
 import { $inspectionsList, $venuesList } from '@/stores/ledger';
 import { NEAR_ME_DEFAULT_TIERS, NEAR_ME_TIERS, countVenuesByTier, type TierValue } from '@/lib/tiers';
 import type { CostTier, Inspection, Venue } from '@/types';
@@ -325,6 +325,11 @@ function updateRanking(force = false) {
     lastRankedOrigin.value = currentOrigin;
     isRankedFromBase.value = fromBase;
   }
+}
+
+// A venue's page replaces the old dossier panel.
+function goToVenuePage(venue: Venue) {
+  window.location.assign(`/venues/${encodeURIComponent(venue.slug)}`);
 }
 
 // Put the selection away; the pin loses its highlight.

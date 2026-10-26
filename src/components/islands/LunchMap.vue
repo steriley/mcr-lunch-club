@@ -38,14 +38,7 @@
           <button type="button" class="pin-card-close" aria-label="Close venue card" @click="clearPin">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" /></svg>
           </button>
-          <BenchPillar
-            :venue="pinVenue"
-            :inspections="inspectionsList"
-            selectable
-            :show-details="false"
-            show-tier
-            @select="openDossier(pinVenue)"
-          />
+          <BenchPillar :venue="pinVenue" :inspections="inspectionsList" show-tier />
         </div>
       </Transition>
     </div>
@@ -88,7 +81,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
-import { $filters, matchesFilters, selectVenue, openNearMe, toggleTier } from '@/stores/filters';
+import { $filters, matchesFilters, openNearMe, toggleTier } from '@/stores/filters';
 import { whenIdle } from '@/lib/idle';
 import { londonDate } from '@/lib/london-date';
 import { $inspectionsList, $venuesList } from '@/stores/ledger';
@@ -192,7 +185,7 @@ async function startMap() {
   focusLinkedVenue();
 }
 
-/** `/?venue=<slug>` (from a dossier's "Locate on Ledger Map") centres on that venue and opens it. */
+/** `/?venue=<slug>` (from a dossier's "Locate on Ledger Map") centres on that venue and shows its card. */
 function focusLinkedVenue() {
   const slug = new URLSearchParams(window.location.search).get('venue');
   if (!slug || !mapInstance) return;
@@ -205,7 +198,7 @@ function focusLinkedVenue() {
   if (venue.lat != null && venue.lng != null) {
     mapInstance.setView([venue.lat, venue.lng], Math.max(mapInstance.getZoom(), 16));
   }
-  selectVenue(venue);
+  showPin(venue);
   mapContainer.value?.scrollIntoView({ block: 'center' });
 }
 
@@ -255,7 +248,7 @@ function renderMarkers() {
     const marker = createVenueMarker(L, venue);
     if (!marker) return;
 
-    // Tapping a pin shows its card at the bottom of the map; the card opens the venue panel.
+    // Tapping a pin shows its card at the bottom of the map; the card links to the venue's page.
     marker.on('click', () => showPin(venue));
     markersById.set(venue.id, marker);
 
@@ -283,11 +276,6 @@ function showPin(venue: Venue) {
 function clearPin() {
   pinVenue.value = null;
   highlightPin();
-}
-
-function openDossier(venue: Venue) {
-  clearPin();
-  selectVenue(venue);
 }
 
 /** Pan just enough to keep the pin in the clear part of the map: below the controls, above the card. */

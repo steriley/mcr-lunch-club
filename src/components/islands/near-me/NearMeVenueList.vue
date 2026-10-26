@@ -11,10 +11,7 @@
       :rank="selection.rank"
       :walk-label="selection.rv ? rowWalkLabel(selection.rv) : undefined"
       :walk-url="selection.rv ? rowWalkUrl(selection.rv) : undefined"
-      selectable
-      :show-details="false"
       show-tier
-      @select="emit('details', selection.venue)"
     />
   </div>
 

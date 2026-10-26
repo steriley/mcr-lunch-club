@@ -42,7 +42,6 @@ Every public page carries a canonical URL and Open Graph / Twitter card tags (`s
 - **Vue 3 Islands (`src/components/islands/`)**:
   - `LunchMap.vue` (`client:load`) — Leaflet map with custom tier pins, walking isochrones, and the 2.5-mile boundary. Leaflet starts once the browser is idle (a grey box until then), or straight away for a `/?venue=` link.
   - `FilterBar.vue` (`client:load`) — Search, tier badges, cost (`£`/`££`/`£££`), walking time slider, and recency filter.
-  - `VenueSheet.vue` (`client:load`) — Slide-up dossier sheet with official manifesto wording and "Eat Like Us" prescribed orders.
   - `NearMeMap.vue` — Full-screen "Near Me" mode ranking venues by distance from the user. Loaded by `NearMeLoader.vue` (`client:only`) the first time Near Me opens (or for a `#near-me` link), and prefetched once the page is idle. Its pieces live in `islands/near-me/` (status banner, location notice, map controls, collapsed summary, venue list, plus the `useNearMeLeaflet`, `useBottomSheet` and `useNearMeHistory` composables); the pure rules (status banner priority, sheet heights, price filter, focus trap) are in `src/lib/near-me/` with their tests.
   - `WhereToday.vue` (`client:idle`) — The 11:59 decision oracle and stalemate resolver.
   - `SuggestModal.vue` (`client:idle`) — Member petition form; suggestions go to the Chairs' Area inbox (`/admin/suggestions`), never straight onto the site.

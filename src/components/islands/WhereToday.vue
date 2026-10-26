@@ -99,7 +99,7 @@
           <span>{{ isRolling ? "Consulting the Rolls of Manchester..." : "Deliver the Uncontested Verdict" }}</span>
         </button>
 
-        <!-- The Result Card: the whole card opens the venue's dossier -->
+        <!-- The Result Card: the whole card links to the venue's page -->
         <div v-if="pickedVenue" class="oracle-result animate-in zoom-in-95 duration-200">
           <div class="flex items-center justify-between border-b border-hairline pb-2 mb-3">
             <span class="oracle-label !mb-0">The Oracle Decrees</span>
@@ -108,7 +108,7 @@
 
           <div class="flex items-center gap-2">
             <h3 class="text-xl font-bold font-serif-header text-royal-ink leading-tight">
-              <button type="button" class="oracle-result-link" @click="openDetails(pickedVenue)">{{ pickedVenue.name }}</button>
+              <a class="oracle-result-link" :href="`/venues/${encodeURIComponent(pickedVenue.slug)}`">{{ pickedVenue.name }}</a>
             </h3>
             <img
               v-if="pickedVenue.tier === 'approved'"
@@ -157,7 +157,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
-import { $isWhereTodayOpen, closeWhereToday, selectVenue } from '@/stores/filters';
+import { $isWhereTodayOpen, closeWhereToday } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
 import { formatDate } from '@/lib/dates';
 import { getWalkingDirectionsUrl } from '@/lib/map/directions';
@@ -253,11 +253,6 @@ function consultOracle() {
     isRolling.value = false;
     hasRolled.value = true;
   }, 450);
-}
-
-function openDetails(venue: Venue) {
-  closeModal();
-  selectVenue(venue);
 }
 </script>
 
@@ -369,11 +364,8 @@ function openDetails(venue: Venue) {
 }
 
 .oracle-result-link {
-  padding: 0;
   color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
+  text-decoration: none;
 }
 
 .oracle-result-link::after {
