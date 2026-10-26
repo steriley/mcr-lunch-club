@@ -165,7 +165,8 @@ import type { Venue } from '@/types';
 const isOpen = useStore($isWhereTodayOpen);
 const venuesList = useStore($venuesList);
 
-const selectedTime = ref<number>(15);
+// Starts on the full expedition (the longest walk), so the Oracle draws from the widest field.
+const selectedTime = ref<number>(25);
 const selectedBudget = ref<OracleBudget>('any');
 const isRolling = ref<boolean>(false);
 const hasRolled = ref<boolean>(false);
