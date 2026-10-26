@@ -212,6 +212,19 @@ export function countPublicInspectionsForBuild(): Promise<number> {
   return (buildInspectionCount ??= countPublicInspections());
 }
 
+/** For the Tiers nav badge: every venue the public site lists, across all tiers. */
+export async function countPublicVenues(): Promise<number> {
+  const [row] = await db.select({ total: count() }).from(venues).where(publicVenueCondition());
+  return row?.total ?? 0;
+}
+
+let buildVenueCount: Promise<number> | undefined;
+
+/** countPublicVenues, run once and shared by every page prerendered in a build. */
+export function countPublicVenuesForBuild(): Promise<number> {
+  return (buildVenueCount ??= countPublicVenues());
+}
+
 /** e.g. "8th Jul 26, 09:00": the incident's calendar day plus its recorded time, if any. */
 export function formatIncidentDate(date: string | null, time: string | null): string | undefined {
   if (!date) return undefined;

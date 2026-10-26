@@ -3,6 +3,7 @@ import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   countPublicInspections,
+  countPublicVenues,
   getGoldenCut,
   getMapVenues,
   getPublicInspections,
@@ -409,6 +410,17 @@ describe('public inspection queries', () => {
     assert.equal(await countPublicInspections(), 7);
     stubDb('select', []);
     assert.equal(await countPublicInspections(), 0);
+  });
+});
+
+describe('countPublicVenues', () => {
+  it('counts venues under the public visibility rule, with 0 for an empty result', async () => {
+    const calls = stubDb('select', [{ total: 90 }]);
+    assert.equal(await countPublicVenues(), 90);
+    const { sql } = renderSql(calls.find((call) => call.method === 'where')!.args[0]);
+    assert.equal(sql, renderSql(publicVenueCondition()).sql);
+    stubDb('select', []);
+    assert.equal(await countPublicVenues(), 0);
   });
 });
 

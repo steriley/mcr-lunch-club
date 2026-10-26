@@ -4,7 +4,7 @@ import FontLinks from '@/components/FontLinks.astro';
 import ThemeScript from '@/components/ThemeScript.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
 import { isNavActive } from '@/lib/nav';
-import { countPublicInspections, countPublicInspectionsForBuild } from '@/lib/public-data';
+import { countPublicInspections, countPublicInspectionsForBuild, countPublicVenues, countPublicVenuesForBuild } from '@/lib/public-data';
 
 interface Props {
   title?: string;
@@ -32,6 +32,7 @@ const currentPath = Astro.url.pathname;
 // The badge is decoration: a database hiccup must not take down every page (the 404 page included).
 // Prerendered pages share one count per build; the sign-in page renders on demand and counts afresh.
 const inspectionCount = await (Astro.isPrerendered ? countPublicInspectionsForBuild() : countPublicInspections()).catch(() => null);
+const venueCount = await (Astro.isPrerendered ? countPublicVenuesForBuild() : countPublicVenues()).catch(() => null);
 const currentYear = new Date().getFullYear();
 const navigation = [
   { href: '/manifesto', label: 'The Manifesto', icon: 'history_edu' },
@@ -88,6 +89,7 @@ const navigation = [
                 <span class="material-symbols-outlined nav-icon" aria-hidden="true">{item.icon}</span>
                 <span>{item.label}</span>
                 {item.label === 'Inspections' && inspectionCount !== null && <span class="nav-count">{inspectionCount}</span>}
+                {item.label === 'Tiers' && venueCount !== null && <span class="nav-count">{venueCount}</span>}
               </a>
             );
           })}
@@ -111,6 +113,7 @@ const navigation = [
                     <span class="material-symbols-outlined nav-icon" aria-hidden="true">{item.icon}</span>
                     <span>{item.label}</span>
                     {item.label === 'Inspections' && inspectionCount !== null && <span class="nav-count">{inspectionCount}</span>}
+                {item.label === 'Tiers' && venueCount !== null && <span class="nav-count">{venueCount}</span>}
                   </a>
                 );
               })}
