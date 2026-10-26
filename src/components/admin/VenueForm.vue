@@ -232,9 +232,9 @@ const hidden = computed(() =>
 );
 const isPublic = computed(() => props.mode === 'edit' && hidden.value === null);
 const visibilityText = computed(() => {
-  if (props.mode === 'create') return 'New ledger entry. It stays hidden from the public site until a different Chair approves its tier.';
+  if (props.mode === 'create') return 'New ledger entry. It stays hidden from the public site until a different Chair approves its verdict.';
   if (props.dossier?.closed) return props.dossier.closedText ?? 'Permanently closed.';
-  if (hidden.value === 'no_tier') return 'Hidden from the public site: no approved tier yet.';
+  if (hidden.value === 'no_tier') return 'Hidden from the public site: no approved verdict yet.';
   if (hidden.value === 'needs_location') return 'Hidden from the public site: needs a location.';
   return `Public at /venues/${saved.slug}.`;
 });
@@ -593,16 +593,16 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
           :active-admins="dossier.activeAdmins"
           :class="mobileOrder(2)"
         />
-        <DossierCard v-else id="tier-decree" title="Tier Decree" tag="Judicial bench" icon="scale" :class="mobileOrder(2)">
+        <DossierCard v-else id="tier-decree" title="Verdict Decree" tag="Judicial bench" icon="scale" :class="mobileOrder(2)">
           <div v-if="fromSuggestion">
-            <span class="dossier-label">Proposed tier</span>
+            <span class="dossier-label">Proposed verdict</span>
             <p class="dossier-input text-sm">To Be Assessed</p>
             <span class="dossier-hint">Accepted suggestions are always proposed as To Be Assessed. The venue stays hidden until a different Chair approves.</span>
           </div>
           <div v-else>
-            <label class="dossier-label" for="venue-proposed-tier">Propose tier motion</label>
+            <label class="dossier-label" for="venue-proposed-tier">Propose verdict motion</label>
             <select id="venue-proposed-tier" v-model="proposedTier" class="dossier-input text-sm" :aria-invalid="Boolean(errors.proposedTier)">
-              <option value="">Don't propose a tier yet</option>
+              <option value="">Don't propose a verdict yet</option>
               <option v-for="tier in proposableTiers" :key="tier.value" :value="tier.value">{{ tier.label }}</option>
             </select>
             <span class="dossier-hint">The venue stays hidden until a different Chair approves this. Approved needs a verified inspection first.</span>

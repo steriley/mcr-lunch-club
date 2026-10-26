@@ -17,7 +17,7 @@ const props = defineProps<{
   activeAdmins: number;
 }>();
 
-const label = (tier: string | null) => (isTierValue(tier) ? tierLabel(tier) : 'No approved tier');
+const label = (tier: string | null) => (isTierValue(tier) ? tierLabel(tier) : 'No approved verdict');
 const choices = computed(() => TIERS.filter((tier) => tier.value !== props.currentTier));
 const proposedTier = ref('');
 const busy = ref(false);
@@ -28,7 +28,7 @@ const proposedWhen = computed(() => (props.pending ? formatDateTime(props.pendin
 async function propose() {
   errorMessage.value = '';
   if (!proposedTier.value) {
-    errorMessage.value = 'Choose a tier to propose.';
+    errorMessage.value = 'Choose a verdict to propose.';
     return;
   }
   busy.value = true;
@@ -47,9 +47,9 @@ async function propose() {
 </script>
 
 <template>
-  <DossierCard id="tier-decree" title="Tier Decree" tag="Judicial bench" icon="scale">
+  <DossierCard id="tier-decree" title="Verdict Decree" tag="Judicial bench" icon="scale">
     <div class="dossier-inset flex flex-wrap items-center justify-between gap-2 bg-[var(--dossier-field)]">
-      <span class="text-[13px] font-semibold">Active decree tier</span>
+      <span class="text-[13px] font-semibold">Active decree verdict</span>
       <TierBadge :tier="currentTier" />
     </div>
 
@@ -66,10 +66,10 @@ async function propose() {
     </p>
 
     <div v-if="canPropose">
-      <label class="dossier-label" for="propose-tier">{{ pending ? 'Replace your motion with' : 'Propose tier motion' }}</label>
+      <label class="dossier-label" for="propose-tier">{{ pending ? 'Replace your motion with' : 'Propose verdict motion' }}</label>
       <div class="flex gap-2">
         <select id="propose-tier" v-model="proposedTier" class="dossier-input min-w-0 flex-1 text-sm">
-          <option value="" disabled>Choose a tier…</option>
+          <option value="" disabled>Choose a verdict…</option>
           <option v-for="tier in choices" :key="tier.value" :value="tier.value">{{ tier.label }}</option>
         </select>
         <button type="button" :disabled="busy" class="dossier-btn is-primary" @click="propose">{{ busy ? 'Proposing…' : 'Propose' }}</button>

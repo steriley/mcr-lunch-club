@@ -22,7 +22,7 @@ export type TierValue = (typeof TIER_VALUES)[number];
 export interface Tier {
   value: TierValue;
   label: string;
-  /** URL segment used by the public `/tiers/[tier]` pages, e.g. `under-consideration`. */
+  /** URL segment used by the public `/verdicts/[tier]` pages, e.g. `under-consideration`. */
   slug: string;
   /**
    * Accent colour: chips, map pins and banners. Tier colours are theme tokens

@@ -24,7 +24,7 @@ interface VenueRow {
 type SortKey = 'name' | 'tier' | 'status' | 'updatedAt';
 
 const HIDDEN_LABELS: Record<NonNullable<VenueRow['hiddenReason']>, string> = {
-  no_tier: 'Hidden: no approved tier',
+  no_tier: 'Hidden: no approved verdict',
   needs_location: 'Hidden: needs location',
   closed: 'Hidden: closed',
 };
@@ -132,9 +132,9 @@ const inputClass = 'w-full rounded-lg border border-hairline bg-surface px-3 py-
         <input v-model="query" type="search" placeholder="Search by name or slug" :class="inputClass" />
       </label>
       <label class="block text-sm font-semibold text-ink">
-        <span class="mb-2 block">Tier</span>
+        <span class="mb-2 block">Verdict</span>
         <select v-model="tierFilter" :class="inputClass">
-          <option value="">All tiers</option>
+          <option value="">All verdicts</option>
           <option v-for="tier in TIERS" :key="tier.value" :value="tier.value">{{ tier.label }}</option>
         </select>
       </label>
@@ -160,7 +160,7 @@ const inputClass = 'w-full rounded-lg border border-hairline bg-surface px-3 py-
         <table class="min-w-full divide-y divide-hairline text-left text-sm text-coal">
           <thead class="bg-card text-ink">
             <tr>
-              <th v-for="column in ([['name', 'Venue'], ['tier', 'Tier'], ['status', 'Status'], ['updatedAt', 'Updated']] as const)" :key="column[0]" scope="col" class="px-4 py-3 font-semibold" :aria-sort="ariaSort(column[0])">
+              <th v-for="column in ([['name', 'Venue'], ['tier', 'Verdict'], ['status', 'Status'], ['updatedAt', 'Updated']] as const)" :key="column[0]" scope="col" class="px-4 py-3 font-semibold" :aria-sort="ariaSort(column[0])">
                 <button type="button" class="inline-flex items-center gap-1 rounded hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-navy" @click="sortBy(column[0])">
                   {{ column[1] }} <span aria-hidden="true" class="text-xs text-ochre">{{ sortIndicator(column[0]) }}</span>
                 </button>

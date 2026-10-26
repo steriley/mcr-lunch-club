@@ -8,6 +8,11 @@ export default defineConfig({
   // Canonical and social-card URLs, and the sitemap, are absolute on this origin.
   site: 'https://mcrlunchclub.com',
   output: 'server',
+  // The verdict pages used to live under /tiers: keep old links and bookmarks working.
+  redirects: {
+    '/tiers': { status: 301, destination: '/verdicts/approved' },
+    '/tiers/[tier]': { status: 301, destination: '/verdicts/[tier]' },
+  },
   adapter: vercel(),
   // Lists the prerendered public pages; the Chairs' Area renders on demand, so it never appears.
   // URLs drop the trailing slash to match the site's links and canonical tags.

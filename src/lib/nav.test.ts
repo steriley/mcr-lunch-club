@@ -14,9 +14,9 @@ describe('isNavActive', () => {
     assert.equal(isNavActive('/', '/manifesto'), false);
   });
 
-  it('lights Tiers on every tier page', () => {
-    assert.equal(isNavActive('/tiers/rejected', '/tiers/approved'), true);
-    assert.equal(isNavActive('/tiers/rejected/', '/tiers/approved'), true);
-    assert.equal(isNavActive('/manifesto/', '/tiers/approved'), false);
+  it('lights Verdicts on every verdict page', () => {
+    assert.equal(isNavActive('/verdicts/rejected', '/verdicts/approved'), true);
+    assert.equal(isNavActive('/verdicts/rejected/', '/verdicts/approved'), true);
+    assert.equal(isNavActive('/manifesto/', '/verdicts/approved'), false);
   });
 });

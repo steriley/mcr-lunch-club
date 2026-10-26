@@ -30,10 +30,10 @@ const cards = venues.map((venue) => toCard({ venue }, inspections));
 const tierCounts = countVenuesByTier(publicVenues);
 ---
 
-<Layout title={`${tier.label} Tier — The Official Ledger Registry`} description={`${tier.label}: ${tier.description}`}>
+<Layout title={`${tier.label} Verdict — The Official Ledger Registry`} description={`${tier.label}: ${tier.description}`}>
   <PageRibbon
     icon={tier.icon}
-    kicker="Official Tier Classification"
+    kicker="Official Verdict Classification"
     title={tier.label}
     quote={tier.motto}
     description={tier.description}
@@ -41,12 +41,12 @@ const tierCounts = countVenuesByTier(publicVenues);
   />
 
   <div class="w-full pt-6 sm:pt-8 font-serif-header">
-    <!-- Tier Navigation Tabs: below the ribbon, edge to edge, fading out at both sides -->
+    <!-- Verdict Navigation Tabs: below the ribbon, edge to edge, fading out at both sides -->
     <div class="border-b border-hairline">
       <nav class="tier-nav-scroll pb-2" aria-label="Browse by verdict">
         {TIERS.map((t) => (
           <TierChip
-            href={`/tiers/${t.slug}`}
+            href={`/verdicts/${t.slug}`}
             name={t.label}
             color={t.color}
             count={tierCounts[t.value]}
@@ -58,7 +58,7 @@ const tierCounts = countVenuesByTier(publicVenues);
   </div>
 
   <div class="max-w-6xl mx-auto px-4 pt-8 pb-8 sm:pt-10 sm:pb-12 w-full space-y-8 font-serif-header">
-    <!-- Approved Tier Michelin Star Style Prize Banner -->
+    <!-- Approved Verdict Michelin Star Style Prize Banner -->
     {tier.value === 'approved' && (
       <div class="bg-deep text-parchment-fixed p-6 sm:p-7 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-6 font-serif-header relative overflow-hidden">
         <div class="relative z-10 shrink-0">

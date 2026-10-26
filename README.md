@@ -29,7 +29,7 @@ Every public page carries a canonical URL and Open Graph / Twitter card tags (`s
 - **Pages (`.astro`)**:
   - `/` — The interactive Leaflet Ledger Map
   - `/venues/[slug]` — Dossiers for every public establishment
-  - `/tiers/[tier]` — Registry classifications (`approved`, `under-consideration`, `to-be-assessed`, `if-we-must`, `rejected`, `gone-but-not-forgotten`)
+  - `/verdicts/[tier]` — Registry verdicts (the old `/tiers/…` URLs redirect here) (`approved`, `under-consideration`, `to-be-assessed`, `if-we-must`, `rejected`, `gone-but-not-forgotten`)
   - `/hall-of-shame` — The Bribery & Improper Benefit Attempt Record
   - `/manifesto` — The Constitutional Articles of Governance
   - `/inspections` — The Complete Chronological Audit Log: every confirmed inspection (dual-verified or legacy) of a public venue
@@ -356,7 +356,7 @@ mcr-lunch-club/
 │   │   ├── 404.astro
 │   │   ├── admin/             # Chairs' Area
 │   │   ├── api/               # Public, admin and weather endpoints
-│   │   ├── tiers/[tier].astro # Tier pages
+│   │   ├── verdicts/[tier].astro # Verdict pages
 │   │   └── venues/[slug].astro# Venue dossiers
 │   ├── stores/                # Nanostores: filters, modal state and the venue ledger
 │   ├── styles/

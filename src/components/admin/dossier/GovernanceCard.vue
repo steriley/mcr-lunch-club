@@ -66,8 +66,8 @@ defineExpose({ openClose });
             closed
               ? 'Puts it back on the map and Near Me, if it otherwise qualifies.'
               : isGoneButNotForgotten
-                ? 'Comes off the map and Near Me; stays listed under Gone But Not Forgotten. Its tier does not change.'
-                : 'Comes off the map, Near Me and the public site. Its tier and history are kept.'
+                ? 'Comes off the map and Near Me; stays listed under Gone But Not Forgotten. Its verdict does not change.'
+                : 'Comes off the map, Near Me and the public site. Its verdict and history are kept.'
           }}
         </p>
       </div>
@@ -87,7 +87,7 @@ defineExpose({ openClose });
     <ConfirmDialog
       :open="showClose"
       title="Confirm decommission"
-      :message="`Mark “${venueName}” as permanently closed? It comes off the map and Near Me straight away${isGoneButNotForgotten ? ' and stays listed under Gone But Not Forgotten' : ' and is hidden from the public site'}. Its tier does not change, and any Chair can reopen it.`"
+      :message="`Mark “${venueName}” as permanently closed? It comes off the map and Near Me straight away${isGoneButNotForgotten ? ' and stays listed under Gone But Not Forgotten' : ' and is hidden from the public site'}. Its verdict does not change, and any Chair can reopen it.`"
       confirm-label="Confirm closure"
       cancel-label="Abort"
       @cancel="showClose = false"

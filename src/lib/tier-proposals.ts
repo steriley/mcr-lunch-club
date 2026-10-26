@@ -41,9 +41,9 @@ export type ProposalError =
 export const PROPOSAL_ERROR_MESSAGES: Record<ProposalError, string> = {
   venue_not_found: 'Venue not found.',
   proposal_not_found: 'Proposal not found.',
-  same_as_current: 'That is already the venue’s approved tier.',
-  same_as_pending: 'That tier change is already waiting for approval.',
-  pending_by_other: 'Another admin’s tier proposal is already pending for this venue. Approve or decline it first.',
+  same_as_current: 'That is already the venue’s approved verdict.',
+  same_as_pending: 'That verdict change is already waiting for approval.',
+  pending_by_other: 'Another admin’s verdict proposal is already pending for this venue. Approve or decline it first.',
   needs_verified_inspection:
     'Moving a venue into Approved needs a dual-verified inspection first: two Chairs press “Visited today” on the same day. Imported legacy dates do not count.',
   not_pending: 'This proposal has already been decided or withdrawn.',
@@ -255,21 +255,21 @@ export async function listRecentDecisions(db: Database, limit = 20): Promise<Pro
   return rows.map((row) => ({ ...row.proposal, venueName: row.venueName, venueSlug: row.venueSlug }));
 }
 
-export const tierText = (tier: TierValue | null) => (tier ? tierLabel(tier) : 'No approved tier');
+export const tierText = (tier: TierValue | null) => (tier ? tierLabel(tier) : 'No approved verdict');
 
 /** History lines for one proposal: when it was made, and how it ended. */
 export function describeProposal(proposal: TierProposalRow): { at: Date; text: string; note?: string }[] {
   const change = `${tierText(proposal.fromTier)} → ${tierText(proposal.proposedTier)}`;
   const lines: { at: Date; text: string; note?: string }[] = [
-    { at: proposal.proposedAt, text: `Tier change proposed (${change}) by ${proposal.proposedByName ?? 'a former admin'}` },
+    { at: proposal.proposedAt, text: `Verdict change proposed (${change}) by ${proposal.proposedByName ?? 'a former admin'}` },
   ];
   if (proposal.decidedAt) {
     const by = proposal.decidedByName ?? 'a former admin';
-    if (proposal.status === 'approved') lines.push({ at: proposal.decidedAt, text: `Tier change approved (${change}) by ${by}` });
+    if (proposal.status === 'approved') lines.push({ at: proposal.decidedAt, text: `Verdict change approved (${change}) by ${by}` });
     if (proposal.status === 'declined')
-      lines.push({ at: proposal.decidedAt, text: `Tier change declined (${change}) by ${by}`, note: proposal.declineReason ?? undefined });
-    if (proposal.status === 'withdrawn') lines.push({ at: proposal.decidedAt, text: `Tier change withdrawn (${change}) by ${proposal.proposedByName ?? 'its proposer'}` });
-    if (proposal.status === 'superseded') lines.push({ at: proposal.decidedAt, text: `Tier change replaced by a newer proposal (${change})` });
+      lines.push({ at: proposal.decidedAt, text: `Verdict change declined (${change}) by ${by}`, note: proposal.declineReason ?? undefined });
+    if (proposal.status === 'withdrawn') lines.push({ at: proposal.decidedAt, text: `Verdict change withdrawn (${change}) by ${proposal.proposedByName ?? 'its proposer'}` });
+    if (proposal.status === 'superseded') lines.push({ at: proposal.decidedAt, text: `Verdict change replaced by a newer proposal (${change})` });
   }
   return lines;
 }

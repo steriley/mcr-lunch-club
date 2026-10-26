@@ -89,7 +89,7 @@ export const venueInputSchema = venueFields.superRefine(checkLocation);
  */
 export const venueCreateSchema = venueFields
   .extend({
-    proposedTier: z.preprocess(emptyToNull, z.enum(TIER_VALUES, { error: 'Choose a tier.' }).nullable()).default(null),
+    proposedTier: z.preprocess(emptyToNull, z.enum(TIER_VALUES, { error: 'Choose a verdict.' }).nullable()).default(null),
     fromSuggestion: z.preprocess(emptyToNull, z.uuid({ error: 'Unknown suggestion.' }).nullable()).default(null),
   })
   .superRefine((venue, context) => {

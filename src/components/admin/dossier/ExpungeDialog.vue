@@ -49,7 +49,7 @@ onBeforeUnmount(() => {
       <p class="dossier-overline text-danger-ink">Irrevocable purge</p>
       <h3 id="expunge-title" class="mt-2 text-2xl font-bold text-danger-ink">Expunge {{ venueName }}?</h3>
       <p id="expunge-message" class="mt-3 text-sm leading-6 text-[var(--dossier-muted)]">
-        This deletes the venue and its inspections, tier motions and history for good. Linked Hall of Shame records are kept but unlinked.
+        This deletes the venue and its inspections, verdict motions and history for good. Linked Hall of Shame records are kept but unlinked.
         It cannot be undone. Mark it permanently closed instead if it might come back.
       </p>
       <label class="mt-4 block">

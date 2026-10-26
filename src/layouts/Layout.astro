@@ -36,7 +36,7 @@ const venueCount = await (Astro.isPrerendered ? countPublicVenuesForBuild() : co
 const currentYear = new Date().getFullYear();
 const navigation = [
   { href: '/manifesto', label: 'The Manifesto', icon: 'history_edu' },
-  { href: '/tiers/approved', label: 'Tiers', icon: 'military_tech' },
+  { href: '/verdicts/approved', label: 'Verdicts', icon: 'military_tech' },
   { href: '/inspections', label: 'Inspections', icon: 'fact_check' },
   { href: '/#where-to-today', label: 'Where to today?', icon: 'restaurant', opensWhereToday: true },
 ];
@@ -89,7 +89,7 @@ const navigation = [
                 <span class="material-symbols-outlined nav-icon" aria-hidden="true">{item.icon}</span>
                 <span>{item.label}</span>
                 {item.label === 'Inspections' && inspectionCount !== null && <span class="nav-count">{inspectionCount}</span>}
-                {item.label === 'Tiers' && venueCount !== null && <span class="nav-count">{venueCount}</span>}
+                {item.label === 'Verdicts' && venueCount !== null && <span class="nav-count">{venueCount}</span>}
               </a>
             );
           })}
@@ -113,7 +113,7 @@ const navigation = [
                     <span class="material-symbols-outlined nav-icon" aria-hidden="true">{item.icon}</span>
                     <span>{item.label}</span>
                     {item.label === 'Inspections' && inspectionCount !== null && <span class="nav-count">{inspectionCount}</span>}
-                {item.label === 'Tiers' && venueCount !== null && <span class="nav-count">{venueCount}</span>}
+                {item.label === 'Verdicts' && venueCount !== null && <span class="nav-count">{venueCount}</span>}
                   </a>
                 );
               })}

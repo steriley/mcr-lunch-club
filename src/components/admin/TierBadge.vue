@@ -4,7 +4,7 @@ import { isTierValue, tierInfo } from '@/lib/tiers';
 
 const props = defineProps<{ tier?: string | null }>();
 
-const label = computed(() => (isTierValue(props.tier) ? tierInfo(props.tier).label : props.tier == null ? 'No approved tier' : 'Unknown'));
+const label = computed(() => (isTierValue(props.tier) ? tierInfo(props.tier).label : props.tier == null ? 'No approved verdict' : 'Unknown'));
 
 // Semantic tier colours from the Sovereign Food Ledger palette; grey when there is no tier.
 const tone = computed(() => {

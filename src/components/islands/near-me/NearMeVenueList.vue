@@ -64,7 +64,7 @@
       <span class="near-me-empty-icon" aria-hidden="true">🏛️</span>
       <h4 class="near-me-empty-title">No venues match</h4>
       <p class="near-me-empty-text">
-        No venues in the selected tiers match your current criteria. Enable additional tiers above, or clear the price filter.
+        No venues in the selected verdicts match your current criteria. Enable additional verdicts above, or clear the price filter.
       </p>
     </div>
   </div>

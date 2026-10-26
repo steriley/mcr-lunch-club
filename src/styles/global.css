@@ -1529,7 +1529,7 @@ button.bench-pillar-link {
 }
 
 /* Tiers page nav: runs the full width of the screen, with the chips lined up to the page
-   column and a fade at each side hinting that more tiers sit off-screen. */
+   column and a fade at each side hinting that more verdicts sit off-screen. */
 .tier-nav-scroll {
   display: flex;
   align-items: center;

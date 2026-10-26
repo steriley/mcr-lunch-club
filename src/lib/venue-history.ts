@@ -49,7 +49,7 @@ interface RevisionRow {
 // Closure and route bookkeeping show up as events or are internal.
 const IGNORED = new Set(['id', 'createdAt', 'updatedAt', 'updatedBy', 'closedAt', 'closedBy', 'routeUpdatedAt']);
 const LABELS: Record<string, string> = {
-  name: 'Name', slug: 'Slug', tier: 'Tier', address: 'Address', latitude: 'Latitude', longitude: 'Longitude',
+  name: 'Name', slug: 'Slug', tier: 'Verdict', address: 'Address', latitude: 'Latitude', longitude: 'Longitude',
   pullQuote: 'Pull quote', lunchSpecial: 'Lunch special',
   websiteUrl: 'Website', imageUrl: 'Image', cost: 'Cost', cuisine: 'Cuisine',
   distanceMiles: 'Distance', walkingTimeMin: 'Walking time', lastInspectionDate: 'Last inspection',

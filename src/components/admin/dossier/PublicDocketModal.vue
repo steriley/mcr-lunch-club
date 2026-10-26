@@ -99,7 +99,7 @@ onBeforeUnmount(() => {
             aria-label="Wax seal"
           >
             <span class="text-[9px] font-bold uppercase tracking-[0.12em]">Sealed</span>
-            <span class="dossier-serif px-1 text-[11px] font-bold leading-tight">{{ preview.tierLabel ?? 'No tier' }}</span>
+            <span class="dossier-serif px-1 text-[11px] font-bold leading-tight">{{ preview.tierLabel ?? 'No verdict' }}</span>
           </div>
         </div>
 

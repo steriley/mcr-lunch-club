@@ -87,15 +87,15 @@
             @expand="sheet.expand"
           />
 
-          <!-- Tier Filter Chips (Inside Panel): shared with the homepage filter bar -->
+          <!-- Verdict Filter Chips (Inside Panel): shared with the homepage filter bar -->
           <div v-show="!sheet.isCollapsedMobile.value" class="near-me-panel-filters">
             <TierFilterChips
               :tiers="NEAR_ME_TIERS"
               :selected="selectedTiers"
               :counts="tierCounts"
               :disabled="lastSelectedTier"
-              disabled-reason="At least one tier must stay selected"
-              label="Near Me Tier Filters"
+              disabled-reason="At least one verdict must stay selected"
+              label="Near Me Verdict Filters"
               @toggle="toggleTierFilter"
             />
           </div>
