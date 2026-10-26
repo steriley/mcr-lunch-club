@@ -39,3 +39,24 @@ export function sortForPublic<T extends OrderableVenue>(venues: readonly T[], ti
     return tierComparator(tierA)(a, b);
   });
 }
+
+/**
+ * The order on a verdict page: the most recently inspected venue first, then by name. Venues with
+ * no inspection on record come after every inspected one, also by name. `inspections` are the
+ * public ones (YYYY-MM-DD dates sort as text, so their order does not matter).
+ */
+export function sortByRecentInspection<T extends OrderableVenue & { slug: string }>(
+  venues: readonly T[],
+  inspections: readonly { venueSlug: string; date: string }[]
+): T[] {
+  const latest = new Map<string, string>();
+  for (const { venueSlug, date } of inspections) {
+    if (date > (latest.get(venueSlug) ?? '')) latest.set(venueSlug, date);
+  }
+  return [...venues].sort((a, b) => {
+    const dateA = latest.get(a.slug) ?? '';
+    const dateB = latest.get(b.slug) ?? '';
+    if (dateA !== dateB) return dateA < dateB ? 1 : -1;
+    return compareNames(a, b);
+  });
+}

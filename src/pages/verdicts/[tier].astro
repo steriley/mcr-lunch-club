@@ -5,6 +5,7 @@ import BenchPillar from '@/components/BenchPillar.astro';
 import PageRibbon from '@/components/PageRibbon.astro';
 import { getPublicInspections, getPublicVenues, type PublicVenue } from '@/lib/public-data';
 import { toCard } from '@/lib/sovereign-bench';
+import { sortByRecentInspection } from '@/lib/venue-order';
 import { TIERS, countVenuesByTier, type Tier } from '@/lib/tiers';
 import type { Inspection } from '@/types';
 
@@ -13,7 +14,6 @@ import type { Inspection } from '@/types';
 export const prerender = true;
 
 export async function getStaticPaths() {
-  // getPublicVenues already returns each tier in its public order (src/lib/venue-order.ts).
   const [publicVenues, inspections] = await Promise.all([getPublicVenues(), getPublicInspections()]);
   return TIERS.map((tier) => ({ params: { tier: tier.slug }, props: { tier, publicVenues, inspections } }));
 }
@@ -25,7 +25,8 @@ interface Props {
 }
 
 const { tier, publicVenues, inspections } = Astro.props;
-const venues = publicVenues.filter((venue) => venue.tier === tier.value);
+// Most recently inspected first, then A to Z.
+const venues = sortByRecentInspection(publicVenues.filter((venue) => venue.tier === tier.value), inspections);
 const cards = venues.map((venue) => toCard({ venue }, inspections));
 const tierCounts = countVenuesByTier(publicVenues);
 ---

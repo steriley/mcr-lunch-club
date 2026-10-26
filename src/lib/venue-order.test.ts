@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ALPHABETICAL_TIERS, compareByWalkingTime, sortForPublic, tierComparator } from './venue-order';
+import { ALPHABETICAL_TIERS, compareByWalkingTime, sortByRecentInspection, sortForPublic, tierComparator } from './venue-order';
 import type { TierValue } from './tiers';
 
 const venue = (name: string, walkingTimeMin: number | null, tier: TierValue = 'approved') => ({ name, walkingTimeMin, tier });
@@ -50,5 +50,33 @@ describe('sortForPublic', () => {
       (entry) => entry.tier
     );
     assert.deepEqual(names(sorted), ['Near', 'Far', 'Considering', 'Rejected A', 'Rejected Z', 'Gone A', 'Gone B']);
+  });
+});
+
+describe('sortByRecentInspection', () => {
+  const place = (name: string) => ({ name, slug: name.toLowerCase(), walkingTimeMin: 5 });
+  const seen = (venueSlug: string, date: string) => ({ venueSlug, date });
+
+  it('puts the most recently inspected first, then A to Z within a date', () => {
+    const venues = [place('Delta'), place('alpha'), place('Charlie'), place('Bravo')];
+    const inspections = [seen('delta', '2026-10-01'), seen('alpha', '2026-08-01'), seen('charlie', '2026-10-01'), seen('bravo', '2026-09-01')];
+    assert.deepEqual(names(sortByRecentInspection(venues, inspections)), ['Charlie', 'Delta', 'Bravo', 'alpha']);
+  });
+
+  it("uses a venue's latest inspection, whatever order they come in", () => {
+    const venues = [place('Old'), place('New')];
+    const inspections = [seen('new', '2026-03-01'), seen('old', '2026-09-01'), seen('old', '2026-01-01'), seen('new', '2026-02-01')];
+    assert.deepEqual(names(sortByRecentInspection(venues, inspections)), ['Old', 'New']);
+  });
+
+  it('lists venues with no inspection after the inspected ones, by name', () => {
+    const venues = [place('Zulu'), place('Mike'), place('Inspected'), place('Alpha')];
+    assert.deepEqual(names(sortByRecentInspection(venues, [seen('inspected', '2026-05-05')])), ['Inspected', 'Alpha', 'Mike', 'Zulu']);
+  });
+
+  it('leaves the input alone', () => {
+    const venues = [place('B'), place('A')];
+    sortByRecentInspection(venues, []);
+    assert.deepEqual(names(venues), ['B', 'A']);
   });
 });
