@@ -5,6 +5,7 @@
       :key="tier"
       :name="tierInfo(tier).label"
       :color="tierInfo(tier).color"
+      :glyph="tierInfo(tier).glyph"
       :count="counts[tier] ?? 0"
       :selected="selected.includes(tier)"
       :disabled="disabled.includes(tier)"

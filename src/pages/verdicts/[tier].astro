@@ -50,6 +50,7 @@ const tierCounts = countVenuesByTier(publicVenues);
             href={`/verdicts/${t.slug}`}
             name={t.label}
             color={t.color}
+            glyph={t.glyph}
             count={tierCounts[t.value]}
             selected={t.value === tier.value}
           />

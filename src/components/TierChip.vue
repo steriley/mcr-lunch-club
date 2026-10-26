@@ -11,6 +11,15 @@
     :style="selected ? { backgroundColor: color, borderColor: color } : undefined"
   >
     <span
+      v-if="glyph"
+      :class="['ledger-tier-glyph', selected && 'is-selected']"
+      :style="!selected ? { backgroundColor: color } : { color }"
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path :d="glyph" /></svg>
+    </span>
+    <span
+      v-else
       :class="['ledger-tier-dot', selected && 'is-selected']"
       :style="!selected ? { backgroundColor: color } : undefined"
       aria-hidden="true"
@@ -25,6 +34,8 @@
 defineProps<{
   name: string;
   color: string;
+  /** The tier's mark (SVG path data); shown in place of a plain colour dot. */
+  glyph?: string;
   count: number;
   selected: boolean;
   /** Render as a link (page navigation) instead of a toggle button. */
@@ -88,6 +99,27 @@ defineProps<{
 
 .ledger-tier-dot.is-selected {
   background: white !important;
+}
+
+/* The tier's glyph on a disc, as it looks on the map's pins: white on the tier colour. */
+.ledger-tier-glyph {
+  display: inline-grid;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--color-white);
+}
+
+.ledger-tier-glyph svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* On a selected chip the disc turns white and the glyph takes the tier colour. */
+.ledger-tier-glyph.is-selected {
+  background: var(--color-white);
 }
 
 .ledger-tier-chip:focus-visible {
