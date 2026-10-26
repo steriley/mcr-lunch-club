@@ -5,7 +5,7 @@
       <div class="map-header-title">
         <span class="material-symbols-outlined map-header-icon" aria-hidden="true">explore</span>
         <div class="map-header-text">
-          <span class="map-header-kicker">Cartographic Projection</span>
+          <span class="map-header-kicker">Where We’ve Inspected</span>
           <span class="map-header-subtitle">Lunch Club HQ: Spinningfields</span>
         </div>
       </div>

@@ -122,11 +122,6 @@
             <span class="venue-tier-badge" :style="{ '--tier-color': tierInfo(pickedVenue.tier).color }">{{ tierInfo(pickedVenue.tier).label }}</span>
           </div>
 
-          <div class="mt-3 p-3 bg-card rounded-lg border border-hairline text-xs">
-            <strong class="text-ochre font-serif-header block">Eat Like Us Order:</strong>
-            <p class="italic text-stone-800 mt-1">“{{ pickedVenue.eatLikeUs }}”</p>
-          </div>
-
           <div v-if="pickedWalk" class="bench-telemetry mt-3">
             <a
               v-if="pickedWalk.url"
