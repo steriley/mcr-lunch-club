@@ -30,6 +30,12 @@ jobs:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/lunch_ci
       BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
       BETTER_AUTH_URL: http://localhost:4321
+      # A Chair for pnpm check:built to sign in as (throwaway database, so these are not secrets).
+      SEED_CHAIR_EMAIL: chair@lunch.test
+      SEED_CHAIR_PASSWORD: ci-only-chair-password
+      # Not a real token: it only turns the photo uploader on so the smoke test can exercise the WebP
+      # encoder (the test stubs the upload request).
+      BLOB_READ_WRITE_TOKEN: ci-only-not-a-real-token
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -47,7 +53,32 @@ jobs:
           psql postgres://postgres:postgres@localhost:5432/postgres -c 'create database lunch_test'
           psql postgres://postgres:postgres@localhost:5432/postgres -c 'create database lunch_ci'
       - run: pnpm test:db
-      # The build prerenders from the database, so migrate an empty one first.
+      # The build prerenders from the database: migrate it and load the site content first, so every
+      # public page (venue pages included) is built, then seed the Chair the smoke test signs in as.
       - run: pnpm db:migrate
+      - run: pnpm db:import
+      - run: pnpm db:seed
       - run: pnpm build
       - run: pnpm check:bundle
+      - name: Get the Playwright version
+        id: playwright
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+      - name: Install Chromium's system libraries
+        run: pnpm exec playwright install-deps chromium
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+      # Serves .vercel/output and drives it in a browser: fails on any CSP violation or page error.
+      - run: pnpm check:built
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results
+          retention-days: 7

@@ -1,0 +1,44 @@
+# Runs the browser smoke test (pnpm check:built) against each Vercel Preview deployment once it is ready.
+# Off until a human opts in: set the repository variable PREVIEW_SMOKE_ENABLED to "true" (Settings →
+# Secrets and variables → Actions → Variables) after adding the secrets below. See README, "Smoke test a Preview".
+#
+#   SMOKE_CHAIR_EMAIL / SMOKE_CHAIR_PASSWORD   a dedicated Chair that exists in production (preview branches copy it)
+#   VERCEL_AUTOMATION_BYPASS_SECRET            Vercel → Settings → Deployment Protection → Protection Bypass for Automation
+name: Preview smoke test
+
+on:
+  deployment_status:
+
+jobs:
+  smoke:
+    if: >-
+      vars.PREVIEW_SMOKE_ENABLED == 'true' &&
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Preview'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SMOKE_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+      SMOKE_CHAIR_EMAIL: ${{ secrets.SMOKE_CHAIR_EMAIL }}
+      SMOKE_CHAIR_PASSWORD: ${{ secrets.SMOKE_CHAIR_PASSWORD }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm check:built
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: test-results
+          retention-days: 7
