@@ -12,6 +12,9 @@ interface Props {
 }
 
 const { title } = Astro.props;
+// The photo uploader encodes WebP with WebAssembly (src/lib/optimise-image.ts).
+Astro.csp?.insertScriptResource("'self'");
+Astro.csp?.insertScriptResource("'wasm-unsafe-eval'");
 const user = Astro.locals.user;
 const pageTitle = title ? `${title} — ${ADMIN_AREA_NAME}` : ADMIN_AREA_NAME;
 const currentPath = Astro.url.pathname;
@@ -90,5 +93,12 @@ const navItems = ADMIN_NAV.map((item) => ({
         <ThemeToggle />
       </div>
     </footer>
+    <script>
+      import { config } from 'zod';
+
+      // The forms validate with Zod, which otherwise probes for eval support and
+      // trips the Content-Security-Policy; it validates the same without it.
+      config({ jitless: true });
+    </script>
   </body>
 </html>
