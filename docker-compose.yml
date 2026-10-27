@@ -1,0 +1,22 @@
+# Local Postgres 16 for laptops with Docker: `pnpm db:local -- --docker`.
+# Without Docker (e.g. the Claude Code cloud container) `pnpm db:local` starts the installed postgres binaries instead.
+# Local-only credentials: trust auth on a port bound to 127.0.0.1.
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - '127.0.0.1:${LUNCH_PGPORT:-5432}:5432'
+    volumes:
+      - mcr-lunch-club-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  mcr-lunch-club-pgdata:
