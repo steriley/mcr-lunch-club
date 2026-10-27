@@ -17,8 +17,10 @@
     "db:seed": "tsx ./scripts/seed-chair.ts",
     "auth:generate": "pnpm dlx auth@1.7.10 generate --config src/lib/auth.ts --output src/db/auth-schema.ts",
     "db:local": "bash scripts/db-local.sh",
+    "serve:build": "tsx ./scripts/serve-build.ts",
     "db:import": "tsx ./scripts/import-existing-content.ts",
     "check:security": "tsx ./scripts/check-admin-security.ts",
+    "check:built": "playwright test",
     "check:bundle": "tsx ./scripts/check-client-bundle.ts",
     "routes:backfill": "tsx ./scripts/backfill-routes.ts",
     "inspections:import-legacy": "tsx ./scripts/import-legacy-inspections.ts",
@@ -48,6 +50,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@playwright/test": "1.63.0",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^22.20.5",
     "@types/pg": "^8.23.1",

@@ -96,6 +96,9 @@ BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
 BETTER_AUTH_URL=$BETTER_AUTH_URL
 SEED_CHAIR_EMAIL=$CHAIR_EMAIL
 SEED_CHAIR_PASSWORD=$CHAIR_PASSWORD
+# Not a real token: it only switches the photo uploader on so pnpm check:built can exercise the WebP encoder
+# (the test stubs the upload request, so nothing reaches Vercel Blob).
+BLOB_READ_WRITE_TOKEN=local-only-not-a-real-token
 ENV
   log "Wrote .env.local"
 fi

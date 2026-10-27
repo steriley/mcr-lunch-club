@@ -67,13 +67,59 @@ Every public page carries a canonical URL and Open Graph / Twitter card tags (`s
 
 ```bash
 pnpm install
-cp .env.example .env.local   # then fill it in; see "Admin setup"
+pnpm db:local                # local Postgres 16 + migrated, imported database + a Chair + .env.local
 pnpm dev                     # http://localhost:4321
-pnpm build                   # production build (Vercel output)
+pnpm build                   # production build (Vercel output); reads the database
+pnpm serve:build             # serve that build locally (static pages + the built function, CSP included)
+pnpm check:built             # browser smoke test of the build: CSP violations, page errors, sign-in
 pnpm test                    # unit tests
 pnpm typecheck               # astro check + vue-tsc
-pnpm test:db                 # database integration tests (needs TEST_DATABASE_URL, see Scripts)
+pnpm test:db                 # database integration tests (TEST_DATABASE_URL comes from .env.local)
 ```
+
+`pnpm db:local` needs installed Postgres 16 binaries, or Docker with `pnpm db:local -- --docker`.
+To use your own database instead (a Neon branch, say), copy `.env.example` to `.env.local` and fill it in;
+see "Admin setup". More in [CLAUDE.md](CLAUDE.md).
+
+### Local environment
+
+`pnpm db:local` is safe to run again. It:
+
+1. starts Postgres 16 on `127.0.0.1:5432` (`LUNCH_PGPORT` to change). With installed binaries the data lives in
+   `$XDG_DATA_HOME/mcr-lunch-club/pgdata` (`~/.local/share/...`; `/var/lib/postgresql/mcr-lunch-club` when run as root,
+   as in the cloud container), or set `LUNCH_PGDATA`. With `--docker` it uses the `mcr-lunch-club-pgdata` volume;
+2. creates the `lunch` (dev) and `lunch_test` (integration tests) databases;
+3. migrates `lunch`, imports the venues and bribery record (tiers included, so every venue is public) and seeds a Chair,
+   always against the local database whatever `.env.local` says;
+4. writes `.env.local` with the local `DATABASE_URL`, `TEST_DATABASE_URL`, auth settings and Chair, unless one already exists
+   (it then just prints the URLs).
+
+The local Chair is `chair@lunch.test` / `local-chair-password` (override with `SEED_CHAIR_EMAIL` / `SEED_CHAIR_PASSWORD`).
+These are local-only credentials; never reuse them anywhere real.
+
+### Smoke test the build (`pnpm check:built`)
+
+Playwright drives the built site (`pnpm build` first; it starts `pnpm serve:build` itself, or reuses one already running).
+It visits every public page type, uses the map, theme toggle, Where to today?, Near Me (location granted) and the suggest
+form, signs in as the seeded Chair, loads every Chairs' Area page and runs the WebP encoder. It fails on any
+`securitypolicyviolation` event or uncaught page error, and asserts that injected inline `<script>` / `<style>` are
+blocked, WebAssembly is blocked on public pages and allowed in the Chairs' Area, and venue JSON-LD parses.
+
+First time on a laptop: `pnpm exec playwright install chromium`.
+
+Prerendered pages hash their own inline scripts (Astro does it), so an unhashed inline script is caught on the
+on-demand pages: sign-in and the Chairs' Area (the theme-script and Zod bugs fixed in #50 were both of that kind).
+
+#### Smoke test a Preview
+
+`SMOKE_BASE_URL=https://<preview-url> SMOKE_CHAIR_EMAIL=… SMOKE_CHAIR_PASSWORD=… pnpm check:built` runs the same checks
+against a deployment. The suggest request is always stubbed (it is rate-limited per sender, and a smoke test shouldn't file petitions). Behind Deployment
+Protection also set `VERCEL_AUTOMATION_BYPASS_SECRET`. Previews copy production data, including Chairs, so use a dedicated
+smoke-test Chair that exists in production; the test only reads and signs in (the photo upload is stubbed).
+
+`.github/workflows/preview-smoke.yml` does this automatically for every successful Preview deployment. It is
+**off until you opt in**: add the secrets `SMOKE_CHAIR_EMAIL`, `SMOKE_CHAIR_PASSWORD` and
+`VERCEL_AUTOMATION_BYPASS_SECRET`, then set the repository variable `PREVIEW_SMOKE_ENABLED` to `true`.
 
 ---
 
@@ -126,7 +172,10 @@ Use a Neon **branch** so local work never touches production data:
 | `pnpm db:migrate:deploy` | Runs in the Vercel build after the tests and before `pnpm build` (which reads the database). Production builds migrate production; Preview builds migrate their own Neon branch; anywhere else it does nothing. |
 | `pnpm db:studio` | Open Drizzle Studio. |
 | `pnpm db:seed` | Create (or re-promote) the first Chair from `SEED_CHAIR_*`. Idempotent; refuses to run with `NODE_ENV=production` unless `--force` is passed. `--reset-password` resets an existing Chair's password. Prints the email only. |
-| `pnpm db:import` | Import `src/data/venues.json` and `src/data/incidents.json`. Idempotent (venues match on slug, records on title + date); existing rows are left alone. `--dry-run` reports without writing; `--update` overwrites existing venues from the files. |
+| `pnpm db:local` | One-command local database: see *Local environment* above. |
+| `pnpm serve:build` | Serve the build output (`.vercel/output`) locally on the port of `BETTER_AUTH_URL`: prerendered pages from disk, everything else through the built function. |
+| `pnpm check:built` | Playwright smoke test of the build: see *Smoke test the build* above. |
+| `pnpm db:import` | Import `src/data/venues.json` and `src/data/incidents.json`. Idempotent (venues match on slug, records on title + date); existing rows are left alone. New venues get their tier from the file, so they are public at once. `--dry-run` reports without writing; `--update` overwrites existing venues' details but never their tier (tiers change only through two-Chair proposals); `--update-tiers` also overwrites tiers, bypassing that rule, so use it deliberately. |
 | `pnpm auth:generate` | Regenerate `src/db/auth-schema.ts` with the Better Auth CLI matching the installed version. Follow with `pnpm db:generate`. |
 | `pnpm routes:backfill` | Replace distance and walking time with ORS walking routes for venues that have coordinates but no ORS route yet (the old straight-line estimates). Uses ORS Matrix, 25 venues per request, falling back to one Directions request per venue; throttled (`--delay-ms=2000`), resumable, stops cleanly on a rate limit. `--dry-run` lists venues without calling ORS; `--all` recomputes every venue; `--no-matrix` skips Matrix. Needs `ORS_API_KEY`. |
 | `pnpm inspections:import-legacy` | One-off: import the corrected inspection dates in `drizzle/data/legacy-inspections.json` as legacy inspections and rebuild every venue's "last inspected" date. Venues not on the list lose their old date unless `--keep-unlisted` is passed. Aborts if any name cannot be matched; idempotent; `--dry-run` shows the changes first. |
@@ -383,7 +432,11 @@ mcr-lunch-club/
 │   ├── backfill-routes.ts     # pnpm routes:backfill
 │   ├── check-admin-security.ts     # pnpm check:security
 │   ├── check-client-bundle.ts      # pnpm check:bundle
+│   ├── db-local.sh            # pnpm db:local
+│   ├── serve-build.ts         # pnpm serve:build
 │   └── test-db.ts             # pnpm test:db
+├── e2e/                       # Playwright smoke test of the build (pnpm check:built)
+├── docker-compose.yml         # Postgres 16 for pnpm db:local -- --docker
 ├── manchester_lunch_venues.csv     # The club's original list of lunch spots (reference only)
 └── astro.config.mjs
 ```
