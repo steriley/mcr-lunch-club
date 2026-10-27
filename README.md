@@ -181,7 +181,7 @@ Use a Neon **branch** so local work never touches production data:
    runs them on every pull request and push to `main` instead: unit tests,
    typecheck, the database integration tests against a Postgres service, a
    build and `pnpm check:bundle`. In **GitHub → Settings → Branches**, protect
-   `main` and make **CI / checks** a required status check, so nothing reaches
+   `main` and make **checks** (the CI workflow's job) a required status check, so nothing reaches
    production (or its database migrations) untested.
 
 ### Preview deployments (a Neon branch per pull request)
