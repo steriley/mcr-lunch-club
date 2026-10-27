@@ -1408,7 +1408,7 @@ a.bench-details {
 }
 
 .field-panel,
-.field-shortcuts {
+.weekly-summons {
   min-width: 0;
   padding: 13px 14px;
   border: 1px solid var(--ledger-border);
@@ -1424,7 +1424,7 @@ a.bench-details {
 }
 
 .field-panel-heading,
-.field-shortcuts-heading {
+.weekly-summons-heading {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1435,7 +1435,7 @@ a.bench-details {
 }
 
 .field-panel-heading h2,
-.field-shortcuts-heading h2 {
+.weekly-summons-heading h2 {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -1516,60 +1516,48 @@ a.bench-details {
   font-size: 12px;
 }
 
-.field-shortcuts {
+.weekly-summons {
   display: flex;
   flex-direction: column;
   gap: 9px;
   background: var(--ledger-parchment);
 }
 
-.field-shortcuts-heading {
+.weekly-summons-heading {
   border-bottom: 0;
   padding-bottom: 0;
 }
 
-.field-shortcuts-heading h2 {
+.weekly-summons-heading h2 {
   color: var(--color-ochre);
 }
 
-.field-shortcuts-heading > span {
+.weekly-summons-heading > span {
   flex: 0 0 auto;
   color: var(--color-subtle);
   font-size: 12px;
 }
 
-.field-shortcut-grid {
+.weekly-summons-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
-.field-shortcut {
+.weekly-summons-column {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
-  padding: 9px;
-  border: 1px solid var(--ledger-border);
-  border-radius: 9px;
-  background: var(--ledger-card);
-  color: inherit;
-  text-decoration: none;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.field-shortcut:hover,
-.field-shortcut:focus-visible {
-  border-color: color-mix(in srgb, var(--color-deep-ink) 45%, transparent);
-  box-shadow: 0 3px 9px rgb(22 19 15 / 7%);
-}
-
-.field-shortcut:focus-visible {
-  outline: 2px solid var(--ledger-gold);
-  outline-offset: 2px;
-}
-
-.field-shortcut-label {
+.weekly-summons-day {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 8px;
+  margin: 0;
   color: var(--color-success-ink);
   font-size: 12px;
   font-weight: 700;
@@ -1577,25 +1565,23 @@ a.bench-details {
   text-transform: uppercase;
 }
 
-.field-shortcut.is-consideration .field-shortcut-label {
-  color: var(--color-copper);
-}
-
-.field-shortcut strong {
-  overflow: hidden;
+.weekly-summons-tier {
+  padding: 1px 8px;
+  border: 1px solid var(--summons-tier);
+  border-radius: 999px;
   color: var(--color-deep-ink);
-  font: 600 12px/1.25 "Playfair Display", Georgia, serif;
-  text-overflow: ellipsis;
+  font-size: 11px;
+  letter-spacing: .03em;
 }
 
-.field-shortcut-detail {
-  display: -webkit-box;
-  overflow: hidden;
+.weekly-summons-empty {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed var(--ledger-border);
+  border-radius: 12px;
   color: var(--color-muted-soft);
-  font-size: 12px;
-  line-height: 1.35;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 @media (max-width: 1000px) {
@@ -1703,11 +1689,11 @@ a.bench-details {
 }
 
 @media (max-width: 480px) {
-  .field-shortcut-grid {
+  .weekly-summons-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .field-shortcuts-heading {
+  .weekly-summons-heading {
     align-items: flex-start;
     flex-direction: column;
   }
