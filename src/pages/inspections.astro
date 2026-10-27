@@ -38,12 +38,12 @@ const legacyCount = inspections.length - verifiedCount;
     <!-- Inspection List -->
     <div class="space-y-4 font-sans">
       <div class="space-y-2 font-serif-header">
-        <div class="border-b border-hairline pb-2 space-y-1">
-          <h2 class="text-xl font-bold text-ink">Audit Registry</h2>
-          <p class="text-xs font-sans tabular-nums text-stone-500">Sorted by Date Recorded</p>
-        </div>
-        <div class="flex justify-end">
-          <span class="bench-count">{inspections.length} Entries</span>
+        <div class="border-b border-hairline pb-2 flex items-end justify-between gap-4">
+          <div class="space-y-1">
+            <h2 class="text-xl font-bold text-ink">Audit Registry</h2>
+            <p class="text-xs font-sans tabular-nums text-stone-500">Sorted by Date Recorded</p>
+          </div>
+          <span class="bench-count shrink-0">{inspections.length} Inspections</span>
         </div>
       </div>
 
