@@ -51,6 +51,7 @@ const navigation = [
     <FontLinks />
     <link rel="icon" type="image/png" href="/brand/favicon-64.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="apple-mobile-web-app-title" content="MCR Lunch Club" />
     <title>{title}</title>
     <meta name="description" content={description} />
@@ -63,6 +64,7 @@ const navigation = [
     <meta property="og:image" content={imageUrl} />
     <meta property="og:locale" content="en_GB" />
     <meta name="twitter:card" content="summary_large_image" />
+    <slot name="head" />
   </head>
   <body class="min-h-screen flex flex-col text-ink bg-parchment antialiased selection:bg-navy-fixed selection:text-white">
     <a href="#main" class="skip-link">Skip to content</a>
@@ -160,10 +162,8 @@ const navigation = [
         <div class="footer-column footer-codex">
           <span class="footer-section-title">Tribunal Codex</span>
           <div class="footer-links">
-            <a href="/manifesto"><span aria-hidden="true">▤</span>The Manifesto</a>
             <a href="/hall-of-shame"><span aria-hidden="true">⚖</span>Bribery Register</a>
             <a href="/#suggest-a-venue"><span aria-hidden="true">＋</span>Suggest a Venue</a>
-            <a href="/manifesto"><span aria-hidden="true">▣</span>Chairs' Code of Conduct</a>
           </div>
           <ThemeToggle class="footer-theme-toggle" />
         </div>

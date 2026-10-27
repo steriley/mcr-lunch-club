@@ -24,7 +24,8 @@ Built on **Astro 7** on Vercel (functions in `lhr1`, next to the Neon database i
 
 The public pages are **prerendered**: they read the database when the site is built and are served as static files, so visitors never wait on Neon. Admin saves that change what the public sees (each `adminRoute` declares `publishes`) call a Vercel Deploy Hook (`src/lib/rebuild.ts`), and the change is live once that build finishes, usually within two minutes. A Vercel Cron job rebuilds the site on Wednesday evenings for the new weekly bulletin (`src/pages/api/cron/weekly-bulletin.ts`). Only the Chairs' Area, `/api/*` and the sign-in page run on demand.
 
-Every public page carries a canonical URL and Open Graph / Twitter card tags (`src/layouts/Layout.astro`), so links shared in a chat show a preview: venue pages use their photo, everything else `public/brand/og-default.png`. `@astrojs/sitemap` writes `/sitemap-index.xml` at build time, and `vercel.json` sets the security headers (`nosniff`, no framing, referrer and permissions policies; geolocation stays allowed for Near Me).
+Every public page carries a canonical URL and Open Graph / Twitter card tags (`src/layouts/Layout.astro`), so links shared in a chat show a preview: venue pages use their photo, everything else `public/brand/og-default.png`. Venue pages also carry schema.org `Restaurant` JSON-LD (`src/lib/structured-data.ts`) for search results, and `public/manifest.webmanifest` lets the site be added to a phone's home screen, with Where to today? and Near Me as shortcuts. `@astrojs/sitemap` writes `/sitemap-index.xml` at build time, and `vercel.json` sets the security headers (`nosniff`, no framing, referrer and permissions policies; geolocation stays allowed for Near Me).
+- **Content-Security-Policy**: `security.csp` in `astro.config.mjs`. Astro hashes every script and style it emits, so an injected inline script won't run; images may come only from the site, CARTO tiles and Vercel Blob, and fonts from Google Fonts. Prerendered pages carry it as a `<meta>` tag, on-demand pages as a header. Inline `style` attributes are allowed (Vue renders tier colours with them). The theme script's hash is added from `src/lib/theme-script.ts`, the Chairs' Area adds `'wasm-unsafe-eval'` for the WebP encoder and turns off Zod's eval probe (`AdminLayout.astro`), and `frame-ancestors` stays in `vercel.json` because a `<meta>` policy cannot set it. A new third-party script, image host or API needs adding there, and CSP is not applied by `pnpm dev`: check with `pnpm build` and the browser console.
 
 - **Pages (`.astro`)**:
   - `/` — The interactive Leaflet Ledger Map
@@ -147,9 +148,8 @@ Use a Neon **branch** so local work never touches production data:
    preview uploads never mix with production. Mind the Hobby plan's Blob limit:
    going over loses access to Blob rather than billing.
 4. **Migrations run automatically** in every Vercel build
-   (`pnpm test && pnpm db:migrate:deploy && pnpm build`), once the tests have
-   passed and before the build, which reads the database to prerender the
-   public pages:
+   (`pnpm db:migrate:deploy && pnpm build`), before the build, which reads the
+   database to prerender the public pages:
    - **Production** (merging to `main`) migrates the production database before
      the new deployment goes live.
    - **Preview** migrates that preview's own Neon branch (see below).
@@ -176,6 +176,13 @@ Use a Neon **branch** so local work never touches production data:
    from **Chairs' Area → Users**.
 7. **Content** (once, if the database is empty): `pnpm db:import`.
 8. **Verify**: `pnpm check:security https://<your-domain>`.
+9. **CI** (once): the tests no longer run inside the Vercel build, so a Deploy
+   Hook rebuild doesn't re-test an unchanged commit. `.github/workflows/ci.yml`
+   runs them on every pull request and push to `main` instead: unit tests,
+   typecheck, the database integration tests against a Postgres service, a
+   build and `pnpm check:bundle`. In **GitHub → Settings → Branches**, protect
+   `main` and make **CI / checks** a required status check, so nothing reaches
+   production (or its database migrations) untested.
 
 ### Preview deployments (a Neon branch per pull request)
 

@@ -1,43 +1,10 @@
 ---
-// The browser-chrome colour for each theme; the script below picks one. These are
+import { THEME_SCRIPT } from '@/lib/theme-script';
+
+// The browser-chrome colour for each theme; the script picks one. These are
 // the page backgrounds (--color-parchment) and must stay literal: browsers read
 // them before any CSS loads.
 ---
 
 <meta name="theme-color" content="#FBF6EA" data-light="#FBF6EA" data-dark="#12151D" />
-<script is:inline>
-  // Runs before the page paints, so there is no flash of the wrong theme.
-  // Keep the key and event names in step with src/lib/theme.ts.
-  (() => {
-    const root = document.documentElement;
-    const meta = document.querySelector('meta[name="theme-color"]');
-    const system = window.matchMedia('(prefers-color-scheme: dark)');
-    const saved = () => {
-      try {
-        const value = localStorage.getItem('mcr-theme');
-        return value === 'light' || value === 'dark' ? value : null;
-      } catch {
-        return null;
-      }
-    };
-    const apply = (theme) => {
-      root.dataset.theme = theme;
-      if (meta) meta.setAttribute('content', meta.dataset[theme] || meta.content);
-    };
-    const resolve = () => saved() ?? (system.matches ? 'dark' : 'light');
-    apply(resolve());
-    // With no saved choice ("System"), follow the system setting as it changes.
-    system.addEventListener('change', () => {
-      if (saved()) return;
-      apply(resolve());
-      window.dispatchEvent(new CustomEvent('mcr:themechange'));
-    });
-    // A choice made in another tab applies here too.
-    window.addEventListener('storage', (event) => {
-      if (event.key !== null && event.key !== 'mcr-theme') return;
-      apply(resolve());
-      window.dispatchEvent(new CustomEvent('mcr:themechange'));
-    });
-    window.__mcrApplyTheme = apply;
-  })();
-</script>
+<script is:inline set:html={THEME_SCRIPT} />
