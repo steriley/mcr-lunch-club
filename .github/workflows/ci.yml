@@ -1,6 +1,6 @@
 # Runs the checks that used to run inside every Vercel build, so a Deploy Hook
 # rebuild (an admin save, the Wednesday cron) no longer re-tests an unchanged commit.
-# Make "CI / checks" a required status check on main so nothing untested reaches production.
+# Make the "checks" job a required status check on main so nothing untested reaches production.
 name: CI
 
 on:
