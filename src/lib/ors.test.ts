@@ -40,12 +40,11 @@ describe('routeToVenueValues', () => {
     assert.equal(routeToVenueValues({ distanceMetres: 123.4, durationSeconds: 60 }).distanceMiles, 0.08);
   });
 
-  it('rounds seconds to whole minutes, with a one-minute minimum', () => {
+  it('works out whole minutes from distance at a slow pace, with a one-minute minimum', () => {
     assert.equal(routeToVenueValues({ distanceMetres: 0, durationSeconds: 0 }).walkingTimeMin, 1);
-    assert.equal(routeToVenueValues({ distanceMetres: 0, durationSeconds: 29 }).walkingTimeMin, 1);
-    assert.equal(routeToVenueValues({ distanceMetres: 0, durationSeconds: 89 }).walkingTimeMin, 1);
-    assert.equal(routeToVenueValues({ distanceMetres: 0, durationSeconds: 90 }).walkingTimeMin, 2);
-    assert.equal(routeToVenueValues({ distanceMetres: 0, durationSeconds: 1170 }).walkingTimeMin, 20);
+    assert.equal(routeToVenueValues({ distanceMetres: 1609.344, durationSeconds: 60 }).walkingTimeMin, 24);
+    // Kool Runnings: 1.49 miles takes about 36 minutes on foot.
+    assert.equal(routeToVenueValues({ distanceMetres: 1.49 * 1609.344, durationSeconds: 1740 }).walkingTimeMin, 36);
   });
 });
 

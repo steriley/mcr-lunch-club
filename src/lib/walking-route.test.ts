@@ -50,7 +50,7 @@ describe('resolveRoute', () => {
       const { fn, calls } = lookup({ distanceMetres: 3218.688, durationSeconds: 2430 });
       const latitude = existing === stored ? 53.49 : 53.48;
       const { routeUpdatedAt, ...route } = await resolveRoute({ latitude, longitude: -2.25 }, existing, fn);
-      assert.deepEqual(route, { distanceMiles: 2, walkingTimeMin: 41, error: null });
+      assert.deepEqual(route, { distanceMiles: 2, walkingTimeMin: 48, error: null });
       assert.ok(routeUpdatedAt instanceof Date);
       assert.deepEqual(calls, [{ lat: latitude, lng: -2.25 }]);
     }
@@ -61,7 +61,7 @@ describe('resolveRoute', () => {
     const ok = lookup({ distanceMetres: 1609.344, durationSeconds: 1200 });
     const upgraded = await resolveRoute({ latitude: 53.48, longitude: -2.25 }, estimate, ok.fn);
     assert.equal(ok.calls.length, 1);
-    assert.deepEqual({ miles: upgraded.distanceMiles, minutes: upgraded.walkingTimeMin }, { miles: 1, minutes: 20 });
+    assert.deepEqual({ miles: upgraded.distanceMiles, minutes: upgraded.walkingTimeMin }, { miles: 1, minutes: 24 });
     assert.ok(upgraded.routeUpdatedAt instanceof Date);
 
     const failed = await resolveRoute({ latitude: 53.48, longitude: -2.25 }, estimate, lookup(new OrsError('unavailable', 'down')).fn);

@@ -1,5 +1,5 @@
 import { getOrsApiKey } from '@/lib/env';
-import { BASE_COORDINATES } from '@/lib/map/config';
+import { BASE_COORDINATES, MINUTES_PER_MILE } from '@/lib/map/config';
 import type { LatLng } from '@/lib/map/ranking';
 
 /**
@@ -58,11 +58,12 @@ export interface OrsOptions {
   timeoutMs?: number;
 }
 
-/** Stored route values: miles to two decimal places, whole minutes (at least one). */
+/** Stored route values: miles to two decimal places, whole minutes at MINUTES_PER_MILE, not ORS's faster duration (at least one). */
 export function routeToVenueValues(route: WalkingRoute): { distanceMiles: number; walkingTimeMin: number } {
+  const miles = route.distanceMetres / METRES_PER_MILE;
   return {
-    distanceMiles: Math.round((route.distanceMetres / METRES_PER_MILE) * 100) / 100,
-    walkingTimeMin: Math.max(1, Math.round(route.durationSeconds / 60)),
+    distanceMiles: Math.round(miles * 100) / 100,
+    walkingTimeMin: Math.max(1, Math.round(miles * MINUTES_PER_MILE)),
   };
 }
 

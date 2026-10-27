@@ -92,7 +92,7 @@ describe('POST /api/admin/venues/[id]/recompute-route', () => {
     assert.equal(response.status, 200);
     const set = updates.find((call) => call.method === 'set')!.args[0] as any;
     assert.equal(set.distanceMiles, '0.25');
-    assert.equal(set.walkingTimeMin, 5);
+    assert.equal(set.walkingTimeMin, 6);
     assert.ok(set.routeUpdatedAt instanceof Date);
     assert.ok(inserts.some((call) => call.method === 'values'));
   });
