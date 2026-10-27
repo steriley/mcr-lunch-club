@@ -1,14 +1,14 @@
 <template>
-  <section
+  <FieldPanel
+    title="Atmospheric Dispatch"
     class="weather-card"
     :class="`theme-${themeFor(currentIcon)}`"
     aria-label="Manchester weather forecast"
     aria-live="polite"
   >
-    <header class="weather-card-header">
-      <div class="weather-card-brand">
-        <svg class="weather-header-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <template v-for="(shape, index) in weatherIcons[currentIcon]" :key="index">
+    <template #icon>
+      <svg class="field-icon weather-header-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <template v-for="(shape, index) in weatherIcons[currentIcon]" :key="index">
             <path v-if="shape.kind === 'path'" :d="shape.d" />
             <circle
               v-else
@@ -18,12 +18,10 @@
               :fill="shape.filled ? 'currentColor' : 'none'"
             />
           </template>
-        </svg>
-        <span>Atmospheric Dispatch</span>
-      </div>
-    </header>
+      </svg>
+    </template>
 
-    <div v-if="loading || error || !weather" class="weather-card-state">
+    <div v-if="loading || error || !weather" class="weather-body">
       <div class="weather-icon-tile" aria-hidden="true">
         <svg class="weather-condition-icon" :class="{ 'is-loading': loading }" viewBox="0 0 24 24">
           <template v-for="(shape, index) in weatherIcons[currentIcon]" :key="index">
@@ -38,35 +36,35 @@
           </template>
         </svg>
       </div>
-      <div>
+      <div class="weather-copy">
         <h3>{{ loading ? 'Checking the forecast' : error ? 'Forecast unavailable' : 'Mixed conditions' }}</h3>
         <p>{{ loading ? 'Checking conditions over Manchester.' : error ? 'Assume persistent drizzle as statutory default. Equip galoshes regardless. Please try again later.' : 'No clear reading from the Met Office. Pack a brolly to be safe.' }}</p>
       </div>
     </div>
 
-    <template v-else>
-      <div class="weather-current">
-        <div class="weather-icon-tile" aria-hidden="true">
-          <svg class="weather-condition-icon" viewBox="0 0 24 24">
-            <template v-for="(shape, index) in weatherIcons[currentIcon]" :key="index">
-              <path v-if="shape.kind === 'path'" :d="shape.d" />
-              <circle
-                v-else
-                :cx="shape.cx"
-                :cy="shape.cy"
-                :r="shape.r"
-                :fill="shape.filled ? 'currentColor' : 'none'"
-              />
-            </template>
-          </svg>
-        </div>
-        <div class="weather-current-copy">
-          <h3>{{ dispatch?.title }} <span>·</span> {{ formatTemperature(weather.now.temperatureC) }}</h3>
-          <p>{{ dispatch?.quip }}</p>
-        </div>
+    <div v-else class="weather-body">
+      <div class="weather-icon-tile" aria-hidden="true">
+        <svg class="weather-condition-icon" viewBox="0 0 24 24">
+          <template v-for="(shape, index) in weatherIcons[currentIcon]" :key="index">
+            <path v-if="shape.kind === 'path'" :d="shape.d" />
+            <circle
+              v-else
+              :cx="shape.cx"
+              :cy="shape.cy"
+              :r="shape.r"
+              :fill="shape.filled ? 'currentColor' : 'none'"
+            />
+          </template>
+        </svg>
       </div>
+      <div class="weather-copy">
+        <h3>{{ dispatch?.title }} <span>·</span> {{ formatTemperature(weather.now.temperatureC) }}</h3>
+        <p>{{ dispatch?.quip }}</p>
+      </div>
+    </div>
 
-      <footer class="weather-card-footer">
+    <template #footer>
+      <template v-if="weather && !loading && !error">
         <span>Wind: {{ formatWind(weather.now.windSpeedMph) }}</span>
         <span
           class="weather-rain"
@@ -74,13 +72,15 @@
         >
           Rain {{ formatPercent(weather.now.precipitationProbability) }}
         </span>
-      </footer>
+      </template>
+      <span v-else>Manchester city centre</span>
     </template>
-  </section>
+  </FieldPanel>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import FieldPanel from '@/components/FieldPanel.vue';
 import { normalizeWeather, type NormalizedWeather, type WeatherIcon, type WeatherPoint } from '@/lib/weather';
 
 type WeatherShape =
@@ -409,17 +409,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.weather-card {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: 20px;
-  border: 1px solid var(--color-weather-border);
-  border-radius: 16px;
-  background: var(--color-weather-surface);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 4%), 0 1px 2px rgb(0 0 0 / 2%);
-}
-
 .weather-card.theme-sunny {
   border-color: var(--color-weather-sunny-border);
   background: var(--color-weather-sunny);
@@ -445,39 +434,11 @@ onMounted(async () => {
   background: var(--color-weather-snow);
 }
 
-.weather-card-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid color-mix(in srgb, var(--color-weather-ink) 12%, transparent);
-  color: var(--color-weather-ink);
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-variant-numeric: tabular-nums;
-}
-
-.weather-card-brand {
-  display: flex;
-  flex: 1 0 max-content;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  font-size: 10px;
-  font-weight: 900;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-.weather-card-brand span {
-  white-space: nowrap;
+.theme-sunny .weather-header-icon {
+  color: var(--color-weather-sunny-icon);
 }
 
 .weather-header-icon {
-  flex: 0 0 20px;
-  width: 20px;
-  height: 20px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -485,32 +446,27 @@ onMounted(async () => {
   stroke-width: 2;
 }
 
-.theme-sunny .weather-header-icon {
-  color: var(--color-weather-sunny-icon);
-}
-
-.weather-current,
-.weather-card-state {
+.weather-body {
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  padding: 20px 0;
+  flex: 1;
+  align-items: center;
+  gap: 12px;
 }
 
 .weather-icon-tile {
   display: grid;
-  flex: 0 0 64px;
-  width: 64px;
-  height: 64px;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
   place-items: center;
-  border-radius: 14px;
+  border-radius: 10px;
   background: color-mix(in srgb, var(--color-surface) 65%, transparent);
   color: var(--color-weather-ink);
 }
 
 .weather-condition-icon {
-  width: 44px;
-  height: 44px;
+  width: 30px;
+  height: 30px;
   fill: none;
   stroke: currentColor;
   stroke-linecap: round;
@@ -522,51 +478,33 @@ onMounted(async () => {
   animation: weather-spin 1.4s linear infinite;
 }
 
-.weather-current-copy {
+.weather-copy {
   min-width: 0;
-  padding-top: 1px;
 }
 
-.weather-current-copy h3,
-.weather-card-state h3 {
+.weather-copy h3 {
   margin: 0;
   color: var(--color-weather-ink);
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 700;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
-.weather-current-copy h3 span {
+.weather-copy h3 span {
   color: var(--color-weather-muted);
   font-weight: 400;
 }
 
-.weather-current-copy p,
-.weather-card-state p {
-  margin: 4px 0 0;
+.weather-copy p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 2px 0 0;
   color: var(--color-weather-body);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.weather-state-mark {
-  color: var(--color-weather-ink);
-  font-size: 26px;
-  line-height: 1;
-}
-
-.weather-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding-top: 16px;
-  border-top: 1px solid color-mix(in srgb, var(--color-weather-ink) 12%, transparent);
-  color: var(--color-weather-footer);
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-variant-numeric: tabular-nums;
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .weather-rain {
@@ -578,8 +516,8 @@ onMounted(async () => {
   color: var(--color-weather-wet);
 }
 
-.theme-sunny .weather-card-header,
-.theme-sunny .weather-card-footer {
+.theme-sunny :deep(.field-panel-heading),
+.theme-sunny :deep(.field-panel-footer) {
   border-color: var(--color-weather-sunny-rule);
 }
 
@@ -587,8 +525,8 @@ onMounted(async () => {
   background: var(--color-weather-sunny-tile);
 }
 
-.theme-night .weather-card-header,
-.theme-night .weather-card-footer {
+.theme-night :deep(.field-panel-heading),
+.theme-night :deep(.field-panel-footer) {
   border-color: var(--color-weather-night-border);
 }
 
@@ -596,18 +534,18 @@ onMounted(async () => {
   background: var(--color-weather-night-tile);
 }
 
-.theme-rain .weather-card-header,
-.theme-rain .weather-card-footer {
+.theme-rain :deep(.field-panel-heading),
+.theme-rain :deep(.field-panel-footer) {
   border-color: var(--color-weather-rain-border);
 }
 
-.theme-storm .weather-card-header,
-.theme-storm .weather-card-footer {
+.theme-storm :deep(.field-panel-heading),
+.theme-storm :deep(.field-panel-footer) {
   border-color: var(--color-weather-storm-border);
 }
 
-.theme-snow .weather-card-header,
-.theme-snow .weather-card-footer {
+.theme-snow :deep(.field-panel-heading),
+.theme-snow :deep(.field-panel-footer) {
   border-color: var(--color-weather-snow-border);
 }
 
