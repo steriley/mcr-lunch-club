@@ -4,100 +4,42 @@
  *
  *   pnpm db:import            insert anything missing; existing rows are left alone
  *   pnpm db:import --dry-run  report what would happen without writing
- *   pnpm db:import --update   also overwrite existing venues with the file contents
+ *   pnpm db:import --update   also overwrite existing venues' details with the file contents; tiers are kept
+ *   pnpm db:import --update-tiers   as --update, and overwrite existing venues' tiers too
  *
  * Venues match on slug; bribery records match on title + incident date.
- * Venues are imported with their tier, so they are public as soon as they have coordinates.
+ * New venues are imported with their tier, so they are public as soon as they have coordinates.
+ * Tiers otherwise change only through two-Chair proposals, which is why --update leaves them alone.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import { and, eq, isNull } from 'drizzle-orm';
-import { briberyRecords, venues } from '@/db/schema';
+import { briberyRecords } from '@/db/schema';
 import { closeDatabase, db } from '@/lib/db-script';
-import { mapLegacyCuisine } from '@/lib/cuisines';
-import { parseTier } from '@/lib/tiers';
-import { venueInputSchema, type VenueInput } from '@/lib/venue-schema';
-import { recordVenueRevision, updateVenue, venueValues } from '@/lib/venues';
-import type { Incident, Venue } from '@/types';
+import { importVenues, toImportableVenue, type LegacyVenue } from '@/lib/venue-import';
+import type { Incident } from '@/types';
 
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
-const update = args.has('--update');
+const updateTiers = args.has('--update-tiers');
+const update = args.has('--update') || updateTiers;
 
 function readJson<T>(relativePath: string): T {
   return JSON.parse(fs.readFileSync(path.resolve(relativePath), 'utf8')) as T;
-}
-
-/** A venue as the old static JSON stored it, with the tier as a display label. */
-type LegacyVenue = Omit<Venue, 'tier'> & { status: string };
-
-function toVenueInput(venue: LegacyVenue): VenueInput {
-  const tier = parseTier(venue.status);
-  if (!tier) throw new Error(`${venue.slug}: unknown tier "${venue.status}"`);
-
-  const parsed = venueInputSchema.safeParse({
-    name: venue.name,
-    slug: venue.slug,
-    tier,
-    address: venue.address,
-    latitude: venue.lat,
-    longitude: venue.lng,
-    pullQuote: null,
-    lunchSpecial: venue.eatLikeUs,
-    websiteUrl: null,
-    cost: venue.cost,
-    cuisine: mapLegacyCuisine(venue.cuisine),
-    mapSearchLink: venue.mapSearchLink,
-  });
-
-  if (!parsed.success) {
-    const problems = parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ');
-    throw new Error(`${venue.slug}: ${problems}`);
-  }
-  return parsed.data;
 }
 
 const sourceVenues = readJson<LegacyVenue[]>('src/data/venues.json');
 const sourceIncidents = readJson<Incident[]>('src/data/incidents.json');
 
 // Validate everything before touching the database.
-const venueInputs = sourceVenues.map(toVenueInput);
+const items = sourceVenues.map(toImportableVenue);
 
-const existingVenues = new Map(
-  (await db.select({ id: venues.id, slug: venues.slug }).from(venues)).map((row) => [row.slug, row.id])
-);
-
-let inserted = 0;
-let updated = 0;
-let skipped = 0;
-
-for (const input of venueInputs) {
-  const existingId = existingVenues.get(input.slug);
-  if (existingId && !update) {
-    skipped += 1;
-    continue;
-  }
-  if (dryRun) {
-    existingId ? (updated += 1) : (inserted += 1);
-    continue;
-  }
-
-  // The import is not attributed to a Chair. Routes start pending; `pnpm routes:backfill` fills them from ORS.
-  const values = venueValues(input, null, { distanceMiles: null, walkingTimeMin: null });
-  if (existingId) {
-    await updateVenue(db, existingId, values, null);
-    updated += 1;
-  } else {
-    const [row] = await db.insert(venues).values(values).returning();
-    await recordVenueRevision(db, row, null);
-    inserted += 1;
-  }
-}
+const { inserted, updated, skipped } = await importVenues(db, items, { dryRun, update, updateTiers });
 
 const verb = (past: string, future: string) => (dryRun ? future : past);
 
 console.log(
-  `${dryRun ? '[dry run] ' : ''}Venues (${venueInputs.length}): ${inserted} ${verb('inserted', 'would be inserted')}, ` +
+  `${dryRun ? '[dry run] ' : ''}Venues (${items.length}): ${inserted} ${verb('inserted', 'would be inserted')}, ` +
     `${updated} ${verb('updated', 'would be updated')}, ${skipped} already present and left alone.`
 );
 
