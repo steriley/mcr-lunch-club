@@ -4,6 +4,8 @@ import {
   BASE_COORDINATES,
   BASE_LAT_LNG,
   CARTO_VOYAGER_TILE_CONFIG,
+  MINUTES_PER_MILE,
+  WALKING_DETOUR_FACTOR,
   WALKING_ISOCHRONES,
   WALKING_METRES_PER_MINUTE,
   createTileLayer,
@@ -19,14 +21,15 @@ describe('map config', () => {
     assert.deepEqual(radii, [...radii].sort((a, b) => a - b));
   });
 
-  it('derives the walking rings from the shared 80 m/min pace', () => {
-    assert.equal(WALKING_METRES_PER_MINUTE, 80);
+  it('derives the walking rings from the shared straight-line pace', () => {
+    // 24 min/mile, less a 1.2 detour: about 56 straight-line metres a minute.
+    assert.equal(WALKING_METRES_PER_MINUTE, 1609.344 / MINUTES_PER_MILE / WALKING_DETOUR_FACTOR);
     for (const ring of WALKING_ISOCHRONES.filter((entry) => entry.label.endsWith('min walk'))) {
       assert.equal(ring.radius, Number.parseInt(ring.label, 10) * WALKING_METRES_PER_MINUTE, ring.label);
     }
     assert.deepEqual(
-      WALKING_ISOCHRONES.map((ring) => ring.radius),
-      [400, 800, 1200, 1600, 2000, 4023]
+      WALKING_ISOCHRONES.map((ring) => Math.round(ring.radius)),
+      [279, 559, 838, 1118, 1397, 4023]
     );
   });
 

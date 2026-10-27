@@ -38,7 +38,7 @@ describe('route backfill (database)', { skip: skipIntegration }, () => {
     assert.deepEqual(batches, [25, 5]);
     assert.deepEqual({ todo: result.todo, routed: result.routed, failed: result.failed, stopped: result.stopped }, { todo: 30, routed: 30, failed: [], stopped: null });
     const [venue] = await db.select().from(venues).where(eq(venues.name, 'Venue 00'));
-    assert.deepEqual({ miles: venue.distanceMiles, minutes: venue.walkingTimeMin }, { miles: '1.00', minutes: 20 });
+    assert.deepEqual({ miles: venue.distanceMiles, minutes: venue.walkingTimeMin }, { miles: '1.00', minutes: 24 });
     const [routed] = await db.select().from(venues).where(eq(venues.name, 'Already Routed'));
     assert.equal(routed.walkingTimeMin, 4);
     assert.equal(await routedCount(), 31);

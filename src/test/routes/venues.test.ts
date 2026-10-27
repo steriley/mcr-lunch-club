@@ -213,7 +213,7 @@ describe('/api/admin/venues/[id]', () => {
         assert.equal(fetches.length, 1);
         assert.match(fetches[0], /\/v2\/directions\/foot-walking$/);
         assert.equal(setValues(updates).distanceMiles, '1.00');
-        assert.equal(setValues(updates).walkingTimeMin, 20);
+        assert.equal(setValues(updates).walkingTimeMin, 24);
       });
 
       it('keeps the stored route without calling ORS when the coordinates are unchanged', async () => {

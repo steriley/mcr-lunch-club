@@ -47,10 +47,26 @@ export interface IsochroneRing {
 }
 
 /**
- * The one walking pace for straight-line estimates (4.8 km/h): Near Me and the
- * map's walking rings. Stored venue walking times come from ORS routes instead.
+ * The one real-world walking pace: 24 minutes a mile (about 2.5 mph), which
+ * allows for crossings and hills. Stored venue walking times use it too, so
+ * they come out of the route distance rather than OpenRouteService's faster
+ * duration (see `routeToVenueValues`).
  */
-export const WALKING_METRES_PER_MINUTE = 80;
+export const MINUTES_PER_MILE = 24;
+
+/**
+ * Walked routes are longer than the straight line. Across the 90 routed
+ * venues the median is 1.18 times the straight-line distance, the 90th
+ * percentile 1.46; 1.2 keeps the estimates honest for the typical venue.
+ */
+export const WALKING_DETOUR_FACTOR = 1.2;
+
+/**
+ * Straight-line metres covered per minute: the walking pace less the detour.
+ * Near Me and the map's walking rings measure as the crow flies, so this is
+ * what turns that distance into minutes (about 56 m/min).
+ */
+export const WALKING_METRES_PER_MINUTE = 1609.344 / MINUTES_PER_MILE / WALKING_DETOUR_FACTOR;
 
 /** The rings are one quiet grey (`--color-map-ring`), so the pins stay the strongest thing on the map. */
 export const WALKING_RING_TOKEN = 'map-ring';

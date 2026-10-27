@@ -283,9 +283,10 @@ describe('rankVenues', () => {
 });
 
 describe('estimateWalkMinutes', () => {
-  test('uses about 80 metres per minute', () => {
-    assert.equal(estimateWalkMinutes(800), 10);
-    assert.equal(estimateWalkMinutes(1200), 15);
+  test('allows for a detour and a 24 minute mile', () => {
+    // A mile as the crow flies is 1.2 miles on foot: about 29 minutes.
+    assert.equal(estimateWalkMinutes(1609.344), 29);
+    assert.equal(estimateWalkMinutes(800), 14);
   });
 
   test('never returns less than one minute', () => {
