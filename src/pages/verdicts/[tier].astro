@@ -92,12 +92,12 @@ const tierCounts = countVenuesByTier(publicVenues);
     <!-- Venue Grid -->
     <div class="space-y-4">
       <div class="space-y-2 font-serif-header">
-        <div class="border-b border-hairline pb-2 space-y-1">
-          <h2 class="text-xl font-bold text-ink">Enrolled Establishments</h2>
-          <p class="text-xs font-sans tabular-nums text-stone-500">Origin: Spinningfields Base Quorum</p>
-        </div>
-        <div class="flex justify-end">
-          <span class="bench-count">{venues.length} Venues</span>
+        <div class="border-b border-hairline pb-2 flex items-end justify-between gap-4">
+          <div class="space-y-1">
+            <h2 class="text-xl font-bold text-ink">Enrolled Establishments</h2>
+            <p class="text-xs font-sans tabular-nums text-stone-500">Origin: Spinningfields Base Quorum</p>
+          </div>
+          <span class="bench-count shrink-0">{venues.length} {tier.label}</span>
         </div>
       </div>
 
