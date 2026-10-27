@@ -179,6 +179,7 @@ Use a Neon **branch** so local work never touches production data:
 | `pnpm auth:generate` | Regenerate `src/db/auth-schema.ts` with the Better Auth CLI matching the installed version. Follow with `pnpm db:generate`. |
 | `pnpm routes:backfill` | Replace distance and walking time with ORS walking routes for venues that have coordinates but no ORS route yet (the old straight-line estimates). Uses ORS Matrix, 25 venues per request, falling back to one Directions request per venue; throttled (`--delay-ms=2000`), resumable, stops cleanly on a rate limit. `--dry-run` lists venues without calling ORS; `--all` recomputes every venue; `--no-matrix` skips Matrix. Needs `ORS_API_KEY`. |
 | `pnpm inspections:import-legacy` | One-off: import the corrected inspection dates in `drizzle/data/legacy-inspections.json` as legacy inspections and rebuild every venue's "last inspected" date. Venues not on the list lose their old date unless `--keep-unlisted` is passed. Aborts if any name cannot be matched; idempotent; `--dry-run` shows the changes first. |
+| `pnpm inspections:backfill-verified` | One-off: add the dual-verified inspections in `drizzle/data/verified-inspections-backfill.json` (dated tier moves from the Chairs' audit trail, with outcome and both Chairs) to venues that have no confirmed inspection yet, and update their "last inspected" date. Venues already inspected are skipped, so it is idempotent; aborts if a venue or Chair cannot be found; `--dry-run` shows the changes first. Rebuild the site afterwards. |
 | `pnpm test:db` | Integration tests for the transactional rules (inspections, proposals) against `TEST_DATABASE_URL`, a throwaway **local** database whose name contains `test` (tables are truncated). |
 | `pnpm check:bundle` | After `pnpm build`: fail if the browser bundle contains `ORS_API_KEY` (name or value) or calls ORS directly. |
 | `pnpm check:security [url]` | Check that every `/admin` page and `/api/admin` route refuses anonymous and cross-origin requests, and that sign-up is disabled. Defaults to `http://localhost:4321`; pass the production URL after a deploy. |
@@ -429,6 +430,7 @@ mcr-lunch-club/
 │   ├── seed-chair.ts          # pnpm db:seed
 │   ├── import-existing-content.ts  # pnpm db:import
 │   ├── import-legacy-inspections.ts # pnpm inspections:import-legacy
+│   ├── backfill-verified-inspections.ts # pnpm inspections:backfill-verified
 │   ├── backfill-routes.ts     # pnpm routes:backfill
 │   ├── check-admin-security.ts     # pnpm check:security
 │   ├── check-client-bundle.ts      # pnpm check:bundle

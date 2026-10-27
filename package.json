@@ -24,6 +24,7 @@
     "check:bundle": "tsx ./scripts/check-client-bundle.ts",
     "routes:backfill": "tsx ./scripts/backfill-routes.ts",
     "inspections:import-legacy": "tsx ./scripts/import-legacy-inspections.ts",
+    "inspections:backfill-verified": "tsx ./scripts/backfill-verified-inspections.ts",
     "test:db": "tsx ./scripts/test-db.ts"
   },
   "dependencies": {
