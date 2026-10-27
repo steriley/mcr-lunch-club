@@ -1716,6 +1716,75 @@ a.bench-details {
   align-items: stretch;
 }
 
+/* Inspection ledger: one venue per row, stretched to the container. From sm up the telemetry moves to the right of the row. */
+.inspection-rows {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 640px) {
+  /* Two rows: name and date on the left, badges above walk and count on the right.
+     The main and copy wrappers dissolve so their children place on the card's grid. */
+  .inspection-rows .bench-pillar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-items: center;
+    column-gap: 16px;
+    row-gap: 6px;
+    padding: 14px 16px;
+  }
+
+  .inspection-rows .bench-pillar-main,
+  .inspection-rows .bench-pillar-copy {
+    display: contents;
+  }
+
+  .inspection-rows .bench-thumb {
+    grid-area: 1 / 1 / 3 / 2;
+  }
+
+  /* The cost sits beside the name rather than at the far end of the row. */
+  .inspection-rows .bench-pillar-title-row {
+    grid-area: 1 / 2;
+    justify-content: flex-start;
+    align-items: baseline;
+    align-self: end;
+    gap: 10px;
+  }
+
+  .inspection-rows .bench-pillar-name {
+    font-size: 20px;
+  }
+
+  .inspection-rows .bench-cost {
+    font-size: 14px;
+  }
+
+  .inspection-rows .bench-pillar .bench-inspection-date {
+    grid-area: 2 / 2;
+    align-self: start;
+    font-size: 15px;
+  }
+
+  .inspection-rows .bench-inspection-badges {
+    grid-area: 1 / 3;
+    justify-content: flex-end;
+    align-self: end;
+    margin-top: 0;
+  }
+
+  .inspection-rows .bench-telemetry {
+    grid-area: 2 / 3;
+    align-self: start;
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    gap: 16px;
+    padding-top: 0;
+    border-top: 0;
+    white-space: nowrap;
+  }
+}
+
 /* Inspection ledger cards: outcome badge beside the date, legacy records in a neutral badge. */
 .bench-inspection-date {
   display: flex;
