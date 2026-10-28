@@ -115,6 +115,10 @@
   user-select: none;
 }
 
+:root[data-theme="dark"] .near-me-icon {
+  color: currentColor;
+}
+
 .map-header-text {
   display: flex;
   min-width: 0;
