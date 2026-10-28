@@ -57,6 +57,7 @@
 </template>
 
 <script setup lang="ts">
+import '@/styles/map.css';
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $filteredVenues, $filters, openNearMe, resetFilters, toggleTier } from '@/stores/filters';

@@ -160,6 +160,7 @@ import NearMeStatusBanner from './near-me/NearMeStatusBanner.vue';
 import NearMeVenueList from './near-me/NearMeVenueList.vue';
 import { useBottomSheet } from './near-me/useBottomSheet';
 import { useNearMeHistory } from './near-me/useNearMeHistory';
+import '@/styles/map.css';
 import { useNearMeLeaflet } from './near-me/useNearMeLeaflet';
 
 const props = defineProps<{
