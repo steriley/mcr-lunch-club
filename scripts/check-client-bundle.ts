@@ -1,8 +1,9 @@
 /**
  * Run after `pnpm build`: fails if the browser bundle contains a server secret
  * (the ORS key or the Vercel Blob read-write token: their variable names, or
- * their values when set locally) or calls OpenRouteService directly. Only the
- * server may talk to ORS or write to Blob.
+ * their values when set locally), calls OpenRouteService directly, or contains
+ * the social-card renderer (satori, resvg, the WOFF2 decoder). Only the server
+ * may talk to ORS or write to Blob, and cards are drawn at build time.
  *
  *   pnpm build && pnpm check:bundle
  */
@@ -24,7 +25,7 @@ function files(dir: string): string[] {
   });
 }
 
-const needles = ['ORS_API_KEY', 'api.openrouteservice.org', 'BLOB_READ_WRITE_TOKEN'];
+const needles = ['ORS_API_KEY', 'api.openrouteservice.org', 'BLOB_READ_WRITE_TOKEN', '@resvg/resvg-js', 'wawoff2', 'Unsupported OpenType signature'];
 const secrets = new Map<string, string>();
 for (const [name, value] of [['ORS_API_KEY', getOrsApiKey()], ['BLOB_READ_WRITE_TOKEN', getBlobToken()]] as const) {
   if (value) {

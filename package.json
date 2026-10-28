@@ -36,6 +36,7 @@
     "@jsquash/webp": "^1.5.0",
     "@nanostores/vue": "^1.0.0",
     "@neondatabase/serverless": "^1.2.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/vite": "^4.3.3",
     "@vercel/blob": "^2.8.2",
     "astro": "^7.4.0",
@@ -45,8 +46,10 @@
     "leaflet": "^1.9.4",
     "nanostores": "^1.0.0",
     "pg": "^8.23.1",
+    "satori": "^0.63.2",
     "tailwindcss": "^4.3.3",
     "vue": "^3.5.44",
+    "wawoff2": "^2.0.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
