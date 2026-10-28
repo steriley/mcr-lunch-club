@@ -378,7 +378,7 @@ function selectVenueItem(venue: Venue, fromPinClick = false) {
   map.focusVenue(venue, { sheetState: opensSheet ? 'half' : sheet.snap.value });
 
   // "Your selection" is the top of the list: bring it into view.
-  nextTick(() => listContainerRef.value?.scrollTo({ top: 0, behavior: 'smooth' }));
+  void nextTick(() => listContainerRef.value?.scrollTo({ top: 0, behavior: 'smooth' }));
 
   // On mobile, expand from collapsed so user can see details
   if (opensSheet) sheet.snap.value = 'half';
@@ -454,7 +454,7 @@ watch([geo.position, geo.isManual], () => {
 
   // Fit bounds on first position fix
   if (!hasFittedFirstFix.value && geo.position.value && rankedVenues.value.length > 0) {
-    nextTick(() => {
+    void nextTick(() => {
       map.fitFirstFixBounds();
     });
   }
@@ -464,7 +464,7 @@ watch([geo.position, geo.isManual], () => {
 watch(rankedVenues, (venues) => {
   map.applyPinRanks();
   if (!hasFittedFirstFix.value && geo.position.value && venues.length > 0) {
-    nextTick(() => {
+    void nextTick(() => {
       map.fitFirstFixBounds();
     });
   }
@@ -563,7 +563,7 @@ async function onOpenChange(open: boolean) {
     map.destroy();
     nearMeHistory.clearHash();
 
-    nextTick(() => {
+    void nextTick(() => {
       const nearMeTrigger = document.getElementById('btn-near-me');
       if (nearMeTrigger) {
         nearMeTrigger.focus();

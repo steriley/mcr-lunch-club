@@ -121,6 +121,7 @@ function send(
   Readable.fromWeb(body as never).pipe(res);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises -- the handler catches its own errors
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://${req.headers.host ?? `localhost:${port}`}`);
   const extra = new Headers();

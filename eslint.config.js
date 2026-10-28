@@ -44,10 +44,32 @@ export default tseslint.config(
     files: ['**/*.vue'],
     rules: { 'vue/multi-word-component-names': ['error', { ignores: ['Icon'] }] },
   },
-  // Tests stub browser and Leaflet globals, so `any` is fine there.
+  // Type-aware rules for async code (database, auth, fetch). Only the promise-safety rules are on:
+  // the full type-checked preset's `no-unsafe-*` rules would drown in the existing Leaflet `any`s.
+  {
+    files: ['**/*.ts', '**/*.vue'],
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+        extraFileExtensions: ['.vue'],
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/await-thenable': 'error',
+      '@typescript-eslint/no-for-in-array': 'error',
+      '@typescript-eslint/only-throw-error': 'error',
+    },
+  },
+  // Tests stub browser and Leaflet globals, so `any` is fine there, and node:test's
+  // describe/it return promises that are meant to be left to the runner.
   {
     files: ['**/*.test.ts', 'src/test/**', 'e2e/**'],
     rules: {
+      '@typescript-eslint/no-floating-promises': 'off',
+      '@typescript-eslint/only-throw-error': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',
     },
