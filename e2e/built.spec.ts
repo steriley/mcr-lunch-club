@@ -150,7 +150,7 @@ test.describe('public pages', () => {
     await context.close();
   });
 
-  test('verdict, venue, hall of shame, manifesto, inspections', async ({ page, monitor }) => {
+  test('verdict, venue, hall of shame, manifesto, inspections, faqs', async ({ page, monitor }) => {
     await visit(page, '/verdicts/approved');
     const venuePath = await page.locator('a[href^="/venues/"]').first().getAttribute('href');
     expect(venuePath, 'a venue link on the Approved verdict page').toBeTruthy();
@@ -167,7 +167,7 @@ test.describe('public pages', () => {
     const crumbs = page.getByRole('navigation', { name: 'Breadcrumb' });
     await expect(crumbs.locator('[aria-current="page"]')).toBeVisible();
 
-    for (const path of ['/hall-of-shame', '/manifesto', '/inspections']) {
+    for (const path of ['/hall-of-shame', '/manifesto', '/inspections', '/faqs']) {
       await visit(page, path);
       await expect(page.getByRole('navigation', { name: 'Breadcrumb' }).locator('[aria-current="page"]')).toBeVisible();
     }
