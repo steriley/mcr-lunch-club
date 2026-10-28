@@ -8,7 +8,7 @@ import type { CostTier, Inspection, PublicImage } from '@/types';
 const BENCH_SIZE = 5;
 
 export interface BenchWalk {
-  /** "9 min walk (0.40 mi)", or "Walk time pending" while the route is pending. */
+  /** "9 min walk (0.40 mi)". */
   label: string;
   lat: number | null;
   lng: number | null;
@@ -27,7 +27,8 @@ export interface BenchCard {
   lastInspection: string | null;
   /** Confirmed inspections (verified + legacy). */
   inspectionCount: number;
-  walk: BenchWalk;
+  /** Null while the route is pending: the card shows no walk row. */
+  walk: BenchWalk | null;
   /** The Chairs' puff piece, trimmed; null when blank. */
   quote: string | null;
   /** The anchor dish, then the lunch special; null when both are blank. */
@@ -54,9 +55,9 @@ function clean(text: string | null | undefined): string | null {
   return trimmed ? trimmed : null;
 }
 
-function walkFor(venue: PublicVenue): BenchWalk {
+function walkFor(venue: PublicVenue): BenchWalk | null {
   const { walkingTimeMin, distanceMiles, lat, lng } = venue;
-  if (walkingTimeMin === null) return { label: walkText(null), lat: null, lng: null, directionsUrl: null };
+  if (walkingTimeMin === null) return null;
   const label = distanceMiles === null ? walkText(walkingTimeMin) : `${walkText(walkingTimeMin)} (${milesText(distanceMiles, 'mi')})`;
   if (lat === null || lng === null) return { label, lat: null, lng: null, directionsUrl: null };
   // 'server' is not an Apple platform, so this is always the Google URL; the page script swaps it on Apple devices.

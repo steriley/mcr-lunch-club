@@ -901,6 +901,15 @@
   border-top: 1px solid color-mix(in srgb, var(--color-hairline) 50%, transparent);
 }
 
+/* A pending route has no walk row, so the telemetry can be empty or hold only the count. */
+.bench-telemetry:empty {
+  display: none;
+}
+
+.bench-telemetry > :first-child:last-child {
+  margin-left: auto;
+}
+
 .bench-walk {
   display: inline-flex;
   align-items: center;

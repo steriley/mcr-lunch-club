@@ -163,23 +163,20 @@ describe('buildSovereignBench: text', () => {
 
 describe('buildSovereignBench: walk', () => {
   it('links to Google walking directions at the venue coordinates', () => {
-    const { walk } = buildSovereignBench([pick('a', {}, { lat: 53.4808, lng: -2.2426, walkingTimeMin: 12, distanceMiles: 0.6 })], [], []).hero!;
+    const walk = buildSovereignBench([pick('a', {}, { lat: 53.4808, lng: -2.2426, walkingTimeMin: 12, distanceMiles: 0.6 })], [], []).hero!.walk!;
     assert.equal(walk.label, '12 min walk (0.60 mi)');
     assert.equal(walk.lat, 53.4808);
     assert.equal(walk.lng, -2.2426);
     assert.equal(walk.directionsUrl, 'https://www.google.com/maps/dir/?api=1&destination=53.4808,-2.2426&travelmode=walking');
   });
 
-  it('is plain "pending" text with no link when the walking time is null', () => {
+  it('has no walk at all when the walking time is null', () => {
     const { walk } = buildSovereignBench([pick('a', {}, { walkingTimeMin: null, distanceMiles: null })], [], []).hero!;
-    assert.equal(walk.label, 'Walk time pending');
-    assert.equal(walk.directionsUrl, null);
-    assert.equal(walk.lat, null);
-    assert.equal(walk.lng, null);
+    assert.equal(walk, null);
   });
 
   it('has no link when the venue has no coordinates', () => {
-    const { walk } = buildSovereignBench([pick('a', {}, { lat: null, lng: null })], [], []).hero!;
+    const walk = buildSovereignBench([pick('a', {}, { lat: null, lng: null })], [], []).hero!.walk!;
     assert.equal(walk.label, '9 min walk (0.40 mi)');
     assert.equal(walk.directionsUrl, null);
   });
