@@ -47,6 +47,32 @@ test.describe('public pages', () => {
     expect(monitor.errors).toEqual([]);
   });
 
+  test('home at phone width: Where to today? and search are on the page, the Bench follows the map', async ({ page, monitor }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await visit(page, '/');
+
+    // No menu or panel to open first.
+    const cta = page.locator('.where-today-cta');
+    await expect(cta).toBeVisible();
+    await expect(page.locator('#ledger-search-input-phone')).toBeVisible();
+
+    // Source order is the phone order: bench before the summons, the summons before the bulletin.
+    const top = (selector: string) => page.locator(selector).first().evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    const [map, bench, summons, bulletin] = await Promise.all([top('.home-map-stage'), top('.bench'), top('.weekly-summons'), top('.weekly-bulletin')]);
+    expect(map).toBeLessThan(bench);
+    expect(bench).toBeLessThan(summons);
+    expect(summons).toBeLessThan(bulletin);
+
+    await cta.click();
+    await expect(page.getByRole('dialog', { name: /Executive Decision Oracle/ })).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    // Search filters from the bar without opening the panel.
+    await page.locator('#ledger-search-input-phone').fill('zzzz-no-such-venue');
+    await expect(page.locator('.map-header-count')).toContainText(/^0 of/);
+    expect(monitor.errors).toEqual([]);
+  });
+
   test('Near Me, with location granted', async ({ browser, baseURL, monitor: _unused }, testInfo) => {
     void _unused;
     void testInfo;
