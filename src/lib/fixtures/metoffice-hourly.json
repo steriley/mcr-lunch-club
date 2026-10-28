@@ -1,0 +1,238 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -2.2426,
+          53.4808,
+          38.0
+        ]
+      },
+      "properties": {
+        "location": {
+          "name": "Manchester"
+        },
+        "requestPointDistance": 0.71,
+        "modelRunDate": "2026-10-28T15:00Z",
+        "timeSeries": [
+          {"time":"2026-10-28T13:00Z","screenTemperature":13.34,"maxScreenAirTemp":13.44,"minScreenAirTemp":13.28,"screenDewPointTemperature":9.14,"feelsLikeTemperature":11.04,"windSpeed10m":3.31,"windDirectionFrom10m":239,"windGustSpeed10m":7.49,"max10mWindGust":11.67,"visibility":23072,"screenRelativeHumidity":75.66,"mslp":100769,"uvIndex":1,"significantWeatherCode":1,"precipitationRate":0,"totalPrecipAmount":0,"totalSnowAmount":0,"probOfPrecipitation":61},
+          {"time":"2026-10-28T14:00Z","screenTemperature":13.7,"maxScreenAirTemp":13.8,"minScreenAirTemp":13.64,"screenDewPointTemperature":9.5,"feelsLikeTemperature":11.4,"windSpeed10m":2.38,"windDirectionFrom10m":203,"windGustSpeed10m":5.74,"max10mWindGust":6.57,"visibility":19099,"screenRelativeHumidity":68.84,"mslp":100226,"uvIndex":1,"significantWeatherCode":7,"precipitationRate":0.05,"totalPrecipAmount":0.3,"totalSnowAmount":0,"probOfPrecipitation":61},
+          {"time":"2026-10-28T15:00Z","screenTemperature":14.12,"maxScreenAirTemp":14.22,"minScreenAirTemp":14.06,"screenDewPointTemperature":9.92,"feelsLikeTemperature":11.82,"windSpeed10m":5.4,"windDirectionFrom10m":246,"windGustSpeed10m":5.04,"max10mWindGust":11.81,"visibility":16634,"screenRelativeHumidity":80.22,"mslp":100996,"uvIndex":1,"significantWeatherCode":7,"precipitationRate":0,"totalPrecipAmount":0,"totalSnowAmount":0,"probOfPrecipitation":9},
+          {"time":"2026-10-28T16:00Z","screenTemperature":13.86,"maxScreenAirTemp":13.96,"minScreenAirTemp":13.8,"screenDewPointTemperature":9.66,"feelsLikeTemperature":11.56,"windSpeed10m":5.15,"windDirectionFrom10m":256,"windGustSpeed10m":10.14,"max10mWindGust":8.1,"visibility":9852,"screenRelativeHumidity":65.83,"mslp":100202,"uvIndex":1,"significantWeatherCode":1,"precipitationRate":0,"totalPrecipAmount":0.3,"totalSnowAmount":0,"probOfPrecipitation":9},
+          {"time":"2026-10-28T17:00Z","screenTemperature":13.74,"maxScreenAirTemp":13.84,"minScreenAirTemp":13.68,"screenDewPointTemperature":9.54,"feelsLikeTemperature":11.44,"windSpeed10m":2.09,"windDirectionFrom10m":183,"windGustSpeed10m":6.55,"max10mWindGust":10.79,"visibility":25340,"screenRelativeHumidity":65.75,"mslp":100589,"uvIndex":0,"significantWeatherCode":8,"precipitationRate":0.4,"totalPrecipAmount":0.3,"totalSnowAmount":0,"probOfPrecipitation":4},
+          {"time":"2026-10-28T18:00Z","screenTemperature":13.24,"maxScreenAirTemp":13.34,"minScreenAirTemp":13.18,"screenDewPointTemperature":9.04,"feelsLikeTemperature":10.94,"windSpeed10m":2.91,"windDirectionFrom10m":195,"windGustSpeed10m":9.19,"max10mWindGust":6.38,"visibility":23367,"screenRelativeHumidity":72.69,"mslp":100683,"uvIndex":0,"significantWeatherCode":12,"precipitationRate":0,"totalPrecipAmount":0,"totalSnowAmount":0,"probOfPrecipitation":48},
+          {"time":"2026-10-28T19:00Z","screenTemperature":12.47,"maxScreenAirTemp":12.57,"minScreenAirTemp":12.41,"screenDewPointTemperature":8.27,"feelsLikeTemperature":10.17,"windSpeed10m":2.71,"windDirectionFrom10m":192,"windGustSpeed10m":7.89,"max10mWindGust":7.82,"visibility":25429,"screenRelativeHumidity":82.03,"mslp":101264,"uvIndex":0,"significantWeatherCode":12,"precipitationRate":0,"totalPrecipAmount":0,"totalSnowAmount":0,"probOfPrecipitation":61},
+          {"time":"2026-10-28T20:00Z","screenTemperature":11.54,"maxScreenAirTemp":11.64,"minScreenAirTemp":11.48,"screenDewPointTemperature":7.34,"feelsLikeTemperature":9.24,"windSpeed10m":2.08,"windDirectionFrom10m":211,"windGustSpeed10m":7.77,"max10mWindGust":6.84,"visibility":18536,"screenRelativeHumidity":86.57,"mslp":100785,"uvIndex":0,"significantWeatherCode":8,"precipitationRate":0,"totalPrecipAmount":0.3,"totalSnowAmount":0,"probOfPrecipitation":4},
+          {"time":"2026-10-28T21:00Z","screenTemperature":11.24,"maxScreenAirTemp":11.34,"minScreenAirTemp":11.18,"screenDewPointTemperature":7.04,"feelsLikeTemperature":8.94,"windSpeed10m":3.81,"windDirectionFrom10m":214,"windGustSpeed10m":8.07,"max10mWindGust":10.72,"visibility":18968,"screenRelativeHumidity":63.63,"mslp":100660,"uvIndex":0,"significantWeatherCode":0,"precipitationRate":0,"totalPrecipAmount":0,"totalSnowAmount":0,"probOfPrecipitation":26},
+          {"time":"2026-10-28T22:00Z","screenTemperature":10.38,"maxScreenAirTemp":10.48,"minScreenAirTemp":10.32,"screenDewPointTemperature":6.18,"feelsLikeTemperature":8.08,"windSpeed10m":5.35,"windDirectionFrom10m":224,"windGustSpeed10m":5.9,"max10mWindGust":6.67,"visibility":20285,"screenRelativeHumidity":81.21,"mslp":100329,"uvIndex":0,"significantWeatherCode":12,"precipitationRate":0.4,"totalPrecipAmount":0,"totalSnowAmount":0,"probOfPrecipitation":48},
+          {"time":"2026-10-28T23:00Z","screenTemperature":9.61,"maxScreenAirTemp":9.71,"minScreenAirTemp":9.55,"screenDewPointTemperature":5.41,"feelsLikeTemperature":7.31,"windSpeed10m":3.11,"windDirectionFrom10m":205,"windGustSpeed10m":10.19,"max10mWindGust":6.66,"visibility":24723,"screenRelativeHumidity":64.8,"mslp":100394,"uvIndex":0,"significantWeatherCode":2,"precipitationRate":0.4,"totalPrecipAmount":0,"totalSnowAmount":0,"probOfPrecipitation":26}
+        ]
+      }
+    }
+  ],
+  "parameters": [
+    {
+      "screenTemperature": {
+        "type": "Parameter",
+        "unit": {
+          "label": "degrees Celsius",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "Cel"
+          }
+        },
+        "description": "Screen Air Temperature"
+      },
+      "maxScreenAirTemp": {
+        "type": "Parameter",
+        "unit": {
+          "label": "degrees Celsius",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "Cel"
+          }
+        },
+        "description": "Maximum Screen Air Temperature Over Previous Hour"
+      },
+      "minScreenAirTemp": {
+        "type": "Parameter",
+        "unit": {
+          "label": "degrees Celsius",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "Cel"
+          }
+        },
+        "description": "Minimum Screen Air Temperature Over Previous Hour"
+      },
+      "screenDewPointTemperature": {
+        "type": "Parameter",
+        "unit": {
+          "label": "degrees Celsius",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "Cel"
+          }
+        },
+        "description": "Screen Dew Point Temperature"
+      },
+      "feelsLikeTemperature": {
+        "type": "Parameter",
+        "unit": {
+          "label": "degrees Celsius",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "Cel"
+          }
+        },
+        "description": "Feels Like Temperature"
+      },
+      "windSpeed10m": {
+        "type": "Parameter",
+        "unit": {
+          "label": "metres per second",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "m/s"
+          }
+        },
+        "description": "10m Wind Speed"
+      },
+      "windDirectionFrom10m": {
+        "type": "Parameter",
+        "unit": {
+          "label": "degrees",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "deg"
+          }
+        },
+        "description": "10m Wind From Direction"
+      },
+      "windGustSpeed10m": {
+        "type": "Parameter",
+        "unit": {
+          "label": "metres per second",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "m/s"
+          }
+        },
+        "description": "10m Wind Gust Speed"
+      },
+      "max10mWindGust": {
+        "type": "Parameter",
+        "unit": {
+          "label": "metres per second",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "m/s"
+          }
+        },
+        "description": "Maximum 10m Wind Gust Speed Over Previous Hour"
+      },
+      "visibility": {
+        "type": "Parameter",
+        "unit": {
+          "label": "metres",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "m"
+          }
+        },
+        "description": "Visibility"
+      },
+      "screenRelativeHumidity": {
+        "type": "Parameter",
+        "unit": {
+          "label": "percentage",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "%"
+          }
+        },
+        "description": "Screen Relative Humidity"
+      },
+      "mslp": {
+        "type": "Parameter",
+        "unit": {
+          "label": "pascals",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "Pa"
+          }
+        },
+        "description": "Mean Sea Level Pressure"
+      },
+      "uvIndex": {
+        "type": "Parameter",
+        "unit": {
+          "label": "dimensionless",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "1"
+          }
+        },
+        "description": "UV Index"
+      },
+      "significantWeatherCode": {
+        "type": "Parameter",
+        "unit": {
+          "label": "dimensionless",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "1"
+          }
+        },
+        "description": "Significant Weather Code"
+      },
+      "precipitationRate": {
+        "type": "Parameter",
+        "unit": {
+          "label": "millimetres per hour",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "mm/h"
+          }
+        },
+        "description": "Precipitation Rate"
+      },
+      "totalPrecipAmount": {
+        "type": "Parameter",
+        "unit": {
+          "label": "millimetres",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "mm"
+          }
+        },
+        "description": "Total Precipitation Amount Over Previous Hour"
+      },
+      "totalSnowAmount": {
+        "type": "Parameter",
+        "unit": {
+          "label": "millimetres",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "mm"
+          }
+        },
+        "description": "Total Snow Amount Over Previous Hour"
+      },
+      "probOfPrecipitation": {
+        "type": "Parameter",
+        "unit": {
+          "label": "percentage",
+          "symbol": {
+            "value": "http://www.opengis.net/def/uom/UCUM/",
+            "type": "%"
+          }
+        },
+        "description": "Probability of Precipitation"
+      }
+    }
+  ]
+}

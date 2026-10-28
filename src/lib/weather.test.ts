@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeWeather } from './weather';
+import { readFileSync } from 'node:fs';
+import { normalizeWeather, summarizeWeather } from './weather';
 
 const NOW = Date.parse('2026-10-17T18:30:00Z');
 
@@ -156,5 +157,112 @@ describe('normalizeWeather', () => {
   it('skips daily entries with unparseable times', () => {
     const result = normalizeWeather(hourly, collection([{ time: 'garbage' }, { dayMaxScreenTemperature: 1 }]), NOW);
     assert.equal(result.days.length, 0);
+  });
+});
+
+// Met Office site-specific responses (trimmed to a handful of time steps, parameters block intact),
+// in the format https://data.hub.api.metoffice.gov.uk/sitespecific/v0/point/{hourly,daily} returns.
+const fixture = (name: string): unknown => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url), 'utf8'));
+const recordedHourly = fixture('metoffice-hourly.json');
+const recordedDaily = fixture('metoffice-daily.json');
+const FIXTURE_NOW = Date.parse('2026-10-28T16:30:00Z');
+
+describe('summarizeWeather', () => {
+  it('summarises a recorded Met Office forecast', () => {
+    const summary = summarizeWeather(recordedHourly, recordedDaily, { referenceTime: FIXTURE_NOW });
+    assert.equal(summary.stale, false);
+    assert.equal(summary.now.time, '2026-10-28T16:00Z');
+    assert.equal(summary.now.temperatureC, 13.86);
+    assert.equal(summary.hours.length, 6);
+    assert.equal(summary.hours[0].time, '2026-10-28T17:00Z');
+    // 27 Oct is past, so four of the five recorded days remain.
+    assert.deepEqual(summary.days.map((day) => day.time.slice(0, 10)), ['2026-10-28', '2026-10-29', '2026-10-30', '2026-10-31']);
+    assert.ok(summary.days.every((day) => day.minimumTemperatureC !== null));
+  });
+
+  it('matches normalizeWeather apart from rounding', () => {
+    const summary = summarizeWeather(recordedHourly, recordedDaily, { referenceTime: FIXTURE_NOW });
+    const full = normalizeWeather(recordedHourly, recordedDaily, FIXTURE_NOW);
+    const points = (weather: { now: unknown; hours: unknown[]; days: unknown[] }) => [weather.now, ...weather.hours, ...weather.days];
+    const fullPoints = points(full) as typeof full.hours;
+    const summaryPoints = points(summary) as typeof full.hours;
+    assert.equal(summaryPoints.length, fullPoints.length);
+    summaryPoints.forEach((point, index) => {
+      const original = fullPoints[index];
+      assert.equal(point.time, original.time);
+      assert.equal(point.weatherCode, original.weatherCode);
+      assert.equal(point.condition, original.condition);
+      assert.equal(point.icon, original.icon);
+      for (const key of ['temperatureC', 'minimumTemperatureC', 'feelsLikeC', 'precipitationProbability', 'windSpeedMph'] as const) {
+        const a = point[key];
+        const b = original[key];
+        if (b === null) assert.equal(a, null, key);
+        else assert.ok(Math.abs(a! - b) <= 0.005 + 1e-9, `${key}: ${a} vs ${b}`);
+      }
+    });
+  });
+
+  it('converts and rounds wind to at most two decimals', () => {
+    const summary = summarizeWeather(
+      collection([{ time: '2026-10-17T18:00Z', screenTemperature: 11.123456, windSpeed10m: 3.7 }, { time: '2026-10-17T19:00Z' }]),
+      daily,
+      { referenceTime: NOW },
+    );
+    assert.equal(summary.now.temperatureC, 11.12);
+    assert.equal(summary.now.windSpeedMph, 8.28); // 3.7 m/s
+    assert.equal(JSON.stringify(summary).includes('8.276678'), false);
+  });
+
+  it('carries the stale flag through and defaults it to false', () => {
+    assert.equal(summarizeWeather(hourly, daily, { referenceTime: NOW, stale: true }).stale, true);
+    assert.equal(summarizeWeather(hourly, daily, { referenceTime: NOW }).stale, false);
+  });
+
+  it('stays under 3KB for a full-length forecast', () => {
+    const bytes = Buffer.byteLength(JSON.stringify(summarizeWeather(recordedHourly, recordedDaily, { referenceTime: FIXTURE_NOW })));
+    assert.ok(bytes < 3 * 1024, `${bytes} bytes`);
+  });
+
+  it('copes with a forecast that has no upcoming hours or days', () => {
+    const summary = summarizeWeather(
+      collection([{ time: '2026-10-28T16:00Z', screenTemperature: 9, significantWeatherCode: 8 }]),
+      collection([{ time: '2026-10-20T00:00Z', dayMaxScreenTemperature: 12 }]),
+      { referenceTime: FIXTURE_NOW },
+    );
+    assert.equal(summary.now.temperatureC, 9);
+    assert.deepEqual(summary.hours, []);
+    assert.deepEqual(summary.days, []);
+  });
+
+  it('throws on empty or malformed input', () => {
+    const good = recordedHourly;
+    const bad: unknown[] = [
+      undefined,
+      null,
+      'not json',
+      [],
+      {},
+      { features: [] },
+      { features: [{ properties: {} }] },
+      { features: [{ properties: { timeSeries: 'nope' } }] },
+      { features: [{ properties: { timeSeries: [] } }] },
+      { features: [{ properties: { timeSeries: [null, 'x', 7] } }] },
+    ];
+    for (const value of bad) {
+      assert.throws(() => summarizeWeather(value, recordedDaily, { referenceTime: FIXTURE_NOW }), Error, `hourly: ${JSON.stringify(value)}`);
+      assert.throws(() => summarizeWeather(good, value, { referenceTime: FIXTURE_NOW }), Error, `daily: ${JSON.stringify(value)}`);
+    }
+  });
+
+  it('tolerates malformed entries inside an otherwise valid series', () => {
+    const summary = summarizeWeather(
+      collection([null, { time: 5 }, { time: '2026-10-28T16:00Z', screenTemperature: 'warm', significantWeatherCode: 'x' }]),
+      collection([{ time: 'garbage' }]),
+      { referenceTime: FIXTURE_NOW },
+    );
+    assert.equal(summary.now.temperatureC, null);
+    assert.equal(summary.now.weatherCode, null);
+    assert.equal(summary.now.condition, 'Conditions unavailable');
+    assert.deepEqual(summary.days, []);
   });
 });

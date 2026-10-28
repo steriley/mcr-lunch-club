@@ -42,6 +42,11 @@ export interface NormalizedWeather {
   days: WeatherPoint[];
 }
 
+/** What `/api/weather` returns and the card renders: the normalised forecast plus whether it is out of date. */
+export interface WeatherSummary extends NormalizedWeather {
+  stale: boolean;
+}
+
 type UnknownRecord = Record<string, unknown>;
 
 const weatherConditions: Record<number, { condition: string; icon: WeatherIcon }> = {
@@ -150,6 +155,16 @@ function getTimeSeries(data: unknown): { metadata: UnknownRecord; series: Unknow
   return { metadata: { ...feature.properties, parameters: data.parameters }, series };
 }
 
+/** True when `data` has a non-empty Met Office time series that `summarizeWeather` can read. */
+export function isUsableForecast(data: unknown): boolean {
+  try {
+    getTimeSeries(data);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function weatherPoint(record: UnknownRecord, metadata: UnknownRecord, daily: boolean): WeatherPoint {
   const temperatureKeys = daily
     ? ['dayMaxScreenTemperature', 'maxScreenAirTemp', 'dayMaxScreenAirTemp', 'dayMaxTemp', 'maxTemperature', 'screenTemperature']
@@ -254,5 +269,40 @@ export function normalizeWeather(
     now: weatherPoint(hourly.series[nowIndex], hourly.metadata, false),
     hours: hourly.series.slice(nowIndex + 1, nowIndex + 7).map((record) => weatherPoint(record, hourly.metadata, false)),
     days: upcomingDays.slice(0, 5).map((record) => weatherPoint(record, daily.metadata, true)),
+  };
+}
+
+// Unit conversion leaves values like 6.710820000000001; two decimals keep the payload small and are
+// far finer than anything the card shows (it rounds to whole degrees, mph and percent).
+function roundForTransport(value: number | null): number | null {
+  return value === null ? null : Math.round(value * 100) / 100;
+}
+
+function compactPoint(point: WeatherPoint): WeatherPoint {
+  return {
+    ...point,
+    temperatureC: roundForTransport(point.temperatureC),
+    minimumTemperatureC: roundForTransport(point.minimumTemperatureC),
+    feelsLikeC: roundForTransport(point.feelsLikeC),
+    precipitationProbability: roundForTransport(point.precipitationProbability),
+    windSpeedMph: roundForTransport(point.windSpeedMph),
+  };
+}
+
+/**
+ * Turns the raw Met Office hourly and daily responses into the compact JSON the weather card renders.
+ * Throws if either response is not a usable forecast, like `normalizeWeather`.
+ */
+export function summarizeWeather(
+  hourlyData: unknown,
+  dailyData: unknown,
+  options: { referenceTime?: number; stale?: boolean } = {},
+): WeatherSummary {
+  const { now, hours, days } = normalizeWeather(hourlyData, dailyData, options.referenceTime);
+  return {
+    stale: options.stale ?? false,
+    now: compactPoint(now),
+    hours: hours.map(compactPoint),
+    days: days.map(compactPoint),
   };
 }
