@@ -2,7 +2,7 @@
   <!-- One notification at a time: geolocation state, manual position or picking mode. -->
   <div class="near-me-status-bar">
     <div class="near-me-status-pill" :class="banner.type">
-      <span class="near-me-status-icon" aria-hidden="true">{{ banner.icon }}</span>
+      <span class="near-me-status-icon" aria-hidden="true"><Icon :name="banner.icon" /></span>
       <span class="near-me-status-text">{{ banner.text }}</span>
       <button
         v-if="banner.action"
@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+import Icon from '@/components/Icon.vue';
 import type { StatusBanner } from '@/lib/near-me/status-banner';
 
 defineProps<{ banner: StatusBanner }>();

@@ -36,7 +36,7 @@
   border-radius: 12px;
   background: var(--color-deep);
   color: var(--color-parchment-fixed);
-  font: 700 16px/1.3 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font: 700 16px/1.3 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   box-shadow: 0 2px 6px rgb(17 30 71 / 30%);
   text-decoration: none;
 }
@@ -666,7 +666,7 @@ a.bench-details {
 
 .venue-results-empty p {
   margin: 0;
-  font: 700 15px/1.3 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font: 700 15px/1.3 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
 }
 
 .venue-results-empty button {
@@ -902,7 +902,8 @@ a.bench-details {
   color: var(--color-ochre);
 }
 
-.field-icon {
+.field-icon,
+.icon.field-icon {
   flex: 0 0 17px;
   width: 17px;
   height: 17px;

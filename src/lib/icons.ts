@@ -23,6 +23,47 @@ export const ICON_PATHS = {
     'M285-80v-368q-52-11-88.5-52.5T160-600v-280h60v280h65v-280h60v280h65v-280h60v280q0 58-36.5 99.5T345-448v368h-60Zm415 0v-320H585v-305q0-79 48-127t127-48v800h-60Z',
 } as const;
 
-export type IconName = keyof typeof ICON_PATHS;
+/**
+ * Line icons for the decoration the site used to do with emoji, drawn to match the tier glyphs in
+ * src/lib/tiers.ts: a rounded stroke, no fill, on a 24x24 grid. Stroke width is set by `.icon-stroke`.
+ */
+export const STROKE_ICON_PATHS = {
+  ban: 'M12 4a8 8 0 1 0 0 16a8 8 0 0 0 0-16zM6.3 6.3l11.4 11.4',
+  candle: 'M10 11h4v9h-4zM8 20h8M12 3.5c1.4 1.6 1.8 2.6 1.8 3.4a1.8 1.8 0 0 1-3.6 0c0-.8.4-1.8 1.8-3.4z',
+  check: 'M5.5 12.5l4.5 4.5l8.5-9.5',
+  clipboard: 'M9 4.5h6V7H9zM9 5.5H6.5a1 1 0 0 0-1 1V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V6.5a1 1 0 0 0-1-1H15M8.5 12h7M8.5 16h5',
+  close: 'M6 6l12 12M18 6L6 18',
+  dice: 'M5 5h14v14H5zM9 9h.01M15 9h.01M12 12h.01M9 15h.01M15 15h.01',
+  hourglass: 'M7 3.5h10M7 20.5h10M8 3.5v3.2c0 2 1.6 3.3 4 5.3c-2.4 2-4 3.3-4 5.3v3.2M16 3.5v3.2c0 2-1.6 3.3-4 5.3c2.4 2 4 3.3 4 5.3v3.2',
+  landmark: 'M3.5 9.5L12 4l8.5 5.5zM5.5 11.5v5.5M10 11.5v5.5M14 11.5v5.5M18.5 11.5v5.5M4 20h16',
+  lock: 'M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3',
+  mail: 'M4 6h16v12H4zM4 7l8 6l8-6',
+  map: 'M3.5 6.5L9 4l6 2.5L20.5 4v13L15 19.5L9 17l-5.5 2.5zM9 4v13M15 6.5v13',
+  pin: 'M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11zM12 7.8a2.2 2.2 0 1 0 0 4.4a2.2 2.2 0 0 0 0-4.4z',
+  plate: 'M12 7a5 5 0 1 0 0 10a5 5 0 0 0 0-10zM12 10a2 2 0 1 0 0 4a2 2 0 0 0 0-4zM3.5 4v4.5a1.5 1.5 0 0 0 3 0V4M5 4v16M20.5 20V4c-1.7 1.5-2 4-2 6.5h2',
+  rain: 'M7.5 15.5a4 4 0 1 1 .8-7.9a5.5 5.5 0 0 1 10.4 2.3a2.8 2.8 0 0 1-.7 5.6zM9 18.5l-1 2M13 18.5l-1 2M17 18.5l-1 2',
+  scales: 'M12 4v16M7.5 20h9M5 7h14M5 7l-2.5 6a3 3 0 0 0 5 0zM19 7l-2.5 6a3 3 0 0 0 5 0z',
+  scroll: 'M8 4h10v13a3 3 0 0 1-3 3H7a3 3 0 0 0 3-3V6a2 2 0 0 0-2-2zM13 9h3M13 12.5h3',
+  shield: 'M12 3l7 2.8v5.4c0 4.4-3 8-7 9.8c-4-1.8-7-5.4-7-9.8V5.8zM9 12l2.2 2.2L15.2 10',
+  signal: 'M12 12h.01M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8',
+  star: 'M12 3.8l2.5 5.2l5.7.8l-4.1 4l1 5.7L12 16.7l-5.1 2.8l1-5.7l-4.1-4l5.7-.8z',
+  target: 'M12 4a8 8 0 1 0 0 16a8 8 0 0 0 0-16zM12 8a4 4 0 1 0 0 8a4 4 0 0 0 0-8zM12 12h.01',
+  trophy: 'M8 4h8v5a4 4 0 0 1-8 0zM8 6H4.5v1.5A3.5 3.5 0 0 0 8 11M16 6h3.5v1.5A3.5 3.5 0 0 1 16 11M12 13v4M9.5 17h5v3h-5zM8 20.5h8',
+  warning: 'M12 4l9 16H3zM12 10v4.5M12 17.2h.01',
+} as const;
+
+export type IconName = keyof typeof ICON_PATHS | keyof typeof STROKE_ICON_PATHS;
 
 export const ICON_VIEWBOX = '0 -960 960 960';
+export const STROKE_ICON_VIEWBOX = '0 0 24 24';
+
+export function isStrokeIcon(name: IconName): name is keyof typeof STROKE_ICON_PATHS {
+  return name in STROKE_ICON_PATHS;
+}
+
+/** What an `<svg>` needs to draw `name`: its box, whether it is a line icon, and its path data. */
+export function iconShape(name: IconName): { viewBox: string; stroke: boolean; d: string } {
+  return isStrokeIcon(name)
+    ? { viewBox: STROKE_ICON_VIEWBOX, stroke: true, d: STROKE_ICON_PATHS[name] }
+    : { viewBox: ICON_VIEWBOX, stroke: false, d: ICON_PATHS[name] };
+}

@@ -9,7 +9,7 @@
       id="near-me-prepermission"
     >
       <div class="near-me-prepermission-inner">
-        <span class="near-me-prepermission-icon" aria-hidden="true">📍</span>
+        <span class="near-me-prepermission-icon" aria-hidden="true"><Icon name="pin" /></span>
         <div class="near-me-prepermission-body">
           <h3 class="near-me-prepermission-title">Location Required</h3>
           <p class="near-me-prepermission-text">
@@ -22,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import Icon from '@/components/Icon.vue';
 defineProps<{ visible: boolean }>();
 </script>
 

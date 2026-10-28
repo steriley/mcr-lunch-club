@@ -77,7 +77,7 @@
 
     <!-- Empty state when no venues match -->
     <div v-if="!nearest" class="near-me-empty-state">
-      <span class="near-me-empty-icon" aria-hidden="true">🏛️</span>
+      <span class="near-me-empty-icon" aria-hidden="true"><Icon name="landmark" /></span>
       <h4 class="near-me-empty-title">No venues match</h4>
       <p class="near-me-empty-text">
         No venues in the selected verdicts match your current criteria. Enable additional verdicts above, or clear the price filter.
@@ -87,6 +87,7 @@
 </template>
 
 <script setup lang="ts">
+import Icon from '@/components/Icon.vue';
 import BenchPillar from '@/components/BenchPillar.vue';
 import { estimateWalkMinutes, getWalkingDirectionsUrl, type RankedVenue } from '@/lib/map';
 import { COST_BANDS } from '@/lib/near-me/filters';

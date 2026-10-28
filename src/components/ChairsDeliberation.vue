@@ -7,9 +7,7 @@
     @focusout="paused = false"
   >
     <template #icon>
-      <svg class="field-icon is-gold" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M12 3v17M5 6h14M7 6 3.8 13h6.4L7 6Zm10 0-3.2 7h6.4L17 6ZM7 20h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
+      <Icon name="scales" class="field-icon is-gold" />
     </template>
     <template #badge>
       <span class="decree-badge" :class="{ 'is-pending': current < 0 }">Decree #{{ DECREES[Math.max(current, 0)].number }}</span>
@@ -34,6 +32,7 @@
 </template>
 
 <script setup lang="ts">
+import Icon from '@/components/Icon.vue';
 import { onMounted, onUnmounted, ref } from 'vue';
 import FieldPanel from '@/components/FieldPanel.vue';
 import { DECREES } from '@/lib/decrees';

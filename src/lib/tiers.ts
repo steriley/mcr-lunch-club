@@ -4,6 +4,8 @@
  * and mottos match the club's document. Safe to import from the browser.
  */
 
+import type { IconName } from '@/lib/icons';
+
 /**
  * Stored values, in the order of the Postgres `tier` enum. Do not reorder:
  * the enum is built from this list. Display order is `TIERS`.
@@ -36,7 +38,8 @@ export interface Tier {
   tint: string;
   /** Banner background as a literal Tailwind class (`bg-tier-<slug>`), so Tailwind sees it. */
   bannerClass: string;
-  icon: string;
+  /** The tier's line icon for banners and the Manifesto (src/lib/icons.ts). */
+  icon: IconName;
   /**
    * The tier's mark on map pins and filter chips, so tier reads without colour:
    * SVG path data on a 24x24 grid, drawn as a rounded stroke with no fill.
@@ -62,7 +65,7 @@ export const TIERS: readonly Tier[] = [
     border: 'var(--color-tier-approved-edge)',
     tint: 'var(--color-tier-approved-tint)',
     bannerClass: 'bg-tier-approved',
-    icon: '🏆',
+    icon: 'trophy',
     glyph: 'M5.5 12.5l4.5 4.5l8.5-9.5',
     quote: 'The Highest Honour in Manchester Lunching: The Right to be Returned To',
     motto: 'The Highest Honour in Manchester Lunching: The Right to be Returned To',
@@ -78,7 +81,7 @@ export const TIERS: readonly Tier[] = [
     border: 'var(--color-tier-under-consideration-edge)',
     tint: 'var(--color-tier-under-consideration-tint)',
     bannerClass: 'bg-tier-under-consideration',
-    icon: '⏳',
+    icon: 'hourglass',
     glyph: 'M12 4.5a7.5 7.5 0 1 0 0 15a7.5 7.5 0 0 0 0-15zM12 8.5v4l2.8 1.8',
     quote: 'The Waiting Chamber of Judgement — Pending further evidence and appetite',
     motto: 'The Waiting Chamber of Judgement',
@@ -94,7 +97,7 @@ export const TIERS: readonly Tier[] = [
     border: 'var(--color-tier-to-be-assessed-edge)',
     tint: 'var(--color-tier-to-be-assessed-tint)',
     bannerClass: 'bg-tier-to-be-assessed',
-    icon: '📜',
+    icon: 'scroll',
     glyph: 'M9.3 9.2a2.9 2.9 0 1 1 4.1 2.6c-.9.5-1.4 1.1-1.4 2.2M12 17.6h.01',
     quote: 'Entered the Field of Vision — Fate remains undecided pending inspection',
     motto: 'Entered the Lunch Club’s Field of Vision',
@@ -110,7 +113,7 @@ export const TIERS: readonly Tier[] = [
     border: 'var(--color-tier-if-we-must-edge)',
     tint: 'var(--color-tier-if-we-must-tint)',
     bannerClass: 'bg-tier-if-we-must',
-    icon: '🌧',
+    icon: 'rain',
     glyph: 'M6.5 12h11',
     quote: 'Not Celebrated, But Tolerated — Acceptable only when circumstance forces our hand',
     motto: 'Not Celebrated, But Tolerated',
@@ -126,7 +129,7 @@ export const TIERS: readonly Tier[] = [
     border: 'var(--color-tier-rejected-edge)',
     tint: 'var(--color-tier-rejected-tint)',
     bannerClass: 'bg-tier-rejected',
-    icon: '⛔',
+    icon: 'ban',
     glyph: 'M7 7l10 10M17 7L7 17',
     quote: 'Removed from the Sacred Lunch Rotation — Returnable only through exceptional redemption',
     motto: 'Removed from the Sacred Lunch Rotation',
@@ -142,7 +145,7 @@ export const TIERS: readonly Tier[] = [
     border: 'var(--color-tier-gone-but-not-forgotten-edge)',
     tint: 'var(--color-tier-gone-but-not-forgotten-tint)',
     bannerClass: 'bg-tier-gone-but-not-forgotten',
-    icon: '🕊',
+    icon: 'candle',
     glyph: 'M12 7a5 5 0 1 0 0 10a5 5 0 0 0 0-10z',
     quote: 'Doors Closed, But Legend Remains in the Lunching Annals',
     motto: 'Legend Remains in the Lunching Annals',

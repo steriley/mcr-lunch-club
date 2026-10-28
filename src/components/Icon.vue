@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ICON_PATHS, ICON_VIEWBOX, type IconName } from '@/lib/icons';
+import { computed } from 'vue';
+import { iconShape, type IconName } from '@/lib/icons';
 
-defineProps<{ name: IconName }>();
+const props = defineProps<{ name: IconName }>();
+const shape = computed(() => iconShape(props.name));
 </script>
 
 <template>
-  <svg class="icon" :viewBox="ICON_VIEWBOX" fill="currentColor" aria-hidden="true" focusable="false">
-    <path :d="ICON_PATHS[name]" />
+  <svg :class="['icon', shape.stroke && 'icon-stroke']" :viewBox="shape.viewBox" aria-hidden="true" focusable="false">
+    <path :d="shape.d" />
   </svg>
 </template>

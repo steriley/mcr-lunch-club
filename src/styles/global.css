@@ -150,6 +150,28 @@
   user-select: none;
 }
 
+/* The line icons (STROKE_ICON_PATHS) are drawn with a stroke, not filled. */
+.icon.icon-stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon-sm { font-size: 16px; }
+.icon-md { font-size: 20px; }
+.icon-lg { font-size: 32px; }
+.icon-xl { font-size: 40px; }
+/* Page and venue banners: 32px, 40px from the sm breakpoint. */
+.icon-hero { font-size: 56px; }
+/* A faint oversized mark in the corner of a dark panel. */
+.icon-watermark { font-size: 128px; }
+.icon-banner { font-size: 32px; }
+@media (min-width: 640px) {
+  .icon-banner { font-size: 40px; }
+}
+
 .nav-icon {
   flex: none;
   overflow: hidden;
@@ -354,7 +376,7 @@
 
 .footer-column-icon {
   color: var(--color-peach);
-  font: 600 20px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font-size: 20px;
 }
 
 .footer-section-title {
@@ -393,10 +415,9 @@
 
 .footer-fact-icon {
   flex: 0 0 15px;
+  margin-top: 2px;
   color: var(--color-peach);
-  font-size: 13px;
-  font-weight: 700;
-  text-align: center;
+  font-size: 15px;
 }
 
 .footer-fact strong {
@@ -431,6 +452,13 @@
 
 .footer-links a:hover {
   color: var(--color-on-dark);
+}
+
+.footer-links a .icon {
+  width: 14px;
+  height: 14px;
+  color: var(--color-gold);
+  font-size: 14px;
 }
 
 .footer-links a span {
@@ -567,7 +595,7 @@
 .bench-last {
   margin: 0;
   color: var(--bench-amber);
-  font: italic 400 13px/1.4 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font: italic 500 13px/1.4 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
 }
 
 /* Walk link and inspections pill, on the hero and every pillar */

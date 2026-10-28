@@ -1,5 +1,6 @@
 import type { Venue } from '@/types';
 import { BASE_LAT, BASE_LNG, WALKING_ISOCHRONES, WALKING_RING_TOKEN } from './config';
+import { STROKE_ICON_PATHS } from '@/lib/icons';
 import { tierInfo } from '@/lib/tiers';
 import { walkText } from '@/lib/route-display';
 import { themeColor } from '@/lib/theme-color';
@@ -122,7 +123,7 @@ export function createBaseMarker(L: any): any {
       <span class="hq-hotspot-wave" aria-hidden="true"></span>
       <span class="hq-hotspot-wave" aria-hidden="true"></span>
       <div class="hq-hotspot-core">
-        <div class="absolute text-[13px] font-bold">🏛</div>
+        <svg class="absolute" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${STROKE_ICON_PATHS.landmark}"/></svg>
       </div>
     </div>
   `;
