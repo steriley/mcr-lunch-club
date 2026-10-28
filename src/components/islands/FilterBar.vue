@@ -578,4 +578,26 @@ function resetAll() {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Touch: 44px hit areas for the controls in the "Refine the Ledger" panel. */
+@media (pointer: coarse) {
+  .ledger-reset-button {
+    position: relative;
+  }
+
+  /* Keeps the 26px pill; the extension is transparent and only vertical. */
+  .ledger-reset-button::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -9px;
+    width: 100%;
+    height: 44px;
+  }
+
+  .ledger-cost-button,
+  .ledger-select {
+    min-height: 44px;
+  }
+}
 </style>

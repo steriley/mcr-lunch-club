@@ -940,4 +940,16 @@ onUnmounted(() => {
   
   }
 }
+
+/* Touch: the close button and the sheet's snap handle are 44px targets. */
+@media (pointer: coarse) {
+  .near-me-close-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .near-me-snap-btn {
+    min-height: 44px;
+  }
+}
 </style>

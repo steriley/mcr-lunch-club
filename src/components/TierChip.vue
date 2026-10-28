@@ -164,4 +164,21 @@ defineProps<{
     min-height: 28px;
   }
 }
+
+/* Touch: keep the 30px look but make the hit area 44px tall with a transparent extension above and below.
+   It runs full width and only vertically, so neighbouring chips never share a hit area. */
+@media (pointer: coarse) {
+  .ledger-tier-chip {
+    position: relative;
+  }
+
+  .ledger-tier-chip::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -7px;
+    width: 100%;
+    height: 44px;
+  }
+}
 </style>

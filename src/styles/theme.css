@@ -429,3 +429,11 @@
   color: var(--color-on-dark-faint);
   font-size: 12px;
 }
+
+/* Touch: the radio covers its label (26px); stretch it 9px above and below so each option is a 44px target.
+   The extension is vertical only, so the three options never share a hit area. */
+@media (pointer: coarse) {
+  .theme-toggle-option input {
+    inset: -9px 0;
+  }
+}

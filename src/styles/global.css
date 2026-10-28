@@ -1013,3 +1013,39 @@
   outline: 2px solid var(--ledger-gold);
   outline-offset: 2px;
 }
+
+/* Touch: 44px minimum hit areas (WCAG 2.5.5, Apple HIG). Fine pointers keep the compact sizes. */
+@media (pointer: coarse) {
+  .brand-lockup {
+    min-height: 44px;
+  }
+
+  .mobile-menu-trigger {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Each footer link is 44px tall; the rows already sit apart, so drop the gap rather than overlap hit areas. */
+  .footer-links {
+    gap: 0;
+  }
+
+  .footer-links a {
+    min-height: 44px;
+  }
+
+  /* The tier name on a venue page: padding grows the target, the negative margin keeps the banner as it was. */
+  .tier-banner-link {
+    padding-block: 14px;
+    margin-block: -14px;
+  }
+}
+
+/* Touch: the walking-directions link gets a 44px hit area; the negative margin cancels the extra padding,
+   so the row keeps its height and the text its place. */
+@media (pointer: coarse) {
+  .bench-walk.is-link {
+    padding-block: 13px;
+    margin-block: -9px;
+  }
+}
