@@ -10,8 +10,8 @@ const venue = (slug: string, tier: TierValue): PublicVenue => ({ slug, name: slu
 const inspection = (venueSlug: string, date: string): Inspection => ({ venueSlug, date }) as Inspection;
 const entry = (slug: string, at: string): TierEntry => ({ slug, tier: 'to_be_assessed', enteredAt: new Date(at) });
 
-// Wednesday 28 October 2026, 18:00 GMT; the previous issue is 21 October.
-const issue = bulletinIssue(new Date('2026-10-28T18:00:00Z'));
+// Wednesday 28 October 2026, 23:59 GMT; the previous issue is 21 October.
+const issue = bulletinIssue(new Date('2026-10-28T23:59:00Z'));
 const pick = (venues: PublicVenue[], inspections: Inspection[], entries: TierEntry[]) => pickSummons(venues, inspections, entries, issue, new Set());
 
 describe('pickSummons: Tuesday', () => {
@@ -81,7 +81,7 @@ describe('summonsFor: repeat rule', () => {
   const venues = [venue('a', 'approved'), venue('b', 'approved'), venue('c', 'to_be_assessed'), venue('d', 'to_be_assessed')];
   const inspections = [inspection('a', '2026-01-01'), inspection('b', '2026-02-01')];
   const entries = [entry('c', '2026-01-01T12:00:00Z'), entry('d', '2026-02-01T12:00:00Z')];
-  const issueOn = (day: string) => bulletinIssue(new Date(`${day}T20:00:00Z`));
+  const issueOn = (day: string) => bulletinIssue(new Date(`${day}T23:59:00Z`));
 
   it('starts from the oldest on the first issue', () => {
     const first = summonsFor(venues, inspections, entries, issueOn('2026-10-28'));

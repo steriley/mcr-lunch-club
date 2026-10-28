@@ -4,20 +4,22 @@ import { tierLabel, type TierValue } from '@/lib/tiers';
 /**
  * The homepage "Weekly inspection bulletin": an informal line summarising
  * which venues changed tier, and the Gazette number of the issue. An issue
- * goes out at 18:00 Europe/London every Wednesday, once the week's main
- * lunching is done, and stays up until the next one. Each issue covers the
+ * goes out at 23:59 Europe/London every Wednesday, which leaves the Chairs
+ * the whole day to settle the week's verdicts, and stays up until the next one. Each issue covers the
  * verdicts decided since the previous issue.
  */
 
+const MINUTE_MS = 60_000;
 const HOUR_MS = 3_600_000;
 const DAY_MS = 86_400_000;
 
 /** Wednesday, as Date#getUTCDay() numbers it. */
 const ISSUE_WEEKDAY = 3;
-const ISSUE_HOUR = 18;
+const ISSUE_HOUR = 23;
+const ISSUE_MINUTE = 59;
 
 export interface BulletinIssue {
-  /** When this issue went out: Wednesday, 18:00 London time. */
+  /** When this issue went out: Wednesday, 23:59 London time. */
   publishedAt: Date;
   /** When the previous issue went out. This issue covers verdicts after it, up to and including publishedAt. */
   coversFrom: Date;
@@ -33,12 +35,12 @@ function utcDay(isoDate: string): number {
 }
 
 /**
- * `hour`:00 London time on the calendar day starting at `dayMs`. London is
- * UTC or UTC+1, and the clocks change at 01:00 on a Sunday, never at the
+ * `hour`:`minute` London time on the calendar day starting at `dayMs`. London
+ * is UTC or UTC+1, and the clocks change at 01:00 on a Sunday, never at the
  * issue time.
  */
-function londonInstant(dayMs: number, hour: number): Date {
-  const utc = new Date(dayMs + hour * HOUR_MS);
+function londonInstant(dayMs: number, hour: number, minute: number): Date {
+  const utc = new Date(dayMs + hour * HOUR_MS + minute * MINUTE_MS);
   return londonHour(utc) === hour ? utc : new Date(utc.getTime() - HOUR_MS);
 }
 
@@ -51,19 +53,19 @@ function isoWeek(dayMs: number): Pick<BulletinIssue, 'week' | 'yy'> {
   return { week, yy: String(isoYear % 100).padStart(2, '0') };
 }
 
-/** The latest issue out at `now`: last Wednesday's, or today's once 18:00 has passed. */
+/** The latest issue out at `now`: last Wednesday's, or today's once 23:59 has passed. */
 export function bulletinIssue(now: Date = new Date()): BulletinIssue {
   const today = utcDay(londonDate(now));
   let wednesday = today - ((new Date(today).getUTCDay() - ISSUE_WEEKDAY + 7) % 7) * DAY_MS;
-  if (londonInstant(wednesday, ISSUE_HOUR) > now) wednesday -= 7 * DAY_MS;
+  if (londonInstant(wednesday, ISSUE_HOUR, ISSUE_MINUTE) > now) wednesday -= 7 * DAY_MS;
   return {
-    publishedAt: londonInstant(wednesday, ISSUE_HOUR),
-    coversFrom: londonInstant(wednesday - 7 * DAY_MS, ISSUE_HOUR),
+    publishedAt: londonInstant(wednesday, ISSUE_HOUR, ISSUE_MINUTE),
+    coversFrom: londonInstant(wednesday - 7 * DAY_MS, ISSUE_HOUR, ISSUE_MINUTE),
     ...isoWeek(wednesday),
   };
 }
 
-/** Seven days and a few hours, so stepping from one Wednesday 18:00 London to the next stays on the Wednesday. */
+/** Seven days and a few hours, so stepping from one Wednesday 23:59 London to the next stays on the Wednesday. */
 const NEXT_ISSUE_STEP_MS = 7 * DAY_MS + 3 * HOUR_MS;
 
 /** The issue after `issue`. */

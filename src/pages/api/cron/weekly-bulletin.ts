@@ -9,10 +9,12 @@ function json(body: Record<string, unknown>, status: number): Response {
 }
 
 /**
- * Rebuilds the site when a new weekly bulletin issue goes out (18:00 London
+ * Rebuilds the site when a new weekly bulletin issue goes out (23:59 London
  * time on Wednesdays, src/lib/weekly-bulletin.ts), since the home page is
- * prerendered. Vercel Cron calls it at 18:00 UTC (vercel.json), which is at or
- * after 18:00 London time all year, and sends CRON_SECRET as a bearer token.
+ * prerendered. Vercel Cron calls it at 00:00 UTC on Thursday (vercel.json),
+ * which is after 23:59 London time all year. Hobby crons fire at some point in
+ * the scheduled hour, so the schedule starts after the issue time rather than
+ * at it. It sends CRON_SECRET as a bearer token.
  */
 export const GET: APIRoute = async ({ request }) => {
   const secret = getCronSecret();
