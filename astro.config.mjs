@@ -37,7 +37,9 @@ export default defineConfig({
       scriptDirective: { hashes: [THEME_SCRIPT_HASH] },
       styleDirective: {
         resources: [
-          "'self'",
+          // Scoped to elements: a bare 'self' next to the attribute entry makes Astro warn that
+          // it won't apply to style-src-attr. Element styles stay 'self' plus hashes.
+          { resource: "'self'", kind: 'element' },
           // Vue renders inline style attributes (tier colours, photo focal points).
           { resource: "'unsafe-inline'", kind: 'attribute' },
         ],
