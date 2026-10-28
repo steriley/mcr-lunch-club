@@ -163,7 +163,7 @@ function rowWalkUrl(rv: RankedVenue): string | null {
 }
 
 .near-me-empty-title {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Playfair Display Fallback", Georgia, serif;
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-white);
@@ -211,7 +211,7 @@ function rowWalkUrl(rv: RankedVenue): string | null {
   border-radius: 9999px;
   background: var(--ledger-card);
   color: var(--color-deep-ink);
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
   font-weight: 700;
@@ -254,7 +254,7 @@ function rowWalkUrl(rv: RankedVenue): string | null {
   border: 0;
   background: none;
   color: var(--color-deep-ink);
-  font: 700 0.75rem "Plus Jakarta Sans", sans-serif;
+  font: 700 0.75rem "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   text-decoration: underline;
   text-decoration-style: dotted;
   cursor: pointer;

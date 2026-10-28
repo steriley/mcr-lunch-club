@@ -1,0 +1,11 @@
+---
+// Only the faces used above the fold are preloaded; the rest load when text needs them.
+// The @font-face rules are in src/styles/fonts.css.
+const PRELOAD = [
+  'plus-jakarta-sans-latin-400-normal',
+  'plus-jakarta-sans-latin-600-normal',
+  'playfair-display-latin-700-normal',
+];
+---
+
+{PRELOAD.map((name) => <link rel="preload" href={`/fonts/${name}.woff2`} as="font" type="font/woff2" crossorigin />)}

@@ -8,7 +8,7 @@
     <!-- Map Header Strip -->
     <header class="map-header">
       <div class="map-header-title">
-        <span class="material-symbols-outlined map-header-icon" aria-hidden="true">explore</span>
+        <Icon name="explore" class="map-header-icon" />
         <div class="map-header-text">
           <span class="map-header-kicker">Where We’ve Inspected</span>
           <span class="map-header-subtitle">Lunch Club HQ: Spinningfields</span>
@@ -38,7 +38,7 @@
           title="Open Near Me locate mode"
           aria-label="Open Near Me locate mode"
         >
-          <span class="material-symbols-outlined near-me-icon" aria-hidden="true">my_location</span>
+          <Icon name="my_location" class="near-me-icon" />
           <span>Near Me</span>
         </button>
       </div>
@@ -57,6 +57,7 @@
 </template>
 
 <script setup lang="ts">
+import Icon from '@/components/Icon.vue';
 import '@/styles/map.css';
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
@@ -465,8 +466,8 @@ function addRingsControl(L: any) {
   new RingsControl().addTo(mapInstance);
 }
 
-const NAME_FONT = '600 12px "Playfair Display", Georgia, serif';
-const RING_FONT = '600 11px "Playfair Display", Georgia, serif';
+const NAME_FONT = '600 12px "Playfair Display", "Playfair Display Fallback", Georgia, serif';
+const RING_FONT = '600 11px "Playfair Display", "Playfair Display Fallback", Georgia, serif';
 const RING_LABEL_HEIGHT_PX = 14;
 const EARTH_CIRCUMFERENCE_M = 40_075_016.686;
 
@@ -998,7 +999,7 @@ function onMapKeydown(event: KeyboardEvent) {
 .map-empty-title {
   margin: 0;
   color: var(--color-ink);
-  font: 700 16px/1.3 "Playfair Display", Georgia, serif;
+  font: 700 16px/1.3 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
 }
 
 .map-empty-button {
@@ -1008,7 +1009,7 @@ function onMapKeydown(event: KeyboardEvent) {
   border-radius: 999px;
   background: var(--color-deep);
   color: var(--color-parchment-fixed);
-  font: 700 13px/1 "Plus Jakarta Sans", sans-serif;
+  font: 700 13px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   cursor: pointer;
 }
 

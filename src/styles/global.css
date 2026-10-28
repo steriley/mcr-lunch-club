@@ -15,6 +15,7 @@
 @source "../stores";
 
 @import "./theme.css";
+@import "./fonts.css";
 
 .tier-header-gradient {
   background-image: linear-gradient(
@@ -91,7 +92,7 @@
 }
 
 .brand-name {
-  font: 700 17px/1.2 "Playfair Display", Georgia, serif;
+  font: 700 17px/1.2 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
   letter-spacing: -.02em;
 }
 
@@ -136,6 +137,17 @@
 
 .site-nav-link.is-active {
   box-shadow: inset 0 0 0 1px var(--ledger-border);
+}
+
+/* Inline SVG icons (Icon.astro, Icon.vue). Sized by font-size, like the icon font they replace. */
+.icon {
+  display: inline-block;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  font-size: 24px;
+  fill: currentColor;
+  user-select: none;
 }
 
 .nav-icon {
@@ -337,12 +349,12 @@
   align-items: center;
   gap: 9px;
   color: var(--color-on-dark);
-  font: 700 14px/1.4 "Playfair Display", Georgia, serif;
+  font: 700 14px/1.4 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
 }
 
 .footer-column-icon {
   color: var(--color-peach);
-  font: 600 20px/1 "Plus Jakarta Sans", sans-serif;
+  font: 600 20px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
 }
 
 .footer-section-title {
@@ -356,7 +368,7 @@
 .footer-creed {
   margin: 0;
   color: var(--color-on-dark);
-  font: italic 12px/1.6 "Playfair Display", Georgia, serif;
+  font: italic 12px/1.6 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
 }
 
 .footer-detail {
@@ -547,7 +559,7 @@
 .bench-pillar-name {
   margin: 0;
   color: var(--bench-primary);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Playfair Display Fallback", Georgia, serif;
   font-weight: 700;
   overflow-wrap: anywhere;
 }
@@ -555,7 +567,7 @@
 .bench-last {
   margin: 0;
   color: var(--bench-amber);
-  font: italic 400 13px/1.4 "Playfair Display", Georgia, serif;
+  font: italic 400 13px/1.4 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
 }
 
 /* Walk link and inspections pill, on the hero and every pillar */
@@ -587,7 +599,7 @@
   font-weight: 500;
 }
 
-.bench-walk .material-symbols-outlined {
+.bench-walk .icon {
   width: 18px;
   font-size: 18px;
 }
@@ -840,7 +852,7 @@
   padding: 1px 6px;
   border: 1px solid;
   border-radius: 4px;
-  font: 700 10px/1.4 "Plus Jakarta Sans", sans-serif;
+  font: 700 10px/1.4 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   letter-spacing: .06em;
   text-transform: uppercase;
 }
@@ -869,7 +881,7 @@
   padding: 0 8px;
   border: 1px solid;
   border-radius: 4px;
-  font: 700 11px/1 "Plus Jakarta Sans", sans-serif;
+  font: 700 11px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   letter-spacing: .06em;
   text-transform: uppercase;
 }
@@ -914,7 +926,7 @@
   /* A -fixed colour: the ribbon stays dark in both themes, so the text must stay light.
      (stone-200 is flipped to a dark shade in dark mode, which left it unreadable.) */
   color: var(--color-cream-fixed);
-  font: 400 12px/1.5 "Plus Jakarta Sans", sans-serif;
+  font: 400 12px/1.5 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
 }
 
 @media (min-width: 640px) {
@@ -978,12 +990,12 @@
   border: 1px solid var(--ledger-deep);
   border-radius: 999px;
   color: var(--color-deep-ink);
-  font: 700 14px/1 "Plus Jakarta Sans", sans-serif;
+  font: 700 14px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   text-decoration: none;
   transition: background-color .15s ease, color .15s ease;
 }
 
-.dossier-action .material-symbols-outlined {
+.dossier-action .icon {
   font-size: 20px;
 }
 

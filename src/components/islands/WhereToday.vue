@@ -131,11 +131,11 @@
               rel="noopener noreferrer"
               :aria-label="`Walking directions to ${pickedVenue.name}`"
             >
-              <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
+              <Icon name="directions_walk" />
               {{ pickedWalk.label }}
             </a>
             <span v-else class="bench-walk">
-              <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
+              <Icon name="directions_walk" />
               {{ pickedWalk.label }}
             </span>
           </div>
@@ -150,6 +150,7 @@
 </template>
 
 <script setup lang="ts">
+import Icon from '@/components/Icon.vue';
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $isWhereTodayOpen, closeWhereToday } from '@/stores/filters';
@@ -258,7 +259,7 @@ function consultOracle() {
   display: block;
   margin-bottom: 8px;
   color: var(--color-ochre);
-  font: 700 11px/1.35 "Plus Jakarta Sans", sans-serif;
+  font: 700 11px/1.35 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   letter-spacing: .09em;
   text-transform: uppercase;
 }
@@ -325,7 +326,7 @@ function consultOracle() {
   border-radius: 12px;
   background: var(--color-deep);
   color: var(--color-parchment-fixed);
-  font: 700 14px/1.3 "Playfair Display", Georgia, serif;
+  font: 700 14px/1.3 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
   box-shadow: 0 2px 6px rgb(17 30 71 / 30%);
   cursor: pointer;
   transition: background-color 140ms ease, transform 100ms ease;

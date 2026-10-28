@@ -1,6 +1,8 @@
 ---
+import Icon from '@/components/Icon.astro';
+import type { IconName } from '@/lib/icons';
 import '@/styles/global.css';
-import FontLinks from '@/components/FontLinks.astro';
+import Fonts from '@/components/Fonts.astro';
 import ThemeScript from '@/components/ThemeScript.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
 import { isNavActive } from '@/lib/nav';
@@ -34,7 +36,7 @@ const currentPath = Astro.url.pathname;
 const inspectionCount = await (Astro.isPrerendered ? countPublicInspectionsForBuild() : countPublicInspections()).catch(() => null);
 const venueCount = await (Astro.isPrerendered ? countPublicVenuesForBuild() : countPublicVenues()).catch(() => null);
 const currentYear = new Date().getFullYear();
-const navigation = [
+const navigation: { href: string; label: string; icon: IconName; opensWhereToday?: boolean }[] = [
   { href: '/manifesto', label: 'The Manifesto', icon: 'history_edu' },
   { href: '/verdicts/approved', label: 'Verdicts', icon: 'military_tech' },
   { href: '/inspections', label: 'Inspections', icon: 'fact_check' },
@@ -48,7 +50,7 @@ const navigation = [
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <ThemeScript />
-    <FontLinks />
+    <Fonts />
     <link rel="icon" type="image/png" href="/brand/favicon-64.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
@@ -88,7 +90,7 @@ const navigation = [
                 aria-current={active ? 'page' : undefined}
                 data-open-where-today={item.opensWhereToday ? '' : undefined}
               >
-                <span class="material-symbols-outlined nav-icon" aria-hidden="true">{item.icon}</span>
+                <Icon name={item.icon} class="nav-icon" />
                 <span>{item.label}</span>
                 {item.label === 'Inspections' && inspectionCount !== null && <span class="nav-count">{inspectionCount}</span>}
                 {item.label === 'Verdicts' && venueCount !== null && <span class="nav-count">{venueCount}</span>}
@@ -112,7 +114,7 @@ const navigation = [
                     aria-current={active ? 'page' : undefined}
                     data-open-where-today={item.opensWhereToday ? '' : undefined}
                   >
-                    <span class="material-symbols-outlined nav-icon" aria-hidden="true">{item.icon}</span>
+                    <Icon name={item.icon} class="nav-icon" />
                     <span>{item.label}</span>
                     {item.label === 'Inspections' && inspectionCount !== null && <span class="nav-count">{inspectionCount}</span>}
                 {item.label === 'Verdicts' && venueCount !== null && <span class="nav-count">{venueCount}</span>}

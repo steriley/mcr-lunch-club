@@ -27,7 +27,7 @@ export default defineConfig({
         "default-src 'self'",
         // CARTO map tiles and venue photos on Vercel Blob.
         "img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.public.blob.vercel-storage.com",
-        'font-src https://fonts.gstatic.com',
+        "font-src 'self'",
         "connect-src 'self'",
         "object-src 'none'",
         "base-uri 'self'",
@@ -38,7 +38,6 @@ export default defineConfig({
       styleDirective: {
         resources: [
           "'self'",
-          'https://fonts.googleapis.com',
           // Vue renders inline style attributes (tier colours, photo focal points).
           { resource: "'unsafe-inline'", kind: 'attribute' },
         ],

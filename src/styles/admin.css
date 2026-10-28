@@ -10,6 +10,7 @@
 @source "../lib";
 
 @import "./theme.css";
+@import "./fonts.css";
 @import "./map.css";
 
 /*
@@ -39,7 +40,7 @@
   }
 
   .dossier-serif {
-    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+    font-family: "Playfair Display", "Playfair Display Fallback", Georgia, "Times New Roman", serif;
   }
 
   .dossier-overline {
@@ -88,7 +89,7 @@
     gap: 8px;
     margin: 0;
     color: var(--dossier-primary);
-    font: 600 20px/26px "Playfair Display", Georgia, serif;
+    font: 600 20px/26px "Playfair Display", "Playfair Display Fallback", Georgia, serif;
   }
 
   .dossier-card.is-danger .dossier-card-title,
@@ -138,7 +139,7 @@
   }
 
   .dossier-figures {
-    font-family: "Plus Jakarta Sans", sans-serif;
+    font-family: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
     font-variant-numeric: tabular-nums;
   }
 

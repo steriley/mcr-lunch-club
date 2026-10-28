@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Icon from '@/components/Icon.vue';
 import { computed } from 'vue';
 import { focalStyle } from '@/lib/image-upload';
 import type { PublicVenue } from '@/lib/public-data';
@@ -103,11 +104,11 @@ function markBroken(event: Event) {
         rel="noopener noreferrer"
         :aria-label="`Walking directions to ${card.name}`"
       >
-        <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
+        <Icon name="directions_walk" />
         {{ walk.label }}
       </a>
       <span v-else-if="walk" class="bench-walk">
-        <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
+        <Icon name="directions_walk" />
         {{ walk.label }}
       </span>
       <a v-if="selectable && showDetails && detailsHref" class="bench-details" :href="detailsHref" :aria-label="`Details for ${card.name}`">Details</a>

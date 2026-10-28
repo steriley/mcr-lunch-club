@@ -1,4 +1,5 @@
 ---
+import Icon from '@/components/Icon.astro';
 import Layout from '@/layouts/Layout.astro';
 import BenchPillar from '@/components/BenchPillar.astro';
 import { formatDate } from '@/lib/dates';
@@ -126,17 +127,17 @@ function truncate(text: string, max: number): string {
                 data-lat={venue.lat}
                 data-lng={venue.lng}
               >
-                <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
+                <Icon name="directions_walk" />
                 Walk there{venue.walkingTimeMin !== null && ` · ${walkText(venue.walkingTimeMin)}`}
               </a>
               <a class="dossier-action" href={`/?venue=${encodeURIComponent(venue.slug)}`}>
-                <span class="material-symbols-outlined" aria-hidden="true">explore</span>
+                <Icon name="explore" />
                 Show on the map
               </a>
               </>)}
               {websiteHref && (
                 <a class="dossier-action" href={websiteHref} target="_blank" rel="noopener noreferrer">
-                  <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+                  <Icon name="open_in_new" />
                   Website<span class="sr-only"> ({websiteHost}, opens in a new tab)</span>
                 </a>
               )}

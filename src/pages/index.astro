@@ -1,4 +1,5 @@
 ---
+import Icon from '@/components/Icon.astro';
 import Layout from '@/layouts/Layout.astro';
 import '@/styles/home.css';
 import '@/styles/map.css';
@@ -78,7 +79,7 @@ const summonsColumns = [
 
       <!-- On a phone the nav entry sits in the hamburger menu; the lunch decision gets a button on the page. -->
       <a class="where-today-cta" href="/#where-to-today" data-open-where-today>
-        <span class="material-symbols-outlined" aria-hidden="true">restaurant</span>
+        <Icon name="restaurant" />
         Where to today?
       </a>
 
@@ -89,7 +90,7 @@ const summonsColumns = [
         <div class="bench-header">
           <div class="bench-header-copy">
             <p class="bench-kicker" data-golden-only>
-              <span class="material-symbols-outlined" aria-hidden="true">award_star</span>
+              <Icon name="award_star" />
               {isGoldenCut ? "The Golden Cut // The Chairs’ Permanent Quintet" : 'Gazetted roll call // Nearest approved'}
             </p>
             <h1 class="bench-title" id="bench-title">The Sovereign Bench of Manchester Lunch</h1>
@@ -201,7 +202,7 @@ const summonsColumns = [
       <section class="field-dispatch" aria-label="Tribunal field dispatch">
         <div class="weekly-bulletin">
           <span class="bulletin-icon" aria-hidden="true">
-            <span class="material-symbols-outlined">newspaper</span>
+            <Icon name="newspaper" />
           </span>
           <div class="bulletin-copy">
             <strong>Weekly inspection bulletin</strong>

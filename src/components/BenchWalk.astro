@@ -1,4 +1,5 @@
 ---
+import Icon from '@/components/Icon.astro';
 import type { BenchWalk } from '@/lib/sovereign-bench';
 
 interface Props {
@@ -21,12 +22,12 @@ const { walk, venueName } = Astro.props;
       data-lat={walk.lat}
       data-lng={walk.lng}
     >
-      <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
+      <Icon name="directions_walk" />
       {walk.label}
     </a>
   ) : (
     <span class="bench-walk">
-      <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
+      <Icon name="directions_walk" />
       {walk.label}
     </span>
   )
