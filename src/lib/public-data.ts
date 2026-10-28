@@ -1,5 +1,6 @@
 import { and, asc, count, desc, eq, sql } from 'drizzle-orm';
 import { briberyRecords, goldenCut, inspections, venueImages, venues, type BriberyRow, type InspectionRow, type VenueImageRow, type VenueRow } from '@/db/schema';
+import { publicPersonName, publicText } from '@/lib/bribery';
 import { cuisineLabel } from '@/lib/cuisines';
 import { formatDateTime } from '@/lib/dates';
 import { db } from '@/lib/db';
@@ -245,11 +246,11 @@ export function toPublicIncident(row: BriberyRow): Incident {
     ...(row.incidentDate ? { formattedDate: formatIncidentDate(row.incidentDate, row.incidentTime) } : {}),
     ...(row.location || row.venueNameText ? { location: row.location ?? row.venueNameText ?? undefined } : {}),
     title: row.title ?? 'Improper benefit attempt',
-    peopleInvolved: row.peopleInvolved,
-    witnesses: row.witnesses,
+    peopleInvolved: row.peopleInvolved.map(publicPersonName),
+    witnesses: row.witnesses.map(publicPersonName),
     benefitOffered: row.benefitOffered ?? '',
     value: row.value ?? '',
-    context: row.description,
+    context: publicText(row.description),
     outcome: row.outcome ?? '',
   };
 }
