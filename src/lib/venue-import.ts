@@ -69,7 +69,8 @@ export async function importVenues(db: Database, items: ImportableVenue[], optio
       continue;
     }
     if (dryRun) {
-      existingId ? (result.updated += 1) : (result.inserted += 1);
+      if (existingId) result.updated += 1;
+      else result.inserted += 1;
       continue;
     }
 
