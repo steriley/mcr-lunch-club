@@ -1015,7 +1015,7 @@
   gap: 6px;
   min-height: 44px;
   padding: 0 16px;
-  border: 1px solid var(--ledger-deep);
+  border: 1px solid var(--color-action-outline);
   border-radius: 999px;
   color: var(--color-deep-ink);
   font: 700 14px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
@@ -1029,12 +1029,14 @@
 
 .dossier-action:hover,
 .dossier-action.is-primary {
-  background: var(--ledger-deep);
-  color: var(--color-parchment-fixed);
+  background: var(--color-action);
+  border-color: var(--color-action);
+  color: var(--color-action-ink);
 }
 
 .dossier-action.is-primary:hover {
-  background: var(--color-navy-fixed);
+  background: var(--color-action-hover);
+  border-color: var(--color-action-hover);
 }
 
 .dossier-action:focus-visible {

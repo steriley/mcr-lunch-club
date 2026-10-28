@@ -195,6 +195,17 @@
   --color-ochre-fixed: #8a5100;
   --color-pending-ink: #973c00; /* Tailwind amber-800, kept dark on the amber-100 pending pill */
 
+  /* Buttons that must stay visible on the page background in both themes: navy fill with light ink in light mode, gold fill with navy ink in dark mode. -outline is the 1px edge of secondary buttons. */
+  --color-action: #111e47;
+  --color-action-hover: #1b2f6b;
+  --color-action-ink: #fbf6ea;
+  --color-action-outline: #111e47;
+
+  /* Neutral badge and banner: wash, edge, strong edge (closed venues, unverified inspections). */
+  --color-neutral-wash: #f5f5f4;
+  --color-neutral-edge: #d6d3d1;
+  --color-neutral-edge-strong: #a8a29e;
+
   /* Tailwind's stone-500 (#79716b) is 4.2:1 on the parchment backgrounds; this passes WCAG AA (5:1+). */
   --color-stone-500: #6b645e;
 }
@@ -255,6 +266,15 @@
   --color-danger-ink: #f4978e;
   --color-danger-wash: #2a1a1d;
   --color-success-wash: #1a3a2a;
+
+  /* Action buttons: a lighter fill than the page, and a visible edge for secondary buttons. */
+  --color-action: #f5c451;
+  --color-action-hover: #ffd877;
+  --color-action-ink: #111e47;
+  --color-action-outline: #8e98b8;
+  --color-neutral-wash: #26231f;
+  --color-neutral-edge: #4a4540;
+  --color-neutral-edge-strong: #8a837b;
 
   /* Tailwind's alert-box shades (pale fill, mid border, dark text), turned over.
      amber-100, amber-200 and blue-100 stay: they are text on dark fills. */
