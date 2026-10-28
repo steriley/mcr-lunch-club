@@ -1,7 +1,7 @@
 import '../test/setup-env';
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { briberyValues, serializeBribery } from './bribery';
+import { briberyValues, publicPersonName, publicText, serializeBribery } from './bribery';
 import { briberyInputSchema, type BriberyInput } from './bribery-schema';
 import type { BriberyRow } from '@/db/schema';
 import type { Database } from './db-client';
@@ -63,5 +63,30 @@ describe('serializeBribery', () => {
     assert.equal(result.createdAt, '2026-01-02T03:04:05.000Z');
     assert.equal(result.updatedAt, '2026-02-03T04:05:06.000Z');
     assert.equal(result.title, 'T');
+  });
+});
+
+describe('publicPersonName', () => {
+  it('aliases the known people, ignoring @ prefixes and (Deactivated)', () => {
+    assert.match(publicPersonName('@Tom Pritchard (Deactivated)'), /^Under Study Pritchard/);
+    assert.equal(publicPersonName('@Stephen Riley'), 'Chair Riley');
+    assert.equal(publicPersonName('@Tommy Clark'), 'Chair Clark');
+  });
+
+  it('shortens anyone else to first name and surname initial', () => {
+    assert.equal(publicPersonName('Ann Example'), 'Ann E.');
+    assert.equal(publicPersonName('@Ann Van Example (Deactivated)'), 'Ann E.');
+  });
+
+  it('leaves single names alone', () => {
+    assert.equal(publicPersonName('Ann'), 'Ann');
+    assert.equal(publicPersonName('@Ann'), 'Ann');
+  });
+});
+
+describe('publicText', () => {
+  it('replaces first names without mangling Tommy', () => {
+    const out = publicText('Tom offered Stephen roses; Tommy watched.');
+    assert.match(out, /^Under Study Pritchard.* offered Chair Riley roses; Chair Clark watched\.$/);
   });
 });
