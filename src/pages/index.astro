@@ -15,7 +15,7 @@ import VenueResults from '@/components/islands/VenueResults.vue';
 import BenchPillar from '@/components/BenchPillar.astro';
 import BenchWalk from '@/components/BenchWalk.astro';
 import LedgerCanon from '@/components/LedgerCanon.astro';
-import { focalStyle } from '@/lib/image-upload';
+import { focalStyle, imageSrcset } from '@/lib/image-upload';
 import { getPublicMapApiKey } from '@/lib/env';
 import { getGoldenCut, getMapVenues, getPublicInspections } from '@/lib/public-data';
 import { getRecentTierChanges } from '@/lib/recent-tier-changes';
@@ -49,6 +49,7 @@ const initialResultsCount = venuesData.filter((venue) => matchesFilters(venue, i
 const publicMapApiKey = getPublicMapApiKey();
 const bulletin = bulletinText(changesInIssue(recentTierChanges, issue));
 const { mode, hero, pillars } = buildSovereignBench(goldenCut, venuesData, inspectionsData);
+const heroSrcset = hero?.image ? imageSrcset(hero.image) : undefined;
 const isGoldenCut = mode === 'golden-cut';
 // The Weekly Summons: this issue's Tuesday and Wednesday picks, worked out with the page and never stored.
 const summons = summonsFor(venuesData, inspectionsData, tierEntries, issue);
@@ -108,10 +109,13 @@ const summonsColumns = [
                 <img
                   class="bench-image"
                   src={hero.image.url}
+                  srcset={heroSrcset}
+                  sizes={heroSrcset ? '(min-width: 1001px) 36vw, 100vw' : undefined}
                   alt={hero.image.alt}
                   width={hero.image.width ?? undefined}
                   height={hero.image.height ?? undefined}
                   style={{ objectPosition: focalStyle(hero.image) }}
+                  fetchpriority="high"
                   decoding="async"
                   onerror="this.onerror=null;this.parentElement.classList.add('is-placeholder')"
                 />

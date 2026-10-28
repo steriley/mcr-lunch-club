@@ -10,6 +10,7 @@ import {
   THUMB_MAX_EDGE,
   THUMB_QUALITY,
   focalStyle,
+  imageSrcset,
 } from './image-upload';
 
 describe('venue image settings', () => {
@@ -43,5 +44,26 @@ describe('focalStyle', () => {
   it('positions the crop on the focal point, including the edges', () => {
     assert.equal(focalStyle({ focalX: 25, focalY: 80 }), '25% 80%');
     assert.equal(focalStyle({ focalX: 0, focalY: 100 }), '0% 100%');
+  });
+});
+
+describe('imageSrcset', () => {
+  const image = { url: 'https://b/full.webp', thumbUrl: 'https://b/thumb.webp', width: 1600, height: 1200 };
+
+  it('lists the thumbnail and the full image with their widths', () => {
+    assert.equal(imageSrcset(image), 'https://b/thumb.webp 640w, https://b/full.webp 1600w');
+  });
+
+  it('derives the thumbnail width of a portrait photo from its aspect ratio', () => {
+    assert.equal(imageSrcset({ ...image, width: 1200, height: 1600 }), 'https://b/thumb.webp 480w, https://b/full.webp 1200w');
+  });
+
+  it('is undefined for migrated photos with no thumbnail or stored size', () => {
+    assert.equal(imageSrcset({ ...image, thumbUrl: image.url }), undefined);
+    assert.equal(imageSrcset({ ...image, width: null, height: null }), undefined);
+  });
+
+  it('is undefined when the photo is no bigger than the thumbnail', () => {
+    assert.equal(imageSrcset({ ...image, width: 500, height: 400 }), undefined);
   });
 });

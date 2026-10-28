@@ -3,7 +3,7 @@ import Icon from '@/components/Icon.astro';
 import Layout from '@/layouts/Layout.astro';
 import BenchPillar from '@/components/BenchPillar.astro';
 import { formatDate } from '@/lib/dates';
-import { focalStyle } from '@/lib/image-upload';
+import { focalStyle, imageSrcset } from '@/lib/image-upload';
 import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import { getPublicInspections, getPublicVenueDetails, serializeForScript, type PublicVenueDetail } from '@/lib/public-data';
 import { getWalkingDirectionsUrl } from '@/lib/map/directions';
@@ -61,6 +61,10 @@ const pageDescription = truncate(
 );
 
 // Search engines read the venue's address, price and cuisine from this.
+// Main photo: preloaded from the head so the request starts during the HTML parse (LCP).
+const photoSrcset = venue.image ? imageSrcset(venue.image) : undefined;
+const PHOTO_SIZES = '(min-width: 896px) 864px, calc(100vw - 2rem)';
+
 const structuredData = venueStructuredData(venue, new URL(`/venues/${venue.slug}`, Astro.site ?? Astro.url).href);
 
 function truncate(text: string, max: number): string {
@@ -69,6 +73,9 @@ function truncate(text: string, max: number): string {
 ---
 
 <Layout title={`${venue.name} — Official Ledger Dossier | MCR Lunch Club`} description={pageDescription} image={venue.image?.url}>
+  {venue.image && (
+    <link slot="head" rel="preload" as="image" href={venue.image.url} imagesrcset={photoSrcset} imagesizes={photoSrcset ? PHOTO_SIZES : undefined} fetchpriority="high" />
+  )}
   {structuredData && <script slot="head" is:inline type="application/ld+json" set:html={serializeForScript(structuredData)} />}
   <article class="w-full font-serif-header">
       <!-- Status Banner: runs edge to edge, content stays within the page width -->
@@ -148,11 +155,13 @@ function truncate(text: string, max: number): string {
         {venue.image && (
           <img
             src={venue.image.url}
+            srcset={photoSrcset}
+            sizes={photoSrcset ? PHOTO_SIZES : undefined}
             alt={venue.image.alt}
             width={venue.image.width ?? undefined}
             height={venue.image.height ?? undefined}
             style={{ objectPosition: focalStyle(venue.image) }}
-            loading="lazy"
+            fetchpriority="high"
             decoding="async"
             onerror="this.remove()"
             class="w-full max-h-96 object-cover rounded-xl border border-hairline bg-paper"
