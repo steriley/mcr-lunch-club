@@ -2,7 +2,11 @@
 import BenchWalk from '@/components/BenchWalk.astro';
 import { focalStyle } from '@/lib/image-upload';
 import { formatDate } from '@/lib/dates';
-import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
+import {
+  INSPECTION_KIND_LABELS,
+  INSPECTION_OUTCOME_BADGE_CLASSES,
+  INSPECTION_OUTCOME_LABELS,
+} from '@/lib/inspection-display';
 import { cardBlurb, inspectionCountLabel, type BenchCard } from '@/lib/sovereign-bench';
 import type { Inspection } from '@/types';
 
@@ -51,7 +55,9 @@ const countLabel = inspectionCountLabel(pillar);
       )}
       {inspection ? (
         <div class="bench-inspection-badges">
-          <span class={`bench-count ${inspection.kind === 'legacy' ? 'is-legacy' : ''}`}>{INSPECTION_KIND_LABELS[inspection.kind]}</span>
+          <span class={`bench-count ${inspection.kind === 'legacy' ? 'is-legacy' : ''}`}>
+            {INSPECTION_KIND_LABELS[inspection.kind]}
+          </span>
           {inspection.outcome && (
             <span class={`bench-badge ${INSPECTION_OUTCOME_BADGE_CLASSES[inspection.outcome]}`}>
               {INSPECTION_OUTCOME_LABELS[inspection.outcome]}
@@ -59,7 +65,11 @@ const countLabel = inspectionCountLabel(pillar);
           )}
         </div>
       ) : (
-        blurb && <p class:list={['bench-pillar-text', blurb.kind === 'quote' && 'is-quote']}>{blurb.text}</p>
+        blurb && (
+          <p class:list={['bench-pillar-text', blurb.kind === 'quote' && 'is-quote']}>
+            {blurb.text}
+          </p>
+        )
       )}
     </div>
   </div>

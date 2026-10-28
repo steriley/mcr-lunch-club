@@ -53,8 +53,12 @@ onBeforeUnmount(() => {
       class="w-full max-w-md rounded-2xl border border-hairline bg-parchment p-6 shadow-xl"
     >
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Confirm</p>
-      <h3 id="confirm-dialog-title" class="mt-2 text-2xl font-bold text-ink">{{ title || 'Are you sure?' }}</h3>
-      <p id="confirm-dialog-message" class="mt-3 text-sm text-soot">{{ message || 'This action cannot be undone.' }}</p>
+      <h3 id="confirm-dialog-title" class="mt-2 text-2xl font-bold text-ink">
+        {{ title || 'Are you sure?' }}
+      </h3>
+      <p id="confirm-dialog-message" class="mt-3 text-sm text-soot">
+        {{ message || 'This action cannot be undone.' }}
+      </p>
       <div class="mt-6 flex justify-end gap-3">
         <button
           ref="cancelButton"

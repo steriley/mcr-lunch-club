@@ -64,11 +64,15 @@ function select(id: TabId, focus = false) {
 function onKeydown(event: KeyboardEvent) {
   const index = tabs.findIndex((tab) => tab.id === selected.value);
   const target =
-    event.key === 'ArrowRight' ? (index + 1) % tabs.length
-    : event.key === 'ArrowLeft' ? (index - 1 + tabs.length) % tabs.length
-    : event.key === 'Home' ? 0
-    : event.key === 'End' ? tabs.length - 1
-    : null;
+    event.key === 'ArrowRight'
+      ? (index + 1) % tabs.length
+      : event.key === 'ArrowLeft'
+        ? (index - 1 + tabs.length) % tabs.length
+        : event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? tabs.length - 1
+            : null;
   if (target === null) return;
   event.preventDefault();
   select(tabs[target].id, true);

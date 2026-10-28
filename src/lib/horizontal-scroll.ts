@@ -9,7 +9,8 @@ export function enableHorizontalScroll(el: HTMLElement): void {
   el.addEventListener(
     'wheel',
     (event) => {
-      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || el.scrollWidth <= el.clientWidth) return;
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX) || el.scrollWidth <= el.clientWidth)
+        return;
       const before = el.scrollLeft;
       el.scrollLeft += event.deltaY;
       // Only swallow the wheel while the strip moved, so the page still scrolls once it hits an end.
@@ -24,7 +25,8 @@ export function enableHorizontalScroll(el: HTMLElement): void {
   let dragged = false;
 
   el.addEventListener('pointerdown', (event) => {
-    if (event.pointerType !== 'mouse' || event.button !== 0 || el.scrollWidth <= el.clientWidth) return;
+    if (event.pointerType !== 'mouse' || event.button !== 0 || el.scrollWidth <= el.clientWidth)
+      return;
     pressed = true;
     dragged = false;
     startX = event.clientX;

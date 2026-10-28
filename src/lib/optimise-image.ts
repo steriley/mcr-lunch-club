@@ -1,4 +1,10 @@
-import { FULL_MAX_EDGE, FULL_QUALITIES, MAX_FULL_BYTES, THUMB_MAX_EDGE, THUMB_QUALITY } from '@/lib/image-upload';
+import {
+  FULL_MAX_EDGE,
+  FULL_QUALITIES,
+  MAX_FULL_BYTES,
+  THUMB_MAX_EDGE,
+  THUMB_QUALITY,
+} from '@/lib/image-upload';
 
 /**
  * Browser only (#35): turns a photo the admin picked into the two WebP
@@ -30,9 +36,16 @@ export interface OptimisedImage {
 }
 
 /** Scales down to fit `maxEdge` on the longest side, keeping the aspect ratio; never scales up. */
-export function fitWithin(width: number, height: number, maxEdge: number): { width: number; height: number } {
+export function fitWithin(
+  width: number,
+  height: number,
+  maxEdge: number
+): { width: number; height: number } {
   const scale = Math.min(1, maxEdge / Math.max(width, height));
-  return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+  };
 }
 
 function pixels(bitmap: ImageBitmap, size: { width: number; height: number }): ImageData {
@@ -40,7 +53,8 @@ function pixels(bitmap: ImageBitmap, size: { width: number; height: number }): I
     typeof OffscreenCanvas !== 'undefined'
       ? new OffscreenCanvas(size.width, size.height)
       : Object.assign(document.createElement('canvas'), { width: size.width, height: size.height });
-  const context = canvas.getContext('2d') as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+  const context = canvas.getContext('2d') as
+    CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
   if (!context) throw new Error('Canvas 2D is not available.');
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = 'high';
@@ -53,7 +67,9 @@ export async function optimiseImage(file: Blob): Promise<OptimisedImage> {
   try {
     bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
   } catch (error) {
-    throw new OptimiseError('unsupported_format', 'This browser cannot read that image format.', { cause: error });
+    throw new OptimiseError('unsupported_format', 'This browser cannot read that image format.', {
+      cause: error,
+    });
   }
 
   try {
@@ -62,7 +78,9 @@ export async function optimiseImage(file: Blob): Promise<OptimisedImage> {
       // Fetched only when a photo is picked (about 125 KB gzipped).
       ({ encode } = await import('@jsquash/webp'));
     } catch (error) {
-      throw new OptimiseError('encoder_failed', 'The image optimiser could not be loaded.', { cause: error });
+      throw new OptimiseError('encoder_failed', 'The image optimiser could not be loaded.', {
+        cause: error,
+      });
     }
 
     const fullSize = fitWithin(bitmap.width, bitmap.height, FULL_MAX_EDGE);
@@ -84,7 +102,9 @@ export async function optimiseImage(file: Blob): Promise<OptimisedImage> {
         height: fullSize.height,
       };
     } catch (error) {
-      throw new OptimiseError('encoder_failed', 'The image could not be converted to WebP.', { cause: error });
+      throw new OptimiseError('encoder_failed', 'The image could not be converted to WebP.', {
+        cause: error,
+      });
     }
   } finally {
     bitmap.close();

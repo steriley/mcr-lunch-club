@@ -22,7 +22,13 @@ import { getRecentTierChanges } from '@/lib/recent-tier-changes';
 import { buildSovereignBench, toCard } from '@/lib/sovereign-bench';
 import { getToBeAssessedEntries } from '@/lib/tier-entry-dates';
 import { tierInfo } from '@/lib/tiers';
-import { bulletinIssue, bulletinText, changesInIssue, gazetteLabel, nextBulletinIssue } from '@/lib/weekly-bulletin';
+import {
+  bulletinIssue,
+  bulletinText,
+  changesInIssue,
+  gazetteLabel,
+  nextBulletinIssue,
+} from '@/lib/weekly-bulletin';
 import { summonsFor } from '@/lib/weekly-summons';
 import { initialFilterState, matchesFilters } from '@/stores/filters';
 import { seedLedgerInspections, seedLedgerVenues } from '@/stores/ledger';
@@ -44,7 +50,9 @@ seedLedgerVenues(venuesData);
 seedLedgerInspections(inspectionsData);
 
 // What the "All venues" tab counts before the browser takes over: the default filters' matches.
-const initialResultsCount = venuesData.filter((venue) => matchesFilters(venue, initialFilterState)).length;
+const initialResultsCount = venuesData.filter((venue) =>
+  matchesFilters(venue, initialFilterState)
+).length;
 
 const publicMapApiKey = getPublicMapApiKey();
 const bulletin = bulletinText(changesInIssue(recentTierChanges, issue));
@@ -54,7 +62,11 @@ const isGoldenCut = mode === 'golden-cut';
 // The Weekly Summons: this issue's Tuesday and Wednesday picks, worked out with the page and never stored.
 const summons = summonsFor(venuesData, inspectionsData, tierEntries, issue);
 const summonsColumns = [
-  { day: 'Tuesday', venue: summons.tuesday, empty: 'No Approved or Under Consideration venues to chase this week.' },
+  {
+    day: 'Tuesday',
+    venue: summons.tuesday,
+    empty: 'No Approved or Under Consideration venues to chase this week.',
+  },
   { day: 'Wednesday', venue: summons.wednesday, empty: 'No venues awaiting assessment this week.' },
 ].map(({ day, venue, empty }) => ({
   day,
@@ -92,88 +104,116 @@ const summonsColumns = [
           <div class="bench-header-copy">
             <p class="bench-kicker" data-golden-only>
               <Icon name="award_star" />
-              {isGoldenCut ? "The Golden Cut // The Chairs’ Permanent Quintet" : 'Gazetted roll call // Nearest approved'}
+              {isGoldenCut
+                ? 'The Golden Cut // The Chairs’ Permanent Quintet'
+                : 'Gazetted roll call // Nearest approved'}
             </p>
-            <h1 class="bench-title" id="bench-title">The Sovereign Bench of Manchester Lunch</h1>
+            <h1 class="bench-title" id="bench-title">
+              The Sovereign Bench of Manchester Lunch
+            </h1>
           </div>
         </div>
 
         <BenchTabs client:load initialCount={initialResultsCount} />
 
-        <div class="bench-panel" id="bench-panel-golden" role="tabpanel" aria-labelledby="bench-tab-golden">
-        {hero ? (
-          <article class="bench-hero">
-            <div class="bench-hero-media">
-              <span class="bench-placeholder" aria-hidden="true"></span>
-              {hero.image && (
-                <img
-                  class="bench-image"
-                  src={hero.image.url}
-                  srcset={heroSrcset}
-                  sizes={heroSrcset ? '(min-width: 1001px) 36vw, 100vw' : undefined}
-                  alt={hero.image.alt}
-                  width={hero.image.width ?? undefined}
-                  height={hero.image.height ?? undefined}
-                  style={{ objectPosition: focalStyle(hero.image) }}
-                  fetchpriority="high"
-                  decoding="async"
-                  onerror="this.onerror=null;this.parentElement.classList.add('is-placeholder')"
-                />
-              )}
-              <a class="bench-seal" href={hero.href} aria-label={`View ${hero.name}'s audit`}>
-                <img src="/brand/approved-sticker-256.webp" width="256" height="256" alt="" />
-              </a>
-            </div>
-
-            <div class="bench-hero-body">
-              <div class="bench-hero-heading">
-                <div class="bench-hero-title-row">
-                  <h2 class="bench-hero-name"><a class="bench-hero-link" href={hero.href}>{hero.name}</a></h2>
-                  <span class="bench-cost">{hero.cost}</span>
-                </div>
-                {hero.lastInspection && <p class="bench-last">Last Inspection: {hero.lastInspection}</p>}
-              </div>
-
-              {hero.eatLikeUs && (
-                <div class="bench-eat">
-                  <Icon name="plate" />
-                  <div>
-                    <span class="bench-eat-label">Eat like us</span>
-                    <span class="bench-eat-dish">{hero.eatLikeUs}</span>
-                  </div>
-                </div>
-              )}
-
-              {hero.quote && (
-                <blockquote class="bench-quote">
-                  <p>“{hero.quote}”</p>
-                  <cite>— The Chairs</cite>
-                </blockquote>
-              )}
-
-              <div class="bench-telemetry">
-                <BenchWalk walk={hero.walk} venueName={hero.name} />
-                {hero.inspectionCount > 0 && (
-                  <span class="bench-count">{hero.inspectionCount} {hero.inspectionCount === 1 ? 'Inspection' : 'Inspections'}</span>
+        <div
+          class="bench-panel"
+          id="bench-panel-golden"
+          role="tabpanel"
+          aria-labelledby="bench-tab-golden"
+        >
+          {hero ? (
+            <article class="bench-hero">
+              <div class="bench-hero-media">
+                <span class="bench-placeholder" aria-hidden="true"></span>
+                {hero.image && (
+                  <img
+                    class="bench-image"
+                    src={hero.image.url}
+                    srcset={heroSrcset}
+                    sizes={heroSrcset ? '(min-width: 1001px) 36vw, 100vw' : undefined}
+                    alt={hero.image.alt}
+                    width={hero.image.width ?? undefined}
+                    height={hero.image.height ?? undefined}
+                    style={{ objectPosition: focalStyle(hero.image) }}
+                    fetchpriority="high"
+                    decoding="async"
+                    onerror="this.onerror=null;this.parentElement.classList.add('is-placeholder')"
+                  />
                 )}
+                <a class="bench-seal" href={hero.href} aria-label={`View ${hero.name}'s audit`}>
+                  <img src="/brand/approved-sticker-256.webp" width="256" height="256" alt="" />
+                </a>
+              </div>
+
+              <div class="bench-hero-body">
+                <div class="bench-hero-heading">
+                  <div class="bench-hero-title-row">
+                    <h2 class="bench-hero-name">
+                      <a class="bench-hero-link" href={hero.href}>
+                        {hero.name}
+                      </a>
+                    </h2>
+                    <span class="bench-cost">{hero.cost}</span>
+                  </div>
+                  {hero.lastInspection && (
+                    <p class="bench-last">Last Inspection: {hero.lastInspection}</p>
+                  )}
+                </div>
+
+                {hero.eatLikeUs && (
+                  <div class="bench-eat">
+                    <Icon name="plate" />
+                    <div>
+                      <span class="bench-eat-label">Eat like us</span>
+                      <span class="bench-eat-dish">{hero.eatLikeUs}</span>
+                    </div>
+                  </div>
+                )}
+
+                {hero.quote && (
+                  <blockquote class="bench-quote">
+                    <p>“{hero.quote}”</p>
+                    <cite>— The Chairs</cite>
+                  </blockquote>
+                )}
+
+                <div class="bench-telemetry">
+                  <BenchWalk walk={hero.walk} venueName={hero.name} />
+                  {hero.inspectionCount > 0 && (
+                    <span class="bench-count">
+                      {hero.inspectionCount}{' '}
+                      {hero.inspectionCount === 1 ? 'Inspection' : 'Inspections'}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </article>
+          ) : (
+            <p class="bench-empty">No approved venues are on the bench yet.</p>
+          )}
+
+          {pillars.length > 0 && (
+            <div class="bench-pillars-section">
+              <p class="bench-pillars-label">
+                {isGoldenCut ? 'Chair-inspected & approved' : 'Approved & on the record'}
+              </p>
+              <div class="bench-pillars">
+                {pillars.map((pillar) => (
+                  <BenchPillar pillar={pillar} />
+                ))}
               </div>
             </div>
-          </article>
-        ) : (
-          <p class="bench-empty">No approved venues are on the bench yet.</p>
-        )}
-
-        {pillars.length > 0 && (
-          <div class="bench-pillars-section">
-            <p class="bench-pillars-label">{isGoldenCut ? 'Chair-inspected & approved' : 'Approved & on the record'}</p>
-            <div class="bench-pillars">
-              {pillars.map((pillar) => <BenchPillar pillar={pillar} />)}
-            </div>
-          </div>
-        )}
+          )}
         </div>
 
-        <div class="bench-panel" id="bench-panel-all" role="tabpanel" aria-labelledby="bench-tab-all" hidden>
+        <div
+          class="bench-panel"
+          id="bench-panel-all"
+          role="tabpanel"
+          aria-labelledby="bench-tab-all"
+          hidden
+        >
           <VenueResults client:idle placement="rail" />
         </div>
       </aside>
@@ -191,7 +231,11 @@ const summonsColumns = [
             <div class="weekly-summons-column">
               <p class="weekly-summons-day">
                 {day}
-                {tier && <span class="weekly-summons-tier" style={{ '--summons-tier': tier.color }}>{tier.label}</span>}
+                {tier && (
+                  <span class="weekly-summons-tier" style={{ '--summons-tier': tier.color }}>
+                    {tier.label}
+                  </span>
+                )}
               </p>
               {card ? <BenchPillar pillar={card} /> : <p class="weekly-summons-empty">{empty}</p>}
             </div>

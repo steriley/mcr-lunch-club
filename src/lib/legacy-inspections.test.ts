@@ -5,8 +5,14 @@ import { normaliseVenueName, planLegacyImport, type LegacyEntry } from './legacy
 
 describe('normaliseVenueName', () => {
   it('folds case, spacing, accents and curly quotes', () => {
-    assert.equal(normaliseVenueName('  Mick Hucknall’s   Rustik Bites '), "mick hucknall's rustik bites");
-    assert.equal(normaliseVenueName('Fazenda “Fogo de Chão“'), normaliseVenueName('Fazenda "Fogo de Chão"'));
+    assert.equal(
+      normaliseVenueName('  Mick Hucknall’s   Rustik Bites '),
+      "mick hucknall's rustik bites"
+    );
+    assert.equal(
+      normaliseVenueName('Fazenda “Fogo de Chão“'),
+      normaliseVenueName('Fazenda "Fogo de Chão"')
+    );
     assert.equal(normaliseVenueName('Fazenda “Fogo de Chão“'), 'fazenda "fogo de chao"');
   });
 });
@@ -36,17 +42,33 @@ describe('planLegacyImport', () => {
   });
 
   it('refuses ambiguous names', () => {
-    const plan = planLegacyImport([{ venue: 'Twin', date: '2026-01-01' }], [{ id: 'a', name: 'Twin' }, { id: 'b', name: 'twin' }]);
+    const plan = planLegacyImport(
+      [{ venue: 'Twin', date: '2026-01-01' }],
+      [
+        { id: 'a', name: 'Twin' },
+        { id: 'b', name: 'twin' },
+      ]
+    );
     assert.deepEqual(plan.unmatched, ['Twin (matches 2 venues)']);
   });
 
   it('matches every name in the committed list against the original venue data', () => {
-    const { inspections } = JSON.parse(readFileSync('drizzle/data/legacy-inspections.json', 'utf8')) as { inspections: LegacyEntry[] };
-    const original = JSON.parse(readFileSync('src/data/venues.json', 'utf8')) as { slug: string; name: string }[];
+    const { inspections } = JSON.parse(
+      readFileSync('drizzle/data/legacy-inspections.json', 'utf8')
+    ) as { inspections: LegacyEntry[] };
+    const original = JSON.parse(readFileSync('src/data/venues.json', 'utf8')) as {
+      slug: string;
+      name: string;
+    }[];
     assert.equal(inspections.length, 29);
-    const plan = planLegacyImport(inspections, original.map((venue) => ({ id: venue.slug, name: venue.name })));
+    const plan = planLegacyImport(
+      inspections,
+      original.map((venue) => ({ id: venue.slug, name: venue.name }))
+    );
     assert.deepEqual(plan.unmatched, []);
     assert.equal(plan.never.length, 4);
-    assert.ok(inspections.every((entry) => entry.date === null || /^\d{4}-\d{2}-\d{2}$/.test(entry.date)));
+    assert.ok(
+      inspections.every((entry) => entry.date === null || /^\d{4}-\d{2}-\d{2}$/.test(entry.date))
+    );
   });
 });

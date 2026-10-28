@@ -12,9 +12,16 @@ describe('route backfill (database)', { skip: skipIntegration }, () => {
     await resetTestDb();
     // 30 estimated venues (two Matrix batches), one already routed, one without a location.
     for (let index = 0; index < 30; index += 1) {
-      await createVenue(`Venue ${String(index).padStart(2, '0')}`, { distanceMiles: '0.50', walkingTimeMin: 11 });
+      await createVenue(`Venue ${String(index).padStart(2, '0')}`, {
+        distanceMiles: '0.50',
+        walkingTimeMin: 11,
+      });
     }
-    await createVenue('Already Routed', { distanceMiles: '0.20', walkingTimeMin: 4, routeUpdatedAt: new Date('2026-10-01T00:00:00Z') });
+    await createVenue('Already Routed', {
+      distanceMiles: '0.20',
+      walkingTimeMin: 4,
+      routeUpdatedAt: new Date('2026-10-01T00:00:00Z'),
+    });
     await createVenue('No Location', { latitude: null, longitude: null });
   });
 
@@ -22,7 +29,8 @@ describe('route backfill (database)', { skip: skipIntegration }, () => {
 
   const walk: WalkingRoute = { distanceMetres: 1609.344, durationSeconds: 1200 };
   const fast = { delayMs: 0, sleep: async () => {} };
-  const routedCount = async () => (await (await testDb()).select().from(venues).where(isNotNull(venues.routeUpdatedAt))).length;
+  const routedCount = async () =>
+    (await (await testDb()).select().from(venues).where(isNotNull(venues.routeUpdatedAt))).length;
 
   it('routes every estimated venue through Matrix batches, leaving routed venues and venues without a location alone', async () => {
     const db = await testDb();
@@ -36,9 +44,15 @@ describe('route backfill (database)', { skip: skipIntegration }, () => {
       route: async () => assert.fail('Directions should not be needed'),
     });
     assert.deepEqual(batches, [25, 5]);
-    assert.deepEqual({ todo: result.todo, routed: result.routed, failed: result.failed, stopped: result.stopped }, { todo: 30, routed: 30, failed: [], stopped: null });
+    assert.deepEqual(
+      { todo: result.todo, routed: result.routed, failed: result.failed, stopped: result.stopped },
+      { todo: 30, routed: 30, failed: [], stopped: null }
+    );
     const [venue] = await db.select().from(venues).where(eq(venues.name, 'Venue 00'));
-    assert.deepEqual({ miles: venue.distanceMiles, minutes: venue.walkingTimeMin }, { miles: '1.00', minutes: 24 });
+    assert.deepEqual(
+      { miles: venue.distanceMiles, minutes: venue.walkingTimeMin },
+      { miles: '1.00', minutes: 24 }
+    );
     const [routed] = await db.select().from(venues).where(eq(venues.name, 'Already Routed'));
     assert.equal(routed.walkingTimeMin, 4);
     assert.equal(await routedCount(), 31);
@@ -77,7 +91,10 @@ describe('route backfill (database)', { skip: skipIntegration }, () => {
     assert.match(first.stopped!, /quota/);
     assert.equal(first.remaining, 5);
 
-    const second = await backfillRoutes(db, { ...fast, matrix: async (destinations) => destinations.map(() => walk) });
+    const second = await backfillRoutes(db, {
+      ...fast,
+      matrix: async (destinations) => destinations.map(() => walk),
+    });
     assert.deepEqual({ todo: second.todo, routed: second.routed }, { todo: 5, routed: 5 });
     assert.equal(await routedCount(), 31);
   });
@@ -111,7 +128,11 @@ describe('route backfill (database)', { skip: skipIntegration }, () => {
   });
 
   it('--all recomputes venues that were already routed', async () => {
-    const result = await backfillRoutes(await testDb(), { ...fast, all: true, matrix: async (destinations) => destinations.map(() => walk) });
+    const result = await backfillRoutes(await testDb(), {
+      ...fast,
+      all: true,
+      matrix: async (destinations) => destinations.map(() => walk),
+    });
     assert.equal(result.todo, 31);
   });
 });

@@ -50,7 +50,10 @@ async function handleSubmit() {
 </script>
 
 <template>
-  <form class="mx-auto max-w-md rounded-2xl border border-hairline bg-parchment p-6 shadow-sm" @submit.prevent="handleSubmit">
+  <form
+    class="mx-auto max-w-md rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
+    @submit.prevent="handleSubmit"
+  >
     <div class="mb-5">
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Chairs' Area</p>
       <h1 class="mt-2 text-3xl font-bold text-ink">Sign in</h1>
@@ -59,16 +62,31 @@ async function handleSubmit() {
     <div class="space-y-4">
       <label class="block text-sm font-semibold text-ink">
         <span class="mb-2 block">Email</span>
-        <input v-model="email" type="email" autocomplete="email" class="w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" placeholder="chair@mcrlunch.club" />
+        <input
+          v-model="email"
+          type="email"
+          autocomplete="email"
+          class="w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy"
+          placeholder="chair@mcrlunch.club"
+        />
       </label>
 
       <label class="block text-sm font-semibold text-ink">
         <span class="mb-2 block">Password</span>
-        <input v-model="password" type="password" autocomplete="current-password" class="w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy" placeholder="••••••••••••" />
+        <input
+          v-model="password"
+          type="password"
+          autocomplete="current-password"
+          class="w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none ring-0 focus:border-navy"
+          placeholder="••••••••••••"
+        />
       </label>
     </div>
 
-    <p v-if="errorMessage" class="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+    <p
+      v-if="errorMessage"
+      class="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+    >
       {{ errorMessage }}
     </p>
 

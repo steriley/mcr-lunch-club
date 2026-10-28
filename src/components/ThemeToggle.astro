@@ -19,42 +19,65 @@ const options = [
 -->
 <fieldset class:list={['theme-toggle', className]} data-theme-toggle>
   <legend class="theme-toggle-legend">Theme</legend>
-  {
-    options.map(({ value, label }) => (
-      <label class="theme-toggle-option">
-        <input type="radio" name="theme-preference" value={value} checked={value === 'system'} />
-        <svg class="theme-toggle-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          {value === 'light' && (
-            <>
-              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8" />
-              <path
-                d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-            </>
-          )}
-          {value === 'system' && (
-            <>
-              <rect x="3" y="4.5" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.8" />
-              <path d="M9 20h6M12 16.5V20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-            </>
-          )}
-          {value === 'dark' && (
-            <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" />
-          )}
-        </svg>
-        <span>{label}</span>
-      </label>
-    ))
-  }
+  {options.map(({ value, label }) => (
+    <label class="theme-toggle-option">
+      <input type="radio" name="theme-preference" value={value} checked={value === 'system'} />
+      <svg class="theme-toggle-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        {value === 'light' && (
+          <>
+            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8" />
+            <path
+              d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+          </>
+        )}
+        {value === 'system' && (
+          <>
+            <rect
+              x="3"
+              y="4.5"
+              width="18"
+              height="12"
+              rx="2"
+              stroke="currentColor"
+              stroke-width="1.8"
+            />
+            <path
+              d="M9 20h6M12 16.5V20"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+          </>
+        )}
+        {value === 'dark' && (
+          <path
+            d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linejoin="round"
+          />
+        )}
+      </svg>
+      <span>{label}</span>
+    </label>
+  ))}
 </fieldset>
 
 <script>
-  import { THEME_CHANGE_EVENT, isThemePreference, setThemePreference, themePreference } from '@/lib/theme';
+  import {
+    THEME_CHANGE_EVENT,
+    isThemePreference,
+    setThemePreference,
+    themePreference,
+  } from '@/lib/theme';
 
-  const inputs = document.querySelectorAll<HTMLInputElement>('[data-theme-toggle] input[type="radio"]');
+  const inputs = document.querySelectorAll<HTMLInputElement>(
+    '[data-theme-toggle] input[type="radio"]'
+  );
   const sync = () => {
     const preference = themePreference();
     inputs.forEach((input) => (input.checked = input.value === preference));

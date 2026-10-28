@@ -21,7 +21,11 @@ export function imageBlobKey(venueId: string, imageId: string, variant: ImageVar
   return `${blobEnvPrefix()}/venues/${venueId}/${imageId}-${variant}.webp`;
 }
 
-export async function putImageBlob(token: string | undefined, key: string, body: Blob | ArrayBuffer | Uint8Array): Promise<string> {
+export async function putImageBlob(
+  token: string | undefined,
+  key: string,
+  body: Blob | ArrayBuffer | Uint8Array
+): Promise<string> {
   const result = await blobClient.put(key, body as Blob, {
     access: 'public',
     contentType: 'image/webp',
@@ -37,7 +41,11 @@ export async function putImageBlob(token: string | undefined, key: string, body:
  * (migrated external links) are never passed to `del()`. A failure is logged
  * and ignored: a stray file is better than a broken image.
  */
-export async function deleteOwnedBlobs(token: string | undefined, urls: (string | null | undefined)[], context: string): Promise<void> {
+export async function deleteOwnedBlobs(
+  token: string | undefined,
+  urls: (string | null | undefined)[],
+  context: string
+): Promise<void> {
   const owned = urls.filter((url): url is string => isOwnedBlobUrl(url));
   if (!owned.length) return;
   if (!isBlobConfigured()) {
@@ -47,6 +55,9 @@ export async function deleteOwnedBlobs(token: string | undefined, urls: (string 
   try {
     await blobClient.del(owned, token ? { token } : {});
   } catch (error) {
-    console.error(`[admin] ${context}: blob cleanup failed:`, error instanceof Error ? error.message : 'Unknown error');
+    console.error(
+      `[admin] ${context}: blob cleanup failed:`,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
   }
 }

@@ -58,7 +58,10 @@ function clean(text: string | null | undefined): string | null {
 function walkFor(venue: PublicVenue): BenchWalk | null {
   const { walkingTimeMin, distanceMiles, lat, lng } = venue;
   if (walkingTimeMin === null) return null;
-  const label = distanceMiles === null ? walkText(walkingTimeMin) : `${walkText(walkingTimeMin)} (${milesText(distanceMiles, 'mi')})`;
+  const label =
+    distanceMiles === null
+      ? walkText(walkingTimeMin)
+      : `${walkText(walkingTimeMin)} (${milesText(distanceMiles, 'mi')})`;
   if (lat === null || lng === null) return { label, lat: null, lng: null, directionsUrl: null };
   // 'server' is not an Apple platform, so this is always the Google URL; the page script swaps it on Apple devices.
   return { label, lat, lng, directionsUrl: getWalkingDirectionsUrl(lat, lng, 'server') };
@@ -68,7 +71,10 @@ export function toCard(pick: Pick, inspections: Inspection[]): BenchCard {
   const { venue } = pick;
   const own = inspections.filter((inspection) => inspection.venueSlug === venue.slug);
   // YYYY-MM-DD sorts as text, so the order of the input does not matter.
-  const newest = own.reduce<string | null>((latest, { date }) => (latest === null || date > latest ? date : latest), null);
+  const newest = own.reduce<string | null>(
+    (latest, { date }) => (latest === null || date > latest ? date : latest),
+    null
+  );
   return {
     slug: venue.slug,
     name: venue.name,
@@ -80,12 +86,16 @@ export function toCard(pick: Pick, inspections: Inspection[]): BenchCard {
     walk: walkFor(venue),
     quote: clean(pick.puffPiece),
     // The prescribed order is an Approved honour: no other verdict ever shows one.
-    eatLikeUs: venue.tier === 'approved' ? clean(pick.anchorDish) ?? clean(venue.eatLikeUs) : null,
+    eatLikeUs:
+      venue.tier === 'approved' ? (clean(pick.anchorDish) ?? clean(venue.eatLikeUs)) : null,
   };
 }
 
 /** What the card says under the name: the Chairs' quote, else the prescribed order; null when neither. */
-export function cardBlurb(card: { quote: string | null; eatLikeUs: string | null }): { kind: 'quote' | 'eat'; text: string } | null {
+export function cardBlurb(card: {
+  quote: string | null;
+  eatLikeUs: string | null;
+}): { kind: 'quote' | 'eat'; text: string } | null {
   if (card.quote) return { kind: 'quote', text: card.quote };
   if (card.eatLikeUs) return { kind: 'eat', text: `Eat like us: ${card.eatLikeUs}` };
   return null;
@@ -102,10 +112,18 @@ export function inspectionCountLabel(card: { inspectionCount: number }): string 
  * any (no padding when it is short), otherwise the nearest Approved venues.
  * `venues` is in public order, nearest first. `inspections` are confirmed ones.
  */
-export function buildSovereignBench(goldenCut: GoldenCutVenue[], venues: PublicVenue[], inspections: Inspection[]): SovereignBench {
+export function buildSovereignBench(
+  goldenCut: GoldenCutVenue[],
+  venues: PublicVenue[],
+  inspections: Inspection[]
+): SovereignBench {
   const mode = goldenCut.length > 0 ? 'golden-cut' : 'nearest';
   const picks: Pick[] =
-    mode === 'golden-cut' ? goldenCut : venues.filter((venue) => venue.tier === 'approved').map((venue) => ({ venue }));
-  const [hero = null, ...pillars] = picks.slice(0, BENCH_SIZE).map((pick) => toCard(pick, inspections));
+    mode === 'golden-cut'
+      ? goldenCut
+      : venues.filter((venue) => venue.tier === 'approved').map((venue) => ({ venue }));
+  const [hero = null, ...pillars] = picks
+    .slice(0, BENCH_SIZE)
+    .map((pick) => toCard(pick, inspections));
   return { mode, hero, pillars };
 }

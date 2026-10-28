@@ -66,7 +66,9 @@ describe('POST /api/admin/venues', () => {
     assert.equal(body.venue.slug, 'chip-shop');
     assert.equal(body.proposalId, null);
     assert.equal(transactions.count, 1);
-    const values = inserts.filter((call) => call.method === 'values').map((call) => call.args[0] as any);
+    const values = inserts
+      .filter((call) => call.method === 'values')
+      .map((call) => call.args[0] as any);
     assert.equal(values[0].updatedBy, ADMIN.id);
     assert.ok(!('tier' in values[0]), 'a client-sent tier is ignored');
     assert.equal(values[1].venueId, VENUE_ID);
@@ -77,14 +79,27 @@ describe('POST /api/admin/venues', () => {
     stubTransactions();
     // slug check, then the proposal's venue lock and pending lookup
     stubDbSequence('select', [[], [{ ...row, tier: null }], []]);
-    const proposal = { id: 'p1', venueId: VENUE_ID, proposedTier: 'to_be_assessed', status: 'pending' };
+    const proposal = {
+      id: 'p1',
+      venueId: VENUE_ID,
+      proposedTier: 'to_be_assessed',
+      status: 'pending',
+    };
     const inserts = stubDbSequence('insert', [[row], [], [proposal]]);
     const response = await post({ ...input, proposedTier: 'to_be_assessed' });
     assert.equal(response.status, 201);
     assert.equal((await response.json()).proposalId, 'p1');
-    const proposalValues = inserts.filter((call) => call.method === 'values').map((call) => call.args[0] as any)[2];
+    const proposalValues = inserts
+      .filter((call) => call.method === 'values')
+      .map((call) => call.args[0] as any)[2];
     assert.deepEqual(
-      { tier: proposalValues.proposedTier, from: proposalValues.fromTier, by: proposalValues.proposedBy, name: proposalValues.proposedByName, status: proposalValues.status },
+      {
+        tier: proposalValues.proposedTier,
+        from: proposalValues.fromTier,
+        by: proposalValues.proposedBy,
+        name: proposalValues.proposedByName,
+        status: proposalValues.status,
+      },
       { tier: 'to_be_assessed', from: null, by: ADMIN.id, name: 'Sam', status: 'pending' }
     );
   });
@@ -147,7 +162,13 @@ describe('/api/admin/venues/[id]', () => {
       assert.deepEqual(params, ['chip-shop', VENUE_ID]);
     });
 
-    const stored = { latitude: '53.480000', longitude: '-2.250000', distanceMiles: '0.40', walkingTimeMin: 9, routeUpdatedAt: new Date('2026-10-01T00:00:00Z') };
+    const stored = {
+      latitude: '53.480000',
+      longitude: '-2.250000',
+      distanceMiles: '0.40',
+      walkingTimeMin: 9,
+      routeUpdatedAt: new Date('2026-10-01T00:00:00Z'),
+    };
 
     it('updates the venue and records a revision', async () => {
       signInAs();
@@ -199,11 +220,14 @@ describe('/api/admin/venues/[id]', () => {
         return calls;
       }
 
-      const setValues = (updates: ReturnType<typeof stubDb>) => updates.find((call) => call.method === 'set')!.args[0] as any;
+      const setValues = (updates: ReturnType<typeof stubDb>) =>
+        updates.find((call) => call.method === 'set')!.args[0] as any;
 
       it('computes distance and walking time from ORS when the coordinates change', async () => {
         signInAs();
-        const fetches = stubFetch(() => Response.json({ routes: [{ summary: { distance: 1609.344, duration: 1170 } }] }));
+        const fetches = stubFetch(() =>
+          Response.json({ routes: [{ summary: { distance: 1609.344, duration: 1170 } }] })
+        );
         stubDbSequence('select', [[], [stored]]);
         const updates = stubDb('update', [row]);
         stubDb('insert', []);
@@ -244,10 +268,24 @@ describe('/api/admin/venues/[id]', () => {
 
       it('ignores distance and walking time sent by the client', async () => {
         signInAs();
-        stubDbSequence('select', [[], [{ ...stored, latitude: null, longitude: null, distanceMiles: null, walkingTimeMin: null }]]);
+        stubDbSequence('select', [
+          [],
+          [
+            {
+              ...stored,
+              latitude: null,
+              longitude: null,
+              distanceMiles: null,
+              walkingTimeMin: null,
+            },
+          ],
+        ]);
         const updates = stubDb('update', [row]);
         stubDb('insert', []);
-        await run(byId.PUT, ctx('PUT', VENUE_ID, { ...input, distanceMiles: 3, walkingTimeMin: 4 }));
+        await run(
+          byId.PUT,
+          ctx('PUT', VENUE_ID, { ...input, distanceMiles: 3, walkingTimeMin: 4 })
+        );
         assert.equal(setValues(updates).distanceMiles, null);
         assert.equal(setValues(updates).walkingTimeMin, null);
       });
@@ -272,7 +310,8 @@ describe('/api/admin/venues/[id]', () => {
     it('collects the photos, deletes the venue, then best-effort deletes only our own blobs', async () => {
       signInAs();
       const owned = 'https://store123.public.blob.vercel-storage.com/prod/venues/v/i-full.webp';
-      const ownedThumb = 'https://store123.public.blob.vercel-storage.com/prod/venues/v/i-thumb.webp';
+      const ownedThumb =
+        'https://store123.public.blob.vercel-storage.com/prod/venues/v/i-thumb.webp';
       const order: string[] = [];
       const database = db as any;
       const originalDb = { select: database.select, delete: database.delete };
@@ -312,7 +351,9 @@ describe('/api/admin/venues/[id]', () => {
 
     it('does not touch Blob when the venue is missing', async () => {
       signInAs();
-      stubDb('select', [{ fullUrl: 'https://store123.public.blob.vercel-storage.com/x.webp', thumbUrl: null }]);
+      stubDb('select', [
+        { fullUrl: 'https://store123.public.blob.vercel-storage.com/x.webp', thumbUrl: null },
+      ]);
       stubDb('delete', []);
       const originalDel = blobClient.del;
       let called = false;

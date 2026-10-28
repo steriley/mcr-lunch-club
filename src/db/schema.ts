@@ -1,5 +1,20 @@
 import { sql } from 'drizzle-orm';
-import { boolean, check, date, decimal, index, integer, jsonb, pgEnum, pgTable, smallint, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  check,
+  date,
+  decimal,
+  index,
+  integer,
+  jsonb,
+  pgEnum,
+  pgTable,
+  smallint,
+  text,
+  timestamp,
+  uniqueIndex,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { user } from './auth-schema';
 import { CUISINE_VALUES } from '../lib/cuisines';
 import { GOLDEN_CUT_SIZE } from '../lib/golden-cut-schema';
@@ -38,8 +53,11 @@ export const venues = pgTable('venues', {
   closedAt: timestamp('closed_at', { withTimezone: true }),
   closedBy: text('closed_by').references(() => user.id, { onDelete: 'set null' }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
-  updatedBy: text('updated_by').references(() => user.id, { onDelete: 'set null' })
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+  updatedBy: text('updated_by').references(() => user.id, { onDelete: 'set null' }),
 });
 
 export const briberyRecords = pgTable('bribery_records', {
@@ -60,15 +78,20 @@ export const briberyRecords = pgTable('bribery_records', {
   published: boolean('published').notNull().default(true),
   createdBy: text('created_by'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date())
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });
 
 export const venueRevisions = pgTable('venue_revisions', {
   id: uuid('id').primaryKey().defaultRandom(),
-  venueId: uuid('venue_id').notNull().references(() => venues.id, { onDelete: 'cascade' }),
+  venueId: uuid('venue_id')
+    .notNull()
+    .references(() => venues.id, { onDelete: 'cascade' }),
   changedBy: text('changed_by'),
   changedAt: timestamp('changed_at', { withTimezone: true }).notNull().defaultNow(),
-  snapshot: jsonb('snapshot').notNull()
+  snapshot: jsonb('snapshot').notNull(),
 });
 
 /**
@@ -80,7 +103,9 @@ export const venueEvents = pgTable(
   'venue_events',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    venueId: uuid('venue_id').notNull().references(() => venues.id, { onDelete: 'cascade' }),
+    venueId: uuid('venue_id')
+      .notNull()
+      .references(() => venues.id, { onDelete: 'cascade' }),
     kind: text('kind').notNull(),
     actorId: text('actor_id').references(() => user.id, { onDelete: 'set null' }),
     actorName: text('actor_name'),
@@ -106,7 +131,9 @@ export const inspections = pgTable(
   'inspections',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    venueId: uuid('venue_id').notNull().references(() => venues.id, { onDelete: 'cascade' }),
+    venueId: uuid('venue_id')
+      .notNull()
+      .references(() => venues.id, { onDelete: 'cascade' }),
     inspectionDate: date('inspection_date').notNull(),
     status: inspectionStatusEnum('status').notNull().default('pending'),
     kind: inspectionKindEnum('kind').notNull().default('verified'),
@@ -120,9 +147,13 @@ export const inspections = pgTable(
   },
   (table) => [
     // At most one pending inspection per venue.
-    uniqueIndex('inspections_one_pending_per_venue').on(table.venueId).where(sql`${table.status} = 'pending'`),
+    uniqueIndex('inspections_one_pending_per_venue')
+      .on(table.venueId)
+      .where(sql`${table.status} = 'pending'`),
     // Keeps the legacy import idempotent.
-    uniqueIndex('inspections_one_legacy_per_venue_date').on(table.venueId, table.inspectionDate).where(sql`${table.kind} = 'legacy'`),
+    uniqueIndex('inspections_one_legacy_per_venue_date')
+      .on(table.venueId, table.inspectionDate)
+      .where(sql`${table.kind} = 'legacy'`),
     index('inspections_venue_date_idx').on(table.venueId, table.inspectionDate),
     // Backstop for the two-admin rule; ids may later be nulled when an account is deleted.
     check(
@@ -130,11 +161,20 @@ export const inspections = pgTable(
       sql`${table.firstAdminId} is null or ${table.secondAdminId} is null or ${table.firstAdminId} <> ${table.secondAdminId}`
     ),
     // Every verified inspection records how it went; legacy rows are dates only.
-    check('inspections_verified_has_outcome', sql`${table.kind} = 'legacy' or ${table.outcome} is not null`),
+    check(
+      'inspections_verified_has_outcome',
+      sql`${table.kind} = 'legacy' or ${table.outcome} is not null`
+    ),
   ]
 );
 
-export const tierProposalStatusEnum = pgEnum('tier_proposal_status', ['pending', 'approved', 'declined', 'withdrawn', 'superseded']);
+export const tierProposalStatusEnum = pgEnum('tier_proposal_status', [
+  'pending',
+  'approved',
+  'declined',
+  'withdrawn',
+  'superseded',
+]);
 
 /**
  * Tier changes are proposals that a different admin must approve before
@@ -145,7 +185,9 @@ export const tierProposals = pgTable(
   'tier_proposals',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    venueId: uuid('venue_id').notNull().references(() => venues.id, { onDelete: 'cascade' }),
+    venueId: uuid('venue_id')
+      .notNull()
+      .references(() => venues.id, { onDelete: 'cascade' }),
     fromTier: tierEnum('from_tier'),
     proposedTier: tierEnum('proposed_tier').notNull(),
     proposedBy: text('proposed_by').references(() => user.id, { onDelete: 'set null' }),
@@ -160,11 +202,19 @@ export const tierProposals = pgTable(
     inspectionId: uuid('inspection_id').references(() => inspections.id, { onDelete: 'set null' }),
   },
   (table) => [
-    uniqueIndex('tier_proposals_one_pending_per_venue').on(table.venueId).where(sql`${table.status} = 'pending'`),
+    uniqueIndex('tier_proposals_one_pending_per_venue')
+      .on(table.venueId)
+      .where(sql`${table.status} = 'pending'`),
     index('tier_proposals_venue_idx').on(table.venueId, table.proposedAt),
     index('tier_proposals_status_idx').on(table.status, table.decidedAt),
-    check('tier_proposals_decline_reason', sql`${table.status} <> 'declined' or length(trim(${table.declineReason})) > 0`),
-    check('tier_proposals_decider_not_proposer', sql`${table.proposedBy} is null or ${table.decidedBy} is null or ${table.status} not in ('approved', 'declined') or ${table.proposedBy} <> ${table.decidedBy}`),
+    check(
+      'tier_proposals_decline_reason',
+      sql`${table.status} <> 'declined' or length(trim(${table.declineReason})) > 0`
+    ),
+    check(
+      'tier_proposals_decider_not_proposer',
+      sql`${table.proposedBy} is null or ${table.decidedBy} is null or ${table.status} not in ('approved', 'declined') or ${table.proposedBy} <> ${table.decidedBy}`
+    ),
   ]
 );
 
@@ -177,7 +227,9 @@ export const tierProposals = pgTable(
 export const goldenCut = pgTable(
   'golden_cut',
   {
-    venueId: uuid('venue_id').primaryKey().references(() => venues.id, { onDelete: 'cascade' }),
+    venueId: uuid('venue_id')
+      .primaryKey()
+      .references(() => venues.id, { onDelete: 'cascade' }),
     position: integer('position').notNull(),
     puffPiece: text('puff_piece'),
     anchorDish: text('anchor_dish'),
@@ -186,7 +238,10 @@ export const goldenCut = pgTable(
   },
   (table) => [
     uniqueIndex('golden_cut_position_idx').on(table.position),
-    check('golden_cut_position_range', sql`${table.position} between 1 and ${sql.raw(String(GOLDEN_CUT_SIZE))}`),
+    check(
+      'golden_cut_position_range',
+      sql`${table.position} between 1 and ${sql.raw(String(GOLDEN_CUT_SIZE))}`
+    ),
   ]
 );
 
@@ -200,7 +255,9 @@ export const venueImages = pgTable(
   'venue_images',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    venueId: uuid('venue_id').notNull().references(() => venues.id, { onDelete: 'cascade' }),
+    venueId: uuid('venue_id')
+      .notNull()
+      .references(() => venues.id, { onDelete: 'cascade' }),
     fullUrl: text('full_url').notNull(),
     // Null for migrated rows.
     thumbUrl: text('thumb_url'),
@@ -215,7 +272,9 @@ export const venueImages = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    uniqueIndex('venue_images_one_primary_per_venue').on(table.venueId).where(sql`${table.isPrimary}`),
+    uniqueIndex('venue_images_one_primary_per_venue')
+      .on(table.venueId)
+      .where(sql`${table.isPrimary}`),
     index('venue_images_venue_idx').on(table.venueId, table.createdAt),
     // Both or neither. The NOT NULL tests matter: with one side null the range test
     // is NULL, which a CHECK treats as passing.
@@ -245,7 +304,7 @@ export const venueSuggestions = pgTable('venue_suggestions', {
   senderHash: text('sender_hash'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
-  reviewedBy: text('reviewed_by').references(() => user.id, { onDelete: 'set null' })
+  reviewedBy: text('reviewed_by').references(() => user.id, { onDelete: 'set null' }),
 });
 
 export type VenueRow = typeof venues.$inferSelect;

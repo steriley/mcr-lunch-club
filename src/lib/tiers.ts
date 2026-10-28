@@ -131,7 +131,8 @@ export const TIERS: readonly Tier[] = [
     bannerClass: 'bg-tier-rejected',
     icon: 'ban',
     glyph: 'M7 7l10 10M17 7L7 17',
-    quote: 'Removed from the Sacred Lunch Rotation — Returnable only through exceptional redemption',
+    quote:
+      'Removed from the Sacred Lunch Rotation — Returnable only through exceptional redemption',
     motto: 'Removed from the Sacred Lunch Rotation',
     description:
       'Venue has failed to meet the standards of the Chairs, whether through poor value, weak quality, lack of character, or the unforgivable sin of inconsistency. It is removed from the sacred lunch rotation and may only return through exceptional redemption.',
@@ -166,10 +167,19 @@ export const APPROVED_STICKER = {
 } as const;
 
 /** Tiers selected on the homepage by default (and after Reset Filters) for the widest view of lunching options. */
-export const DEFAULT_HOME_TIERS: readonly TierValue[] = ['approved', 'under_consideration', 'to_be_assessed'];
+export const DEFAULT_HOME_TIERS: readonly TierValue[] = [
+  'approved',
+  'under_consideration',
+  'to_be_assessed',
+];
 
 /** Tiers Near Me can show; Rejected and Gone But Not Forgotten never appear there. */
-export const NEAR_ME_TIERS: readonly TierValue[] = ['approved', 'under_consideration', 'to_be_assessed', 'if_we_must'];
+export const NEAR_ME_TIERS: readonly TierValue[] = [
+  'approved',
+  'under_consideration',
+  'to_be_assessed',
+  'if_we_must',
+];
 
 /** Tiers selected when Near Me opens. */
 export const NEAR_ME_DEFAULT_TIERS: readonly TierValue[] = ['approved'];
@@ -201,8 +211,13 @@ export function tierFromSlug(slug: string | undefined): Tier | null {
 }
 
 /** Number of venues in each tier, including tiers with none. */
-export function countVenuesByTier(venues: readonly { tier: TierValue }[]): Record<TierValue, number> {
-  const counts = Object.fromEntries(TIER_VALUES.map((value) => [value, 0])) as Record<TierValue, number>;
+export function countVenuesByTier(
+  venues: readonly { tier: TierValue }[]
+): Record<TierValue, number> {
+  const counts = Object.fromEntries(TIER_VALUES.map((value) => [value, 0])) as Record<
+    TierValue,
+    number
+  >;
   for (const venue of venues) counts[venue.tier] += 1;
   return counts;
 }

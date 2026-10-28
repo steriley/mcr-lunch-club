@@ -7,7 +7,11 @@ import type { Database } from '@/lib/db-client';
 export async function briberyValues(db: Database, input: BriberyInput) {
   let venueNameText = input.venueNameText;
   if (input.venueId) {
-    const [venue] = await db.select({ name: venues.name }).from(venues).where(eq(venues.id, input.venueId)).limit(1);
+    const [venue] = await db
+      .select({ name: venues.name })
+      .from(venues)
+      .where(eq(venues.id, input.venueId))
+      .limit(1);
     if (!venue) return { ok: false as const, error: 'Choose a venue from the list.' };
     venueNameText = venueNameText ?? venue.name;
   }
@@ -45,7 +49,10 @@ export type SerializedBribery = ReturnType<typeof serializeBribery>;
 
 /** Public aliases for the people in the register; the Chairs' Area keeps the real names. */
 const PUBLIC_ALIASES: { pattern: RegExp; alias: string }[] = [
-  { pattern: /\b(?:Tom(?:my)?\s+)?Pritchard\b|\bTom\b(?!my)/gi, alias: 'Under Study Pritchard, Purveyor of Penitent Roses' },
+  {
+    pattern: /\b(?:Tom(?:my)?\s+)?Pritchard\b|\bTom\b(?!my)/gi,
+    alias: 'Under Study Pritchard, Purveyor of Penitent Roses',
+  },
   { pattern: /\b(?:Stephen|Ste|Steve)\s+Riley\b|\bStephen\b/gi, alias: 'Chair Riley' },
   { pattern: /\bTommy\s+Clark\b|\bTommy\b/gi, alias: 'Chair Clark' },
 ];

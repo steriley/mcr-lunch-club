@@ -4,12 +4,22 @@ import { isTierValue, tierInfo } from '@/lib/tiers';
 
 const props = defineProps<{ tier?: string | null }>();
 
-const label = computed(() => (isTierValue(props.tier) ? tierInfo(props.tier).label : props.tier == null ? 'No approved verdict' : 'Unknown'));
+const label = computed(() =>
+  isTierValue(props.tier)
+    ? tierInfo(props.tier).label
+    : props.tier == null
+      ? 'No approved verdict'
+      : 'Unknown'
+);
 
 // Semantic tier colours from the Sovereign Food Ledger palette; grey when there is no tier.
 const tone = computed(() => {
   const { color, tint } = tierInfo(isTierValue(props.tier) ? props.tier : 'gone_but_not_forgotten');
-  return { backgroundColor: tint, color, borderColor: `color-mix(in srgb, ${color} 50%, transparent)` };
+  return {
+    backgroundColor: tint,
+    color,
+    borderColor: `color-mix(in srgb, ${color} 50%, transparent)`,
+  };
 });
 </script>
 

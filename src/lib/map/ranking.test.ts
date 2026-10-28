@@ -20,8 +20,8 @@ function createMockVenue(overrides: Partial<Venue>): Venue {
     name: 'Test Venue',
     slug: 'test-venue',
     tier: 'approved',
-    lat: 53.4800,
-    lng: -2.2500,
+    lat: 53.48,
+    lng: -2.25,
     distanceMiles: 0.1,
     walkingTimeMin: 2,
     cost: '££',
@@ -37,7 +37,7 @@ function createMockVenue(overrides: Partial<Venue>): Venue {
 describe('haversineMetres', () => {
   const spinningfields = { lat: 53.47985, lng: -2.25105 };
   const manchesterCathedral = { lat: 53.4851, lng: -2.2443 };
-  const londonCharingCross = { lat: 51.5080, lng: -0.1281 };
+  const londonCharingCross = { lat: 51.508, lng: -0.1281 };
 
   test('returns 0 for identical coordinates', () => {
     assert.equal(haversineMetres(spinningfields, spinningfields), 0);
@@ -51,10 +51,7 @@ describe('haversineMetres', () => {
 
   test('accurately calculates known distance within Manchester (~737m)', () => {
     const distance = haversineMetres(spinningfields, manchesterCathedral);
-    assert.ok(
-      distance >= 730 && distance <= 745,
-      `Expected ~737m, got ${distance.toFixed(1)}m`
-    );
+    assert.ok(distance >= 730 && distance <= 745, `Expected ~737m, got ${distance.toFixed(1)}m`);
   });
 
   test('accurately calculates known long distance to London (~262km)', () => {
@@ -119,31 +116,31 @@ describe('rankVenues', () => {
     name: 'Close Venue',
     tier: 'approved',
     lat: 53.4802,
-    lng: -2.2510, // ~40m away
+    lng: -2.251, // ~40m away
   });
 
   const venueMedium = createMockVenue({
     id: 'medium',
     name: 'Medium Venue',
     tier: 'approved',
-    lat: 53.4830,
-    lng: -2.2480, // ~400m away
+    lat: 53.483,
+    lng: -2.248, // ~400m away
   });
 
   const venueFar = createMockVenue({
     id: 'far',
     name: 'Far Venue',
     tier: 'under_consideration',
-    lat: 53.4890,
-    lng: -2.2400, // ~1.2km away
+    lat: 53.489,
+    lng: -2.24, // ~1.2km away
   });
 
   const venueOutsideJurisdiction = createMockVenue({
     id: 'outer',
     name: 'Outer Limits Venue',
     tier: 'approved',
-    lat: 53.5500,
-    lng: -2.2000, // ~8.5km away (> 4023m)
+    lat: 53.55,
+    lng: -2.2, // ~8.5km away (> 4023m)
   });
 
   const venueRejected = createMockVenue({
@@ -151,7 +148,7 @@ describe('rankVenues', () => {
     name: 'Rejected Venue',
     tier: 'rejected',
     lat: 53.4801,
-    lng: -2.2510,
+    lng: -2.251,
   });
 
   const venueGone = createMockVenue({
@@ -159,7 +156,7 @@ describe('rankVenues', () => {
     name: 'Gone Venue',
     tier: 'gone_but_not_forgotten',
     lat: 53.4801,
-    lng: -2.2510,
+    lng: -2.251,
   });
 
   const venueNoCoords = createMockVenue({
@@ -231,20 +228,20 @@ describe('rankVenues', () => {
     const tie1 = createMockVenue({
       id: 'tie-1',
       name: 'Beta Diner',
-      lat: 53.4800,
-      lng: -2.2500,
+      lat: 53.48,
+      lng: -2.25,
     });
     const tie2 = createMockVenue({
       id: 'tie-2',
       name: 'Alpha Diner',
-      lat: 53.4800,
-      lng: -2.2500,
+      lat: 53.48,
+      lng: -2.25,
     });
     const tie3 = createMockVenue({
       id: 'tie-3',
       name: 'Gamma Diner',
-      lat: 53.4800,
-      lng: -2.2500,
+      lat: 53.48,
+      lng: -2.25,
     });
 
     const results = rankVenues({
@@ -298,7 +295,10 @@ describe('estimateWalkMinutes', () => {
 
 describe('resolveRankingOrigin', () => {
   test('ranks from Spinningfields when there is no position', () => {
-    assert.deepEqual(resolveRankingOrigin(null), { origin: { ...BASE_COORDINATES }, fromBase: true });
+    assert.deepEqual(resolveRankingOrigin(null), {
+      origin: { ...BASE_COORDINATES },
+      fromBase: true,
+    });
   });
 
   test('ranks from the user when they are in Manchester', () => {
@@ -309,7 +309,10 @@ describe('resolveRankingOrigin', () => {
   test('falls back to Spinningfields when the user is far away', () => {
     const london = { lat: 51.5072, lng: -0.1276 };
     assert.ok(haversineMetres(london, BASE_COORDINATES) > FAR_FROM_BASE_METRES);
-    assert.deepEqual(resolveRankingOrigin(london), { origin: { ...BASE_COORDINATES }, fromBase: true });
+    assert.deepEqual(resolveRankingOrigin(london), {
+      origin: { ...BASE_COORDINATES },
+      fromBase: true,
+    });
   });
 });
 

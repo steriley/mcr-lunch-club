@@ -100,7 +100,7 @@ const emit = defineEmits<{ expand: [] }>();
 
 .near-me-collapsed-name {
   overflow: hidden;
-  font-family: "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font-family: 'Playfair Display', 'Playfair Display Fallback', Georgia, serif;
   font-size: 1rem;
   font-weight: 700;
   text-overflow: ellipsis;
@@ -109,7 +109,7 @@ const emit = defineEmits<{ expand: [] }>();
 
 .near-me-collapsed-meta {
   flex-shrink: 0;
-  font-family: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 0.85rem;
   font-weight: 700;

@@ -54,7 +54,10 @@ afterEach(() => {
 
 describe('database URLs', () => {
   it('requires DATABASE_URL and validates its protocol', () => {
-    assert.throws(() => getRuntimeDatabaseUrl(), /Missing required environment variable: DATABASE_URL/);
+    assert.throws(
+      () => getRuntimeDatabaseUrl(),
+      /Missing required environment variable: DATABASE_URL/
+    );
     process.env.DATABASE_URL = '   ';
     assert.throws(() => getRuntimeDatabaseUrl(), /Missing required/);
     process.env.DATABASE_URL = 'not a url';
@@ -139,7 +142,10 @@ describe('getPreviewOrigins', () => {
     process.env.VERCEL_ENV = 'production';
     assert.deepEqual(getPreviewOrigins(), []);
     process.env.VERCEL_ENV = 'preview';
-    assert.deepEqual(getPreviewOrigins(), ['https://app-git-feature.vercel.app', 'https://app-abc123.vercel.app']);
+    assert.deepEqual(getPreviewOrigins(), [
+      'https://app-git-feature.vercel.app',
+      'https://app-abc123.vercel.app',
+    ]);
     process.env.VERCEL_BRANCH_URL = 'app-abc123.vercel.app';
     assert.deepEqual(getPreviewOrigins(), ['https://app-abc123.vercel.app']);
   });
@@ -166,14 +172,22 @@ describe('auth allowed hosts', () => {
 
   it('leave the production domain out on previews', () => {
     process.env.VERCEL_ENV = 'preview';
-    assert.deepEqual(getAuthEnvironment().allowedHosts, ['app-git-main.vercel.app', 'app-abc123.vercel.app']);
+    assert.deepEqual(getAuthEnvironment().allowedHosts, [
+      'app-git-main.vercel.app',
+      'app-abc123.vercel.app',
+    ]);
   });
 
   it('add BETTER_AUTH_ALLOWED_HOSTS entries, with or without a scheme, without duplicates', () => {
     delete process.env.VERCEL_URL;
     delete process.env.VERCEL_BRANCH_URL;
-    process.env.BETTER_AUTH_ALLOWED_HOSTS = ' mcr-lunch-club.vercel.app , https://Lunch.Example.com,,mcrlunchclub.com ';
-    assert.deepEqual(getAuthEnvironment().allowedHosts, ['mcrlunchclub.com', 'mcr-lunch-club.vercel.app', 'lunch.example.com']);
+    process.env.BETTER_AUTH_ALLOWED_HOSTS =
+      ' mcr-lunch-club.vercel.app , https://Lunch.Example.com,,mcrlunchclub.com ';
+    assert.deepEqual(getAuthEnvironment().allowedHosts, [
+      'mcrlunchclub.com',
+      'mcr-lunch-club.vercel.app',
+      'lunch.example.com',
+    ]);
   });
 });
 
@@ -183,7 +197,11 @@ describe('getSeedChairEnvironment', () => {
     process.env.SEED_CHAIR_EMAIL = 'chair@example.com';
     assert.throws(() => getSeedChairEnvironment(), /SEED_CHAIR_PASSWORD/);
     process.env.SEED_CHAIR_PASSWORD = 'secret';
-    assert.deepEqual(getSeedChairEnvironment(), { email: 'chair@example.com', password: 'secret', name: 'Chair' });
+    assert.deepEqual(getSeedChairEnvironment(), {
+      email: 'chair@example.com',
+      password: 'secret',
+      name: 'Chair',
+    });
     process.env.SEED_CHAIR_NAME = 'Big Chair';
     assert.equal(getSeedChairEnvironment().name, 'Big Chair');
   });

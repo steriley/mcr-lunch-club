@@ -41,7 +41,10 @@ export interface LegacyPlan {
   unmatched: string[];
 }
 
-export function planLegacyImport(entries: LegacyEntry[], dbVenues: { id: string; name: string }[]): LegacyPlan {
+export function planLegacyImport(
+  entries: LegacyEntry[],
+  dbVenues: { id: string; name: string }[]
+): LegacyPlan {
   const byName = new Map<string, { id: string; name: string }[]>();
   for (const venue of dbVenues) {
     const key = normaliseVenueName(venue.name);
@@ -53,7 +56,9 @@ export function planLegacyImport(entries: LegacyEntry[], dbVenues: { id: string;
     const key = normaliseVenueName(entry.venue);
     const candidates = byName.get(key) ?? byName.get(LEGACY_NAME_ALIASES[key] ?? '') ?? [];
     if (candidates.length !== 1) {
-      plan.unmatched.push(candidates.length > 1 ? `${entry.venue} (matches ${candidates.length} venues)` : entry.venue);
+      plan.unmatched.push(
+        candidates.length > 1 ? `${entry.venue} (matches ${candidates.length} venues)` : entry.venue
+      );
       continue;
     }
     const [venue] = candidates;
@@ -72,7 +77,9 @@ export interface LegacyImportResult {
 
 export class UnmatchedVenuesError extends Error {
   constructor(readonly names: string[]) {
-    super(`Could not match ${names.length} venue(s) from the legacy list: ${names.join(', ')}. Add an alias in LEGACY_NAME_ALIASES and rerun.`);
+    super(
+      `Could not match ${names.length} venue(s) from the legacy list: ${names.join(', ')}. Add an alias in LEGACY_NAME_ALIASES and rerun.`
+    );
   }
 }
 
@@ -82,54 +89,86 @@ export async function importLegacyInspections(
   options: { dryRun?: boolean; keepUnlisted?: boolean } = {}
 ): Promise<LegacyImportResult> {
   for (const entry of entries) {
-    if (entry.date !== null && !/^\d{4}-\d{2}-\d{2}$/.test(entry.date)) throw new Error(`Bad date for ${entry.venue}: ${entry.date}`);
+    if (entry.date !== null && !/^\d{4}-\d{2}-\d{2}$/.test(entry.date))
+      throw new Error(`Bad date for ${entry.venue}: ${entry.date}`);
   }
 
-  return db.transaction(async (tx) => {
-    const dbVenues = await tx.select({ id: venues.id, name: venues.name, lastInspectionDate: venues.lastInspectionDate }).from(venues);
-    const plan = planLegacyImport(entries, dbVenues);
-    if (plan.unmatched.length) throw new UnmatchedVenuesError(plan.unmatched);
+  return db
+    .transaction(async (tx) => {
+      const dbVenues = await tx
+        .select({ id: venues.id, name: venues.name, lastInspectionDate: venues.lastInspectionDate })
+        .from(venues);
+      const plan = planLegacyImport(entries, dbVenues);
+      if (plan.unmatched.length) throw new UnmatchedVenuesError(plan.unmatched);
 
-    let inserted = 0;
-    if (plan.matched.length) {
-      const rows = await tx
-        .insert(inspections)
-        .values(plan.matched.map((entry) => ({ venueId: entry.venueId, inspectionDate: entry.date, status: 'confirmed' as const, kind: 'legacy' as const })))
-        // Idempotent: the partial unique index on (venue, date) for legacy rows.
-        .onConflictDoNothing({ target: [inspections.venueId, inspections.inspectionDate], where: sql`${inspections.kind} = 'legacy'` })
-        .returning({ id: inspections.id });
-      inserted = rows.length;
-    }
-
-    const listedIds = new Set([...plan.matched, ...plan.never].map((entry) => entry.venueId));
-    const targets = options.keepUnlisted ? dbVenues.filter((venue) => listedIds.has(venue.id)) : dbVenues;
-
-    const changedDates: LegacyImportResult['changedDates'] = [];
-    if (targets.length) {
-      // Latest confirmed inspection per venue, now including the legacy rows.
-      const latest = await tx
-        .select({ venueId: inspections.venueId, date: sql<string>`max(${inspections.inspectionDate})` })
-        .from(inspections)
-        .where(and(eq(inspections.status, 'confirmed'), inArray(inspections.venueId, targets.map((venue) => venue.id))))
-        .groupBy(inspections.venueId);
-      const latestByVenue = new Map(latest.map((row) => [row.venueId, row.date]));
-
-      for (const venue of targets) {
-        const after = latestByVenue.get(venue.id) ?? null;
-        if (after === venue.lastInspectionDate) continue;
-        changedDates.push({ name: venue.name, before: venue.lastInspectionDate, after });
-        await tx.update(venues).set({ lastInspectionDate: after }).where(eq(venues.id, venue.id));
+      let inserted = 0;
+      if (plan.matched.length) {
+        const rows = await tx
+          .insert(inspections)
+          .values(
+            plan.matched.map((entry) => ({
+              venueId: entry.venueId,
+              inspectionDate: entry.date,
+              status: 'confirmed' as const,
+              kind: 'legacy' as const,
+            }))
+          )
+          // Idempotent: the partial unique index on (venue, date) for legacy rows.
+          .onConflictDoNothing({
+            target: [inspections.venueId, inspections.inspectionDate],
+            where: sql`${inspections.kind} = 'legacy'`,
+          })
+          .returning({ id: inspections.id });
+        inserted = rows.length;
       }
-    }
 
-    const result = { plan, inserted, changedDates: changedDates.sort((a, b) => a.name.localeCompare(b.name, 'en-GB')) };
-    // A dry run does all the work, reports it, and rolls everything back.
-    if (options.dryRun) throw new DryRunRollback(result);
-    return result;
-  }).catch((error) => {
-    if (error instanceof DryRunRollback) return error.result;
-    throw error;
-  });
+      const listedIds = new Set([...plan.matched, ...plan.never].map((entry) => entry.venueId));
+      const targets = options.keepUnlisted
+        ? dbVenues.filter((venue) => listedIds.has(venue.id))
+        : dbVenues;
+
+      const changedDates: LegacyImportResult['changedDates'] = [];
+      if (targets.length) {
+        // Latest confirmed inspection per venue, now including the legacy rows.
+        const latest = await tx
+          .select({
+            venueId: inspections.venueId,
+            date: sql<string>`max(${inspections.inspectionDate})`,
+          })
+          .from(inspections)
+          .where(
+            and(
+              eq(inspections.status, 'confirmed'),
+              inArray(
+                inspections.venueId,
+                targets.map((venue) => venue.id)
+              )
+            )
+          )
+          .groupBy(inspections.venueId);
+        const latestByVenue = new Map(latest.map((row) => [row.venueId, row.date]));
+
+        for (const venue of targets) {
+          const after = latestByVenue.get(venue.id) ?? null;
+          if (after === venue.lastInspectionDate) continue;
+          changedDates.push({ name: venue.name, before: venue.lastInspectionDate, after });
+          await tx.update(venues).set({ lastInspectionDate: after }).where(eq(venues.id, venue.id));
+        }
+      }
+
+      const result = {
+        plan,
+        inserted,
+        changedDates: changedDates.sort((a, b) => a.name.localeCompare(b.name, 'en-GB')),
+      };
+      // A dry run does all the work, reports it, and rolls everything back.
+      if (options.dryRun) throw new DryRunRollback(result);
+      return result;
+    })
+    .catch((error) => {
+      if (error instanceof DryRunRollback) return error.result;
+      throw error;
+    });
 }
 
 class DryRunRollback extends Error {

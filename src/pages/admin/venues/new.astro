@@ -14,7 +14,11 @@ export const prerender = false;
 const requested = Astro.url.searchParams.get('fromSuggestion');
 const suggestionId = requested ? uuidParam.safeParse(requested) : null;
 const [suggestion] = suggestionId?.success
-  ? await db.select().from(venueSuggestions).where(eq(venueSuggestions.id, suggestionId.data)).limit(1)
+  ? await db
+      .select()
+      .from(venueSuggestions)
+      .where(eq(venueSuggestions.id, suggestionId.data))
+      .limit(1)
   : [];
 const usable = suggestion && suggestion.status === 'new' && !suggestion.venueId;
 const prefill = usable ? suggestionPrefill(suggestion) : null;
@@ -22,8 +26,14 @@ const prefill = usable ? suggestionPrefill(suggestion) : null;
 
 <AdminLayout title={prefill ? 'Accept suggestion' : 'New venue'}>
   {requested && !prefill && (
-    <p role="alert" class="mb-6 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-      That suggestion has already been accepted or dismissed, or no longer exists. <a href="/admin/suggestions" class="font-semibold underline">Back to suggestions</a>
+    <p
+      role="alert"
+      class="mb-6 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
+    >
+      That suggestion has already been accepted or dismissed, or no longer exists.{' '}
+      <a href="/admin/suggestions" class="font-semibold underline">
+        Back to suggestions
+      </a>
     </p>
   )}
 

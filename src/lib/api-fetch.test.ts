@@ -19,7 +19,11 @@ function stubFetch(respond: (url: string, init: RequestInit) => Response | Promi
 describe('apiFetch', () => {
   it('sends JSON bodies with a content type, and returns the parsed data', async () => {
     const calls = stubFetch(() => Response.json({ venue: { id: 'v1' } }));
-    const result = await apiFetch('/api/admin/venues', { method: 'POST', body: { name: 'Pie' }, fallback: 'x' });
+    const result = await apiFetch('/api/admin/venues', {
+      method: 'POST',
+      body: { name: 'Pie' },
+      fallback: 'x',
+    });
     assert.deepEqual(result, { ok: true, data: { venue: { id: 'v1' } } });
     assert.equal(calls[0].init.method, 'POST');
     assert.equal(calls[0].init.body, '{"name":"Pie"}');
@@ -38,31 +42,52 @@ describe('apiFetch', () => {
   });
 
   it("returns the server's error and field messages", async () => {
-    stubFetch(() => Response.json({ error: 'Please correct the highlighted fields.', fields: { slug: 'Taken.' } }, { status: 400 }));
-    assert.deepEqual(await apiFetch('/a', { method: 'PUT', body: {}, fallback: 'Could not save.' }), {
-      ok: false,
-      error: 'Please correct the highlighted fields.',
-      fields: { slug: 'Taken.' },
-    });
+    stubFetch(() =>
+      Response.json(
+        { error: 'Please correct the highlighted fields.', fields: { slug: 'Taken.' } },
+        { status: 400 }
+      )
+    );
+    assert.deepEqual(
+      await apiFetch('/a', { method: 'PUT', body: {}, fallback: 'Could not save.' }),
+      {
+        ok: false,
+        error: 'Please correct the highlighted fields.',
+        fields: { slug: 'Taken.' },
+      }
+    );
   });
 
   it('falls back when the server gives no message or an unreadable body', async () => {
     stubFetch(() => new Response('<html>Bad gateway</html>', { status: 502 }));
-    assert.deepEqual(await apiFetch('/a', { fallback: 'Could not save.' }), { ok: false, error: 'Could not save.', fields: {} });
+    assert.deepEqual(await apiFetch('/a', { fallback: 'Could not save.' }), {
+      ok: false,
+      error: 'Could not save.',
+      fields: {},
+    });
     stubFetch(() => Response.json({ error: '' }, { status: 500 }));
-    assert.equal(((await apiFetch('/a', { fallback: 'Could not save.' })) as { error: string }).error, 'Could not save.');
+    assert.equal(
+      ((await apiFetch('/a', { fallback: 'Could not save.' })) as { error: string }).error,
+      'Could not save.'
+    );
   });
 
   it('uses the offline message when the request never gets an answer', async () => {
     stubFetch(() => {
       throw new TypeError('Failed to fetch');
     });
-    assert.deepEqual(await apiFetch('/a', { fallback: 'Could not save.', offline: 'Check your connection.' }), {
-      ok: false,
-      error: 'Check your connection.',
-      fields: {},
-    });
-    assert.equal(((await apiFetch('/a', { fallback: 'Could not save.' })) as { error: string }).error, 'Could not save.');
+    assert.deepEqual(
+      await apiFetch('/a', { fallback: 'Could not save.', offline: 'Check your connection.' }),
+      {
+        ok: false,
+        error: 'Check your connection.',
+        fields: {},
+      }
+    );
+    assert.equal(
+      ((await apiFetch('/a', { fallback: 'Could not save.' })) as { error: string }).error,
+      'Could not save.'
+    );
   });
 
   it('rethrows aborts so callers can ignore superseded requests', async () => {

@@ -8,4 +8,6 @@ const PRELOAD = [
 ];
 ---
 
-{PRELOAD.map((name) => <link rel="preload" href={`/fonts/${name}.woff2`} as="font" type="font/woff2" crossorigin />)}
+{PRELOAD.map((name) => (
+  <link rel="preload" href={`/fonts/${name}.woff2`} as="font" type="font/woff2" crossorigin />
+))}

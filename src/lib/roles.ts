@@ -16,7 +16,10 @@ export function hasAdminRole(role: string | null | undefined): boolean {
 }
 
 /** Deactivated (banned) accounts may not act, even with a session that outlived the ban. */
-export function isBanned(user: { banned?: boolean | null; banExpires?: Date | string | null }, now: Date = new Date()): boolean {
+export function isBanned(
+  user: { banned?: boolean | null; banExpires?: Date | string | null },
+  now: Date = new Date()
+): boolean {
   if (!user.banned) return false;
   if (!user.banExpires) return true;
   return new Date(user.banExpires).getTime() > now.getTime();

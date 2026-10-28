@@ -50,7 +50,9 @@ defineProps<{ visible: boolean }>();
   border: 1.5px solid var(--near-me-gold);
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 20px 40px -8px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(197, 155, 39, 0.15);
+  box-shadow:
+    0 20px 40px -8px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(197, 155, 39, 0.15);
 }
 
 .near-me-prepermission-icon {
@@ -67,7 +69,7 @@ defineProps<{ visible: boolean }>();
 }
 
 .near-me-prepermission-title {
-  font-family: "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font-family: 'Playfair Display', 'Playfair Display Fallback', Georgia, serif;
   font-size: 1rem;
   font-weight: 700;
   color: var(--color-white);
@@ -85,7 +87,9 @@ defineProps<{ visible: boolean }>();
    ============================================================ */
 .nm-fade-enter-active,
 .nm-fade-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .nm-fade-enter-from,

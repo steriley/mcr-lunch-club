@@ -15,7 +15,10 @@
         <div class="flex items-center gap-3">
           <Icon name="scales" class="icon-lg" />
           <div>
-            <h2 id="where-today-title" class="text-lg font-bold font-serif-header text-white leading-tight">
+            <h2
+              id="where-today-title"
+              class="text-lg font-bold font-serif-header text-white leading-tight"
+            >
               The Executive Decision Oracle
             </h2>
             <p class="text-xs text-ash mt-0.5">
@@ -35,7 +38,10 @@
       </div>
 
       <!-- Overdue Re-inspection Alert Nudge -->
-      <div v-if="overdueVenues.length" class="bg-card border-b border-hairline px-5 py-3 text-xs text-ink flex items-start gap-2">
+      <div
+        v-if="overdueVenues.length"
+        class="bg-card border-b border-hairline px-5 py-3 text-xs text-ink flex items-start gap-2"
+      >
         <Icon name="warning" class="icon-md shrink-0 text-ochre" />
         <div class="flex-1">
           <strong class="font-bold text-ochre">Overdue Sovereign Inspection Notice:</strong>
@@ -44,8 +50,9 @@
               <template v-if="index > 0"> and </template>
               <strong>{{ overdue.venue.name }}</strong> (last seen {{ overdue.lastSeen }})
             </template>
-            {{ overdueVenues.length === 1 ? 'has' : 'have' }} languished without executive oversight for months. Prioritising
-            {{ overdueVenues.length === 1 ? 'it' : 'them' }} satisfies your civic obligation.
+            {{ overdueVenues.length === 1 ? 'has' : 'have' }} languished without executive oversight
+            for months. Prioritising {{ overdueVenues.length === 1 ? 'it' : 'them' }} satisfies your
+            civic obligation.
           </p>
         </div>
       </div>
@@ -89,14 +96,11 @@
         </div>
 
         <!-- Consultation Button -->
-        <button
-          type="button"
-          :disabled="isRolling"
-          class="oracle-cta"
-          @click="consultOracle"
-        >
+        <button type="button" :disabled="isRolling" class="oracle-cta" @click="consultOracle">
           <Icon name="dice" class="icon-md" :class="isRolling ? 'animate-spin' : ''" />
-          <span>{{ isRolling ? "Consulting the Rolls of Manchester..." : "Deliver the Uncontested Verdict" }}</span>
+          <span>{{
+            isRolling ? 'Consulting the Rolls of Manchester...' : 'Deliver the Uncontested Verdict'
+          }}</span>
         </button>
 
         <!-- The Result Card: the whole card links to the venue's page -->
@@ -108,18 +112,28 @@
 
           <div class="flex items-center gap-2">
             <h3 class="text-xl font-bold font-serif-header text-royal-ink leading-tight">
-              <a class="oracle-result-link" :href="`/venues/${encodeURIComponent(pickedVenue.slug)}`">{{ pickedVenue.name }}</a>
+              <a
+                class="oracle-result-link"
+                :href="`/venues/${encodeURIComponent(pickedVenue.slug)}`"
+                >{{ pickedVenue.name }}</a
+              >
             </h3>
             <img
               v-if="pickedVenue.tier === 'approved'"
-              src="/brand/approved-sticker-256.webp" width="256" height="256"
+              src="/brand/approved-sticker-256.webp"
+              width="256"
+              height="256"
               alt="MCR Lunch Club Approved"
               class="w-6 h-6 object-contain inline-block shrink-0"
               title="Official MCR Lunch Club Approved Prize Winner"
             />
           </div>
           <div class="mt-2">
-            <span class="venue-tier-badge" :style="{ '--tier-color': tierInfo(pickedVenue.tier).color }">{{ tierInfo(pickedVenue.tier).label }}</span>
+            <span
+              class="venue-tier-badge"
+              :style="{ '--tier-color': tierInfo(pickedVenue.tier).color }"
+              >{{ tierInfo(pickedVenue.tier).label }}</span
+            >
           </div>
 
           <div v-if="pickedWalk" class="bench-telemetry mt-3">
@@ -178,11 +192,15 @@ const closeButton = ref<HTMLButtonElement | null>(null);
 const pickedWalk = computed(() => {
   const venue = pickedVenue.value;
   if (!venue) return null;
-  const { walk } = toCard({ venue: { ...venue, image: venue.image ?? null, closed: false } as PublicVenue }, []);
+  const { walk } = toCard(
+    { venue: { ...venue, image: venue.image ?? null, closed: false } as PublicVenue },
+    []
+  );
   if (walk === null) return null; // route pending: no walk row, as on the other cards
   return {
     label: walk.label,
-    url: venue.lat != null && venue.lng != null ? getWalkingDirectionsUrl(venue.lat, venue.lng) : null,
+    url:
+      venue.lat != null && venue.lng != null ? getWalkingDirectionsUrl(venue.lat, venue.lng) : null,
   };
 });
 
@@ -259,8 +277,11 @@ function consultOracle() {
   display: block;
   margin-bottom: 8px;
   color: var(--color-ochre);
-  font: 700 11px/1.35 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
-  letter-spacing: .09em;
+  font:
+    700 11px/1.35 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
@@ -273,7 +294,9 @@ function consultOracle() {
   color: var(--color-ash);
   font-size: 16px;
   cursor: pointer;
-  transition: background-color 140ms ease, color 140ms ease;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
 }
 
 .oracle-close:hover,
@@ -295,7 +318,10 @@ function consultOracle() {
   color: var(--color-muted);
   text-align: center;
   cursor: pointer;
-  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
 }
 
 .oracle-option:hover:not(.is-selected) {
@@ -326,10 +352,15 @@ function consultOracle() {
   border-radius: 12px;
   background: var(--color-deep);
   color: var(--color-parchment-fixed);
-  font: 700 14px/1.3 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 14px/1.3 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   box-shadow: 0 2px 6px rgb(17 30 71 / 30%);
   cursor: pointer;
-  transition: background-color 140ms ease, transform 100ms ease;
+  transition:
+    background-color 140ms ease,
+    transform 100ms ease;
 }
 
 .oracle-cta:hover:not(:disabled) {
@@ -337,12 +368,12 @@ function consultOracle() {
 }
 
 .oracle-cta:active:not(:disabled) {
-  transform: scale(.99);
+  transform: scale(0.99);
 }
 
 .oracle-cta:disabled {
   cursor: progress;
-  opacity: .85;
+  opacity: 0.85;
 }
 
 /* The result card: the venue name is a stretched link, so the whole card opens the dossier. */
@@ -353,7 +384,9 @@ function consultOracle() {
   border-radius: 12px;
   background: var(--color-surface);
   box-shadow: 0 4px 10px rgb(22 19 15 / 8%);
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .oracle-result:hover {
@@ -382,7 +415,6 @@ function consultOracle() {
   outline-offset: 2px;
 }
 
-
 /* Touch: the close button keeps its 32px circle; a transparent extension makes the target 44px. */
 @media (pointer: coarse) {
   .oracle-close {
@@ -390,7 +422,7 @@ function consultOracle() {
   }
 
   .oracle-close::before {
-    content: "";
+    content: '';
     position: absolute;
     left: -6px;
     top: -6px;

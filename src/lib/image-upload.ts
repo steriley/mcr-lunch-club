@@ -54,7 +54,10 @@ export interface ResponsiveImage {
 export function imageSrcset(image: ResponsiveImage): string | undefined {
   const { width, height } = image;
   if (!width || !height || !image.thumbUrl || image.thumbUrl === image.url) return undefined;
-  const thumbWidth = Math.min(width, Math.max(1, Math.round((width * THUMB_MAX_EDGE) / Math.max(width, height))));
+  const thumbWidth = Math.min(
+    width,
+    Math.max(1, Math.round((width * THUMB_MAX_EDGE) / Math.max(width, height)))
+  );
   if (thumbWidth >= width) return undefined;
   return `${image.thumbUrl} ${thumbWidth}w, ${image.url} ${width}w`;
 }

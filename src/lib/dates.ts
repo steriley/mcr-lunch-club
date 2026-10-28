@@ -12,7 +12,20 @@ export interface FormatOptions {
   fallback?: string;
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sept',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 const DEFAULT_FALLBACK = '—';
 const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
 const TIME_OF_DAY = /^([01]\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?$/;
@@ -52,7 +65,12 @@ function dateOnlyParts(value: string): Parts | null {
   if (!match) return null;
   const [year, month, day] = match.slice(1).map(Number);
   const check = new Date(Date.UTC(year, month - 1, day));
-  if (check.getUTCFullYear() !== year || check.getUTCMonth() !== month - 1 || check.getUTCDate() !== day) return null;
+  if (
+    check.getUTCFullYear() !== year ||
+    check.getUTCMonth() !== month - 1 ||
+    check.getUTCDate() !== day
+  )
+    return null;
   return { year, month, day, time: null };
 }
 
@@ -60,8 +78,15 @@ function dateOnlyParts(value: string): Parts | null {
 function londonParts(instant: Date): Parts | null {
   if (Number.isNaN(instant.getTime())) return null;
   const parts = LONDON_PARTS.formatToParts(instant);
-  const part = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((item) => item.type === type)?.value);
-  const [year, month, day, hour, minute] = [part('year'), part('month'), part('day'), part('hour'), part('minute')];
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((item) => item.type === type)?.value);
+  const [year, month, day, hour, minute] = [
+    part('year'),
+    part('month'),
+    part('day'),
+    part('hour'),
+    part('minute'),
+  ];
   if (![year, month, day, hour, minute].every(Number.isFinite)) return null;
   return { year, month, day, time: `${pad(hour)}:${pad(minute)}` };
 }
@@ -92,7 +117,10 @@ export function formatDate(value: DateInput, options: FormatOptions = {}): strin
  * no time, so it formats as the date alone unless `time` ("HH:mm" or
  * "HH:mm:ss", recorded separately, no timezone conversion) is given.
  */
-export function formatDateTime(value: DateInput, options: FormatOptions & { time?: string | null } = {}): string {
+export function formatDateTime(
+  value: DateInput,
+  options: FormatOptions & { time?: string | null } = {}
+): string {
   const parts = toParts(value);
   if (!parts) return options.fallback ?? DEFAULT_FALLBACK;
   const recorded = options.time ? TIME_OF_DAY.exec(options.time.trim()) : null;

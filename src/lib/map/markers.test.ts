@@ -62,11 +62,14 @@ describe('createVenueIconHtml', () => {
   });
 
   it('keeps every pin the same 28 px size', () => {
-    for (const tier of TIERS) assert.ok(createVenueIconHtml(venue({ tier: tier.value })).includes('w-7 h-7'));
+    for (const tier of TIERS)
+      assert.ok(createVenueIconHtml(venue({ tier: tier.value })).includes('w-7 h-7'));
   });
 
   it('uses the tier colour for the pin', () => {
-    assert.ok(createVenueIconHtml(venue({ tier: 'rejected' })).includes('var(--color-tier-rejected)'));
+    assert.ok(
+      createVenueIconHtml(venue({ tier: 'rejected' })).includes('var(--color-tier-rejected)')
+    );
   });
 
   it('hides the glyph from screen readers, which get the name, tier and price instead', () => {
@@ -91,7 +94,11 @@ describe('venue pin accessible name', () => {
 
   it('adds the escaped label for screen readers', () => {
     const html = createVenueIconHtml(venue({ name: 'Fish <&> Chips' }));
-    assert.ok(html.includes('<span class="sr-only">Fish &lt;&amp;&gt; Chips, Approved, ££, 6 min walk</span>'));
+    assert.ok(
+      html.includes(
+        '<span class="sr-only">Fish &lt;&amp;&gt; Chips, Approved, ££, 6 min walk</span>'
+      )
+    );
   });
 });
 
@@ -121,17 +128,31 @@ describe('createWalkingIsochrones', () => {
   it('creates one non-interactive circle per ring, defaulting the weight', () => {
     const circles = createWalkingIsochrones(L);
     assert.equal(circles.length, WALKING_ISOCHRONES.length);
-    assert.ok(circles.slice(0, -1).every((circle) => circle.options.weight === 1 && !circle.options.dashArray));
+    assert.ok(
+      circles
+        .slice(0, -1)
+        .every((circle) => circle.options.weight === 1 && !circle.options.dashArray)
+    );
     assert.ok(circles.at(-1).options.weight > circles[0].options.weight, 'the boundary is heavier');
     assert.ok(circles.at(-1).options.dashArray, 'and dashed');
-    assert.equal(new Set(circles.map((circle) => circle.options.color)).size, 1, 'one colour for every ring');
+    assert.equal(
+      new Set(circles.map((circle) => circle.options.color)).size,
+      1,
+      'one colour for every ring'
+    );
     assert.ok(circles.every((circle) => circle.options.interactive === false));
   });
 });
 
 describe('createLabelMarker', () => {
   it('centres an untouchable, unfocusable marker on the point', () => {
-    const marker = createLabelMarker(L, [53.48, -2.25], 'Chip Shop · ££', { width: 80, height: 16 }, 'name');
+    const marker = createLabelMarker(
+      L,
+      [53.48, -2.25],
+      'Chip Shop · ££',
+      { width: 80, height: 16 },
+      'name'
+    );
     assert.deepEqual(marker.latlng, [53.48, -2.25]);
     assert.equal(marker.options.interactive, false);
     assert.equal(marker.options.keyboard, false);
@@ -141,7 +162,13 @@ describe('createLabelMarker', () => {
   });
 
   it('hides its text from screen readers and escapes it', () => {
-    const marker = createLabelMarker(L, [0, 0], '<b>Fish & Chips</b>', { width: 80, height: 16 }, 'ring');
+    const marker = createLabelMarker(
+      L,
+      [0, 0],
+      '<b>Fish & Chips</b>',
+      { width: 80, height: 16 },
+      'ring'
+    );
     const { html } = marker.options.icon.divIcon;
     assert.ok(html.includes('aria-hidden="true"'));
     assert.ok(html.includes('&lt;b&gt;Fish &amp; Chips&lt;/b&gt;'));
@@ -152,7 +179,11 @@ describe('createLabelMarker', () => {
 describe('the pin name tag', () => {
   it('carries the name and price, hidden from screen readers (the pin already announces them)', () => {
     const html = createVenueIconHtml(venue({ name: "Crazy Pedro's", cost: '££' }));
-    assert.ok(html.includes('<span class="ledger-pin-name" aria-hidden="true">Crazy Pedro&#39;s · ££</span>'));
+    assert.ok(
+      html.includes(
+        '<span class="ledger-pin-name" aria-hidden="true">Crazy Pedro&#39;s · ££</span>'
+      )
+    );
   });
 });
 
@@ -183,20 +214,33 @@ describe('cluster markers', () => {
     const html = createClusterIconHtml(cluster, '5 venues');
     assert.ok(html.includes('>5</span>'));
     assert.equal((html.match(/<circle[^>]*pathLength/g) ?? []).length, 2);
-    assert.ok(html.includes('var(--color-tier-approved)') && html.includes('var(--color-tier-under-consideration)'));
+    assert.ok(
+      html.includes('var(--color-tier-approved)') &&
+        html.includes('var(--color-tier-under-consideration)')
+    );
     // 3 of 5 is 60 percent, less a hairline gap; it starts at 0, the next picks up at 60.
     assert.ok(html.includes('stroke-dasharray="58.50 41.50" stroke-dashoffset="0.00"'));
     assert.ok(html.includes('stroke-dashoffset="-60.00"'));
   });
 
   it('draws one unbroken ring for a single tier', () => {
-    const html = createClusterIconHtml({ count: 3, tiers: [{ tier: 'rejected', count: 3 }] }, '3 venues');
+    const html = createClusterIconHtml(
+      { count: 3, tiers: [{ tier: 'rejected', count: 3 }] },
+      '3 venues'
+    );
     assert.ok(html.includes('stroke-dasharray="100.00 0.00"'));
   });
 
   it('names itself for screen readers and hides the drawing', () => {
-    const html = createClusterIconHtml(cluster, '5 venues: 3 Approved, 2 Under Consideration. Zoom in');
-    assert.ok(html.includes('<span class="sr-only">5 venues: 3 Approved, 2 Under Consideration. Zoom in</span>'));
+    const html = createClusterIconHtml(
+      cluster,
+      '5 venues: 3 Approved, 2 Under Consideration. Zoom in'
+    );
+    assert.ok(
+      html.includes(
+        '<span class="sr-only">5 venues: 3 Approved, 2 Under Consideration. Zoom in</span>'
+      )
+    );
     assert.ok(html.includes('aria-hidden="true" focusable="false"'));
   });
 
@@ -205,7 +249,19 @@ describe('cluster markers', () => {
   });
 
   it('is a 44 px marker centred on the cluster', () => {
-    const marker = createClusterMarker(L, { ...cluster, kind: 'cluster', key: 'a|b', lat: 53.48, lng: -2.25, venues: [], expansionZoom: 16 }, 'label');
+    const marker = createClusterMarker(
+      L,
+      {
+        ...cluster,
+        kind: 'cluster',
+        key: 'a|b',
+        lat: 53.48,
+        lng: -2.25,
+        venues: [],
+        expansionZoom: 16,
+      },
+      'label'
+    );
     assert.deepEqual(marker.latlng, [53.48, -2.25]);
     assert.deepEqual(marker.options.icon.divIcon.iconSize, [44, 44]);
     assert.deepEqual(marker.options.icon.divIcon.iconAnchor, [22, 22]);

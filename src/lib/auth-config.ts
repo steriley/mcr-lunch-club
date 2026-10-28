@@ -20,19 +20,21 @@ export function createAuth(database: Database) {
     // Resolved per request from the Host header, so the custom domain and the
     // Vercel URLs all work; each allowed host is also a trusted origin.
     baseURL: {
-      allowedHosts: isProduction() ? allowedHosts : [...allowedHosts, 'localhost:4321', '127.0.0.1:4321'],
+      allowedHosts: isProduction()
+        ? allowedHosts
+        : [...allowedHosts, 'localhost:4321', '127.0.0.1:4321'],
       fallback: authUrl,
-      protocol: isProduction() ? 'https' : 'auto'
+      protocol: isProduction() ? 'https' : 'auto',
     },
     secret,
     database: drizzleAdapter(database, {
       provider: 'pg',
-      schema: authSchema
+      schema: authSchema,
     }),
     emailAndPassword: {
       enabled: true,
       disableSignUp: true,
-      minPasswordLength: MIN_PASSWORD_LENGTH
+      minPasswordLength: MIN_PASSWORD_LENGTH,
     },
     session: SESSION_SETTINGS,
     advanced: {
@@ -40,8 +42,8 @@ export function createAuth(database: Database) {
       defaultCookieAttributes: {
         httpOnly: true,
         sameSite: 'lax',
-        secure: isProduction()
-      }
+        secure: isProduction(),
+      },
     },
     rateLimit: {
       // Database storage so limits persist across serverless invocations.
@@ -51,14 +53,14 @@ export function createAuth(database: Database) {
       max: 100,
       customRules: {
         '/sign-in/email': { window: 60, max: 5 },
-        '/change-password': { window: 60, max: 5 }
-      }
+        '/change-password': { window: 60, max: 5 },
+      },
     },
     plugins: [
       admin({
         defaultRole: 'user',
-        adminRoles: ['admin']
-      })
-    ]
+        adminRoles: ['admin'],
+      }),
+    ],
   });
 }

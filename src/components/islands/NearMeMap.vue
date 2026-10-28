@@ -12,121 +12,127 @@
         aria-label="Near Me Locate Mode"
         @keydown="handleKeyDown"
       >
-      <!-- Map Container (fills the fullscreen shell) -->
-      <div
-        ref="mapContainerRef"
-        class="near-me-map-container"
-      ></div>
+        <!-- Map Container (fills the fullscreen shell) -->
+        <div ref="mapContainerRef" class="near-me-map-container"></div>
 
-      <!-- Sibling Overlay Layer (z-index above Leaflet panes, pointer-events: none) -->
-      <div class="near-me-overlay-layer">
-        <!-- Top Bar: Close Button -->
-        <header class="near-me-top-bar">
-          <button
-            ref="closeButtonRef"
-            type="button"
-            id="btn-near-me-close"
-            class="near-me-close-btn"
-            aria-label="Close Near Me map (Esc)"
-            title="Close Near Me map (Esc)"
-            @click="close"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-            <span class="sr-only">Close Near Me</span>
-          </button>
-        </header>
-
-        <NearMeStatusBanner v-if="statusBanner" :banner="statusBanner" />
-
-        <NearMePrePermission :visible="showPrePermission" />
-
-        <NearMeControls
-          :has-position="Boolean(geoPosition)"
-          :following="isFollowingUser && Boolean(geoPosition)"
-          :picking="isPickingLocation || isManualLocation"
-          :hidden-on-mobile="!sheet.isDesktop.value && sheet.snap.value === 'full'"
-          @recenter="recenterOnMe"
-          @home="returnHome"
-          @pick="togglePickLocation"
-        />
-
-        <!-- Venue Panel (Desktop: Floating side panel; Mobile: Bottom sheet) -->
-        <div
-          ref="panelRef"
-          id="near-me-panel"
-          class="near-me-panel"
-          :class="[`snap-${sheet.snap.value}`, { 'is-desktop': sheet.isDesktop.value }]"
-          role="region"
-          aria-label="Ranked Nearby Venues"
-        >
-          <!-- Mobile Drag Handle Row & Snap Controls -->
-          <div
-            v-if="!sheet.isDesktop.value"
-            class="near-me-sheet-handle-row"
-            @touchstart="sheet.onTouchStart"
-            @touchmove="sheet.onTouchMove"
-            @touchend="sheet.onTouchEnd"
-          >
+        <!-- Sibling Overlay Layer (z-index above Leaflet panes, pointer-events: none) -->
+        <div class="near-me-overlay-layer">
+          <!-- Top Bar: Close Button -->
+          <header class="near-me-top-bar">
             <button
+              ref="closeButtonRef"
               type="button"
-              class="near-me-snap-btn"
-              :aria-label="`Venue list height: ${sheet.snap.value}. Activate to change.`"
-              @click="sheet.cycle"
+              id="btn-near-me-close"
+              class="near-me-close-btn"
+              aria-label="Close Near Me map (Esc)"
+              title="Close Near Me map (Esc)"
+              @click="close"
             >
-              <span class="near-me-sheet-handle-bar"></span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+              <span class="sr-only">Close Near Me</span>
             </button>
-          </div>
+          </header>
 
-          <NearMeCollapsedSummary
-            v-if="sheet.isCollapsedMobile.value && previewVenue"
-            :ranked="previewVenue.rv"
-            :rank="previewVenue.rank"
-            @expand="sheet.expand"
+          <NearMeStatusBanner v-if="statusBanner" :banner="statusBanner" />
+
+          <NearMePrePermission :visible="showPrePermission" />
+
+          <NearMeControls
+            :has-position="Boolean(geoPosition)"
+            :following="isFollowingUser && Boolean(geoPosition)"
+            :picking="isPickingLocation || isManualLocation"
+            :hidden-on-mobile="!sheet.isDesktop.value && sheet.snap.value === 'full'"
+            @recenter="recenterOnMe"
+            @home="returnHome"
+            @pick="togglePickLocation"
           />
 
-          <!-- Verdict Filter Chips (Inside Panel): shared with the homepage filter bar -->
-          <div v-show="!sheet.isCollapsedMobile.value" class="near-me-panel-filters">
-            <TierFilterChips
-              :tiers="NEAR_ME_TIERS"
-              :selected="selectedTiers"
-              :counts="tierCounts"
-              :disabled="lastSelectedTier"
-              disabled-reason="At least one verdict must stay selected"
-              label="Near Me Verdict Filters"
-              @toggle="toggleTierFilter"
-            />
-          </div>
-
-          <!-- Scrollable Content Body -->
+          <!-- Venue Panel (Desktop: Floating side panel; Mobile: Bottom sheet) -->
           <div
-            ref="listContainerRef"
-            v-show="!sheet.isCollapsedMobile.value"
-            class="near-me-scroll-body"
-            @scroll="onListScroll"
-            @touchstart.passive="onListTouchStart"
-            @touchend.passive="onListTouchEnd"
-            @touchcancel.passive="onListTouchEnd"
+            ref="panelRef"
+            id="near-me-panel"
+            class="near-me-panel"
+            :class="[`snap-${sheet.snap.value}`, { 'is-desktop': sheet.isDesktop.value }]"
+            role="region"
+            aria-label="Ranked Nearby Venues"
           >
-            <NearMeVenueList
-              :nearest="nearestVenue"
-              :others="listVenues"
-              :inspections="inspections"
-              :selection="selection"
-              :selected-venue-id="selectedVenueId"
-              :selected-costs="selectedCosts"
-              :far-from-manchester="isUserFarFromManchester"
-              :from-base="isRankedFromBase"
-              @select="(venue) => selectVenueItem(venue, false)"
-              @details="goToVenuePage"
-              @clear-selection="clearSelection"
-              @toggle-cost="toggleCostFilter"
+            <!-- Mobile Drag Handle Row & Snap Controls -->
+            <div
+              v-if="!sheet.isDesktop.value"
+              class="near-me-sheet-handle-row"
+              @touchstart="sheet.onTouchStart"
+              @touchmove="sheet.onTouchMove"
+              @touchend="sheet.onTouchEnd"
+            >
+              <button
+                type="button"
+                class="near-me-snap-btn"
+                :aria-label="`Venue list height: ${sheet.snap.value}. Activate to change.`"
+                @click="sheet.cycle"
+              >
+                <span class="near-me-sheet-handle-bar"></span>
+              </button>
+            </div>
+
+            <NearMeCollapsedSummary
+              v-if="sheet.isCollapsedMobile.value && previewVenue"
+              :ranked="previewVenue.rv"
+              :rank="previewVenue.rank"
+              @expand="sheet.expand"
             />
+
+            <!-- Verdict Filter Chips (Inside Panel): shared with the homepage filter bar -->
+            <div v-show="!sheet.isCollapsedMobile.value" class="near-me-panel-filters">
+              <TierFilterChips
+                :tiers="NEAR_ME_TIERS"
+                :selected="selectedTiers"
+                :counts="tierCounts"
+                :disabled="lastSelectedTier"
+                disabled-reason="At least one verdict must stay selected"
+                label="Near Me Verdict Filters"
+                @toggle="toggleTierFilter"
+              />
+            </div>
+
+            <!-- Scrollable Content Body -->
+            <div
+              ref="listContainerRef"
+              v-show="!sheet.isCollapsedMobile.value"
+              class="near-me-scroll-body"
+              @scroll="onListScroll"
+              @touchstart.passive="onListTouchStart"
+              @touchend.passive="onListTouchEnd"
+              @touchcancel.passive="onListTouchEnd"
+            >
+              <NearMeVenueList
+                :nearest="nearestVenue"
+                :others="listVenues"
+                :inspections="inspections"
+                :selection="selection"
+                :selected-venue-id="selectedVenueId"
+                :selected-costs="selectedCosts"
+                :far-from-manchester="isUserFarFromManchester"
+                :from-base="isRankedFromBase"
+                @select="(venue) => selectVenueItem(venue, false)"
+                @details="goToVenuePage"
+                @clear-selection="clearSelection"
+                @toggle-cost="toggleCostFilter"
+              />
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </Transition>
   </Teleport>
@@ -137,7 +143,12 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $isNearMeOpen, closeNearMe } from '@/stores/filters';
 import { $inspectionsList, $venuesList } from '@/stores/ledger';
-import { NEAR_ME_DEFAULT_TIERS, NEAR_ME_TIERS, countVenuesByTier, type TierValue } from '@/lib/tiers';
+import {
+  NEAR_ME_DEFAULT_TIERS,
+  NEAR_ME_TIERS,
+  countVenuesByTier,
+  type TierValue,
+} from '@/lib/tiers';
 import type { CostTier, Inspection, Venue } from '@/types';
 import TierFilterChips from '@/components/TierFilterChips.vue';
 import {
@@ -224,7 +235,9 @@ const tierCounts = computed(() =>
 );
 
 // The last selected chip is shown as unavailable; tapping it does nothing.
-const lastSelectedTier = computed(() => (selectedTiers.value.length === 1 ? selectedTiers.value : []));
+const lastSelectedTier = computed(() =>
+  selectedTiers.value.length === 1 ? selectedTiers.value : []
+);
 
 // Ranking state
 const lastRankedOrigin = ref<LatLng | null>(null);
@@ -232,9 +245,7 @@ const rankedVenues = ref<RankedVenue[]>([]);
 // True while distances are measured from Spinningfields rather than the user.
 const isRankedFromBase = ref(true);
 
-const nearestVenue = computed(() =>
-  rankedVenues.value.length > 0 ? rankedVenues.value[0] : null
-);
+const nearestVenue = computed(() => (rankedVenues.value.length > 0 ? rankedVenues.value[0] : null));
 
 // The nearest venue is the hero card, so the list carries the rest.
 const listVenues = computed(() => rankedVenues.value.slice(1));
@@ -242,7 +253,12 @@ const listVenues = computed(() => rankedVenues.value.slice(1));
 // The selected venue, with its place in the ranking (null while nothing is selected).
 const selection = computed(() => {
   const index = rankedVenues.value.findIndex((rv) => rv.venue.id === selectedVenueId.value);
-  if (index >= 0) return { venue: rankedVenues.value[index].venue, rv: rankedVenues.value[index], rank: index + 1 };
+  if (index >= 0)
+    return {
+      venue: rankedVenues.value[index].venue,
+      rv: rankedVenues.value[index],
+      rank: index + 1,
+    };
   const venue = venuesList.value.find((candidate) => candidate.id === selectedVenueId.value);
   return venue ? { venue, rv: null, rank: undefined } : null;
 });
@@ -260,9 +276,14 @@ const map = useNearMeLeaflet({
   container: mapContainerRef,
   sheet,
   geo,
-  pinnedVenues: () => venuesList.value.filter(
-    (v) => selectedTiers.value.includes(v.tier) && matchesCost(v, selectedCosts.value) && v.lat != null && v.lng != null
-  ),
+  pinnedVenues: () =>
+    venuesList.value.filter(
+      (v) =>
+        selectedTiers.value.includes(v.tier) &&
+        matchesCost(v, selectedCosts.value) &&
+        v.lat != null &&
+        v.lng != null
+    ),
   allVenues: () => venuesList.value,
   rankedVenues,
   selectedVenueId,
@@ -317,7 +338,11 @@ function updateRanking(force = false) {
 
   const { origin: currentOrigin, fromBase } = resolveRankingOrigin(geo.position.value);
 
-  if (force || fromBase !== isRankedFromBase.value || hasOriginMovedSignificantly(lastRankedOrigin.value, currentOrigin, ORIGIN_MOVE_THRESHOLD_METRES)) {
+  if (
+    force ||
+    fromBase !== isRankedFromBase.value ||
+    hasOriginMovedSignificantly(lastRankedOrigin.value, currentOrigin, ORIGIN_MOVE_THRESHOLD_METRES)
+  ) {
     rankedVenues.value = rankVenues({
       origin: currentOrigin,
       venues: venuesList.value.filter((venue) => matchesCost(venue, selectedCosts.value)),
@@ -359,25 +384,31 @@ function selectVenueItem(venue: Venue, fromPinClick = false) {
   if (opensSheet) sheet.snap.value = 'half';
 }
 
-const statusBanner = computed(() => nearMeStatusBanner(
-  {
-    devForced: DEV_FORCED_STATE,
-    picking: isPickingLocation.value,
-    geoState: geo.state.value,
-    farFromManchester: isUserFarFromManchester.value,
-    manual: geo.isManual.value,
-    lowAccuracy: isLowAccuracy.value,
-  },
-  {
-    startPicking: () => { isPickingLocation.value = true; },
-    stopPicking: () => { isPickingLocation.value = false; },
-    close,
-    resumeLive: () => {
-      geo.resumeLive();
-      isFollowingUser.value = true;
+const statusBanner = computed(() =>
+  nearMeStatusBanner(
+    {
+      devForced: DEV_FORCED_STATE,
+      picking: isPickingLocation.value,
+      geoState: geo.state.value,
+      farFromManchester: isUserFarFromManchester.value,
+      manual: geo.isManual.value,
+      lowAccuracy: isLowAccuracy.value,
     },
-  },
-));
+    {
+      startPicking: () => {
+        isPickingLocation.value = true;
+      },
+      stopPicking: () => {
+        isPickingLocation.value = false;
+      },
+      close,
+      resumeLive: () => {
+        geo.resumeLive();
+        isFollowingUser.value = true;
+      },
+    }
+  )
+);
 
 function close() {
   closeNearMe();
@@ -477,7 +508,11 @@ async function onOpenChange(open: boolean) {
       shellRef.value.focus();
     }
 
-    await map.init(isCurrent, () => panelRef.value, () => updateRanking(true));
+    await map.init(
+      isCurrent,
+      () => panelRef.value,
+      () => updateRanking(true)
+    );
     if (!isCurrent()) return;
 
     // Request location ONLY when Near Me opens
@@ -706,7 +741,6 @@ onUnmounted(() => {
     width: 380px;
     max-width: calc(100vw - 40px);
     border-radius: 16px;
-  
   }
 }
 
@@ -723,22 +757,18 @@ onUnmounted(() => {
     border-right: none;
     border-top: 1.5px solid var(--near-me-gold);
     transition: height 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-  
   }
 
   .near-me-panel.snap-collapsed {
     height: 140px;
-  
   }
 
   .near-me-panel.snap-half {
     height: 54dvh;
-  
   }
 
   .near-me-panel.snap-full {
     height: 86dvh;
-  
   }
 }
 
@@ -825,7 +855,6 @@ onUnmounted(() => {
   :deep(.leaflet-bottom.leaflet-right) {
     bottom: calc(var(--sheet-current-height, 140px) + 6px) !important;
     transition: bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-  
   }
 }
 
@@ -840,7 +869,9 @@ onUnmounted(() => {
 }
 
 :deep(.custom-ledger-pin.is-selected-pin .rounded-full) {
-  box-shadow: 0 0 0 3px var(--color-brass), 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+  box-shadow:
+    0 0 0 3px var(--color-brass),
+    0 4px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
 .near-me-close-btn {
@@ -864,20 +895,20 @@ onUnmounted(() => {
   background-color: color-mix(in srgb, var(--color-parchment) 97%, transparent);
   color: var(--ledger-ink);
   border-color: var(--ledger-border);
-  box-shadow: 0 6px 24px rgb(17 30 71 / 18%), 0 1px 3px rgb(22 19 15 / 8%);
+  box-shadow:
+    0 6px 24px rgb(17 30 71 / 18%),
+    0 1px 3px rgb(22 19 15 / 8%);
 }
 
 @media (min-width: 1024px) {
   .near-me-panel {
     border-radius: var(--near-me-radius-panel);
-  
   }
 }
 
 @media (max-width: 1023px) {
   .near-me-panel {
     border-radius: var(--near-me-radius-panel) var(--near-me-radius-panel) 0 0;
-  
   }
 }
 
@@ -925,7 +956,6 @@ onUnmounted(() => {
   .near-me-panel,
   .near-me-close-btn {
     transition-duration: 0.01ms !important;
-  
   }
 }
 
@@ -937,7 +967,6 @@ onUnmounted(() => {
 @media (max-width: 1023px) {
   :deep(.leaflet-control-zoom) {
     display: none;
-  
   }
 }
 

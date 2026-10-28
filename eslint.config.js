@@ -53,5 +53,5 @@ export default tseslint.config(
     },
   },
   // Turns off every stylistic rule that would fight Prettier. Keep last.
-  prettier,
+  prettier
 );

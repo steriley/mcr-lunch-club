@@ -10,8 +10,12 @@ const ZOOM_SETTLE_MS = 500;
  */
 export function createMapRemover(map: any): () => void {
   let zooming = false;
-  map.on('zoomanim', () => { zooming = true; });
-  map.on('zoomend', () => { zooming = false; });
+  map.on('zoomanim', () => {
+    zooming = true;
+  });
+  map.on('zoomend', () => {
+    zooming = false;
+  });
 
   return () => {
     map.stop();

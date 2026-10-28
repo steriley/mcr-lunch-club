@@ -45,14 +45,29 @@ describe('public venue photos (database)', { skip: skipIntegration }, () => {
 
   it('shows only the primary photo, once per venue, and nothing for a venue without one', async () => {
     const db = await testDb();
-    const first = await addVenueImage(db, photo(approved, 'first'), new Date('2026-10-22T09:00:00Z'));
-    const second = await addVenueImage(db, photo(approved, 'second'), new Date('2026-10-22T09:01:00Z'));
+    const first = await addVenueImage(
+      db,
+      photo(approved, 'first'),
+      new Date('2026-10-22T09:00:00Z')
+    );
+    const second = await addVenueImage(
+      db,
+      photo(approved, 'second'),
+      new Date('2026-10-22T09:01:00Z')
+    );
     assert.ok(first.ok && second.ok);
     await setPrimary(db, approved, second.value.id);
-    await updateImageMeta(db, approved, second.value.id, { caption: 'Top-down pizza', focal: { focalX: 25, focalY: 75 } });
+    await updateImageMeta(db, approved, second.value.id, {
+      caption: 'Top-down pizza',
+      focal: { focalX: 25, focalY: 75 },
+    });
 
     const venues = await asPublic(getPublicVenues);
-    assert.deepEqual(venues.map((venue) => venue.name).sort(), ['No Photo Diner', 'Pizza Place'], 'one row per venue');
+    assert.deepEqual(
+      venues.map((venue) => venue.name).sort(),
+      ['No Photo Diner', 'Pizza Place'],
+      'one row per venue'
+    );
     const pizza = venues.find((venue) => venue.name === 'Pizza Place')!;
     assert.deepEqual(pizza.image, {
       url: second.value.fullUrl,
@@ -64,8 +79,14 @@ describe('public venue photos (database)', { skip: skipIntegration }, () => {
       focalY: 75,
     });
     assert.equal(venues.find((venue) => venue.name === 'No Photo Diner')!.image, null);
-    assert.equal((await asPublic(getMapVenues)).find((venue) => venue.name === 'Pizza Place')!.image?.url, second.value.fullUrl);
-    assert.equal((await asPublic(() => getPublicVenue('pizza-place')))?.image?.alt, 'Top-down pizza');
+    assert.equal(
+      (await asPublic(getMapVenues)).find((venue) => venue.name === 'Pizza Place')!.image?.url,
+      second.value.fullUrl
+    );
+    assert.equal(
+      (await asPublic(() => getPublicVenue('pizza-place')))?.image?.alt,
+      'Top-down pizza'
+    );
   });
 
   it('a venue that is not publicly visible exposes no photo', async () => {

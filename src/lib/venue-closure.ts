@@ -9,20 +9,38 @@ import { recordVenueEvent, type Actor } from '@/lib/venue-events';
  * both are logged with who and when.
  */
 
-export type ClosureResult = { ok: true; venue: VenueRow } | { ok: false; reason: 'not_found' | 'already_closed' | 'not_closed' };
+export type ClosureResult =
+  | { ok: true; venue: VenueRow }
+  | { ok: false; reason: 'not_found' | 'already_closed' | 'not_closed' };
 
-async function setClosed(db: Database, venueId: string, actor: Actor, close: boolean): Promise<ClosureResult> {
+async function setClosed(
+  db: Database,
+  venueId: string,
+  actor: Actor,
+  close: boolean
+): Promise<ClosureResult> {
   return db.transaction(async (tx) => {
     // Only flips the flag when it is not already in the target state, so a double click logs once.
     const [venue] = await tx
       .update(venues)
-      .set(close ? { closedAt: new Date(), closedBy: actor.id } : { closedAt: null, closedBy: null })
-      .where(and(eq(venues.id, venueId), close ? isNull(venues.closedAt) : isNotNull(venues.closedAt)))
+      .set(
+        close ? { closedAt: new Date(), closedBy: actor.id } : { closedAt: null, closedBy: null }
+      )
+      .where(
+        and(eq(venues.id, venueId), close ? isNull(venues.closedAt) : isNotNull(venues.closedAt))
+      )
       .returning();
 
     if (!venue) {
-      const [existing] = await tx.select({ id: venues.id }).from(venues).where(eq(venues.id, venueId)).limit(1);
-      return { ok: false, reason: existing ? (close ? 'already_closed' : 'not_closed') : 'not_found' };
+      const [existing] = await tx
+        .select({ id: venues.id })
+        .from(venues)
+        .where(eq(venues.id, venueId))
+        .limit(1);
+      return {
+        ok: false,
+        reason: existing ? (close ? 'already_closed' : 'not_closed') : 'not_found',
+      };
     }
 
     await recordVenueEvent(tx, venueId, close ? 'closed' : 'reopened', actor);

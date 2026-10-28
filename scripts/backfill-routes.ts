@@ -41,10 +41,14 @@ console.log(`${prefix}${result.todo} venue(s) needed a route.`);
 let exitCode = 0;
 if (result.stopped) {
   console.error(`Stopped: ${result.stopped}`);
-  console.error(`${result.routed} routed this run, ${result.remaining} left. Rerun later to continue.`);
+  console.error(
+    `${result.routed} routed this run, ${result.remaining} left. Rerun later to continue.`
+  );
   exitCode = 2;
 } else if (!dryRun) {
-  console.log(`Done: ${result.routed} routed, ${result.failed.length} failed${result.failed.length ? ` (${result.failed.join(', ')}; rerun to retry them)` : ''}.`);
+  console.log(
+    `Done: ${result.routed} routed, ${result.failed.length} failed${result.failed.length ? ` (${result.failed.join(', ')}; rerun to retry them)` : ''}.`
+  );
 }
 await closeDatabase();
 process.exit(exitCode);

@@ -3,7 +3,13 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { notShownReason } from './golden-cut';
 
-const venue = (overrides = {}) => ({ tier: 'approved', latitude: '53.48', longitude: '-2.25', closedAt: null, ...overrides });
+const venue = (overrides = {}) => ({
+  tier: 'approved',
+  latitude: '53.48',
+  longitude: '-2.25',
+  closedAt: null,
+  ...overrides,
+});
 
 describe('notShownReason', () => {
   it('is null for an open, located Approved venue', () => {

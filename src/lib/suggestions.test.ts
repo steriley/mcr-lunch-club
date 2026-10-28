@@ -12,7 +12,14 @@ import {
   serializeSuggestion,
   suggestionPrefill,
 } from './suggestions';
-import { ADMIN, VENUE_ID, renderSql, restoreStubs, stubDb, stubDbSequence } from '../test/route-helpers';
+import {
+  ADMIN,
+  VENUE_ID,
+  renderSql,
+  restoreStubs,
+  stubDb,
+  stubDbSequence,
+} from '../test/route-helpers';
 
 afterEach(restoreStubs);
 
@@ -62,7 +69,11 @@ describe('isSuggestionRateLimited', () => {
   it('limits everyone once the daily ceiling is reached', async () => {
     const calls = stubDbSequence('select', [[{ total: SUGGESTIONS_PER_DAY }]]);
     assert.equal(await isSuggestionRateLimited(db, null), true);
-    assert.equal(calls.filter((call) => call.method === 'from').length, 1, 'stops after the daily count');
+    assert.equal(
+      calls.filter((call) => call.method === 'from').length,
+      1,
+      'stops after the daily count'
+    );
   });
 
   it('only applies the daily ceiling when the sender is unknown', async () => {
@@ -92,7 +103,10 @@ describe('markSuggestionAccepted', () => {
     const updates = stubDb('update', [{ id: VENUE_ID }]);
     assert.equal(await markSuggestionAccepted(db, VENUE_ID, 'venue-1', ADMIN.id), true);
     const set = updates.find((call) => call.method === 'set')!.args[0] as any;
-    assert.deepEqual({ status: set.status, venueId: set.venueId, reviewedBy: set.reviewedBy }, { status: 'accepted', venueId: 'venue-1', reviewedBy: ADMIN.id });
+    assert.deepEqual(
+      { status: set.status, venueId: set.venueId, reviewedBy: set.reviewedBy },
+      { status: 'accepted', venueId: 'venue-1', reviewedBy: ADMIN.id }
+    );
     const { sql } = renderSql(updates.find((call) => call.method === 'where')!.args[0]);
     assert.match(sql, /"status" = \$\d+ and "venue_suggestions"\."venue_id" is null/);
 

@@ -18,8 +18,14 @@ import type { Inspection } from '@/types';
 export const prerender = true;
 
 export async function getStaticPaths() {
-  const [publicVenues, inspections] = await Promise.all([getPublicVenues(), getPublicInspections()]);
-  return TIERS.map((tier) => ({ params: { tier: tier.slug }, props: { tier, publicVenues, inspections } }));
+  const [publicVenues, inspections] = await Promise.all([
+    getPublicVenues(),
+    getPublicInspections(),
+  ]);
+  return TIERS.map((tier) => ({
+    params: { tier: tier.slug },
+    props: { tier, publicVenues, inspections },
+  }));
 }
 
 interface Props {
@@ -30,18 +36,33 @@ interface Props {
 
 const { tier, publicVenues, inspections } = Astro.props;
 // Most recently inspected first, then A to Z.
-const venues = sortByRecentInspection(publicVenues.filter((venue) => venue.tier === tier.value), inspections);
+const venues = sortByRecentInspection(
+  publicVenues.filter((venue) => venue.tier === tier.value),
+  inspections
+);
 const cards = venues.map((venue) => toCard({ venue }, inspections));
 const tierCounts = countVenuesByTier(publicVenues);
-const breadcrumbs = [{ label: 'Map', href: '/' }, { label: 'Verdicts', href: '/verdicts/approved' }, { label: tier.label }];
+const breadcrumbs = [
+  { label: 'Map', href: '/' },
+  { label: 'Verdicts', href: '/verdicts/approved' },
+  { label: tier.label },
+];
 const breadcrumbData = breadcrumbStructuredData(
   breadcrumbs.map(({ label, href }) => ({ name: label, href: href ?? `/verdicts/${tier.slug}` })),
-  new URL(`/verdicts/${tier.slug}`, Astro.site ?? Astro.url).href,
+  new URL(`/verdicts/${tier.slug}`, Astro.site ?? Astro.url).href
 );
 ---
 
-<Layout title={`${tier.label} Verdict — The Official Ledger Registry`} description={`${tier.label}: ${tier.description}`}>
-  <script slot="head" is:inline type="application/ld+json" set:html={serializeForScript(breadcrumbData)} />
+<Layout
+  title={`${tier.label} Verdict — The Official Ledger Registry`}
+  description={`${tier.label}: ${tier.description}`}
+>
+  <script
+    slot="head"
+    is:inline
+    type="application/ld+json"
+    set:html={serializeForScript(breadcrumbData)}
+  />
   <PageRibbon
     icon={tier.icon}
     kicker="Official Verdict Classification"
@@ -80,14 +101,20 @@ const breadcrumbData = breadcrumbStructuredData(
         <div class="border-b border-hairline pb-2 flex items-end justify-between gap-4">
           <div class="space-y-1">
             <h2 class="text-xl font-bold text-ink">Enrolled Establishments</h2>
-            <p class="text-xs font-sans tabular-nums text-stone-500">Most recently inspected first</p>
+            <p class="text-xs font-sans tabular-nums text-stone-500">
+              Most recently inspected first
+            </p>
           </div>
-          <span class="bench-count shrink-0">{venues.length} {tier.label}</span>
+          <span class="bench-count shrink-0">
+            {venues.length} {tier.label}
+          </span>
         </div>
       </div>
 
       <div class="bench-pillars tier-venue-grid">
-        {cards.map((card) => <BenchPillar pillar={card} />)}
+        {cards.map((card) => (
+          <BenchPillar pillar={card} />
+        ))}
       </div>
     </div>
   </div>

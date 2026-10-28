@@ -72,7 +72,6 @@
   --color-pewter: var(--color-tier-gone-but-not-forgotten);
   --color-pewter-tint: var(--color-tier-gone-but-not-forgotten-tint);
 
-
   /* Text and rules on the navy footer, header and bench panels. */
   --color-on-dark: #fff8f3;
   --color-on-dark-warm: #efe7e0;
@@ -215,7 +214,7 @@
  * (navy and deep panels, tier chips, -fixed tokens) and the pastel status
  * badges keep their colours, so they read the same in both themes.
  */
-:root[data-theme="dark"] {
+:root[data-theme='dark'] {
   color-scheme: dark;
 
   /* Surfaces, darkest (the page) to lightest. */
@@ -363,15 +362,18 @@
   body {
     background-color: var(--ledger-parchment);
     color: var(--ledger-ink);
-    font-family: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', sans-serif;
   }
 
-  h1, h2, h3, .font-serif-header {
-    font-family: "Playfair Display", "Playfair Display Fallback", Georgia, "Times New Roman", serif;
+  h1,
+  h2,
+  h3,
+  .font-serif-header {
+    font-family: 'Playfair Display', 'Playfair Display Fallback', Georgia, 'Times New Roman', serif;
   }
 
   .font-sans {
-    font-family: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', sans-serif;
   }
 
   :focus-visible {
@@ -411,9 +413,14 @@
   padding: 4px 10px;
   border-radius: 9999px;
   color: var(--color-on-dark-soft);
-  font: 500 12px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    500 12px/1 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   cursor: pointer;
-  transition: background-color 140ms ease, color 140ms ease;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
 }
 
 .theme-toggle-option input {

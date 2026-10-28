@@ -1,5 +1,15 @@
 import { and, asc, count, desc, eq, sql } from 'drizzle-orm';
-import { briberyRecords, goldenCut, inspections, venueImages, venues, type BriberyRow, type InspectionRow, type VenueImageRow, type VenueRow } from '@/db/schema';
+import {
+  briberyRecords,
+  goldenCut,
+  inspections,
+  venueImages,
+  venues,
+  type BriberyRow,
+  type InspectionRow,
+  type VenueImageRow,
+  type VenueRow,
+} from '@/db/schema';
 import { publicPersonName, publicText } from '@/lib/bribery';
 import { cuisineLabel } from '@/lib/cuisines';
 import { formatDateTime } from '@/lib/dates';
@@ -98,15 +108,23 @@ interface VenueWithImage {
 }
 
 function publicVenueRows() {
-  return db.select({ venue: venues, image: venueImages }).from(venues).leftJoin(venueImages, primaryImage);
+  return db
+    .select({ venue: venues, image: venueImages })
+    .from(venues)
+    .leftJoin(venueImages, primaryImage);
 }
 
 const toPublic = ({ venue, image }: VenueWithImage) => toPublicVenue(venue as PublicRow, image);
 
 /** Every public venue, grouped by tier and in each tier's public order (src/lib/venue-order.ts). */
 export async function getPublicVenues(): Promise<PublicVenue[]> {
-  const rows: VenueWithImage[] = await publicVenueRows().where(publicVenueCondition()).orderBy(asc(venues.name));
-  return sortForPublic(rows.filter(({ venue }) => isPublicRow(venue)).map(toPublic), (venue) => venue.tier);
+  const rows: VenueWithImage[] = await publicVenueRows()
+    .where(publicVenueCondition())
+    .orderBy(asc(venues.name));
+  return sortForPublic(
+    rows.filter(({ venue }) => isPublicRow(venue)).map(toPublic),
+    (venue) => venue.tier
+  );
 }
 
 /**
@@ -114,7 +132,9 @@ export async function getPublicVenues(): Promise<PublicVenue[]> {
  * still open. Closed venues stay off the map even when their tier page lists them.
  */
 export async function getMapVenues(): Promise<PublicVenue[]> {
-  const rows: VenueWithImage[] = await publicVenueRows().where(publicVenueCondition()).orderBy(asc(venues.name));
+  const rows: VenueWithImage[] = await publicVenueRows()
+    .where(publicVenueCondition())
+    .orderBy(asc(venues.name));
   return sortForPublic(
     rows.filter(({ venue }) => isPublicRow(venue) && isMappable(venue)).map(toPublic),
     (venue) => venue.tier
@@ -137,7 +157,9 @@ export async function getPublicVenue(slug: string): Promise<PublicVenueDetail | 
 
 /** Every public venue with its detail fields, for building the venue pages in one query. */
 export async function getPublicVenueDetails(): Promise<PublicVenueDetail[]> {
-  const rows: VenueWithImage[] = await publicVenueRows().where(publicVenueCondition()).orderBy(asc(venues.name));
+  const rows: VenueWithImage[] = await publicVenueRows()
+    .where(publicVenueCondition())
+    .orderBy(asc(venues.name));
   return rows.filter(({ venue }) => isPublicRow(venue)).map(toPublicDetail);
 }
 
@@ -172,7 +194,10 @@ export async function getGoldenCut(): Promise<GoldenCutVenue[]> {
 }
 
 export function toPublicInspection(
-  inspection: Pick<InspectionRow, 'id' | 'inspectionDate' | 'kind' | 'outcome' | 'firstAdminName' | 'secondAdminName'>,
+  inspection: Pick<
+    InspectionRow,
+    'id' | 'inspectionDate' | 'kind' | 'outcome' | 'firstAdminName' | 'secondAdminName'
+  >,
   venue: Pick<VenueRow, 'slug' | 'name'>
 ): Inspection {
   return {
@@ -182,13 +207,23 @@ export function toPublicInspection(
     date: inspection.inspectionDate,
     kind: inspection.kind,
     outcome: inspection.kind === 'verified' ? inspection.outcome : null,
-    chairs: inspection.kind === 'verified' ? [inspection.firstAdminName ?? 'Former Chair', inspection.secondAdminName ?? 'Former Chair'] : [],
+    chairs:
+      inspection.kind === 'verified'
+        ? [
+            inspection.firstAdminName ?? 'Former Chair',
+            inspection.secondAdminName ?? 'Former Chair',
+          ]
+        : [],
   };
 }
 
 /** Confirmed inspections (verified or legacy) of public venues. Pending and lapsed presses never show. */
 function publicInspectionCondition(venueSlug?: string) {
-  return and(eq(inspections.status, 'confirmed'), publicVenueCondition(), venueSlug === undefined ? undefined : eq(venues.slug, venueSlug));
+  return and(
+    eq(inspections.status, 'confirmed'),
+    publicVenueCondition(),
+    venueSlug === undefined ? undefined : eq(venues.slug, venueSlug)
+  );
 }
 
 /** Public inspections, newest first; all of them, or one venue's. */
@@ -199,7 +234,9 @@ export async function getPublicInspections(venueSlug?: string): Promise<Inspecti
     .innerJoin(venues, eq(inspections.venueId, venues.id))
     .where(publicInspectionCondition(venueSlug))
     .orderBy(desc(inspections.inspectionDate), sql`${inspections.confirmedAt} desc nulls last`);
-  return rows.filter(({ venue }) => isPublicRow(venue)).map(({ inspection, venue }) => toPublicInspection(inspection, venue));
+  return rows
+    .filter(({ venue }) => isPublicRow(venue))
+    .map(({ inspection, venue }) => toPublicInspection(inspection, venue));
 }
 
 /** For the nav badge on every public page. */
@@ -243,8 +280,12 @@ export function toPublicIncident(row: BriberyRow): Incident {
     id: row.id,
     date: row.incidentDate ?? '',
     ...(row.incidentTime ? { time: row.incidentTime } : {}),
-    ...(row.incidentDate ? { formattedDate: formatIncidentDate(row.incidentDate, row.incidentTime) } : {}),
-    ...(row.location || row.venueNameText ? { location: row.location ?? row.venueNameText ?? undefined } : {}),
+    ...(row.incidentDate
+      ? { formattedDate: formatIncidentDate(row.incidentDate, row.incidentTime) }
+      : {}),
+    ...(row.location || row.venueNameText
+      ? { location: row.location ?? row.venueNameText ?? undefined }
+      : {}),
     title: row.title ?? 'Improper benefit attempt',
     peopleInvolved: row.peopleInvolved.map(publicPersonName),
     witnesses: row.witnesses.map(publicPersonName),
@@ -266,5 +307,8 @@ export async function getPublishedIncidents(): Promise<Incident[]> {
 
 /** JSON for embedding in a <script type="application/json"> tag. */
 export function serializeForScript(value: unknown): string {
-  return JSON.stringify(value).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
 }

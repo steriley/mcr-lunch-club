@@ -28,6 +28,8 @@ export async function getToBeAssessedEntries(): Promise<TierEntry[]> {
       )
     );
   return rows.flatMap(({ decidedAt, venue }) =>
-    decidedAt && isPubliclyVisible(venue) ? [{ slug: venue.slug, tier: 'to_be_assessed' as const, enteredAt: decidedAt }] : []
+    decidedAt && isPubliclyVisible(venue)
+      ? [{ slug: venue.slug, tier: 'to_be_assessed' as const, enteredAt: decidedAt }]
+      : []
   );
 }

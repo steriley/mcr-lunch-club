@@ -38,7 +38,11 @@ describe('optimiseImage errors', () => {
 
   it('reports a drawing or encoding failure as encoder_failed and still releases the bitmap', async () => {
     let closed = false;
-    (globalThis as any).createImageBitmap = async () => ({ width: 4032, height: 3024, close: () => (closed = true) });
+    (globalThis as any).createImageBitmap = async () => ({
+      width: 4032,
+      height: 3024,
+      close: () => (closed = true),
+    });
     // Node has no canvas, so drawing fails after the bitmap was decoded.
     await assert.rejects(optimiseImage(new Blob(['x'])), (error) => {
       assert.ok(error instanceof OptimiseError);

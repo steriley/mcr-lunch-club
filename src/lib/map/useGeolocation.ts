@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue';
 
-export type GeolocationState = 'idle' | 'requesting' | 'active' | 'denied' | 'unavailable' | 'error';
+export type GeolocationState =
+  'idle' | 'requesting' | 'active' | 'denied' | 'unavailable' | 'error';
 
 export interface UserPosition {
   lat: number;
@@ -37,7 +38,10 @@ function resolveGeolocationError(
   if (code === TIMEOUT) {
     return { state: 'error', message: 'Location request timed out.' };
   }
-  return { state: 'error', message: message || 'An unknown error occurred while retrieving location.' };
+  return {
+    state: 'error',
+    message: message || 'An unknown error occurred while retrieving location.',
+  };
 }
 
 export function useGeolocation() {
@@ -88,9 +92,10 @@ export function useGeolocation() {
           maximumAge: 0,
         }
       );
-    } catch (e: any) {
+    } catch (e: unknown) {
       state.value = 'error';
-      errorMessage.value = e?.message || 'Failed to start geolocation tracking.';
+      errorMessage.value =
+        (e as { message?: string } | null)?.message || 'Failed to start geolocation tracking.';
     }
   }
 

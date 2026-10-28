@@ -34,7 +34,10 @@ export type VisitOutcome =
   | { result: 'not_found' };
 
 /** Re-derives venues.last_inspection_date from confirmed inspections (verified or legacy). */
-export async function refreshLastInspectionDate(db: Executor, venueId: string): Promise<string | null> {
+export async function refreshLastInspectionDate(
+  db: Executor,
+  venueId: string
+): Promise<string | null> {
   const [latest] = await db
     .select({ date: max(inspections.inspectionDate) })
     .from(inspections)
@@ -54,23 +57,37 @@ async function visitOnce(
 ): Promise<VisitOutcome> {
   return db.transaction(async (tx) => {
     // Serialise presses for this venue.
-    const locked = await tx.execute(sql`select ${venues.id} from ${venues} where ${venues.id} = ${venueId} for update`);
+    const locked = await tx.execute(
+      sql`select ${venues.id} from ${venues} where ${venues.id} = ${venueId} for update`
+    );
     if (!locked.rows.length) return { result: 'not_found' };
 
     // Lazy lapse: an unconfirmed press from an earlier London day no longer counts.
     await tx
       .update(inspections)
       .set({ status: 'lapsed' })
-      .where(and(eq(inspections.venueId, venueId), eq(inspections.status, 'pending'), lt(inspections.inspectionDate, today)));
+      .where(
+        and(
+          eq(inspections.venueId, venueId),
+          eq(inspections.status, 'pending'),
+          lt(inspections.inspectionDate, today)
+        )
+      );
 
     const [confirmedToday] = await tx
       .select()
       .from(inspections)
       .where(
-        and(eq(inspections.venueId, venueId), eq(inspections.status, 'confirmed'), eq(inspections.kind, 'verified'), eq(inspections.inspectionDate, today))
+        and(
+          eq(inspections.venueId, venueId),
+          eq(inspections.status, 'confirmed'),
+          eq(inspections.kind, 'verified'),
+          eq(inspections.inspectionDate, today)
+        )
       )
       .limit(1);
-    if (confirmedToday) return { result: 'confirmed', inspection: confirmedToday, confirmedNow: false };
+    if (confirmedToday)
+      return { result: 'confirmed', inspection: confirmedToday, confirmedNow: false };
 
     const [pending] = await tx
       .select()
@@ -82,18 +99,33 @@ async function visitOnce(
       if (!outcome) return { result: 'outcome_required' };
       const [created] = await tx
         .insert(inspections)
-        .values({ venueId, inspectionDate: today, status: 'pending', kind: 'verified', outcome, firstAdminId: actor.id, firstAdminName: actorName(actor), createdAt: now })
+        .values({
+          venueId,
+          inspectionDate: today,
+          status: 'pending',
+          kind: 'verified',
+          outcome,
+          firstAdminId: actor.id,
+          firstAdminName: actorName(actor),
+          createdAt: now,
+        })
         .returning();
       return { result: 'waiting', inspection: created };
     }
 
     // The same admin pressing again changes nothing: one person can never confirm their own visit.
     if (pending.firstAdminId === actor.id) return { result: 'waiting', inspection: pending };
-    if (outcome && outcome !== pending.outcome) return { result: 'outcome_mismatch', inspection: pending };
+    if (outcome && outcome !== pending.outcome)
+      return { result: 'outcome_mismatch', inspection: pending };
 
     const [confirmed] = await tx
       .update(inspections)
-      .set({ status: 'confirmed', secondAdminId: actor.id, secondAdminName: actorName(actor), confirmedAt: now })
+      .set({
+        status: 'confirmed',
+        secondAdminId: actor.id,
+        secondAdminName: actorName(actor),
+        confirmedAt: now,
+      })
       .where(and(eq(inspections.id, pending.id), eq(inspections.status, 'pending')))
       .returning();
     await refreshLastInspectionDate(tx, venueId);
@@ -127,18 +159,40 @@ export async function recordVisit(
 export interface VisitStatus {
   today: string;
   /** Someone pressed today and it still needs a second admin. Times are ISO timestamps. */
-  pending: { firstAdminName: string; byMe: boolean; firstAt: string; outcome: InspectionOutcome | null } | null;
+  pending: {
+    firstAdminName: string;
+    byMe: boolean;
+    firstAt: string;
+    outcome: InspectionOutcome | null;
+  } | null;
   /** Today's verified inspection, once confirmed. */
-  confirmed: { firstAdminName: string; secondAdminName: string; firstAt: string; confirmedAt: string | null; outcome: InspectionOutcome | null } | null;
+  confirmed: {
+    firstAdminName: string;
+    secondAdminName: string;
+    firstAt: string;
+    confirmedAt: string | null;
+    outcome: InspectionOutcome | null;
+  } | null;
 }
 
 /** What the "Visited today" control shows. Read-only: an earlier day's pending press shows as nothing. */
-export async function getVisitStatus(db: Database, venueId: string, userId: string, now: Date = new Date()): Promise<VisitStatus> {
+export async function getVisitStatus(
+  db: Database,
+  venueId: string,
+  userId: string,
+  now: Date = new Date()
+): Promise<VisitStatus> {
   const today = londonDate(now);
   const rows = await db
     .select()
     .from(inspections)
-    .where(and(eq(inspections.venueId, venueId), eq(inspections.inspectionDate, today), eq(inspections.kind, 'verified')));
+    .where(
+      and(
+        eq(inspections.venueId, venueId),
+        eq(inspections.inspectionDate, today),
+        eq(inspections.kind, 'verified')
+      )
+    );
   const confirmed = rows.find((row) => row.status === 'confirmed');
   const pending = rows.find((row) => row.status === 'pending');
   return {
@@ -164,7 +218,10 @@ export async function getVisitStatus(db: Database, venueId: string, userId: stri
   };
 }
 
-export async function listConfirmedInspections(db: Database, venueId: string): Promise<InspectionRow[]> {
+export async function listConfirmedInspections(
+  db: Database,
+  venueId: string
+): Promise<InspectionRow[]> {
   return db
     .select()
     .from(inspections)
@@ -173,19 +230,35 @@ export async function listConfirmedInspections(db: Database, venueId: string): P
 }
 
 /** The latest dual-verified inspection, or null. Legacy rows never count. */
-export async function latestVerifiedInspection(db: Executor, venueId: string): Promise<InspectionRow | null> {
+export async function latestVerifiedInspection(
+  db: Executor,
+  venueId: string
+): Promise<InspectionRow | null> {
   const [row] = await db
     .select()
     .from(inspections)
-    .where(and(eq(inspections.venueId, venueId), eq(inspections.status, 'confirmed'), eq(inspections.kind, 'verified')))
+    .where(
+      and(
+        eq(inspections.venueId, venueId),
+        eq(inspections.status, 'confirmed'),
+        eq(inspections.kind, 'verified')
+      )
+    )
     .orderBy(desc(inspections.inspectionDate))
     .limit(1);
   return row ?? null;
 }
 
 /** "Verified by A and B, below par" or "Legacy record (imported from the Chairs' records)". */
-export function describeInspection(row: Pick<InspectionRow, 'kind' | 'outcome' | 'firstAdminName' | 'secondAdminName' | 'inspectionDate'>): string {
+export function describeInspection(
+  row: Pick<
+    InspectionRow,
+    'kind' | 'outcome' | 'firstAdminName' | 'secondAdminName' | 'inspectionDate'
+  >
+): string {
   if (row.kind === 'legacy') return "Legacy record (imported from the Chairs' records)";
   const witnesses = `Verified by ${row.firstAdminName ?? 'a former admin'} and ${row.secondAdminName ?? 'a former admin'}`;
-  return row.outcome ? `${witnesses}, ${INSPECTION_OUTCOME_LABELS[row.outcome].toLowerCase()}` : witnesses;
+  return row.outcome
+    ? `${witnesses}, ${INSPECTION_OUTCOME_LABELS[row.outcome].toLowerCase()}`
+    : witnesses;
 }

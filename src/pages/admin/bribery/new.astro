@@ -7,7 +7,10 @@ import { db } from '@/lib/db';
 
 export const prerender = false;
 
-const venueOptions = await db.select({ id: venues.id, name: venues.name }).from(venues).orderBy(asc(venues.name));
+const venueOptions = await db
+  .select({ id: venues.id, name: venues.name })
+  .from(venues)
+  .orderBy(asc(venues.name));
 ---
 
 <AdminLayout title="New bribery record">

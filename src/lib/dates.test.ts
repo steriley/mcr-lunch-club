@@ -6,8 +6,20 @@ import { formatDate, formatDateTime, ordinal } from './dates';
 describe('ordinal', () => {
   it('uses st, nd, rd and th, with th for 11 to 13', () => {
     const expected: Record<number, string> = {
-      1: '1st', 2: '2nd', 3: '3rd', 4: '4th', 10: '10th', 11: '11th', 12: '12th', 13: '13th',
-      21: '21st', 22: '22nd', 23: '23rd', 24: '24th', 30: '30th', 31: '31st',
+      1: '1st',
+      2: '2nd',
+      3: '3rd',
+      4: '4th',
+      10: '10th',
+      11: '11th',
+      12: '12th',
+      13: '13th',
+      21: '21st',
+      22: '22nd',
+      23: '23rd',
+      24: '24th',
+      30: '30th',
+      31: '31st',
     };
     for (const [n, text] of Object.entries(expected)) assert.equal(ordinal(Number(n)), text);
   });
@@ -15,7 +27,20 @@ describe('ordinal', () => {
 
 describe('formatDate', () => {
   it('formats every month, with Sept for September', () => {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sept',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     months.forEach((name, index) => {
       assert.equal(formatDate(`2026-${String(index + 1).padStart(2, '0')}-08`), `8th ${name} 26`);
     });
@@ -40,7 +65,17 @@ describe('formatDate', () => {
   });
 
   it('returns the fallback for missing or invalid input and never throws', () => {
-    for (const value of [null, undefined, '', '   ', 'nonsense', '2026-02-31', '2026-13-01', 'Awaiting Assessment', new Date('nope')]) {
+    for (const value of [
+      null,
+      undefined,
+      '',
+      '   ',
+      'nonsense',
+      '2026-02-31',
+      '2026-13-01',
+      'Awaiting Assessment',
+      new Date('nope'),
+    ]) {
       assert.equal(formatDate(value), '—');
       assert.equal(formatDateTime(value), '—');
     }

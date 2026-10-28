@@ -20,7 +20,10 @@ const questionCount = FAQ_PARTS.reduce((total, part) => total + part.items.lengt
     title="Frequently Asked Questions"
     quote={[
       'For venues, proprietors, and the merely curious.',
-      { text: 'Read in full before writing to us. Read in full again before writing to us angrily.', accent: true },
+      {
+        text: 'Read in full before writing to us. Read in full again before writing to us angrily.',
+        accent: true,
+      },
     ]}
     width="max-w-4xl"
   />
@@ -29,10 +32,17 @@ const questionCount = FAQ_PARTS.reduce((total, part) => total + part.items.lengt
     <Breadcrumbs items={[{ label: 'Map', href: '/' }, { label: 'FAQs' }]} />
 
     <!-- Jump list -->
-    <nav aria-label="FAQ sections" class="bg-card rounded-2xl border border-hairline p-5 sm:p-6 shadow-sm space-y-3">
+    <nav
+      aria-label="FAQ sections"
+      class="bg-card rounded-2xl border border-hairline p-5 sm:p-6 shadow-sm space-y-3"
+    >
       <div class="flex flex-wrap items-baseline justify-between gap-2 border-b border-hairline pb-2">
-        <span class="text-xs uppercase tracking-widest font-bold text-stone-500">Table of Proceedings</span>
-        <span class="text-xs tabular-nums text-stone-500">{questionCount} questions answered, none reconsidered</span>
+        <span class="text-xs uppercase tracking-widest font-bold text-stone-500">
+          Table of Proceedings
+        </span>
+        <span class="text-xs tabular-nums text-stone-500">
+          {questionCount} questions answered, none reconsidered
+        </span>
       </div>
       <ol class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
         {FAQ_PARTS.map((part) => (
@@ -49,11 +59,18 @@ const questionCount = FAQ_PARTS.reduce((total, part) => total + part.items.lengt
     {FAQ_PARTS.map((part) => (
       <section id={part.id} class="space-y-5 scroll-mt-24" aria-labelledby={`${part.id}-heading`}>
         <div class="border-b border-hairline pb-2 space-y-1">
-          <h2 id={`${part.id}-heading`} class="text-2xl font-bold text-ink flex items-baseline gap-3">
-            <span class="text-sm font-sans tabular-nums uppercase tracking-widest text-stone-500 font-bold">Part {part.numeral}</span>
+          <h2
+            id={`${part.id}-heading`}
+            class="text-2xl font-bold text-ink flex items-baseline gap-3"
+          >
+            <span class="text-sm font-sans tabular-nums uppercase tracking-widest text-stone-500 font-bold">
+              Part {part.numeral}
+            </span>
             <span>{part.title}</span>
           </h2>
-          {part.intro && <p class="text-sm italic text-stone-600 font-serif-header">{part.intro}</p>}
+          {part.intro && (
+            <p class="text-sm italic text-stone-600 font-serif-header">{part.intro}</p>
+          )}
         </div>
 
         <div class="space-y-3">
@@ -66,18 +83,29 @@ const questionCount = FAQ_PARTS.reduce((total, part) => total + part.items.lengt
 
               <div class="faq-body space-y-4">
                 {item.a.map((paragraph) => (
-                  <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]" set:html={paragraph} />
+                  <p
+                    class="text-base text-stone-800 leading-relaxed max-w-[70ch]"
+                    set:html={paragraph}
+                  />
                 ))}
 
                 {item.table && (
                   <div class="overflow-x-auto rounded-xl border border-hairline">
                     <table class="faq-table">
                       <thead>
-                        <tr>{item.table.head.map((cell) => <th scope="col">{cell}</th>)}</tr>
+                        <tr>
+                          {item.table.head.map((cell) => (
+                            <th scope="col">{cell}</th>
+                          ))}
+                        </tr>
                       </thead>
                       <tbody>
                         {item.table.rows.map((row) => (
-                          <tr>{row.map((cell) => <td set:html={cell} />)}</tr>
+                          <tr>
+                            {row.map((cell) => (
+                              <td set:html={cell} />
+                            ))}
+                          </tr>
                         ))}
                       </tbody>
                     </table>
@@ -86,14 +114,18 @@ const questionCount = FAQ_PARTS.reduce((total, part) => total + part.items.lengt
 
                 {item.steps && (
                   <ol class="list-decimal pl-6 space-y-1 text-base text-stone-800 leading-relaxed max-w-[70ch]">
-                    {item.steps.map((step) => <li>{step}</li>)}
+                    {item.steps.map((step) => (
+                      <li>{step}</li>
+                    ))}
                   </ol>
                 )}
 
                 {item.quote && (
                   <figure class="faq-quote">
                     <blockquote class="font-serif-header italic text-base sm:text-lg leading-snug text-ink max-w-[60ch]">
-                      <p>“<Fragment set:html={item.quote.text} />”</p>
+                      <p>
+                        “<Fragment set:html={item.quote.text} />”
+                      </p>
                     </blockquote>
                     <figcaption class="faq-quote-by">
                       <Icon name="scales" class="icon-sm" />
@@ -111,7 +143,9 @@ const questionCount = FAQ_PARTS.reduce((total, part) => total + part.items.lengt
     <!-- Sign-off seal -->
     <div class="flex flex-col items-center text-center py-6 text-stone-600 text-xs space-y-1 border-t border-hairline">
       <Icon name="lock" class="icon-lg" />
-      <div class="font-bold text-navy uppercase tracking-wider">Verdicts are final. Lunches are not.</div>
+      <div class="font-bold text-navy uppercase tracking-wider">
+        Verdicts are final. Lunches are not.
+      </div>
       <div class="font-serif-header italic text-stone-500">
         “We lunch with purpose. We judge with integrity. We return only where deserved.”
       </div>

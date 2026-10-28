@@ -19,7 +19,10 @@ export const CUISINES = [
 export type CuisineValue = (typeof CUISINES)[number]['value'];
 export type CuisineLabel = (typeof CUISINES)[number]['label'];
 
-export const CUISINE_VALUES = CUISINES.map((cuisine) => cuisine.value) as [CuisineValue, ...CuisineValue[]];
+export const CUISINE_VALUES = CUISINES.map((cuisine) => cuisine.value) as [
+  CuisineValue,
+  ...CuisineValue[],
+];
 
 export const DEFAULT_CUISINE: CuisineValue = 'other';
 
@@ -33,8 +36,12 @@ export function cuisineLabel(value: CuisineValue): CuisineLabel {
 
 /** Accepts a stored value or a display label (any case); returns null when unrecognised. */
 export function parseCuisine(input: string | null | undefined): CuisineValue | null {
-  const needle = String(input ?? '').trim().toLowerCase();
-  const match = CUISINES.find((cuisine) => cuisine.value === needle || cuisine.label.toLowerCase() === needle);
+  const needle = String(input ?? '')
+    .trim()
+    .toLowerCase();
+  const match = CUISINES.find(
+    (cuisine) => cuisine.value === needle || cuisine.label.toLowerCase() === needle
+  );
   return match?.value ?? null;
 }
 
@@ -43,15 +50,15 @@ export const LEGACY_CUISINE_MAP: Readonly<Record<string, CuisineValue>> = {
   'detroit pan pizza': 'pizza',
   'nyc style pizza': 'pizza',
   'neapolitan pizza': 'pizza',
-  'pizza': 'pizza',
+  pizza: 'pizza',
   'pizza & slices': 'pizza',
-  'burgers': 'fast_food',
+  burgers: 'fast_food',
   'burgers & loaded fries': 'fast_food',
   'smash burgers': 'fast_food',
   'fried chicken': 'fast_food',
   'louisiana fried chicken': 'fast_food',
   'nashville hot chicken': 'fast_food',
-  'wings': 'fast_food',
+  wings: 'fast_food',
   'wings & dive bar': 'fast_food',
   'fish & chips': 'fish_and_chips',
   'traditional chippy': 'fish_and_chips',
@@ -65,14 +72,14 @@ export const LEGACY_CUISINE_MAP: Readonly<Record<string, CuisineValue>> = {
   'asian noodles & soups': 'asian',
   'cantonese bbq': 'asian',
   'chinese street food': 'asian',
-  'ramen': 'asian',
+  ramen: 'asian',
   'wok noodles': 'asian',
-  'indian': 'indian',
+  indian: 'indian',
   "rice 'n' three": 'indian',
   'levantine / shawarma': 'middle_eastern_mediterranean',
   'greek street food': 'middle_eastern_mediterranean',
   'mexican / burritos': 'mexican',
-  'steakhouse': 'steak_grill',
+  steakhouse: 'steak_grill',
   'brazilian rodizio': 'steak_grill',
   'casual dining': 'other',
 };

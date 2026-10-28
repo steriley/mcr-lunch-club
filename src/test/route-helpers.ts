@@ -60,7 +60,10 @@ export function stubDb(method: 'select' | 'insert' | 'update' | 'delete', result
 }
 
 /** Makes `db.<method>()` return a different fake result on each call, in order. */
-export function stubDbSequence(method: 'select' | 'insert' | 'update' | 'delete', results: unknown[]) {
+export function stubDbSequence(
+  method: 'select' | 'insert' | 'update' | 'delete',
+  results: unknown[]
+) {
   const calls: QueryCall[] = [];
   let index = 0;
   patch(db as Mutable, method, () => {
@@ -118,7 +121,11 @@ export function restoreStubs() {
 }
 
 /** A same-site request, as sent by the admin UI. */
-export function adminRequest(method: string, body?: unknown, init: { origin?: string | null; path?: string } = {}) {
+export function adminRequest(
+  method: string,
+  body?: unknown,
+  init: { origin?: string | null; path?: string } = {}
+) {
   const headers: Record<string, string> = {};
   if (init.origin !== null) headers.origin = init.origin ?? SITE;
   if (body !== undefined) headers['content-type'] = 'application/json';
@@ -140,7 +147,8 @@ export async function quietly<T>(fn: () => Promise<T>): Promise<T> {
   }
 }
 
-export const run = (route: Function, context: Record<string, unknown>) => route(context) as Promise<Response>;
+export const run = (route: Function, context: Record<string, unknown>) =>
+  route(context) as Promise<Response>;
 
 /** Renders a Drizzle condition to its SQL text and parameters, so tests can assert what is actually queried. */
 export function renderSql(condition: unknown): { sql: string; params: unknown[] } {

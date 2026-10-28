@@ -9,7 +9,11 @@ import type { Database } from './db-client';
 const VENUE_ID = '3f2b7a52-5c1e-4c0d-9a4f-1a2b3c4d5e6f';
 
 function input(overrides: Record<string, unknown> = {}): BriberyInput {
-  return briberyInputSchema.parse({ title: 'Free cookie', description: 'A cookie was offered at the till.', ...overrides });
+  return briberyInputSchema.parse({
+    title: 'Free cookie',
+    description: 'A cookie was offered at the till.',
+    ...overrides,
+  });
 }
 
 /** Mimics db.select().from().where().limit() resolving to the given rows. */
@@ -34,13 +38,19 @@ describe('briberyValues', () => {
   });
 
   it('fills the venue name from the linked venue', async () => {
-    const result = await briberyValues(fakeDb([{ name: 'Chip Shop' }]), input({ venueId: VENUE_ID }));
+    const result = await briberyValues(
+      fakeDb([{ name: 'Chip Shop' }]),
+      input({ venueId: VENUE_ID })
+    );
     assert.ok(result.ok);
     assert.equal(result.values.venueNameText, 'Chip Shop');
   });
 
   it('keeps an explicitly typed venue name', async () => {
-    const result = await briberyValues(fakeDb([{ name: 'Chip Shop' }]), input({ venueId: VENUE_ID, venueNameText: 'The Chippy' }));
+    const result = await briberyValues(
+      fakeDb([{ name: 'Chip Shop' }]),
+      input({ venueId: VENUE_ID, venueNameText: 'The Chippy' })
+    );
     assert.ok(result.ok);
     assert.equal(result.values.venueNameText, 'The Chippy');
   });

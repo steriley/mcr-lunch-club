@@ -9,7 +9,13 @@ process.env.BETTER_AUTH_URL = 'https://lunch.example.com';
 
 // Vercel sets these in its build environment; clear them so a preview build
 // tests the same configuration as a local run.
-for (const key of ['VERCEL_ENV', 'VERCEL_URL', 'VERCEL_BRANCH_URL', 'VERCEL_PROJECT_PRODUCTION_URL', 'BETTER_AUTH_ALLOWED_HOSTS']) {
+for (const key of [
+  'VERCEL_ENV',
+  'VERCEL_URL',
+  'VERCEL_BRANCH_URL',
+  'VERCEL_PROJECT_PRODUCTION_URL',
+  'BETTER_AUTH_ALLOWED_HOSTS',
+]) {
   delete process.env[key];
 }
 

@@ -37,7 +37,12 @@ export function matchesFilters(
   if (venue.lat === null || venue.lng === null) return false;
   if (!filters.tiers.includes(venue.tier)) return false;
   if (filters.cost !== 'all' && venue.cost !== filters.cost) return false;
-  if (filters.maxWalkMinutes && venue.walkingTimeMin !== null && venue.walkingTimeMin > filters.maxWalkMinutes) return false;
+  if (
+    filters.maxWalkMinutes &&
+    venue.walkingTimeMin !== null &&
+    venue.walkingTimeMin > filters.maxWalkMinutes
+  )
+    return false;
   if (filters.cuisine !== 'all' && venue.cuisine !== filters.cuisine) return false;
 
   if (filters.inspectedDays !== 'all') {
@@ -50,7 +55,9 @@ export function matchesFilters(
   if (query) {
     // The prescribed order is only shown for Approved venues, so only they are found by it.
     const order = venue.tier === 'approved' ? venue.eatLikeUs : '';
-    const haystack = [venue.name, venue.cuisine, order, venue.address].map((text) => (text || '').toLowerCase());
+    const haystack = [venue.name, venue.cuisine, order, venue.address].map((text) =>
+      (text || '').toLowerCase()
+    );
     if (!haystack.some((text) => text.includes(query))) return false;
   }
   return true;

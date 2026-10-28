@@ -32,13 +32,23 @@ async function signOutOtherSessions() {
     <div>
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Sessions</p>
       <h2 class="mt-2 text-2xl font-bold text-ink">Other devices</h2>
-      <p class="mt-2 text-sm text-soot">Sign out everywhere except this browser, for example after using a shared computer.</p>
+      <p class="mt-2 text-sm text-soot">
+        Sign out everywhere except this browser, for example after using a shared computer.
+      </p>
     </div>
 
-    <p v-if="errorMessage" role="alert" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+    <p
+      v-if="errorMessage"
+      role="alert"
+      class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+    >
       {{ errorMessage }}
     </p>
-    <p v-if="message" role="status" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+    <p
+      v-if="message"
+      role="status"
+      class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+    >
       {{ message }}
     </p>
 

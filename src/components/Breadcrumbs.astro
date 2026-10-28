@@ -20,11 +20,22 @@ const { items } = Astro.props;
       return (
         <li class="flex min-w-0 items-center gap-2">
           {last || !item.href ? (
-            <span aria-current={last ? 'page' : undefined} class="min-w-0 break-words text-stone-600">{item.label}</span>
+            <span
+              aria-current={last ? 'page' : undefined}
+              class="min-w-0 break-words text-stone-600"
+            >
+              {item.label}
+            </span>
           ) : (
-            <a href={item.href} class="breadcrumb-link text-navy hover:underline font-bold">{item.label}</a>
+            <a href={item.href} class="breadcrumb-link text-navy hover:underline font-bold">
+              {item.label}
+            </a>
           )}
-          {!last && <span aria-hidden="true" class="text-stone-400">›</span>}
+          {!last && (
+            <span aria-hidden="true" class="text-stone-400">
+              ›
+            </span>
+          )}
         </li>
       );
     })}

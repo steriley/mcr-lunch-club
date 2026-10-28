@@ -9,7 +9,12 @@
           @toggle="toggleTier"
         />
 
-        <LedgerSearchField ref="phoneSearchRef" input-id="ledger-search-input-phone" class="ledger-search-phone" placeholder="Search venues or dishes…" />
+        <LedgerSearchField
+          ref="phoneSearchRef"
+          input-id="ledger-search-input-phone"
+          class="ledger-search-phone"
+          placeholder="Search venues or dishes…"
+        />
 
         <button
           type="button"
@@ -20,34 +25,80 @@
           :title="isSecondaryFiltersOpen ? 'Hide secondary filters' : 'Show secondary filters'"
           @click="isSecondaryFiltersOpen = !isSecondaryFiltersOpen"
         >
-          <svg class="ledger-secondary-toggle-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg
+            class="ledger-secondary-toggle-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <path d="M4 7h9m4 0h3M4 17h3m4 0h9" />
             <circle cx="15" cy="7" r="2" />
             <circle cx="9" cy="17" r="2" />
           </svg>
           <span class="ledger-secondary-toggle-label">Filters</span>
-          <span v-if="activeSecondaryFilterCount" class="ledger-secondary-filter-count" aria-hidden="true">{{ activeSecondaryFilterCount }}</span>
-          <svg :class="['ledger-secondary-chevron', isSecondaryFiltersOpen && 'is-open']" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <span
+            v-if="activeSecondaryFilterCount"
+            class="ledger-secondary-filter-count"
+            aria-hidden="true"
+            >{{ activeSecondaryFilterCount }}</span
+          >
+          <svg
+            :class="['ledger-secondary-chevron', isSecondaryFiltersOpen && 'is-open']"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <path d="m3 6 5 5 5-5" />
           </svg>
         </button>
       </div>
 
       <Transition name="ledger-panel">
-        <div id="ledger-secondary-filters" v-show="isSecondaryFiltersOpen" class="ledger-secondary-filters">
+        <div
+          id="ledger-secondary-filters"
+          v-show="isSecondaryFiltersOpen"
+          class="ledger-secondary-filters"
+        >
           <div class="ledger-panel-head">
             <h2 class="ledger-panel-title">
-              <svg class="ledger-panel-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <svg
+                class="ledger-panel-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
                 <path d="M4 7h9m4 0h3M4 17h3m4 0h9" />
                 <circle cx="15" cy="7" r="2" />
                 <circle cx="9" cy="17" r="2" />
               </svg>
               Refine the Ledger
             </h2>
-            <button type="button" class="ledger-reset-button" @click="resetAll">Reset filters</button>
+            <button type="button" class="ledger-reset-button" @click="resetAll">
+              Reset filters
+            </button>
           </div>
 
-          <LedgerSearchField ref="panelSearchRef" input-id="ledger-search-input" class="ledger-search-panel" shortcut />
+          <LedgerSearchField
+            ref="panelSearchRef"
+            input-id="ledger-search-input"
+            class="ledger-search-panel"
+            shortcut
+          />
 
           <div class="ledger-filter-groups">
             <div class="ledger-filter-group">
@@ -61,7 +112,9 @@
                   :title="cost.title"
                   :class="['ledger-cost-button', filters.cost === cost.id && 'is-selected']"
                   @click="setCost(cost.id)"
-                >{{ cost.label }}</button>
+                >
+                  {{ cost.label }}
+                </button>
               </div>
             </div>
 
@@ -70,7 +123,10 @@
               <select
                 :value="filters.maxWalkMinutes"
                 aria-label="Maximum walking time"
-                :class="['ledger-select', filters.maxWalkMinutes !== initialFilterState.maxWalkMinutes && 'is-active']"
+                :class="[
+                  'ledger-select',
+                  filters.maxWalkMinutes !== initialFilterState.maxWalkMinutes && 'is-active',
+                ]"
                 @change="onWalkChange"
               >
                 <option :value="60">All within 2.5 mi</option>
@@ -131,10 +187,12 @@ const isSecondaryFiltersOpen = ref(false);
 
 const activeSecondaryFilterCount = computed(() => {
   const current = filters.value;
-  return Number(current.cost !== 'all')
-    + Number(current.maxWalkMinutes !== initialFilterState.maxWalkMinutes)
-    + Number(current.inspectedDays !== 'all')
-    + Number(current.searchQuery.trim() !== '');
+  return (
+    Number(current.cost !== 'all') +
+    Number(current.maxWalkMinutes !== initialFilterState.maxWalkMinutes) +
+    Number(current.inspectedDays !== 'all') +
+    Number(current.searchQuery.trim() !== '')
+  );
 });
 
 const ALL_TIERS = TIERS.map((tier) => tier.value);
@@ -163,7 +221,12 @@ function handleWhereTodayClick(event: MouseEvent) {
 }
 
 function handleSearchShortcut(event: KeyboardEvent) {
-  if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'k' || event.altKey || event.shiftKey) {
+  if (
+    !(event.metaKey || event.ctrlKey) ||
+    event.key.toLowerCase() !== 'k' ||
+    event.altKey ||
+    event.shiftKey
+  ) {
     return;
   }
 
@@ -219,7 +282,7 @@ function resetAll() {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  font-family: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', sans-serif;
 }
 
 .ledger-tier-row {
@@ -247,7 +310,7 @@ function resetAll() {
 }
 
 .ledger-secondary-toggle:hover,
-.ledger-secondary-toggle[aria-expanded="true"] {
+.ledger-secondary-toggle[aria-expanded='true'] {
   border-color: var(--color-navy);
   background: var(--color-on-dark);
   color: var(--color-navy);
@@ -262,7 +325,10 @@ function resetAll() {
 }
 
 .ledger-secondary-toggle-label {
-  font: 700 12px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 12px/1 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
 }
 
 .ledger-secondary-toggle-icon {
@@ -311,7 +377,9 @@ function resetAll() {
 
 .ledger-panel-enter-active,
 .ledger-panel-leave-active {
-  transition: opacity 160ms ease, transform 160ms ease;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
 }
 
 .ledger-panel-enter-from,
@@ -345,7 +413,7 @@ function resetAll() {
   color: var(--color-ochre);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: .055em;
+  letter-spacing: 0.055em;
   line-height: 1.35;
   text-transform: uppercase;
 }
@@ -363,10 +431,15 @@ function resetAll() {
   border-radius: 999px;
   background: var(--color-surface);
   color: var(--color-ochre);
-  font: 700 12px/1.2 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 12px/1.2 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color 140ms ease, border-color 140ms ease;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease;
 }
 
 .ledger-reset-button:hover {
@@ -389,8 +462,13 @@ function resetAll() {
   background: var(--color-surface);
   box-shadow: inset 0 1px 2px rgb(22 19 15 / 5%);
   color: var(--color-ink);
-  font: 500 13px/1.45 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  font:
+    500 13px/1.45 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 
 .ledger-search-input::placeholder {
@@ -431,7 +509,10 @@ function resetAll() {
   border-radius: 5px;
   background: var(--color-paper);
   color: var(--color-muted);
-  font: 700 11px/1.5 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 11px/1.5 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
 }
 
 /* No keyboard shortcut to advertise on touch screens. */
@@ -462,7 +543,7 @@ function resetAll() {
   color: var(--color-ochre);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: .09em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
@@ -484,9 +565,14 @@ function resetAll() {
   border-radius: 7px;
   background: transparent;
   color: var(--color-muted);
-  font: 700 13px/1.2 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 13px/1.2 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   cursor: pointer;
-  transition: background-color 140ms ease, color 140ms ease;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
 }
 
 .ledger-cost-button:hover:not(.is-selected) {
@@ -513,9 +599,14 @@ function resetAll() {
   background-repeat: no-repeat;
   background-size: 12px;
   color: var(--color-ink);
-  font: 600 13px/1.2 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    600 13px/1.2 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   cursor: pointer;
-  transition: border-color 140ms ease, background-color 140ms ease;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease;
 }
 
 .ledger-select:hover {
@@ -587,7 +678,7 @@ function resetAll() {
 
   /* Keeps the 26px pill; the extension is transparent and only vertical. */
   .ledger-reset-button::before {
-    content: "";
+    content: '';
     position: absolute;
     left: 0;
     top: -9px;

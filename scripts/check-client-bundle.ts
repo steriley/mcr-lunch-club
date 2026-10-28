@@ -21,13 +21,27 @@ if (!CLIENT_DIRS.length) {
 function files(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const full = path.join(dir, entry.name);
-    return entry.isDirectory() ? files(full) : /\.(js|mjs|html|css|json|map)$/.test(entry.name) ? [full] : [];
+    return entry.isDirectory()
+      ? files(full)
+      : /\.(js|mjs|html|css|json|map)$/.test(entry.name)
+        ? [full]
+        : [];
   });
 }
 
-const needles = ['ORS_API_KEY', 'api.openrouteservice.org', 'BLOB_READ_WRITE_TOKEN', '@resvg/resvg-js', 'wawoff2', 'Unsupported OpenType signature'];
+const needles = [
+  'ORS_API_KEY',
+  'api.openrouteservice.org',
+  'BLOB_READ_WRITE_TOKEN',
+  '@resvg/resvg-js',
+  'wawoff2',
+  'Unsupported OpenType signature',
+];
 const secrets = new Map<string, string>();
-for (const [name, value] of [['ORS_API_KEY', getOrsApiKey()], ['BLOB_READ_WRITE_TOKEN', getBlobToken()]] as const) {
+for (const [name, value] of [
+  ['ORS_API_KEY', getOrsApiKey()],
+  ['BLOB_READ_WRITE_TOKEN', getBlobToken()],
+] as const) {
   if (value) {
     needles.push(value);
     secrets.set(value, name);
@@ -41,13 +55,20 @@ for (const dir of CLIENT_DIRS) {
     scanned += 1;
     const text = readFileSync(file, 'utf8');
     for (const needle of needles) {
-      if (text.includes(needle)) problems.push(`${file} contains ${secrets.has(needle) ? `the ${secrets.get(needle)} value` : needle}`);
+      if (text.includes(needle))
+        problems.push(
+          `${file} contains ${secrets.has(needle) ? `the ${secrets.get(needle)} value` : needle}`
+        );
     }
   }
 }
 
 if (problems.length) {
-  console.error(`Client bundle check failed:\n${problems.map((problem) => `  - ${problem}`).join('\n')}`);
+  console.error(
+    `Client bundle check failed:\n${problems.map((problem) => `  - ${problem}`).join('\n')}`
+  );
   process.exit(1);
 }
-console.log(`Client bundle check passed (${scanned} files${secrets.size ? `, including the ${[...secrets.values()].join(' and ')} value${secrets.size > 1 ? 's' : ''}` : ''}).`);
+console.log(
+  `Client bundle check passed (${scanned} files${secrets.size ? `, including the ${[...secrets.values()].join(' and ')} value${secrets.size > 1 ? 's' : ''}` : ''}).`
+);

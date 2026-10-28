@@ -9,15 +9,15 @@
     <template #icon>
       <svg class="field-icon weather-header-icon" viewBox="0 0 24 24" aria-hidden="true">
         <template v-for="(shape, index) in weatherIcons[currentIcon]" :key="index">
-            <path v-if="shape.kind === 'path'" :d="shape.d" />
-            <circle
-              v-else
-              :cx="shape.cx"
-              :cy="shape.cy"
-              :r="shape.r"
-              :fill="shape.filled ? 'currentColor' : 'none'"
-            />
-          </template>
+          <path v-if="shape.kind === 'path'" :d="shape.d" />
+          <circle
+            v-else
+            :cx="shape.cx"
+            :cy="shape.cy"
+            :r="shape.r"
+            :fill="shape.filled ? 'currentColor' : 'none'"
+          />
+        </template>
       </svg>
     </template>
 
@@ -37,8 +37,20 @@
         </svg>
       </div>
       <div class="weather-copy">
-        <h3>{{ loading ? 'Checking the forecast' : error ? 'Forecast unavailable' : 'Mixed conditions' }}</h3>
-        <p>{{ loading ? 'Checking conditions over Manchester.' : error ? 'Assume persistent drizzle as statutory default. Equip galoshes regardless. Please try again later.' : 'No clear reading from the Met Office. Pack a brolly to be safe.' }}</p>
+        <h3>
+          {{
+            loading ? 'Checking the forecast' : error ? 'Forecast unavailable' : 'Mixed conditions'
+          }}
+        </h3>
+        <p>
+          {{
+            loading
+              ? 'Checking conditions over Manchester.'
+              : error
+                ? 'Assume persistent drizzle as statutory default. Equip galoshes regardless. Please try again later.'
+                : 'No clear reading from the Met Office. Pack a brolly to be safe.'
+          }}
+        </p>
       </div>
     </div>
 
@@ -58,7 +70,9 @@
         </svg>
       </div>
       <div class="weather-copy">
-        <h3>{{ dispatch?.title }} <span>·</span> {{ formatTemperature(weather.now.temperatureC) }}</h3>
+        <h3>
+          {{ dispatch?.title }} <span>·</span> {{ formatTemperature(weather.now.temperatureC) }}
+        </h3>
         <p>{{ dispatch?.quip }}</p>
       </div>
     </div>
@@ -68,7 +82,11 @@
         <span>Wind: {{ formatWind(weather.now.windSpeedMph) }}</span>
         <span
           class="weather-rain"
-          :class="{ 'is-warning': weather.now.precipitationProbability !== null && weather.now.precipitationProbability >= 50 }"
+          :class="{
+            'is-warning':
+              weather.now.precipitationProbability !== null &&
+              weather.now.precipitationProbability >= 50,
+          }"
         >
           Rain {{ formatPercent(weather.now.precipitationProbability) }}
         </span>
@@ -95,7 +113,10 @@ const weather = ref<WeatherSummary | null>(null);
 const weatherIcons: Record<WeatherIcon, WeatherShape[]> = {
   sunny: [
     { kind: 'circle', cx: 12, cy: 12, r: 4.5 },
-    { kind: 'path', d: 'M12 2.5v2.5M12 19v2.5M2.5 12h2.5M19 12h2.5M5.28 5.28l1.77 1.77M16.95 16.95l1.77 1.77M5.28 18.72l1.77-1.77M16.95 7.05l1.77-1.77' },
+    {
+      kind: 'path',
+      d: 'M12 2.5v2.5M12 19v2.5M2.5 12h2.5M19 12h2.5M5.28 5.28l1.77 1.77M16.95 16.95l1.77 1.77M5.28 18.72l1.77-1.77M16.95 7.05l1.77-1.77',
+    },
   ],
   'clear-night': [{ kind: 'path', d: 'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z' }],
   'partly-cloudy-day': [
@@ -103,12 +124,20 @@ const weatherIcons: Record<WeatherIcon, WeatherShape[]> = {
     { kind: 'path', d: 'M17.5 19H9a5 5 0 0 1-.3-10 6 6 0 0 1 11.3 2A4 4 0 0 1 17.5 19Z' },
   ],
   'partly-cloudy-night': [
-    { kind: 'path', d: 'M11 6a4.5 4.5 0 0 0 5 4.9A4.5 4.5 0 0 1 11.5 18H8a5 5 0 0 1-.3-10 5.8 5.8 0 0 1 3.3-2Z' },
+    {
+      kind: 'path',
+      d: 'M11 6a4.5 4.5 0 0 0 5 4.9A4.5 4.5 0 0 1 11.5 18H8a5 5 0 0 1-.3-10 5.8 5.8 0 0 1 3.3-2Z',
+    },
     { kind: 'path', d: 'M17.5 19H9a5 5 0 0 1-.3-10 6 6 0 0 1 11.3 2A4 4 0 0 1 17.5 19Z' },
   ],
   overcast: [{ kind: 'path', d: 'M6 18a4 4 0 0 1 .5-8 5 5 0 0 1 9.5 1.5A3.5 3.5 0 0 1 18 18H6Z' }],
   fog: [{ kind: 'path', d: 'M4 8h16M3 12h18M5 16h14M7 20h10' }],
-  haze: [{ kind: 'path', d: 'M12 5a3.5 3.5 0 0 0-3.5 3.5M15.5 8.5A3.5 3.5 0 0 0 12 5M3 13h18M4 17h16M7 21h10' }],
+  haze: [
+    {
+      kind: 'path',
+      d: 'M12 5a3.5 3.5 0 0 0-3.5 3.5M15.5 8.5A3.5 3.5 0 0 0 12 5M3 13h18M4 17h16M7 21h10',
+    },
+  ],
   'light-drizzle': [{ kind: 'path', d: 'M12 3C8 8.5 7 11 7 14a5 5 0 0 0 10 0c0-3-1-5.5-5-11Z' }],
   'light-rain': [
     { kind: 'path', d: 'M7 16a4 4 0 0 1-.5-8 5 5 0 0 1 9.5 1.5A3.5 3.5 0 0 1 18 16H7Z' },
@@ -165,7 +194,12 @@ const weatherIcons: Record<WeatherIcon, WeatherShape[]> = {
     { kind: 'path', d: 'M10 4a2 2 0 1 1 4 0v10.3a3.5 3.5 0 1 1-4 0V4Z' },
     { kind: 'path', d: 'M18 7l2-1M18 11h2' },
   ],
-  frost: [{ kind: 'path', d: 'M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07M12 6l2-2M12 6l-2-2M18 12l2-2M18 12l2 2' }],
+  frost: [
+    {
+      kind: 'path',
+      d: 'M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07M12 6l2-2M12 6l-2-2M18 12l2-2M18 12l2 2',
+    },
+  ],
   tornado: [{ kind: 'path', d: 'M3 5h18M5 9h14M7 13h10M9 17h6M11 21h2' }],
   'system-sync': [{ kind: 'path', d: 'M21 12a9 9 0 1 1-6.219-8.56' }],
 };
@@ -275,18 +309,24 @@ const dispatchCopy: Record<WeatherIcon, Omit<WeatherDispatch, 'icon'>> = {
   },
 };
 
-const dispatch = computed(() => weather.value ? dispatchFor(weather.value.now, stale.value) : null);
-const currentIcon = computed<WeatherIcon>(() => dispatch.value?.icon ?? (loading.value ? 'system-sync' : 'overcast'));
+const dispatch = computed(() =>
+  weather.value ? dispatchFor(weather.value.now, stale.value) : null
+);
+const currentIcon = computed<WeatherIcon>(
+  () => dispatch.value?.icon ?? (loading.value ? 'system-sync' : 'overcast')
+);
 
 function isNightInManchester(time: string): boolean {
   const timestamp = Date.parse(time);
   if (!Number.isFinite(timestamp)) return false;
-  // dates-guard:allow reads the London hour to pick a night icon; nothing here is displayed
-  const hour = Number(new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Europe/London',
-    hour: '2-digit',
-    hourCycle: 'h23',
-  }).format(new Date(timestamp)));
+  const hour = Number(
+    // dates-guard:allow reads the London hour to pick a night icon; nothing here is displayed
+    new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/London',
+      hour: '2-digit',
+      hourCycle: 'h23',
+    }).format(new Date(timestamp))
+  );
   return hour >= 18 || hour < 6;
 }
 
@@ -364,9 +404,17 @@ function dispatchFor(point: WeatherPoint, cached: boolean): WeatherDispatch {
 function themeFor(icon: WeatherIcon): string {
   if (icon === 'sunny' || icon === 'partly-cloudy-day' || icon === 'extreme-heat') return 'sunny';
   if (icon === 'clear-night' || icon === 'partly-cloudy-night' || icon === 'frost') return 'night';
-  if (icon === 'light-rain' || icon === 'heavy-rain' || icon === 'light-drizzle' || icon.startsWith('rain-showers') || icon === 'freezing-rain') return 'rain';
+  if (
+    icon === 'light-rain' ||
+    icon === 'heavy-rain' ||
+    icon === 'light-drizzle' ||
+    icon.startsWith('rain-showers') ||
+    icon === 'freezing-rain'
+  )
+    return 'rain';
   if (icon === 'snow' || icon === 'sleet' || icon === 'blizzard') return 'snow';
-  if (icon === 'thunderstorm' || icon === 'severe-storm' || icon === 'hail' || icon === 'tornado') return 'storm';
+  if (icon === 'thunderstorm' || icon === 'severe-storm' || icon === 'hail' || icon === 'tornado')
+    return 'storm';
   return 'standard';
 }
 

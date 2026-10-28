@@ -17,7 +17,14 @@ import {
 
 describe('tiers', () => {
   it('keeps stored values in Postgres enum order', () => {
-    assert.deepEqual(TIER_VALUES, ['approved', 'under_consideration', 'to_be_assessed', 'rejected', 'if_we_must', 'gone_but_not_forgotten']);
+    assert.deepEqual(TIER_VALUES, [
+      'approved',
+      'under_consideration',
+      'to_be_assessed',
+      'rejected',
+      'if_we_must',
+      'gone_but_not_forgotten',
+    ]);
   });
 
   it('lists every tier once in display order, with If We Must before Rejected', () => {
@@ -32,7 +39,8 @@ describe('tiers', () => {
       assert.equal(tier.border, `var(--color-tier-${tier.slug}-edge)`);
       assert.equal(tier.tint, `var(--color-tier-${tier.slug}-tint)`);
       assert.equal(tier.bannerClass, `bg-tier-${tier.slug}`);
-      for (const text of [tier.icon, tier.quote, tier.motto, tier.description, tier.rule]) assert.ok(text.trim());
+      for (const text of [tier.icon, tier.quote, tier.motto, tier.description, tier.rule])
+        assert.ok(text.trim());
     }
   });
 
@@ -46,15 +54,22 @@ describe('tiers', () => {
     const css = readFileSync('src/styles/theme.css', 'utf8');
     for (const tier of TIERS) {
       for (const suffix of ['', '-edge', '-tint']) {
-        assert.match(css, new RegExp(`--color-tier-${tier.slug}${suffix}: #[0-9a-f]{6};`), `${tier.slug}${suffix} has no token`);
+        assert.match(
+          css,
+          new RegExp(`--color-tier-${tier.slug}${suffix}: #[0-9a-f]{6};`),
+          `${tier.slug}${suffix} has no token`
+        );
       }
     }
   });
 
   it('only shows Near Me tiers that are allowed there', () => {
     assert.deepEqual(NEAR_ME_DEFAULT_TIERS, ['approved']);
-    assert.ok(!NEAR_ME_TIERS.includes('rejected') && !NEAR_ME_TIERS.includes('gone_but_not_forgotten'));
-    for (const tier of [...NEAR_ME_DEFAULT_TIERS, ...DEFAULT_HOME_TIERS]) assert.ok(isTierValue(tier));
+    assert.ok(
+      !NEAR_ME_TIERS.includes('rejected') && !NEAR_ME_TIERS.includes('gone_but_not_forgotten')
+    );
+    for (const tier of [...NEAR_ME_DEFAULT_TIERS, ...DEFAULT_HOME_TIERS])
+      assert.ok(isTierValue(tier));
   });
 
   it('isTierValue accepts stored values only', () => {
@@ -94,13 +109,16 @@ describe('tiers', () => {
   });
 
   it('counts venues per tier, including empty tiers', () => {
-    assert.deepEqual(countVenuesByTier([{ tier: 'approved' }, { tier: 'approved' }, { tier: 'rejected' }]), {
-      approved: 2,
-      under_consideration: 0,
-      to_be_assessed: 0,
-      rejected: 1,
-      if_we_must: 0,
-      gone_but_not_forgotten: 0,
-    });
+    assert.deepEqual(
+      countVenuesByTier([{ tier: 'approved' }, { tier: 'approved' }, { tier: 'rejected' }]),
+      {
+        approved: 2,
+        under_consideration: 0,
+        to_be_assessed: 0,
+        rejected: 1,
+        if_we_must: 0,
+        gone_but_not_forgotten: 0,
+      }
+    );
   });
 });

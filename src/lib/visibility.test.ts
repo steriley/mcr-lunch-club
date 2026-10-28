@@ -23,8 +23,16 @@ describe('isPubliclyVisible', () => {
     ['no longitude', venue({ longitude: null }), false],
     ['nothing at all', venue({ tier: null, latitude: null, longitude: null }), false],
     ['closed, approved', venue({ closedAt: CLOSED_AT }), false],
-    ['closed, gone but not forgotten', venue({ tier: 'gone_but_not_forgotten', closedAt: CLOSED_AT }), true],
-    ['closed, gone but not forgotten, no coordinates', venue({ tier: 'gone_but_not_forgotten', closedAt: CLOSED_AT, latitude: null }), false],
+    [
+      'closed, gone but not forgotten',
+      venue({ tier: 'gone_but_not_forgotten', closedAt: CLOSED_AT }),
+      true,
+    ],
+    [
+      'closed, gone but not forgotten, no coordinates',
+      venue({ tier: 'gone_but_not_forgotten', closedAt: CLOSED_AT, latitude: null }),
+      false,
+    ],
     ['closed, no tier', venue({ tier: null, closedAt: CLOSED_AT }), false],
   ];
 
@@ -42,17 +50,44 @@ describe('isPubliclyVisible', () => {
 
 describe('closed venue matrix', () => {
   // Tier page and venue page both use isPubliclyVisible (via publicVenueCondition); map and Near Me use isMappable.
-  const matrix: Array<[string, VisibilityFields, { tierPage: boolean; venuePage: boolean; map: boolean; nearMe: boolean }]> = [
-    ['open, other tier', venue({ tier: 'if_we_must' }), { tierPage: true, venuePage: true, map: true, nearMe: true }],
-    ['open, gone but not forgotten', venue({ tier: 'gone_but_not_forgotten' }), { tierPage: true, venuePage: true, map: true, nearMe: true }],
-    ['closed, other tier', venue({ tier: 'if_we_must', closedAt: CLOSED_AT }), { tierPage: false, venuePage: false, map: false, nearMe: false }],
-    ['closed, gone but not forgotten', venue({ tier: 'gone_but_not_forgotten', closedAt: CLOSED_AT }), { tierPage: true, venuePage: true, map: false, nearMe: false }],
+  const matrix: Array<
+    [
+      string,
+      VisibilityFields,
+      { tierPage: boolean; venuePage: boolean; map: boolean; nearMe: boolean },
+    ]
+  > = [
+    [
+      'open, other tier',
+      venue({ tier: 'if_we_must' }),
+      { tierPage: true, venuePage: true, map: true, nearMe: true },
+    ],
+    [
+      'open, gone but not forgotten',
+      venue({ tier: 'gone_but_not_forgotten' }),
+      { tierPage: true, venuePage: true, map: true, nearMe: true },
+    ],
+    [
+      'closed, other tier',
+      venue({ tier: 'if_we_must', closedAt: CLOSED_AT }),
+      { tierPage: false, venuePage: false, map: false, nearMe: false },
+    ],
+    [
+      'closed, gone but not forgotten',
+      venue({ tier: 'gone_but_not_forgotten', closedAt: CLOSED_AT }),
+      { tierPage: true, venuePage: true, map: false, nearMe: false },
+    ],
   ];
 
   for (const [name, fields, expected] of matrix) {
     it(name, () => {
       assert.deepEqual(
-        { tierPage: isPubliclyVisible(fields), venuePage: isPubliclyVisible(fields), map: isMappable(fields), nearMe: isMappable(fields) },
+        {
+          tierPage: isPubliclyVisible(fields),
+          venuePage: isPubliclyVisible(fields),
+          map: isMappable(fields),
+          nearMe: isMappable(fields),
+        },
         expected
       );
     });
@@ -70,10 +105,16 @@ describe('closed venue matrix', () => {
 
 describe('hiddenReason', () => {
   it('reports a missing tier, then a missing location, then closure', () => {
-    assert.equal(hiddenReason(venue({ tier: null, latitude: null, closedAt: CLOSED_AT })), 'no_tier');
+    assert.equal(
+      hiddenReason(venue({ tier: null, latitude: null, closedAt: CLOSED_AT })),
+      'no_tier'
+    );
     assert.equal(hiddenReason(venue({ latitude: null, closedAt: CLOSED_AT })), 'needs_location');
     assert.equal(hiddenReason(venue({ closedAt: CLOSED_AT })), 'closed');
-    assert.equal(hiddenReason(venue({ tier: 'gone_but_not_forgotten', closedAt: CLOSED_AT })), null);
+    assert.equal(
+      hiddenReason(venue({ tier: 'gone_but_not_forgotten', closedAt: CLOSED_AT })),
+      null
+    );
   });
 });
 

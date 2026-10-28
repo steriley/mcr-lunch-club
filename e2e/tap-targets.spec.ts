@@ -58,8 +58,14 @@ async function measureTargets(page: Page): Promise<Target[]> {
     ({ selector, groups, min, tolerance }) => {
       const describe = (el: Element): string => {
         const id = el.id ? `#${el.id}` : '';
-        const classes = [...el.classList].slice(0, 3).map((c) => `.${c}`).join('');
-        const label = (el.getAttribute('aria-label') ?? el.textContent ?? '').trim().replace(/\s+/g, ' ').slice(0, 40);
+        const classes = [...el.classList]
+          .slice(0, 3)
+          .map((c) => `.${c}`)
+          .join('');
+        const label = (el.getAttribute('aria-label') ?? el.textContent ?? '')
+          .trim()
+          .replace(/\s+/g, ' ')
+          .slice(0, 40);
         const where = el.closest('[id]')?.id ? ` in #${el.closest('[id]')!.id}` : '';
         return `<${el.tagName.toLowerCase()}${id}${classes}> "${label}"${where}`;
       };
@@ -79,7 +85,8 @@ async function measureTargets(page: Page): Promise<Target[]> {
           const h = parseFloat(style.height);
           if (Number.isNaN(w) || Number.isNaN(h)) continue;
           // An absolutely positioned pseudo is placed against the element's padding box; resolve its offsets.
-          const resolve = (value: string, fallback: number) => (value === 'auto' ? fallback : parseFloat(value));
+          const resolve = (value: string, fallback: number) =>
+            value === 'auto' ? fallback : parseFloat(value);
           const pLeft = rect.left + resolve(style.left, 0);
           const pTop = rect.top + resolve(style.top, 0);
           left = Math.min(left, pLeft);
@@ -96,21 +103,35 @@ async function measureTargets(page: Page): Promise<Target[]> {
         // Inline in a sentence: the link has text siblings in the same block.
         const parent = el.parentElement;
         if (!parent) return false;
-        return [...parent.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && (n.textContent ?? '').trim().length > 0);
+        return [...parent.childNodes].some(
+          (n) => n.nodeType === Node.TEXT_NODE && (n.textContent ?? '').trim().length > 0
+        );
       };
 
-      const found: { target: string; left: number; top: number; width: number; height: number; groups: string[] }[] = [];
+      const found: {
+        target: string;
+        left: number;
+        top: number;
+        width: number;
+        height: number;
+        groups: string[];
+      }[] = [];
       for (const el of document.querySelectorAll(selector)) {
         if (el.closest('.leaflet-control-attribution')) continue;
         if (el.closest('[inert], [aria-hidden="true"]')) continue;
-        if (!(el as HTMLElement).checkVisibility({ checkOpacity: false, checkVisibilityCSS: true })) continue;
+        if (!(el as HTMLElement).checkVisibility({ checkOpacity: false, checkVisibilityCSS: true }))
+          continue;
         const rect = el.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) continue;
         // Visually hidden (sr-only / skip link before focus): clipped to a pixel.
         if (rect.width <= 1 || rect.height <= 1) continue;
         if (isInlineInText(el)) continue;
         // A non-labelled form control that is hidden behind a styled label (custom switches, radios): the label is the target.
-        if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio') && el.labels?.length) {
+        if (
+          el instanceof HTMLInputElement &&
+          (el.type === 'checkbox' || el.type === 'radio') &&
+          el.labels?.length
+        ) {
           const labelRect = el.labels[0].getBoundingClientRect();
           if (labelRect.width >= min - tolerance && labelRect.height >= min - tolerance) continue;
         }
@@ -121,12 +142,14 @@ async function measureTargets(page: Page): Promise<Target[]> {
           top: box.top,
           width: Math.round(box.width * 10) / 10,
           height: Math.round(box.height * 10) / 10,
-          groups: Object.entries(groups).filter(([, sel]) => el.matches(sel)).map(([name]) => name),
+          groups: Object.entries(groups)
+            .filter(([, sel]) => el.matches(sel))
+            .map(([name]) => name),
         });
       }
       return found;
     },
-    { selector: INTERACTIVE, groups: GROUPS, min: MIN, tolerance: TOLERANCE },
+    { selector: INTERACTIVE, groups: GROUPS, min: MIN, tolerance: TOLERANCE }
   );
 }
 
@@ -149,7 +172,10 @@ async function overlappingTargets(page: Page): Promise<string[]> {
         const b = members[j];
         const overlapX = Math.min(a.left + a.width, b.left + b.width) - Math.max(a.left, b.left);
         const overlapY = Math.min(a.top + a.height, b.top + b.height) - Math.max(a.top, b.top);
-        if (overlapX > TOLERANCE && overlapY > TOLERANCE) overlaps.push(`${group}: ${a.target} overlaps ${b.target} by ${Math.round(overlapX)}×${Math.round(overlapY)}`);
+        if (overlapX > TOLERANCE && overlapY > TOLERANCE)
+          overlaps.push(
+            `${group}: ${a.target} overlaps ${b.target} by ${Math.round(overlapX)}×${Math.round(overlapY)}`
+          );
       }
     }
   }
@@ -162,7 +188,10 @@ test.describe('tap targets at 390px (touch)', () => {
   test('the home page: map controls, filter chips, panels', async ({ page, monitor }) => {
     await visit(page, '/');
     // The coarse-pointer rules are what is under test: make sure this context really is one.
-    expect(await page.evaluate(() => matchMedia('(pointer: coarse)').matches), 'emulated touch pointer').toBe(true);
+    expect(
+      await page.evaluate(() => matchMedia('(pointer: coarse)').matches),
+      'emulated touch pointer'
+    ).toBe(true);
     await expect(page.locator('.leaflet-control-zoom')).toBeVisible();
     expect(await undersizedTargets(page)).toEqual([]);
     expect(await overlappingTargets(page), 'overlapping hit areas').toEqual([]);
@@ -215,12 +244,18 @@ test.describe('desktop (fine pointer)', () => {
 
   test('keeps the compact control sizes', async ({ page, monitor }) => {
     await visit(page, '/');
-    expect(await page.evaluate(() => matchMedia('(pointer: coarse)').matches), 'a fine pointer').toBe(false);
+    expect(
+      await page.evaluate(() => matchMedia('(pointer: coarse)').matches),
+      'a fine pointer'
+    ).toBe(false);
     const size = (selector: string) =>
-      page.locator(selector).first().evaluate((el) => {
-        const rect = el.getBoundingClientRect();
-        return { width: Math.round(rect.width), height: Math.round(rect.height) };
-      });
+      page
+        .locator(selector)
+        .first()
+        .evaluate((el) => {
+          const rect = el.getBoundingClientRect();
+          return { width: Math.round(rect.width), height: Math.round(rect.height) };
+        });
     expect(await size('.leaflet-control-zoom-in')).toEqual({ width: 30, height: 30 });
     expect(await size('.ledger-reset-control a')).toEqual({ width: 30, height: 30 });
     expect((await size('.ledger-tier-chip')).height, 'tier chip height').toBeLessThan(40);

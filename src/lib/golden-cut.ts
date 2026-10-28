@@ -49,18 +49,35 @@ export async function listGoldenCut(db: Database): Promise<GoldenCutAdminEntry[]
 
 export type SaveGoldenCutResult = { ok: true } | { ok: false; error: string };
 
-export async function saveGoldenCut(db: Database, entries: GoldenCutEntryInput[], actor: Actor): Promise<SaveGoldenCutResult> {
+export async function saveGoldenCut(
+  db: Database,
+  entries: GoldenCutEntryInput[],
+  actor: Actor
+): Promise<SaveGoldenCutResult> {
   return db.transaction(async (tx) => {
     // One save at a time, so two Chairs saving together cannot interleave the delete and insert.
     await tx.execute(sql`lock table ${goldenCut} in share row exclusive mode`);
 
     const ids = entries.map((entry) => entry.venueId);
-    const found = ids.length ? await tx.select({ id: venues.id, name: venues.name, tier: venues.tier }).from(venues).where(inArray(venues.id, ids)) : [];
+    const found = ids.length
+      ? await tx
+          .select({ id: venues.id, name: venues.name, tier: venues.tier })
+          .from(venues)
+          .where(inArray(venues.id, ids))
+      : [];
     const byId = new Map(found.map((venue) => [venue.id, venue]));
     for (const id of ids) {
       const venue = byId.get(id);
-      if (!venue) return { ok: false, error: 'One of those venues no longer exists. Reload the page and try again.' };
-      if (venue.tier !== 'approved') return { ok: false, error: `${venue.name} is not Approved, so it cannot be in The Golden Cut.` };
+      if (!venue)
+        return {
+          ok: false,
+          error: 'One of those venues no longer exists. Reload the page and try again.',
+        };
+      if (venue.tier !== 'approved')
+        return {
+          ok: false,
+          error: `${venue.name} is not Approved, so it cannot be in The Golden Cut.`,
+        };
     }
 
     await tx.delete(goldenCut);

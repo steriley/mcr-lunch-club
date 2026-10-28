@@ -3,7 +3,9 @@
   <div v-if="selection" class="near-me-list-section near-me-selection">
     <div class="near-me-list-header">
       <span class="near-me-list-title">Your selection</span>
-      <button type="button" class="near-me-clear-selection" @click="emit('clearSelection')">Clear</button>
+      <button type="button" class="near-me-clear-selection" @click="emit('clearSelection')">
+        Clear
+      </button>
     </div>
     <BenchPillar
       :venue="selection.venue"
@@ -19,7 +21,13 @@
   <div v-if="nearest" class="near-me-list-section">
     <div class="near-me-list-header">
       <span class="near-me-list-title">
-        {{ farFromManchester ? 'Closest to Spinningfields' : nearest.isFarAway ? 'Nearest available' : 'Nearest' }}
+        {{
+          farFromManchester
+            ? 'Closest to Spinningfields'
+            : nearest.isFarAway
+              ? 'Nearest available'
+              : 'Nearest'
+        }}
       </span>
       <span v-if="farFromManchester" class="near-me-far-note">You are outside Manchester</span>
       <span v-else-if="nearest.isFarAway" class="near-me-far-note">None nearby</span>
@@ -42,7 +50,9 @@
   <!-- Ranked Venue List Section -->
   <div class="near-me-list-section">
     <div class="near-me-list-header">
-      <span class="near-me-list-title">{{ nearest ? 'Also nearby' : 'Nearby targets' }} ({{ others.length }})</span>
+      <span class="near-me-list-title"
+        >{{ nearest ? 'Also nearby' : 'Nearby targets' }} ({{ others.length }})</span
+      >
       <div class="near-me-cost-filter" role="group" aria-label="Filter by price">
         <button
           v-for="cost in COST_BANDS"
@@ -52,7 +62,9 @@
           :class="{ 'is-selected': selectedCosts.includes(cost) }"
           :aria-pressed="selectedCosts.includes(cost)"
           @click="emit('toggleCost', cost)"
-        >{{ cost }}</button>
+        >
+          {{ cost }}
+        </button>
       </div>
     </div>
 
@@ -80,7 +92,8 @@
       <span class="near-me-empty-icon" aria-hidden="true"><Icon name="landmark" /></span>
       <h4 class="near-me-empty-title">No venues match</h4>
       <p class="near-me-empty-text">
-        No venues in the selected verdicts match your current criteria. Enable additional verdicts above, or clear the price filter.
+        No venues in the selected verdicts match your current criteria. Enable additional verdicts
+        above, or clear the price filter.
       </p>
     </div>
   </div>
@@ -109,7 +122,12 @@ const props = defineProps<{
   fromBase: boolean;
 }>();
 
-const emit = defineEmits<{ select: [venue: Venue]; details: [venue: Venue]; toggleCost: [cost: CostTier]; clearSelection: [] }>();
+const emit = defineEmits<{
+  select: [venue: Venue];
+  details: [venue: Venue];
+  toggleCost: [cost: CostTier];
+  clearSelection: [];
+}>();
 
 function rowWalkLabel(rv: RankedVenue): string {
   return `${rv.formattedDistance} · ${estimateWalkMinutes(rv.distanceMetres)} min walk from ${props.fromBase ? 'Base' : 'you'}`;
@@ -164,7 +182,7 @@ function rowWalkUrl(rv: RankedVenue): string | null {
 }
 
 .near-me-empty-title {
-  font-family: "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font-family: 'Playfair Display', 'Playfair Display Fallback', Georgia, serif;
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-white);
@@ -212,12 +230,15 @@ function rowWalkUrl(rv: RankedVenue): string | null {
   border-radius: 9999px;
   background: var(--ledger-card);
   color: var(--color-deep-ink);
-  font-family: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: 0.8rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
 }
 
 .near-me-cost-chip:hover:not(.is-selected) {
@@ -237,7 +258,7 @@ function rowWalkUrl(rv: RankedVenue): string | null {
 }
 
 /* The deep navy fill is nearly the dark panel's own colour, so a chosen chip gets a lighter edge in dark mode. */
-:root[data-theme="dark"] .near-me-cost-chip.is-selected {
+:root[data-theme='dark'] .near-me-cost-chip.is-selected {
   border-color: var(--color-navy);
 }
 
@@ -255,7 +276,10 @@ function rowWalkUrl(rv: RankedVenue): string | null {
   border: 0;
   background: none;
   color: var(--color-deep-ink);
-  font: 700 0.75rem "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 0.75rem 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   text-decoration: underline;
   text-decoration-style: dotted;
   cursor: pointer;

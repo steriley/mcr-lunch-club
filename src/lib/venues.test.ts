@@ -15,15 +15,25 @@ import { venueInputSchema, type VenueInput } from './venue-schema';
 import type { VenueRow } from '@/db/schema';
 
 function input(overrides: Record<string, unknown> = {}): VenueInput {
-  return venueInputSchema.parse({ name: 'Chip Shop', slug: 'chip-shop', tier: 'approved', cost: '££', ...overrides });
+  return venueInputSchema.parse({
+    name: 'Chip Shop',
+    slug: 'chip-shop',
+    tier: 'approved',
+    cost: '££',
+    ...overrides,
+  });
 }
 
 describe('venueValues', () => {
   it('stores the resolved route, never values from the input', () => {
-    const values = venueValues(input({ latitude: 53.48, longitude: -2.25, distanceMiles: 9, walkingTimeMin: 99 }), 'user-1', {
-      distanceMiles: 0.4,
-      walkingTimeMin: 8,
-    });
+    const values = venueValues(
+      input({ latitude: 53.48, longitude: -2.25, distanceMiles: 9, walkingTimeMin: 99 }),
+      'user-1',
+      {
+        distanceMiles: 0.4,
+        walkingTimeMin: 8,
+      }
+    );
     assert.equal(values.distanceMiles, '0.40');
     assert.equal(values.walkingTimeMin, 8);
     assert.equal(values.updatedBy, 'user-1');
@@ -36,7 +46,10 @@ describe('venueValues', () => {
     assert.equal(blank.walkingTimeMin, null);
     assert.equal(blank.updatedBy, null);
 
-    const located = venueValues(input({ latitude: 53.5, longitude: -2.25 }), null, { distanceMiles: null, walkingTimeMin: null });
+    const located = venueValues(input({ latitude: 53.5, longitude: -2.25 }), null, {
+      distanceMiles: null,
+      walkingTimeMin: null,
+    });
     assert.equal(located.latitude, '53.500000');
     assert.equal(located.longitude, '-2.250000');
   });
@@ -58,7 +71,8 @@ describe('serializeVenue', () => {
     assert.equal(result.distanceMiles, 0.5);
     assert.equal(result.createdAt, '2026-01-02T03:04:05.000Z');
     assert.equal(result.updatedAt, '2026-02-03T04:05:06.000Z');
-  });});
+  });
+});
 
 /** Records each builder call and resolves to `rows` at the end of the chain. */
 function fakeDb(rows: unknown[] = []) {
@@ -139,9 +153,18 @@ describe('listVenueRevisions', () => {
 describe('routeColumns', () => {
   it('rounds distance to two places and only touches routeUpdatedAt when given', () => {
     const at = new Date('2026-10-22T09:00:00Z');
-    assert.deepEqual(routeColumns({ distanceMiles: 0.4567, walkingTimeMin: 9, routeUpdatedAt: at }), { distanceMiles: '0.46', walkingTimeMin: 9, routeUpdatedAt: at });
-    assert.deepEqual(routeColumns({ distanceMiles: null, walkingTimeMin: null, routeUpdatedAt: null }), { distanceMiles: null, walkingTimeMin: null, routeUpdatedAt: null });
-    assert.deepEqual(routeColumns({ distanceMiles: 1, walkingTimeMin: 20 }), { distanceMiles: '1.00', walkingTimeMin: 20 });
+    assert.deepEqual(
+      routeColumns({ distanceMiles: 0.4567, walkingTimeMin: 9, routeUpdatedAt: at }),
+      { distanceMiles: '0.46', walkingTimeMin: 9, routeUpdatedAt: at }
+    );
+    assert.deepEqual(
+      routeColumns({ distanceMiles: null, walkingTimeMin: null, routeUpdatedAt: null }),
+      { distanceMiles: null, walkingTimeMin: null, routeUpdatedAt: null }
+    );
+    assert.deepEqual(routeColumns({ distanceMiles: 1, walkingTimeMin: 20 }), {
+      distanceMiles: '1.00',
+      walkingTimeMin: 20,
+    });
   });
 });
 
@@ -157,22 +180,45 @@ describe('updateVenue', () => {
           if (method === 'then') return undefined;
           return (...args: unknown[]) => {
             calls.push({ method, args });
-            return method === 'returning' ? Promise.resolve(rows) : method === 'values' ? Promise.resolve([]) : chain;
+            return method === 'returning'
+              ? Promise.resolve(rows)
+              : method === 'values'
+                ? Promise.resolve([])
+                : chain;
           };
         },
       }
     );
-    const db = { transaction: async (fn: (tx: unknown) => unknown) => (transactions += 1, fn(chain)) } as unknown as Database;
+    const db = {
+      transaction: async (fn: (tx: unknown) => unknown) => ((transactions += 1), fn(chain)),
+    } as unknown as Database;
     return { db, calls, transactions: () => transactions };
   }
-  const row = { id: 'venue-1', latitude: null, longitude: null, distanceMiles: '0.40', createdAt: new Date(), updatedAt: new Date() } as unknown as VenueRow;
+  const row = {
+    id: 'venue-1',
+    latitude: null,
+    longitude: null,
+    distanceMiles: '0.40',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  } as unknown as VenueRow;
 
   it("stamps a Chair's change and records the revision as theirs, in one transaction", async () => {
     const { db, calls, transactions } = transactionalDb([row]);
     const now = new Date('2026-10-22T09:00:00Z');
-    assert.equal(await updateVenue(db, 'venue-1', { tier: 'approved' }, { id: 'user-1' }, now), row);
-    assert.deepEqual(calls.find((call) => call.method === 'set')!.args[0], { tier: 'approved', updatedBy: 'user-1', updatedAt: now });
-    assert.equal((calls.find((call) => call.method === 'values')!.args[0] as any).changedBy, 'user-1');
+    assert.equal(
+      await updateVenue(db, 'venue-1', { tier: 'approved' }, { id: 'user-1' }, now),
+      row
+    );
+    assert.deepEqual(calls.find((call) => call.method === 'set')!.args[0], {
+      tier: 'approved',
+      updatedBy: 'user-1',
+      updatedAt: now,
+    });
+    assert.equal(
+      (calls.find((call) => call.method === 'values')!.args[0] as any).changedBy,
+      'user-1'
+    );
     assert.equal(transactions(), 1);
   });
 

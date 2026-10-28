@@ -38,7 +38,6 @@ export const ORIGIN_MOVE_THRESHOLD_METRES = 18; // 15-20 metres
  */
 export const FAR_FROM_BASE_METRES = 30_000;
 
-
 /**
  * Great-circle distance between two coordinates in metres using the Haversine formula.
  */
@@ -58,9 +57,7 @@ export function haversineMetres(a: LatLng, b: LatLng): number {
   const sinDeltaLat = Math.sin(deltaLat / 2);
   const sinDeltaLng = Math.sin(deltaLng / 2);
 
-  const h =
-    sinDeltaLat * sinDeltaLat +
-    Math.cos(lat1) * Math.cos(lat2) * sinDeltaLng * sinDeltaLng;
+  const h = sinDeltaLat * sinDeltaLat + Math.cos(lat1) * Math.cos(lat2) * sinDeltaLng * sinDeltaLng;
 
   const clampedH = Math.min(1, Math.max(0, h));
   const c = 2 * Math.atan2(Math.sqrt(clampedH), Math.sqrt(1 - clampedH));
@@ -99,7 +96,10 @@ export function estimateWalkMinutes(metres: number): number {
  * The point Near Me ranks from: the user's position, or Spinningfields when
  * there is no position yet or the user is too far away for distances to mean anything.
  */
-export function resolveRankingOrigin(position: LatLng | null): { origin: LatLng; fromBase: boolean } {
+export function resolveRankingOrigin(position: LatLng | null): {
+  origin: LatLng;
+  fromBase: boolean;
+} {
   if (!position || haversineMetres(position, BASE_COORDINATES) > FAR_FROM_BASE_METRES) {
     return { origin: { lat: BASE_COORDINATES.lat, lng: BASE_COORDINATES.lng }, fromBase: true };
   }
@@ -140,9 +140,8 @@ export function rankVenues({
 
   // 1. Determine active tiers (intersect requested tiers with eligible Near Me tiers)
   const allowedTierSet = new Set(NEAR_ME_TIERS);
-  const activeTiers = tiers === undefined
-    ? NEAR_ME_TIERS
-    : tiers.filter((t) => allowedTierSet.has(t));
+  const activeTiers =
+    tiers === undefined ? NEAR_ME_TIERS : tiers.filter((t) => allowedTierSet.has(t));
 
   if (activeTiers.length === 0) {
     return [];

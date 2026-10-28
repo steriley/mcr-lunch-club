@@ -15,41 +15,44 @@ export const prerender = false;
 
 const currentUser = Astro.locals.user;
 
-const [tierCounts, hiddenVenues, recent, [bribery], activeChairs, [suggestions], [pendingChanges]] = await Promise.all([
-  db
-    .select({
-      tier: venues.tier,
-      visible: sql<number>`count(*) filter (where ${publicVenueCondition()})`.mapWith(Number),
-      hidden: sql<number>`count(*) filter (where not (${publicVenueCondition()}))`.mapWith(Number),
-    })
-    .from(venues)
-    .groupBy(venues.tier),
-  db
-    .select({ id: venues.id, name: venues.name, tier: venues.tier, updatedAt: venues.updatedAt })
-    .from(venues)
-    .where(not(publicVenueCondition()))
-    .orderBy(desc(venues.updatedAt))
-    .limit(10),
-  db
-    .select({
-      id: venues.id,
-      name: venues.name,
-      tier: venues.tier,
-      latitude: venues.latitude,
-      longitude: venues.longitude,
-      closedAt: venues.closedAt,
-      updatedAt: venues.updatedAt,
-      editor: user.name,
-    })
-    .from(venues)
-    .leftJoin(user, eq(user.id, venues.updatedBy))
-    .orderBy(desc(venues.updatedAt))
-    .limit(8),
-  db.select({ total: count() }).from(briberyRecords),
-  countActiveAdmins(db),
-  db.select({ total: count() }).from(venueSuggestions).where(eq(venueSuggestions.status, 'new')),
-  db.select({ total: count() }).from(tierProposals).where(eq(tierProposals.status, 'pending')),
-]);
+const [tierCounts, hiddenVenues, recent, [bribery], activeChairs, [suggestions], [pendingChanges]] =
+  await Promise.all([
+    db
+      .select({
+        tier: venues.tier,
+        visible: sql<number>`count(*) filter (where ${publicVenueCondition()})`.mapWith(Number),
+        hidden: sql<number>`count(*) filter (where not (${publicVenueCondition()}))`.mapWith(
+          Number
+        ),
+      })
+      .from(venues)
+      .groupBy(venues.tier),
+    db
+      .select({ id: venues.id, name: venues.name, tier: venues.tier, updatedAt: venues.updatedAt })
+      .from(venues)
+      .where(not(publicVenueCondition()))
+      .orderBy(desc(venues.updatedAt))
+      .limit(10),
+    db
+      .select({
+        id: venues.id,
+        name: venues.name,
+        tier: venues.tier,
+        latitude: venues.latitude,
+        longitude: venues.longitude,
+        closedAt: venues.closedAt,
+        updatedAt: venues.updatedAt,
+        editor: user.name,
+      })
+      .from(venues)
+      .leftJoin(user, eq(user.id, venues.updatedBy))
+      .orderBy(desc(venues.updatedAt))
+      .limit(8),
+    db.select({ total: count() }).from(briberyRecords),
+    countActiveAdmins(db),
+    db.select({ total: count() }).from(venueSuggestions).where(eq(venueSuggestions.status, 'new')),
+    db.select({ total: count() }).from(tierProposals).where(eq(tierProposals.status, 'pending')),
+  ]);
 
 const countsByTier = new Map(tierCounts.map((row) => [row.tier, row]));
 const tiers = TIERS.map((tier) => ({
@@ -61,12 +64,42 @@ const totalVisible = tierCounts.reduce((sum, row) => sum + row.visible, 0);
 const totalHidden = tierCounts.reduce((sum, row) => sum + row.hidden, 0);
 
 const stats = [
-  { label: 'Public venues', value: totalVisible, href: '/admin/venues?status=public', tone: 'bg-success-tint text-success' },
-  { label: 'Hidden venues', value: totalHidden, href: '/admin/venues?status=hidden', tone: 'bg-warning-tint text-warning' },
-  { label: 'Pending verdict changes', value: pendingChanges.total, href: '/admin/pending', tone: 'bg-warning-tint text-ochre-fixed' },
-  { label: 'New suggestions', value: suggestions.total, href: '/admin/suggestions', tone: 'bg-plum-tint text-plum' },
-  { label: 'Bribery records', value: bribery.total, href: '/admin/bribery', tone: 'bg-danger-tint text-danger' },
-  { label: 'Active Chairs', value: activeChairs, href: '/admin/users', tone: 'bg-navy-tint text-navy' },
+  {
+    label: 'Public venues',
+    value: totalVisible,
+    href: '/admin/venues?status=public',
+    tone: 'bg-success-tint text-success',
+  },
+  {
+    label: 'Hidden venues',
+    value: totalHidden,
+    href: '/admin/venues?status=hidden',
+    tone: 'bg-warning-tint text-warning',
+  },
+  {
+    label: 'Pending verdict changes',
+    value: pendingChanges.total,
+    href: '/admin/pending',
+    tone: 'bg-warning-tint text-ochre-fixed',
+  },
+  {
+    label: 'New suggestions',
+    value: suggestions.total,
+    href: '/admin/suggestions',
+    tone: 'bg-plum-tint text-plum',
+  },
+  {
+    label: 'Bribery records',
+    value: bribery.total,
+    href: '/admin/bribery',
+    tone: 'bg-danger-tint text-danger',
+  },
+  {
+    label: 'Active Chairs',
+    value: activeChairs,
+    href: '/admin/users',
+    tone: 'bg-navy-tint text-navy',
+  },
 ];
 ---
 
@@ -74,33 +107,60 @@ const stats = [
   <div class="space-y-6">
     <div class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm">
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Overview</p>
-      <h1 class="mt-2 text-3xl font-bold text-ink">Welcome back, {currentUser?.name || 'Chair'}.</h1>
+      <h1 class="mt-2 text-3xl font-bold text-ink">
+        Welcome back, {currentUser?.name || 'Chair'}.
+      </h1>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {stats.map((stat) => (
-        <a href={stat.href} class="rounded-2xl border border-hairline bg-parchment p-5 shadow-sm transition hover:border-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy">
-          <span class:list={[stat.tone, 'inline-flex rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]']}>{stat.label}</span>
+        <a
+          href={stat.href}
+          class="rounded-2xl border border-hairline bg-parchment p-5 shadow-sm transition hover:border-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy"
+        >
+          <span
+            class:list={[
+              stat.tone,
+              'inline-flex rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]',
+            ]}
+          >
+            {stat.label}
+          </span>
           <span class="mt-4 block text-3xl font-bold text-ink">{stat.value}</span>
         </a>
       ))}
     </div>
 
-    <section class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm" aria-labelledby="tiers-heading">
-      <h2 id="tiers-heading" class="text-xl font-bold text-ink">Venues by verdict</h2>
+    <section
+      class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
+      aria-labelledby="tiers-heading"
+    >
+      <h2 id="tiers-heading" class="text-xl font-bold text-ink">
+        Venues by verdict
+      </h2>
       <div class="mt-4 overflow-x-auto">
         <table class="min-w-full text-left text-sm">
           <thead class="text-graphite">
             <tr>
-              <th scope="col" class="py-2 pr-4 font-semibold">Verdict</th>
-              <th scope="col" class="py-2 pr-4 text-right font-semibold">Public</th>
-              <th scope="col" class="py-2 text-right font-semibold">Hidden</th>
+              <th scope="col" class="py-2 pr-4 font-semibold">
+                Verdict
+              </th>
+              <th scope="col" class="py-2 pr-4 text-right font-semibold">
+                Public
+              </th>
+              <th scope="col" class="py-2 text-right font-semibold">
+                Hidden
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-sand">
             {tiers.map((tier) => (
               <tr>
-                <td class="py-2 pr-4"><a href={`/admin/venues?tier=${tier.value}`} class="hover:underline"><TierBadge tier={tier.value} /></a></td>
+                <td class="py-2 pr-4">
+                  <a href={`/admin/venues?tier=${tier.value}`} class="hover:underline">
+                    <TierBadge tier={tier.value} />
+                  </a>
+                </td>
                 <td class="py-2 pr-4 text-right font-semibold">{tier.visible}</td>
                 <td class="py-2 text-right">{tier.hidden}</td>
               </tr>
@@ -111,8 +171,13 @@ const stats = [
     </section>
 
     <div class="grid gap-6 lg:grid-cols-2">
-      <section class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm" aria-labelledby="drafts-heading">
-        <h2 id="drafts-heading" class="text-xl font-bold text-ink">Hidden from the public site</h2>
+      <section
+        class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
+        aria-labelledby="drafts-heading"
+      >
+        <h2 id="drafts-heading" class="text-xl font-bold text-ink">
+          Hidden from the public site
+        </h2>
         <p class="mt-1 text-xs text-graphite">Venues without an approved verdict or a location.</p>
         {hiddenVenues.length === 0 ? (
           <p class="mt-4 text-sm text-soot">Nothing hidden. Every venue is on the public site.</p>
@@ -120,7 +185,12 @@ const stats = [
           <ul class="mt-4 divide-y divide-sand text-sm">
             {hiddenVenues.map((venue) => (
               <li class="flex items-center justify-between gap-3 py-2">
-                <a href={`/admin/venues/${venue.id}`} class="font-semibold text-ink hover:underline">{venue.name}</a>
+                <a
+                  href={`/admin/venues/${venue.id}`}
+                  class="font-semibold text-ink hover:underline"
+                >
+                  {venue.name}
+                </a>
                 <TierBadge tier={venue.tier} />
               </li>
             ))}
@@ -128,16 +198,33 @@ const stats = [
         )}
       </section>
 
-      <section class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm" aria-labelledby="recent-heading">
-        <h2 id="recent-heading" class="text-xl font-bold text-ink">Recently edited</h2>
+      <section
+        class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
+        aria-labelledby="recent-heading"
+      >
+        <h2 id="recent-heading" class="text-xl font-bold text-ink">
+          Recently edited
+        </h2>
         <ul class="mt-4 divide-y divide-sand text-sm">
           {recent.map((venue) => (
             <li class="py-2">
               <div class="flex items-center justify-between gap-3">
-                <a href={`/admin/venues/${venue.id}`} class="font-semibold text-ink hover:underline">{venue.name}</a>
-                {!isPubliclyVisible(venue) && <span class="text-xs font-semibold uppercase tracking-[0.12em] text-stone-600">Hidden</span>}
+                <a
+                  href={`/admin/venues/${venue.id}`}
+                  class="font-semibold text-ink hover:underline"
+                >
+                  {venue.name}
+                </a>
+                {!isPubliclyVisible(venue) && (
+                  <span class="text-xs font-semibold uppercase tracking-[0.12em] text-stone-600">
+                    Hidden
+                  </span>
+                )}
               </div>
-              <p class="text-xs text-graphite">{formatDateTime(venue.updatedAt)}{venue.editor ? ` by ${venue.editor}` : ''}</p>
+              <p class="text-xs text-graphite">
+                {formatDateTime(venue.updatedAt)}
+                {venue.editor ? ` by ${venue.editor}` : ''}
+              </p>
             </li>
           ))}
         </ul>

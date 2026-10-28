@@ -1,6 +1,12 @@
 <template>
   <div class="ledger-search-wrap">
-    <svg class="ledger-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      class="ledger-search-icon"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <circle cx="11" cy="11" r="7.5" />
       <path d="m16.5 16.5 4 4" />
     </svg>
@@ -11,7 +17,9 @@
       type="search"
       autocomplete="off"
       aria-label="Search the venue ledger"
-      :placeholder="placeholder ?? 'Search by name, street or dish (e.g. Bada Bing, Bundobust, Salt Beef)…'"
+      :placeholder="
+        placeholder ?? 'Search by name, street or dish (e.g. Bada Bing, Bundobust, Salt Beef)…'
+      "
       class="ledger-search-input"
     />
     <kbd v-if="shortcut" class="ledger-search-shortcut" aria-hidden="true">⌘ K</kbd>

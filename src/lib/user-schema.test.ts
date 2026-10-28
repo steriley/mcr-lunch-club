@@ -15,16 +15,28 @@ describe('createUserSchema', () => {
 
   it('rejects bad emails, empty names, unknown roles and short passwords', () => {
     assert.equal(createUserSchema.safeParse({ name: 'A', email: 'nope', password }).success, false);
-    assert.equal(createUserSchema.safeParse({ name: '  ', email: 'a@b.co', password }).success, false);
-    assert.equal(createUserSchema.safeParse({ name: 'A', email: 'a@b.co', password, role: 'root' }).success, false);
-    assert.equal(createUserSchema.safeParse({ name: 'A', email: 'a@b.co', password: 'short' }).success, false);
+    assert.equal(
+      createUserSchema.safeParse({ name: '  ', email: 'a@b.co', password }).success,
+      false
+    );
+    assert.equal(
+      createUserSchema.safeParse({ name: 'A', email: 'a@b.co', password, role: 'root' }).success,
+      false
+    );
+    assert.equal(
+      createUserSchema.safeParse({ name: 'A', email: 'a@b.co', password: 'short' }).success,
+      false
+    );
   });
 });
 
 describe('resetPasswordSchema', () => {
   it('enforces minimum and maximum length', () => {
     assert.equal(resetPasswordSchema.safeParse({ password }).success, true);
-    assert.equal(resetPasswordSchema.safeParse({ password: 'p'.repeat(MIN_PASSWORD_LENGTH - 1) }).success, false);
+    assert.equal(
+      resetPasswordSchema.safeParse({ password: 'p'.repeat(MIN_PASSWORD_LENGTH - 1) }).success,
+      false
+    );
     assert.equal(resetPasswordSchema.safeParse({ password: 'p'.repeat(129) }).success, false);
   });
 });

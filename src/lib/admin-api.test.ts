@@ -44,11 +44,16 @@ describe('responses', () => {
 
   it('jsonError includes field errors only when given', async () => {
     assert.deepEqual(await jsonError(404, 'Nope').json(), { error: 'Nope' });
-    assert.deepEqual(await jsonError(400, 'Bad', { name: 'Required' }).json(), { error: 'Bad', fields: { name: 'Required' } });
+    assert.deepEqual(await jsonError(400, 'Bad', { name: 'Required' }).json(), {
+      error: 'Bad',
+      fields: { name: 'Required' },
+    });
   });
 
   it('validationError reports the first message per field', async () => {
-    const result = z.object({ name: z.string().min(2, 'Too short'), age: z.number() }).safeParse({ name: 'a', age: 'x' });
+    const result = z
+      .object({ name: z.string().min(2, 'Too short'), age: z.number() })
+      .safeParse({ name: 'a', age: 'x' });
     assert.ok(!result.success);
     const response = validationError(result.error);
     assert.equal(response.status, 400);
@@ -88,14 +93,18 @@ describe('roles and methods', () => {
   });
 
   it('isMutatingMethod ignores case', () => {
-    for (const method of ['POST', 'put', 'Patch', 'DELETE']) assert.equal(isMutatingMethod(method), true);
+    for (const method of ['POST', 'put', 'Patch', 'DELETE'])
+      assert.equal(isMutatingMethod(method), true);
     for (const method of ['GET', 'head', 'OPTIONS']) assert.equal(isMutatingMethod(method), false);
   });
 });
 
 describe('hasTrustedOrigin', () => {
   const request = (origin?: string) =>
-    new Request('https://app.example.com/api/admin/venues', { method: 'POST', headers: origin ? { origin } : {} });
+    new Request('https://app.example.com/api/admin/venues', {
+      method: 'POST',
+      headers: origin ? { origin } : {},
+    });
 
   it('accepts the request origin and the configured site origin', () => {
     assert.equal(hasTrustedOrigin(request('https://app.example.com')), true);
@@ -120,7 +129,10 @@ describe('requireAdmin', () => {
     }
   };
   const post = (origin?: string) =>
-    new Request('https://lunch.example.com/api/admin/x', { method: 'POST', headers: origin ? { origin } : {} });
+    new Request('https://lunch.example.com/api/admin/x', {
+      method: 'POST',
+      headers: origin ? { origin } : {},
+    });
 
   it('blocks mutating requests from untrusted origins before checking the session', async () => {
     await withSession(null, async () => {
@@ -181,13 +193,19 @@ describe('isUniqueViolation', () => {
     assert.equal(isUniqueViolation(null), false);
     assert.equal(isUniqueViolation(undefined), false);
     assert.equal(isUniqueViolation('23505'), false);
-    assert.equal(isUniqueViolation({ cause: { cause: { cause: { cause: { code: '23505' } } } } }), false);
+    assert.equal(
+      isUniqueViolation({ cause: { cause: { cause: { cause: { code: '23505' } } } } }),
+      false
+    );
   });
 });
 
 describe('authApiError', () => {
   it('passes client errors from Better Auth through', async () => {
-    const response = authApiError('Ban', new APIError('BAD_REQUEST', { message: 'Cannot ban yourself' }));
+    const response = authApiError(
+      'Ban',
+      new APIError('BAD_REQUEST', { message: 'Cannot ban yourself' })
+    );
     assert.equal(response.status, 400);
     assert.deepEqual(await response.json(), { error: 'Cannot ban yourself' });
   });
@@ -199,7 +217,11 @@ describe('authApiError', () => {
   });
 
   it('turns server errors and unknown errors into a 500', async () => {
-    for (const error of [new APIError('INTERNAL_SERVER_ERROR', { message: 'secret detail' }), new APIError('BAD_GATEWAY', { message: 'secret detail' }), new Error('boom')]) {
+    for (const error of [
+      new APIError('INTERNAL_SERVER_ERROR', { message: 'secret detail' }),
+      new APIError('BAD_GATEWAY', { message: 'secret detail' }),
+      new Error('boom'),
+    ]) {
       const response = await silenceErrors(async () => authApiError('Ban', error));
       assert.equal(response.status, 500);
       assert.deepEqual(await response.json(), { error: 'Something went wrong. Please try again.' });
@@ -226,7 +248,15 @@ describe('adminRoute', () => {
     }) as Promise<Response>;
 
   const route = adminRoute(
-    { action: 'Test', publishes: false, params: { id: 'Thing not found.', userId: { schema: userIdParam, notFound: 'User not found.' } }, body: z.object({ name: z.string().min(1, 'Name it.') }) },
+    {
+      action: 'Test',
+      publishes: false,
+      params: {
+        id: 'Thing not found.',
+        userId: { schema: userIdParam, notFound: 'User not found.' },
+      },
+      body: z.object({ name: z.string().min(1, 'Name it.') }),
+    },
     async ({ params, body, actor }) => jsonResponse({ params, body, actor })
   );
 
@@ -243,7 +273,10 @@ describe('adminRoute', () => {
       const badUser = await call(route, { id: ID, userId: '' }, { name: 'x' });
       assert.deepEqual([badUser.status, await badUser.json()], [404, { error: 'User not found.' }]);
       const badBody = await call(route, { id: ID, userId: 'u' }, { name: '' });
-      assert.deepEqual([badBody.status, (await badBody.json()).fields], [400, { name: 'Name it.' }]);
+      assert.deepEqual(
+        [badBody.status, (await badBody.json()).fields],
+        [400, { name: 'Name it.' }]
+      );
     } finally {
       (auth.api as any).getSession = originalGetSession;
     }
@@ -265,15 +298,28 @@ describe('adminRoute', () => {
 
   it('maps thrown errors with onError, and logs a 500 for anything it leaves', async () => {
     const throwing = (error: unknown) =>
-      adminRoute({ action: 'Throw', publishes: true, onError: (e) => (isUniqueViolation(e) ? slugTaken() : undefined) }, async () => {
-        throw error;
-      });
+      adminRoute(
+        {
+          action: 'Throw',
+          publishes: true,
+          onError: (e) => (isUniqueViolation(e) ? slugTaken() : undefined),
+        },
+        async () => {
+          throw error;
+        }
+      );
     try {
       signedInAs(chair);
       const conflict = await call(throwing({ code: '23505' }));
-      assert.deepEqual([conflict.status, (await conflict.json()).fields], [409, { slug: 'That slug is already in use. Choose another.' }]);
+      assert.deepEqual(
+        [conflict.status, (await conflict.json()).fields],
+        [409, { slug: 'That slug is already in use. Choose another.' }]
+      );
       const crash = await quietly(() => call(throwing(new Error('boom'))));
-      assert.deepEqual([crash.status, await crash.json()], [500, { error: 'Something went wrong. Please try again.' }]);
+      assert.deepEqual(
+        [crash.status, await crash.json()],
+        [500, { error: 'Something went wrong. Please try again.' }]
+      );
     } finally {
       (auth.api as any).getSession = originalGetSession;
     }
@@ -296,7 +342,13 @@ describe('adminRoute', () => {
 
       await call(responding(false, 200));
       await call(responding(true, 409));
-      await quietly(() => call(adminRoute({ action: 'Throw', publishes: true }, async () => { throw new Error('boom'); })));
+      await quietly(() =>
+        call(
+          adminRoute({ action: 'Throw', publishes: true }, async () => {
+            throw new Error('boom');
+          })
+        )
+      );
       signedInAs(null);
       await call(responding(true, 200));
       assert.equal(hookCalls.length, 1);

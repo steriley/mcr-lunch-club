@@ -14,7 +14,11 @@ import { apiFetch } from '@/lib/api-fetch';
  * The first Chair also says how the inspection went; the cosigner affirms
  * that outcome rather than choosing their own.
  */
-const props = defineProps<{ venueId: string; initialStatus: VisitStatus; latestVerifiedInspection: string | null }>();
+const props = defineProps<{
+  venueId: string;
+  initialStatus: VisitStatus;
+  latestVerifiedInspection: string | null;
+}>();
 const emit = defineEmits<{ (event: 'confirmed', status: VisitStatus): void }>();
 
 const status = ref<VisitStatus>(props.initialStatus);
@@ -33,18 +37,25 @@ const state = computed(() => {
 });
 const signatures = computed(() => (status.value.confirmed ? 2 : status.value.pending ? 1 : 0));
 const first = computed(() => status.value.confirmed ?? status.value.pending);
-const recordedOutcome = computed(() => (first.value?.outcome ? INSPECTION_OUTCOME_LABELS[first.value.outcome] : null));
-const canPress = computed(() => !busy.value && (state.value === 'confirm_other' || chosenOutcome.value !== null));
+const recordedOutcome = computed(() =>
+  first.value?.outcome ? INSPECTION_OUTCOME_LABELS[first.value.outcome] : null
+);
+const canPress = computed(
+  () => !busy.value && (state.value === 'confirm_other' || chosenOutcome.value !== null)
+);
 
 async function press() {
   errorMessage.value = '';
   busy.value = true;
-  const result = await apiFetch<{ status: VisitStatus; confirmedNow?: boolean }>(`/api/admin/venues/${props.venueId}/visited-today`, {
-    method: 'POST',
-    // A cosigner sends nothing: they affirm the outcome the first Chair recorded.
-    body: state.value === 'none' ? { outcome: chosenOutcome.value } : {},
-    fallback: 'Could not record your visit. Try again.',
-  });
+  const result = await apiFetch<{ status: VisitStatus; confirmedNow?: boolean }>(
+    `/api/admin/venues/${props.venueId}/visited-today`,
+    {
+      method: 'POST',
+      // A cosigner sends nothing: they affirm the outcome the first Chair recorded.
+      body: state.value === 'none' ? { outcome: chosenOutcome.value } : {},
+      fallback: 'Could not record your visit. Try again.',
+    }
+  );
   busy.value = false;
   if (!result.ok) {
     errorMessage.value = result.error;
@@ -55,7 +66,9 @@ async function press() {
   justConfirmed.value = Boolean(confirmedNow);
   if (confirmedNow && visit.confirmed) {
     const { firstAdminName, secondAdminName } = visit.confirmed;
-    const outcomeLabel = visit.confirmed.outcome ? `, ${INSPECTION_OUTCOME_LABELS[visit.confirmed.outcome as InspectionOutcome].toLowerCase()}` : '';
+    const outcomeLabel = visit.confirmed.outcome
+      ? `, ${INSPECTION_OUTCOME_LABELS[visit.confirmed.outcome as InspectionOutcome].toLowerCase()}`
+      : '';
     latest.value = `${formatDate(visit.today)}, verified by ${firstAdminName} and ${secondAdminName}${outcomeLabel}`;
     emit('confirmed', visit);
   }
@@ -63,16 +76,28 @@ async function press() {
 </script>
 
 <template>
-  <DossierCard id="concord" title="Dual-Chair Concord" tag="Daily quorum" icon="badge" tone="accent">
+  <DossierCard
+    id="concord"
+    title="Dual-Chair Concord"
+    tag="Daily quorum"
+    icon="badge"
+    tone="accent"
+  >
     <p class="text-[13px] leading-[19px] text-[var(--dossier-muted)]">
-      An inspection is verified only when <strong class="text-[var(--dossier-ink)]">two different Chairs</strong> each declare a visit on the same
-      calendar day (UK time). A lone declaration lapses at midnight.
+      An inspection is verified only when
+      <strong class="text-[var(--dossier-ink)]">two different Chairs</strong> each declare a visit
+      on the same calendar day (UK time). A lone declaration lapses at midnight.
     </p>
 
     <div class="dossier-inset space-y-3 bg-[var(--dossier-field)]" role="status">
       <div class="flex items-center justify-between gap-2">
         <span class="dossier-overline">Quorum concordance</span>
-        <span :class="['dossier-figures text-xs font-bold', signatures === 2 ? 'text-success-ink' : 'text-[var(--dossier-secondary)]']">
+        <span
+          :class="[
+            'dossier-figures text-xs font-bold',
+            signatures === 2 ? 'text-success-ink' : 'text-[var(--dossier-secondary)]',
+          ]"
+        >
           {{ signatures }} / 2 affirmed
         </span>
       </div>
@@ -86,22 +111,43 @@ async function press() {
       <ul class="space-y-1.5 text-[13px]">
         <li class="flex items-center justify-between gap-2">
           <span class="flex min-w-0 items-center gap-2">
-            <DossierIcon :name="first ? 'checkCircle' : 'circle'" :size="16" :class="first ? 'text-success-ink' : 'text-[var(--dossier-border)]'" />
-            <span :class="first ? 'font-semibold' : 'text-[var(--dossier-muted)]'">{{ first?.firstAdminName ?? 'Awaiting first Chair' }}</span>
+            <DossierIcon
+              :name="first ? 'checkCircle' : 'circle'"
+              :size="16"
+              :class="first ? 'text-success-ink' : 'text-[var(--dossier-border)]'"
+            />
+            <span :class="first ? 'font-semibold' : 'text-[var(--dossier-muted)]'">{{
+              first?.firstAdminName ?? 'Awaiting first Chair'
+            }}</span>
           </span>
-          <span v-if="first" class="dossier-figures shrink-0 text-[11px] text-[var(--dossier-muted)]">{{ formatDateTime(first.firstAt) }}</span>
+          <span
+            v-if="first"
+            class="dossier-figures shrink-0 text-[11px] text-[var(--dossier-muted)]"
+            >{{ formatDateTime(first.firstAt) }}</span
+          >
         </li>
         <li class="flex items-center justify-between gap-2">
           <span class="flex min-w-0 items-center gap-2">
-            <DossierIcon :name="status.confirmed ? 'checkCircle' : 'circle'" :size="16" :class="status.confirmed ? 'text-success-ink' : 'text-[var(--dossier-border)]'" />
+            <DossierIcon
+              :name="status.confirmed ? 'checkCircle' : 'circle'"
+              :size="16"
+              :class="status.confirmed ? 'text-success-ink' : 'text-[var(--dossier-border)]'"
+            />
             <span :class="status.confirmed ? 'font-semibold' : 'text-[var(--dossier-muted)]'">
               {{ status.confirmed?.secondAdminName ?? 'Awaiting second Chair cosigner' }}
             </span>
           </span>
-          <span v-if="status.confirmed?.confirmedAt" class="dossier-figures shrink-0 text-[11px] text-[var(--dossier-muted)]">
+          <span
+            v-if="status.confirmed?.confirmedAt"
+            class="dossier-figures shrink-0 text-[11px] text-[var(--dossier-muted)]"
+          >
             {{ formatDateTime(status.confirmed.confirmedAt) }}
           </span>
-          <span v-else-if="status.pending" class="shrink-0 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--dossier-amber)]">Pending</span>
+          <span
+            v-else-if="status.pending"
+            class="shrink-0 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--dossier-amber)]"
+            >Pending</span
+          >
         </li>
       </ul>
     </div>
@@ -121,13 +167,24 @@ async function press() {
               : 'border-[var(--dossier-border)] text-[var(--dossier-ink)]',
           ]"
         >
-          <input v-model="chosenOutcome" type="radio" name="inspection-outcome" :value="option" class="accent-current" />
+          <input
+            v-model="chosenOutcome"
+            type="radio"
+            name="inspection-outcome"
+            :value="option"
+            class="accent-current"
+          />
           {{ INSPECTION_OUTCOME_LABELS[option] }}
         </label>
       </div>
     </fieldset>
-    <p v-else-if="state === 'confirm_other' && recordedOutcome" class="dossier-inset text-[13px] text-[var(--dossier-ink)]">
-      {{ status.pending!.firstAdminName }} recorded this inspection as <strong>{{ recordedOutcome.toLowerCase() }}</strong>. Cosigning affirms that.
+    <p
+      v-else-if="state === 'confirm_other' && recordedOutcome"
+      class="dossier-inset text-[13px] text-[var(--dossier-ink)]"
+    >
+      {{ status.pending!.firstAdminName }} recorded this inspection as
+      <strong>{{ recordedOutcome.toLowerCase() }}</strong
+      >. Cosigning affirms that.
     </p>
 
     <button
@@ -138,22 +195,42 @@ async function press() {
       @click="press"
     >
       <DossierIcon :name="busy ? 'refresh' : 'check'" :size="16" :class="busy && 'dossier-spin'" />
-      {{ busy ? 'Recording…' : state === 'none' ? 'Affirm inspection (visited today)' : `Cosign ${status.pending!.firstAdminName}'s inspection` }}
+      {{
+        busy
+          ? 'Recording…'
+          : state === 'none'
+            ? 'Affirm inspection (visited today)'
+            : `Cosign ${status.pending!.firstAdminName}'s inspection`
+      }}
     </button>
-    <p v-else-if="state === 'waiting_for_other'" class="dossier-inset text-[13px] text-[var(--dossier-ink)]">
-      You've signed today's visit<template v-if="recordedOutcome"> as {{ recordedOutcome.toLowerCase() }}</template>. Waiting for a different Chair to cosign before midnight.
+    <p
+      v-else-if="state === 'waiting_for_other'"
+      class="dossier-inset text-[13px] text-[var(--dossier-ink)]"
+    >
+      You've signed today's visit<template v-if="recordedOutcome">
+        as {{ recordedOutcome.toLowerCase() }}</template
+      >. Waiting for a different Chair to cosign before midnight.
     </p>
-    <p v-else class="flex items-center gap-2 rounded-lg border border-[var(--dossier-green)]/40 bg-success-tint px-3 py-2.5 text-[13px] font-semibold text-success-ink">
+    <p
+      v-else
+      class="flex items-center gap-2 rounded-lg border border-[var(--dossier-green)]/40 bg-success-tint px-3 py-2.5 text-[13px] font-semibold text-success-ink"
+    >
       <DossierIcon name="checkCircle" :size="16" />
-      {{ justConfirmed ? 'Inspection verified. Concord complete.' : 'Inspected and verified today.' }}
+      {{
+        justConfirmed ? 'Inspection verified. Concord complete.' : 'Inspected and verified today.'
+      }}
       <template v-if="recordedOutcome">Outcome: {{ recordedOutcome.toLowerCase() }}.</template>
     </p>
 
     <p v-if="errorMessage" role="alert" class="dossier-error mt-0">{{ errorMessage }}</p>
 
-    <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-[var(--dossier-border)] pt-3 text-[12px]">
+    <div
+      class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-t border-[var(--dossier-border)] pt-3 text-[12px]"
+    >
       <span class="text-[var(--dossier-muted)]">Latest verified inspection</span>
-      <span :class="['italic', latest ? 'text-[var(--dossier-ink)]' : 'text-danger-ink']">{{ latest ?? 'None on record' }}</span>
+      <span :class="['italic', latest ? 'text-[var(--dossier-ink)]' : 'text-danger-ink']">{{
+        latest ?? 'None on record'
+      }}</span>
     </div>
   </DossierCard>
 </template>

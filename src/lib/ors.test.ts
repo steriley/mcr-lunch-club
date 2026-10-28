@@ -1,6 +1,14 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { MATRIX_BATCH_SIZE, OrsError, routeToVenueValues, searchPlaces, walkingMatrixFromBase, walkingRoute, walkingRouteFromBase } from './ors';
+import {
+  MATRIX_BATCH_SIZE,
+  OrsError,
+  routeToVenueValues,
+  searchPlaces,
+  walkingMatrixFromBase,
+  walkingRoute,
+  walkingRouteFromBase,
+} from './ors';
 import { BASE_COORDINATES } from './map/config';
 
 const API_KEY = 'secret-ors-key';
@@ -35,35 +43,59 @@ const venue = { lat: 53.4813, lng: -2.2498 };
 
 describe('routeToVenueValues', () => {
   it('converts metres to miles, rounded to two decimals', () => {
-    assert.equal(routeToVenueValues({ distanceMetres: 1609.344, durationSeconds: 60 }).distanceMiles, 1);
-    assert.equal(routeToVenueValues({ distanceMetres: 805, durationSeconds: 60 }).distanceMiles, 0.5);
-    assert.equal(routeToVenueValues({ distanceMetres: 123.4, durationSeconds: 60 }).distanceMiles, 0.08);
+    assert.equal(
+      routeToVenueValues({ distanceMetres: 1609.344, durationSeconds: 60 }).distanceMiles,
+      1
+    );
+    assert.equal(
+      routeToVenueValues({ distanceMetres: 805, durationSeconds: 60 }).distanceMiles,
+      0.5
+    );
+    assert.equal(
+      routeToVenueValues({ distanceMetres: 123.4, durationSeconds: 60 }).distanceMiles,
+      0.08
+    );
   });
 
   it('works out whole minutes from distance at a slow pace, with a one-minute minimum', () => {
     assert.equal(routeToVenueValues({ distanceMetres: 0, durationSeconds: 0 }).walkingTimeMin, 1);
-    assert.equal(routeToVenueValues({ distanceMetres: 1609.344, durationSeconds: 60 }).walkingTimeMin, 24);
+    assert.equal(
+      routeToVenueValues({ distanceMetres: 1609.344, durationSeconds: 60 }).walkingTimeMin,
+      24
+    );
     // Kool Runnings: 1.49 miles takes about 36 minutes on foot.
-    assert.equal(routeToVenueValues({ distanceMetres: 1.49 * 1609.344, durationSeconds: 1740 }).walkingTimeMin, 36);
+    assert.equal(
+      routeToVenueValues({ distanceMetres: 1.49 * 1609.344, durationSeconds: 1740 }).walkingTimeMin,
+      36
+    );
   });
 });
 
 describe('walkingRoute', () => {
   it('posts [lon, lat] pairs to the foot-walking endpoint with the key in the Authorization header', async () => {
-    const ors = fakeFetch(() => Response.json({ routes: [{ summary: { distance: 412.5, duration: 297 } }] }));
+    const ors = fakeFetch(() =>
+      Response.json({ routes: [{ summary: { distance: 412.5, duration: 297 } }] })
+    );
     const route = await walkingRoute({ lat: 53.1, lng: -2.1 }, { lat: 53.2, lng: -2.2 }, ors);
     assert.deepEqual(route, { distanceMetres: 412.5, durationSeconds: 297 });
 
     const [call] = ors.calls;
     assert.equal(call.url, 'https://api.openrouteservice.org/v2/directions/foot-walking');
     assert.equal(call.init.method, 'POST');
-    assert.deepEqual(JSON.parse(String(call.init.body)), { coordinates: [[-2.1, 53.1], [-2.2, 53.2]] });
+    assert.deepEqual(JSON.parse(String(call.init.body)), {
+      coordinates: [
+        [-2.1, 53.1],
+        [-2.2, 53.2],
+      ],
+    });
     assert.equal((call.init.headers as Record<string, string>).Authorization, API_KEY);
     assert.ok(!call.url.includes(API_KEY), 'the key must not be in the URL');
   });
 
   it('routes from HQ', async () => {
-    const ors = fakeFetch(() => Response.json({ routes: [{ summary: { distance: 1, duration: 1 } }] }));
+    const ors = fakeFetch(() =>
+      Response.json({ routes: [{ summary: { distance: 1, duration: 1 } }] })
+    );
     await walkingRouteFromBase(venue, ors);
     const body = JSON.parse(String(ors.calls[0].init.body));
     assert.deepEqual(body.coordinates[0], [BASE_COORDINATES.lng, BASE_COORDINATES.lat]);
@@ -71,7 +103,10 @@ describe('walkingRoute', () => {
 
   it('treats a summary without distance (venue at HQ) as zero', async () => {
     const ors = fakeFetch(() => Response.json({ routes: [{ summary: {} }] }));
-    assert.deepEqual(await walkingRoute(venue, venue, ors), { distanceMetres: 0, durationSeconds: 0 });
+    assert.deepEqual(await walkingRoute(venue, venue, ors), {
+      distanceMetres: 0,
+      durationSeconds: 0,
+    });
   });
 
   it('reports HTTP 429 as rate limited', async () => {
@@ -92,7 +127,10 @@ describe('walkingRoute', () => {
       () => Promise.reject(new TypeError('fetch failed')),
       () => new Response('not json', { status: 200 }),
     ]) {
-      assert.equal((await rejection(walkingRoute(venue, venue, fakeFetch(respond)))).kind, 'unavailable');
+      assert.equal(
+        (await rejection(walkingRoute(venue, venue, fakeFetch(respond)))).kind,
+        'unavailable'
+      );
     }
   });
 
@@ -118,7 +156,10 @@ describe('walkingRoute', () => {
     const previous = process.env.ORS_API_KEY;
     delete process.env.ORS_API_KEY;
     try {
-      assert.equal((await rejection(walkingRoute(venue, venue, { fetch: ors.fetch }))).kind, 'not_configured');
+      assert.equal(
+        (await rejection(walkingRoute(venue, venue, { fetch: ors.fetch }))).kind,
+        'not_configured'
+      );
       assert.equal(ors.calls.length, 0);
     } finally {
       if (previous !== undefined) process.env.ORS_API_KEY = previous;
@@ -127,7 +168,10 @@ describe('walkingRoute', () => {
 });
 
 describe('searchPlaces', () => {
-  const feature = (properties: Record<string, string>, coordinates: [number, number] = [-2.2498, 53.4813]) => ({
+  const feature = (
+    properties: Record<string, string>,
+    coordinates: [number, number] = [-2.2498, 53.4813]
+  ) => ({
     type: 'Feature',
     geometry: { type: 'Point', coordinates },
     properties,
@@ -138,15 +182,34 @@ describe('searchPlaces', () => {
       Response.json({
         type: 'FeatureCollection',
         features: [
-          feature({ label: "Crazy Pedro's, Manchester, England, United Kingdom", name: "Crazy Pedro's", housenumber: '55', street: 'Bridge Street', postalcode: 'M3 3BQ' }),
-          feature({ label: 'Deansgate, Manchester, England, United Kingdom', name: 'Deansgate' }, [-2.25, 53.48]),
+          feature({
+            label: "Crazy Pedro's, Manchester, England, United Kingdom",
+            name: "Crazy Pedro's",
+            housenumber: '55',
+            street: 'Bridge Street',
+            postalcode: 'M3 3BQ',
+          }),
+          feature(
+            { label: 'Deansgate, Manchester, England, United Kingdom', name: 'Deansgate' },
+            [-2.25, 53.48]
+          ),
         ],
       })
     );
     const results = await searchPlaces('crazy pedros', ors);
     assert.deepEqual(results, [
-      { label: "Crazy Pedro's, Manchester, England, United Kingdom", address: '55 Bridge Street, M3 3BQ', lat: 53.4813, lng: -2.2498 },
-      { label: 'Deansgate, Manchester, England, United Kingdom', address: 'Deansgate, Manchester, England, United Kingdom', lat: 53.48, lng: -2.25 },
+      {
+        label: "Crazy Pedro's, Manchester, England, United Kingdom",
+        address: '55 Bridge Street, M3 3BQ',
+        lat: 53.4813,
+        lng: -2.2498,
+      },
+      {
+        label: 'Deansgate, Manchester, England, United Kingdom',
+        address: 'Deansgate, Manchester, England, United Kingdom',
+        lat: 53.48,
+        lng: -2.25,
+      },
     ]);
 
     const url = new URL(ors.calls[0].url);
@@ -163,32 +226,75 @@ describe('searchPlaces', () => {
   });
 
   it('caps the list at five and skips features without coordinates', async () => {
-    const features = [{ properties: { label: 'No point' } }, ...Array.from({ length: 7 }, (_, index) => feature({ label: `Place ${index}` }))];
-    const results = await searchPlaces('place', fakeFetch(() => Response.json({ features })));
-    assert.deepEqual(results.map((result) => result.label), ['Place 0', 'Place 1', 'Place 2', 'Place 3']);
+    const features = [
+      { properties: { label: 'No point' } },
+      ...Array.from({ length: 7 }, (_, index) => feature({ label: `Place ${index}` })),
+    ];
+    const results = await searchPlaces(
+      'place',
+      fakeFetch(() => Response.json({ features }))
+    );
+    assert.deepEqual(
+      results.map((result) => result.label),
+      ['Place 0', 'Place 1', 'Place 2', 'Place 3']
+    );
   });
 
   it('returns an empty list when nothing matches', async () => {
-    assert.deepEqual(await searchPlaces('zzzz', fakeFetch(() => Response.json({ features: [] }))), []);
-    assert.deepEqual(await searchPlaces('zzzz', fakeFetch(() => new Response('', { status: 404 }))), []);
+    assert.deepEqual(
+      await searchPlaces(
+        'zzzz',
+        fakeFetch(() => Response.json({ features: [] }))
+      ),
+      []
+    );
+    assert.deepEqual(
+      await searchPlaces(
+        'zzzz',
+        fakeFetch(() => new Response('', { status: 404 }))
+      ),
+      []
+    );
   });
 
   it('passes rate limits through', async () => {
-    assert.equal((await rejection(searchPlaces('pizza', fakeFetch(() => new Response('', { status: 429 }))))).kind, 'rate_limited');
+    assert.equal(
+      (
+        await rejection(
+          searchPlaces(
+            'pizza',
+            fakeFetch(() => new Response('', { status: 429 }))
+          )
+        )
+      ).kind,
+      'rate_limited'
+    );
   });
 });
 
 describe('walkingMatrixFromBase', () => {
   it('asks for one source (HQ) and many destinations, and maps nulls to no route', async () => {
-    const ors = fakeFetch(() => Response.json({ distances: [[402.3, null]], durations: [[300, null]] }));
-    const results = await walkingMatrixFromBase([{ lat: 53.48, lng: -2.24 }, { lat: 53.49, lng: -2.23 }], ors);
+    const ors = fakeFetch(() =>
+      Response.json({ distances: [[402.3, null]], durations: [[300, null]] })
+    );
+    const results = await walkingMatrixFromBase(
+      [
+        { lat: 53.48, lng: -2.24 },
+        { lat: 53.49, lng: -2.23 },
+      ],
+      ors
+    );
     assert.deepEqual(results, [{ distanceMetres: 402.3, durationSeconds: 300 }, null]);
 
     const [call] = ors.calls;
     assert.equal(call.url, 'https://api.openrouteservice.org/v2/matrix/foot-walking');
     assert.equal((call.init.headers as Record<string, string>).Authorization, API_KEY);
     assert.deepEqual(JSON.parse(String(call.init.body)), {
-      locations: [[BASE_COORDINATES.lng, BASE_COORDINATES.lat], [-2.24, 53.48], [-2.23, 53.49]],
+      locations: [
+        [BASE_COORDINATES.lng, BASE_COORDINATES.lat],
+        [-2.24, 53.48],
+        [-2.23, 53.49],
+      ],
       sources: [0],
       destinations: [1, 2],
       metrics: ['distance', 'duration'],
@@ -200,12 +306,18 @@ describe('walkingMatrixFromBase', () => {
     const ors = fakeFetch(() => Response.json({}));
     assert.deepEqual(await walkingMatrixFromBase([], ors), []);
     assert.equal(ors.calls.length, 0);
-    const tooMany = Array.from({ length: MATRIX_BATCH_SIZE + 1 }, () => ({ lat: 53.48, lng: -2.25 }));
+    const tooMany = Array.from({ length: MATRIX_BATCH_SIZE + 1 }, () => ({
+      lat: 53.48,
+      lng: -2.25,
+    }));
     await assert.rejects(walkingMatrixFromBase(tooMany, ors));
   });
 
   it('passes rate limits through', async () => {
     const ors = fakeFetch(() => new Response('', { status: 429 }));
-    assert.equal((await rejection(walkingMatrixFromBase([{ lat: 53.48, lng: -2.25 }], ors))).kind, 'rate_limited');
+    assert.equal(
+      (await rejection(walkingMatrixFromBase([{ lat: 53.48, lng: -2.25 }], ors))).kind,
+      'rate_limited'
+    );
   });
 });

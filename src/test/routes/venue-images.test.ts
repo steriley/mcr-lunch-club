@@ -4,7 +4,18 @@ import assert from 'node:assert/strict';
 import { POST } from '@/pages/api/admin/venues/[id]/images';
 import { DELETE, PATCH } from '@/pages/api/admin/venues/[id]/images/[imageId]';
 import { blobClient } from '@/lib/venue-image-storage';
-import { ADMIN, SITE, VENUE_ID, adminRequest, quietly, restoreStubs, run, signInAs, stubDbSequence, stubTransactions } from '../route-helpers';
+import {
+  ADMIN,
+  SITE,
+  VENUE_ID,
+  adminRequest,
+  quietly,
+  restoreStubs,
+  run,
+  signInAs,
+  stubDbSequence,
+  stubTransactions,
+} from '../route-helpers';
 import { JPEG, VP8, VP8X, webpWithSize } from '../webp-samples';
 
 const IMAGE_ID = '9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d';
@@ -45,7 +56,11 @@ beforeEach(() => {
   puts = [];
   dels = [];
   failPutAt = null;
-  (blobClient as any).put = async (key: string, body: Uint8Array, options: Record<string, unknown>) => {
+  (blobClient as any).put = async (
+    key: string,
+    body: Uint8Array,
+    options: Record<string, unknown>
+  ) => {
     if (failPutAt === puts.length) throw new Error('blob store down');
     puts.push({ key, size: body.byteLength, options });
     return { url: `${BLOB_HOST}/${key}` };
@@ -53,7 +68,11 @@ beforeEach(() => {
   (blobClient as any).del = async (urls: string[]) => {
     dels.push(urls);
   };
-  savedEnv = { token: process.env.BLOB_READ_WRITE_TOKEN, storeId: process.env.BLOB_STORE_ID, vercel: process.env.VERCEL_ENV };
+  savedEnv = {
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+    storeId: process.env.BLOB_STORE_ID,
+    vercel: process.env.VERCEL_ENV,
+  };
   process.env.BLOB_READ_WRITE_TOKEN = 'vercel_blob_rw_testStore_secret';
   // Vercel builds set this; "not configured" tests must not inherit it.
   delete process.env.BLOB_STORE_ID;
@@ -63,7 +82,11 @@ beforeEach(() => {
 afterEach(() => {
   restoreStubs();
   Object.assign(blobClient, originalBlob);
-  for (const [key, value] of [['BLOB_READ_WRITE_TOKEN', savedEnv.token], ['BLOB_STORE_ID', savedEnv.storeId], ['VERCEL_ENV', savedEnv.vercel]] as const) {
+  for (const [key, value] of [
+    ['BLOB_READ_WRITE_TOKEN', savedEnv.token],
+    ['BLOB_STORE_ID', savedEnv.storeId],
+    ['VERCEL_ENV', savedEnv.vercel],
+  ] as const) {
     if (value === undefined) delete process.env[key];
     else process.env[key] = value;
   }
@@ -91,19 +114,33 @@ function uploadRequest(parts: UploadParts = {}, origin: string | null = SITE) {
   if (parts.caption !== undefined) form.set('caption', parts.caption);
   const headers: Record<string, string> = {};
   if (origin) headers.origin = origin;
-  return new Request(`${SITE}/api/admin/venues/${VENUE_ID}/images`, { method: 'POST', headers, body: form });
+  return new Request(`${SITE}/api/admin/venues/${VENUE_ID}/images`, {
+    method: 'POST',
+    headers,
+    body: form,
+  });
 }
 
-const upload = (parts?: UploadParts, id = VENUE_ID, origin?: string | null) => run(POST, { request: uploadRequest(parts, origin), params: { id } });
-const patch = (body: unknown, imageId = IMAGE_ID) => run(PATCH, { request: adminRequest('PATCH', body), params: { id: VENUE_ID, imageId } });
-const remove = (imageId = IMAGE_ID) => run(DELETE, { request: adminRequest('DELETE'), params: { id: VENUE_ID, imageId } });
+const upload = (parts?: UploadParts, id = VENUE_ID, origin?: string | null) =>
+  run(POST, { request: uploadRequest(parts, origin), params: { id } });
+const patch = (body: unknown, imageId = IMAGE_ID) =>
+  run(PATCH, { request: adminRequest('PATCH', body), params: { id: VENUE_ID, imageId } });
+const remove = (imageId = IMAGE_ID) =>
+  run(DELETE, { request: adminRequest('DELETE'), params: { id: VENUE_ID, imageId } });
 
 /** The selects a successful upload makes: the unlocked pre-check, then addVenueImage under its lock. */
 function stubUploadSelects(existing = 0) {
-  return stubDbSequence('select', [[{ id: VENUE_ID }], [{ total: existing }], [{ id: VENUE_ID }], [{ total: existing }], existing ? [{ id: 'other' }] : []]);
+  return stubDbSequence('select', [
+    [{ id: VENUE_ID }],
+    [{ total: existing }],
+    [{ id: VENUE_ID }],
+    [{ total: existing }],
+    existing ? [{ id: 'other' }] : [],
+  ]);
 }
 
-const values = (calls: { method: string; args: unknown[] }[]) => calls.filter((call) => call.method === 'values').map((call) => call.args[0] as any);
+const values = (calls: { method: string; args: unknown[] }[]) =>
+  calls.filter((call) => call.method === 'values').map((call) => call.args[0] as any);
 const errorOf = async (response: Response) => ((await response.json()) as { error: string }).error;
 
 describe('POST /api/admin/venues/[id]/images', () => {
@@ -138,7 +175,11 @@ describe('POST /api/admin/venues/[id]/images', () => {
     assert.deepEqual([full.size, thumb.size], [VP8X.length, VP8.length]);
     for (const call of puts) {
       assert.deepEqual(
-        { access: call.options.access, contentType: call.options.contentType, addRandomSuffix: call.options.addRandomSuffix },
+        {
+          access: call.options.access,
+          contentType: call.options.contentType,
+          addRandomSuffix: call.options.addRandomSuffix,
+        },
         { access: 'public', contentType: 'image/webp', addRandomSuffix: false }
       );
       assert.ok((call.options.cacheControlMaxAge as number) >= 30 * 24 * 60 * 60);
@@ -146,12 +187,34 @@ describe('POST /api/admin/venues/[id]/images', () => {
 
     const [row, event] = values(inserts);
     assert.deepEqual(
-      { id: row.id, fullUrl: row.fullUrl, thumbUrl: row.thumbUrl, width: row.width, height: row.height, caption: row.caption, uploadedBy: row.uploadedBy, isPrimary: row.isPrimary },
-      { id, fullUrl: `${BLOB_HOST}/${full.key}`, thumbUrl: `${BLOB_HOST}/${thumb.key}`, width: 29, height: 43, caption: 'Top-down pizza', uploadedBy: ADMIN.id, isPrimary: true }
+      {
+        id: row.id,
+        fullUrl: row.fullUrl,
+        thumbUrl: row.thumbUrl,
+        width: row.width,
+        height: row.height,
+        caption: row.caption,
+        uploadedBy: row.uploadedBy,
+        isPrimary: row.isPrimary,
+      },
+      {
+        id,
+        fullUrl: `${BLOB_HOST}/${full.key}`,
+        thumbUrl: `${BLOB_HOST}/${thumb.key}`,
+        width: 29,
+        height: 43,
+        caption: 'Top-down pizza',
+        uploadedBy: ADMIN.id,
+        isPrimary: true,
+      }
     );
     assert.deepEqual(
       { kind: event.kind, actorName: event.actorName, detail: event.detail },
-      { kind: 'image_added', actorName: 'Sam', detail: { imageId: IMAGE_ID, thumbUrl: imageRow().thumbUrl } }
+      {
+        kind: 'image_added',
+        actorName: 'Sam',
+        detail: { imageId: IMAGE_ID, thumbUrl: imageRow().thumbUrl },
+      }
     );
     assert.equal(dels.length, 0);
   });
@@ -159,19 +222,31 @@ describe('POST /api/admin/venues/[id]/images', () => {
   it('uses the preview and prod prefixes on Vercel', async () => {
     signInAs();
     stubTransactions();
-    for (const [env, prefix] of [['preview', 'preview'], ['production', 'prod']]) {
+    for (const [env, prefix] of [
+      ['preview', 'preview'],
+      ['production', 'prod'],
+    ]) {
       process.env.VERCEL_ENV = env;
       puts = [];
       stubUploadSelects(0);
       stubDbSequence('insert', [[imageRow()], []]);
       assert.equal((await upload()).status, 201);
-      assert.ok(puts.every((call) => call.key.startsWith(`${prefix}/venues/`)), puts.map((call) => call.key).join());
+      assert.ok(
+        puts.every((call) => call.key.startsWith(`${prefix}/venues/`)),
+        puts.map((call) => call.key).join()
+      );
     }
   });
 
   it('rejects files that are not really WebP, whatever their declared type', async () => {
     signInAs();
-    for (const parts of [{ full: JPEG }, { thumb: JPEG }, { full: VP8X.subarray(0, 30) }, { full: null }, { thumb: null }]) {
+    for (const parts of [
+      { full: JPEG },
+      { thumb: JPEG },
+      { full: VP8X.subarray(0, 30) },
+      { full: null },
+      { thumb: null },
+    ]) {
       const response = await upload(parts);
       assert.equal(response.status, 400, JSON.stringify(Object.keys(parts)));
     }
@@ -187,8 +262,14 @@ describe('POST /api/admin/venues/[id]/images', () => {
       padded.set(VP8X);
       return padded;
     };
-    assert.match(await errorOf(await upload({ full: big(800 * 1024 + 1) })), /full-size image is 800 KB; the limit is 800 KB/);
-    assert.match(await errorOf(await upload({ thumb: big(150 * 1024 + 1) })), /thumbnail image .* the limit is 150 KB/);
+    assert.match(
+      await errorOf(await upload({ full: big(800 * 1024 + 1) })),
+      /full-size image is 800 KB; the limit is 800 KB/
+    );
+    assert.match(
+      await errorOf(await upload({ thumb: big(150 * 1024 + 1) })),
+      /thumbnail image .* the limit is 150 KB/
+    );
     assert.equal(puts.length, 0);
   });
 
@@ -207,13 +288,22 @@ describe('POST /api/admin/venues/[id]/images', () => {
     stubTransactions();
     stubUploadSelects(0);
     stubDbSequence('insert', [[imageRow({ width: 1600, height: 1200 })], []]);
-    const response = await upload({ full: webpWithSize(1600, 1200), thumb: webpWithSize(640, 480), width: '1600', height: '1200' });
+    const response = await upload({
+      full: webpWithSize(1600, 1200),
+      thumb: webpWithSize(640, 480),
+      width: '1600',
+      height: '1200',
+    });
     assert.equal(response.status, 201);
   });
 
   it('rejects width and height that do not match the full image', async () => {
     signInAs();
-    for (const [width, height] of [['30', '43'], ['29', ''], ['abc', '43']]) {
+    for (const [width, height] of [
+      ['30', '43'],
+      ['29', ''],
+      ['abc', '43'],
+    ]) {
       assert.equal((await upload({ width, height })).status, 400, `${width}x${height}`);
     }
     assert.equal(puts.length, 0);
@@ -247,7 +337,12 @@ describe('POST /api/admin/venues/[id]/images', () => {
     signInAs();
     stubTransactions();
     // Pre-check sees 4; under the lock there are already 5.
-    stubDbSequence('select', [[{ id: VENUE_ID }], [{ total: 4 }], [{ id: VENUE_ID }], [{ total: 5 }]]);
+    stubDbSequence('select', [
+      [{ id: VENUE_ID }],
+      [{ total: 4 }],
+      [{ id: VENUE_ID }],
+      [{ total: 5 }],
+    ]);
     const inserts = stubDbSequence('insert', [[imageRow()]]);
     const response = await upload();
     assert.equal(response.status, 409);
@@ -315,11 +410,17 @@ describe('PATCH /api/admin/venues/[id]/images/[imageId]', () => {
 
   it('updates the caption and focal point without logging', async () => {
     signInAs();
-    const updates = stubDbSequence('update', [[imageRow({ caption: 'Counter', focalX: 30, focalY: 70 })]]);
+    const updates = stubDbSequence('update', [
+      [imageRow({ caption: 'Counter', focalX: 30, focalY: 70 })],
+    ]);
     const inserts = stubDbSequence('insert', [[]]);
     const response = await patch({ caption: 'Counter', focalX: 30, focalY: 70 });
     assert.equal(response.status, 200);
-    assert.deepEqual(updates.find((call) => call.method === 'set')!.args[0], { caption: 'Counter', focalX: 30, focalY: 70 });
+    assert.deepEqual(updates.find((call) => call.method === 'set')!.args[0], {
+      caption: 'Counter',
+      focalX: 30,
+      focalY: 70,
+    });
     const { image } = await response.json();
     assert.deepEqual([image.caption, image.focalX, image.focalY], ['Counter', 30, 70]);
     assert.equal(values(inserts).length, 0, 'caption and focal edits are not logged');
@@ -329,14 +430,24 @@ describe('PATCH /api/admin/venues/[id]/images/[imageId]', () => {
     signInAs();
     const updates = stubDbSequence('update', [[imageRow()]]);
     assert.equal((await patch({ focalX: null, focalY: null })).status, 200);
-    assert.deepEqual(updates.find((call) => call.method === 'set')!.args[0], { focalX: null, focalY: null });
+    assert.deepEqual(updates.find((call) => call.method === 'set')!.args[0], {
+      focalX: null,
+      focalY: null,
+    });
   });
 
   it('makes a photo primary, clearing the old one first, and logs it', async () => {
     signInAs({ ...ADMIN, name: 'Sam' });
     stubTransactions();
-    stubDbSequence('select', [[imageRow({ isPrimary: false })], [{ id: VENUE_ID }], [imageRow({ isPrimary: false })]]);
-    const updates = stubDbSequence('update', [[{ id: 'old-primary' }], [imageRow({ isPrimary: true })]]);
+    stubDbSequence('select', [
+      [imageRow({ isPrimary: false })],
+      [{ id: VENUE_ID }],
+      [imageRow({ isPrimary: false })],
+    ]);
+    const updates = stubDbSequence('update', [
+      [{ id: 'old-primary' }],
+      [imageRow({ isPrimary: true })],
+    ]);
     const inserts = stubDbSequence('insert', [[]]);
     const response = await patch({ isPrimary: true });
     assert.equal(response.status, 200);
@@ -396,7 +507,15 @@ describe('DELETE /api/admin/venues/[id]/images/[imageId]', () => {
     signInAs();
     stubTransactions();
     stubDbSequence('select', [[{ id: VENUE_ID }]]);
-    stubDbSequence('delete', [[imageRow({ isPrimary: false, fullUrl: 'https://example.com/old-photo.jpg', thumbUrl: null })]]);
+    stubDbSequence('delete', [
+      [
+        imageRow({
+          isPrimary: false,
+          fullUrl: 'https://example.com/old-photo.jpg',
+          thumbUrl: null,
+        }),
+      ],
+    ]);
     stubDbSequence('insert', [[]]);
     assert.equal((await remove()).status, 200);
     assert.deepEqual(dels, []);

@@ -12,8 +12,12 @@ export const VP8X = sample(
   'UklGRmoAAABXRUJQVlA4WAoAAAAQAAAAHAAAKgAAQUxQSAoAAAABB1DAiAhERP8DVlA4IDoAAABwAwCdASodACsAPtFmrFEoJaQipWgBABoJZwDPzoAAN7nfSoAA/tDK/r4Ap6o/9wZn1dgn52MwAAAA'
 );
 // The first bytes of a JPEG and a PNG are enough: neither is a RIFF file.
-export const JPEG = sample('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4n');
-export const PNG = sample('iVBORw0KGgoAAAANSUhEUgAAACUAAAAVCAIAAABOhrD5AAAAiElEQVR4nL3VsRGAIAyFYUnpJNaMwATWTsIITEVNxUx2noco5CUxXYr/vrs0cWs5cqoLOiF6Vk451RA97HFzAhoJSUAjIQloJCTdlx9IanZrsvWsyY5nSvY9O');
+export const JPEG = sample(
+  '/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4n'
+);
+export const PNG = sample(
+  'iVBORw0KGgoAAAANSUhEUgAAACUAAAAVCAIAAABOhrD5AAAAiElEQVR4nL3VsRGAIAyFYUnpJNaMwATWTsIITEVNxUx2noco5CUxXYr/vrs0cWs5cqoLOiF6Vk451RA97HFzAhoJSUAjIQloJCTdlx9IanZrsvWsyY5nSvY9O'
+);
 
 /** A copy of the VP8X sample whose header claims this canvas size. */
 export function webpWithSize(width: number, height: number): Uint8Array {

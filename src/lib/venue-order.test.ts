@@ -1,31 +1,68 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { ALPHABETICAL_TIERS, compareByWalkingTime, sortByRecentInspection, sortForPublic, tierComparator } from './venue-order';
+import {
+  ALPHABETICAL_TIERS,
+  compareByWalkingTime,
+  sortByRecentInspection,
+  sortForPublic,
+  tierComparator,
+} from './venue-order';
 import type { TierValue } from './tiers';
 
-const venue = (name: string, walkingTimeMin: number | null, tier: TierValue = 'approved') => ({ name, walkingTimeMin, tier });
+const venue = (name: string, walkingTimeMin: number | null, tier: TierValue = 'approved') => ({
+  name,
+  walkingTimeMin,
+  tier,
+});
 const names = (venues: { name: string }[]) => venues.map((entry) => entry.name);
-const sortedFor = (tier: TierValue, venues: ReturnType<typeof venue>[]) => [...venues].sort(tierComparator(tier));
+const sortedFor = (tier: TierValue, venues: ReturnType<typeof venue>[]) =>
+  [...venues].sort(tierComparator(tier));
 
 describe('tierComparator', () => {
-  const mixed = [venue('Zed', 3), venue('alpha', 10), venue('Unknown', null), venue('Beta', 3), venue('Another unknown', null)];
+  const mixed = [
+    venue('Zed', 3),
+    venue('alpha', 10),
+    venue('Unknown', null),
+    venue('Beta', 3),
+    venue('Another unknown', null),
+  ];
 
   for (const tier of ['approved', 'under_consideration', 'to_be_assessed', 'if_we_must'] as const) {
     it(`orders ${tier} by walking time, unknown times last, then name`, () => {
-      assert.deepEqual(names(sortedFor(tier, mixed)), ['Beta', 'Zed', 'alpha', 'Another unknown', 'Unknown']);
+      assert.deepEqual(names(sortedFor(tier, mixed)), [
+        'Beta',
+        'Zed',
+        'alpha',
+        'Another unknown',
+        'Unknown',
+      ]);
     });
   }
 
   for (const tier of ALPHABETICAL_TIERS) {
     it(`orders ${tier} alphabetically, ignoring walking time and case`, () => {
-      assert.deepEqual(names(sortedFor(tier, mixed)), ['alpha', 'Another unknown', 'Beta', 'Unknown', 'Zed']);
+      assert.deepEqual(names(sortedFor(tier, mixed)), [
+        'alpha',
+        'Another unknown',
+        'Beta',
+        'Unknown',
+        'Zed',
+      ]);
     });
   }
 
   it('compares names case-insensitively, unlike a plain code-point sort', () => {
-    assert.deepEqual(names(sortedFor('rejected', [venue('Banana', 1), venue('apple', 1), venue('Éclair', 1), venue('cherry', 1)])), [
-      'apple', 'Banana', 'cherry', 'Éclair',
-    ]);
+    assert.deepEqual(
+      names(
+        sortedFor('rejected', [
+          venue('Banana', 1),
+          venue('apple', 1),
+          venue('Éclair', 1),
+          venue('cherry', 1),
+        ])
+      ),
+      ['apple', 'Banana', 'cherry', 'Éclair']
+    );
   });
 
   it('keeps walking-time ties in name order', () => {
@@ -49,7 +86,15 @@ describe('sortForPublic', () => {
       ],
       (entry) => entry.tier
     );
-    assert.deepEqual(names(sorted), ['Near', 'Far', 'Considering', 'Rejected A', 'Rejected Z', 'Gone A', 'Gone B']);
+    assert.deepEqual(names(sorted), [
+      'Near',
+      'Far',
+      'Considering',
+      'Rejected A',
+      'Rejected Z',
+      'Gone A',
+      'Gone B',
+    ]);
   });
 });
 
@@ -59,19 +104,39 @@ describe('sortByRecentInspection', () => {
 
   it('puts the most recently inspected first, then A to Z within a date', () => {
     const venues = [place('Delta'), place('alpha'), place('Charlie'), place('Bravo')];
-    const inspections = [seen('delta', '2026-10-01'), seen('alpha', '2026-08-01'), seen('charlie', '2026-10-01'), seen('bravo', '2026-09-01')];
-    assert.deepEqual(names(sortByRecentInspection(venues, inspections)), ['Charlie', 'Delta', 'Bravo', 'alpha']);
+    const inspections = [
+      seen('delta', '2026-10-01'),
+      seen('alpha', '2026-08-01'),
+      seen('charlie', '2026-10-01'),
+      seen('bravo', '2026-09-01'),
+    ];
+    assert.deepEqual(names(sortByRecentInspection(venues, inspections)), [
+      'Charlie',
+      'Delta',
+      'Bravo',
+      'alpha',
+    ]);
   });
 
   it("uses a venue's latest inspection, whatever order they come in", () => {
     const venues = [place('Old'), place('New')];
-    const inspections = [seen('new', '2026-03-01'), seen('old', '2026-09-01'), seen('old', '2026-01-01'), seen('new', '2026-02-01')];
+    const inspections = [
+      seen('new', '2026-03-01'),
+      seen('old', '2026-09-01'),
+      seen('old', '2026-01-01'),
+      seen('new', '2026-02-01'),
+    ];
     assert.deepEqual(names(sortByRecentInspection(venues, inspections)), ['Old', 'New']);
   });
 
   it('lists venues with no inspection after the inspected ones, by name', () => {
     const venues = [place('Zulu'), place('Mike'), place('Inspected'), place('Alpha')];
-    assert.deepEqual(names(sortByRecentInspection(venues, [seen('inspected', '2026-05-05')])), ['Inspected', 'Alpha', 'Mike', 'Zulu']);
+    assert.deepEqual(names(sortByRecentInspection(venues, [seen('inspected', '2026-05-05')])), [
+      'Inspected',
+      'Alpha',
+      'Mike',
+      'Zulu',
+    ]);
   });
 
   it('leaves the input alone', () => {

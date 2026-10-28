@@ -10,6 +10,9 @@ describe('getWalkingDirectionsUrl', () => {
 
   it('generates Google Maps walking URL for non-Apple platform', () => {
     const url = getWalkingDirectionsUrl(53.48033, -2.25074, 'Linux x86_64');
-    assert.equal(url, 'https://www.google.com/maps/dir/?api=1&destination=53.48033,-2.25074&travelmode=walking');
+    assert.equal(
+      url,
+      'https://www.google.com/maps/dir/?api=1&destination=53.48033,-2.25074&travelmode=walking'
+    );
   });
 });

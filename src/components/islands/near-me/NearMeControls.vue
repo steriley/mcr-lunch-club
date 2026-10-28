@@ -11,9 +11,18 @@
       title="Recentre on me"
       @click="emit('recenter')"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-4 h-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 2v3m0 14v3M2 12h3m14 0h3" />
       </svg>
     </button>
 
@@ -26,9 +35,18 @@
       title="Return to Spinningfields Base"
       @click="emit('home')"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-        <polyline points="9 22 9 12 15 12 15 22"/>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-4 h-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
       </svg>
     </button>
 
@@ -42,9 +60,18 @@
       title="Set location manually on map"
       @click="emit('pick')"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-        <circle cx="12" cy="10" r="3"/>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-4 h-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+        <circle cx="12" cy="10" r="3" />
       </svg>
     </button>
   </div>
@@ -75,27 +102,27 @@ const emit = defineEmits<{ recenter: []; home: []; pick: [] }>();
   flex-direction: column;
   gap: 10px;
   z-index: 1200;
-  transition: bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 @media (min-width: 1024px) {
   .near-me-controls-cluster {
     bottom: calc(var(--near-me-safe-bottom) + 16px);
-  
   }
 }
 
 @media (max-width: 1023px) {
   .near-me-controls-cluster {
     bottom: calc(var(--sheet-current-height, 140px) + 14px);
-  
   }
 
   .near-me-controls-cluster.is-hidden-on-mobile {
     opacity: 0;
     pointer-events: none;
     transform: translateY(20px);
-  
   }
 }
 
@@ -167,7 +194,6 @@ const emit = defineEmits<{ recenter: []; home: []; pick: [] }>();
   .near-me-controls-cluster,
   .near-me-control-btn {
     transition-duration: 0.01ms !important;
-  
   }
 }
 

@@ -12,7 +12,9 @@ let hookStatus: number;
 
 const call = (authorization?: string) =>
   GET({
-    request: new Request('https://lunch.example.com/api/cron/weekly-bulletin', { headers: authorization ? { authorization } : {} }),
+    request: new Request('https://lunch.example.com/api/cron/weekly-bulletin', {
+      headers: authorization ? { authorization } : {},
+    }),
   } as any) as Promise<Response>;
 
 beforeEach(() => {

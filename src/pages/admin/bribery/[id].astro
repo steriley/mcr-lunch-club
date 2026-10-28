@@ -10,12 +10,20 @@ import { db } from '@/lib/db';
 export const prerender = false;
 
 const id = uuidParam.safeParse(Astro.params.id);
-const [record] = id.success ? await db.select().from(briberyRecords).where(eq(briberyRecords.id, id.data)).limit(1) : [];
+const [record] = id.success
+  ? await db.select().from(briberyRecords).where(eq(briberyRecords.id, id.data)).limit(1)
+  : [];
 if (!record) {
-  return new Response('Bribery record not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
+  return new Response('Bribery record not found', {
+    status: 404,
+    headers: { 'Cache-Control': 'no-store' },
+  });
 }
 
-const venueOptions = await db.select({ id: venues.id, name: venues.name }).from(venues).orderBy(asc(venues.name));
+const venueOptions = await db
+  .select({ id: venues.id, name: venues.name })
+  .from(venues)
+  .orderBy(asc(venues.name));
 ---
 
 <AdminLayout title="Edit bribery record">

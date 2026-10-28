@@ -34,7 +34,11 @@ const sourceIncidents = readJson<Incident[]>('src/data/incidents.json');
 // Validate everything before touching the database.
 const items = sourceVenues.map(toImportableVenue);
 
-const { inserted, updated, skipped } = await importVenues(db, items, { dryRun, update, updateTiers });
+const { inserted, updated, skipped } = await importVenues(db, items, {
+  dryRun,
+  update,
+  updateTiers,
+});
 
 const verb = (past: string, future: string) => (dryRun ? future : past);
 
@@ -51,7 +55,12 @@ for (const incident of sourceIncidents) {
   const [existing] = await db
     .select({ id: briberyRecords.id })
     .from(briberyRecords)
-    .where(and(eq(briberyRecords.title, incident.title), date ? eq(briberyRecords.incidentDate, date) : isNull(briberyRecords.incidentDate)))
+    .where(
+      and(
+        eq(briberyRecords.title, incident.title),
+        date ? eq(briberyRecords.incidentDate, date) : isNull(briberyRecords.incidentDate)
+      )
+    )
     .limit(1);
 
   if (existing) {

@@ -12,7 +12,12 @@ describe('venueInputSchema', () => {
   });
 
   it('turns blank optional strings into null and trims text', () => {
-    const result = venueInputSchema.parse({ ...valid, name: '  Chip Shop ', pullQuote: '   ', lunchSpecial: ' Chips ' });
+    const result = venueInputSchema.parse({
+      ...valid,
+      name: '  Chip Shop ',
+      pullQuote: '   ',
+      lunchSpecial: ' Chips ',
+    });
     assert.equal(result.name, 'Chip Shop');
     assert.equal(result.pullQuote, null);
     assert.equal(result.lunchSpecial, 'Chips');
@@ -20,7 +25,10 @@ describe('venueInputSchema', () => {
 
   it('only accepts cuisines from the fixed list, defaulting to Other', () => {
     assert.equal(venueInputSchema.parse(valid).cuisine, 'other');
-    assert.equal(venueInputSchema.parse({ ...valid, cuisine: 'fish_and_chips' }).cuisine, 'fish_and_chips');
+    assert.equal(
+      venueInputSchema.parse({ ...valid, cuisine: 'fish_and_chips' }).cuisine,
+      'fish_and_chips'
+    );
     assert.equal(venueInputSchema.safeParse({ ...valid, cuisine: 'British' }).success, false);
     assert.equal(venueInputSchema.safeParse({ ...valid, cuisine: 'Fish & Chips' }).success, false);
     assert.equal(venueInputSchema.safeParse({ ...valid, cuisine: '' }).success, false);
@@ -39,17 +47,38 @@ describe('venueInputSchema', () => {
   it('takes an optional proposed tier for a new venue, but never straight into Approved', () => {
     assert.equal(venueCreateSchema.parse(valid).proposedTier, null);
     assert.equal(venueCreateSchema.parse({ ...valid, proposedTier: '' }).proposedTier, null);
-    assert.equal(venueCreateSchema.parse({ ...valid, proposedTier: 'rejected' }).proposedTier, 'rejected');
+    assert.equal(
+      venueCreateSchema.parse({ ...valid, proposedTier: 'rejected' }).proposedTier,
+      'rejected'
+    );
     assert.equal(venueCreateSchema.safeParse({ ...valid, proposedTier: 'great' }).success, false);
     const approved = venueCreateSchema.safeParse({ ...valid, proposedTier: 'approved' });
     assert.equal(approved.success, false);
     assert.deepEqual(approved.error?.issues[0].path, ['proposedTier']);
-    assert.equal(venueCreateSchema.safeParse({ ...valid, latitude: 40.7, longitude: -74 }).success, false);
+    assert.equal(
+      venueCreateSchema.safeParse({ ...valid, latitude: 40.7, longitude: -74 }).success,
+      false
+    );
   });
 
   it('drops removed fields instead of storing them', () => {
-    const result = venueInputSchema.parse({ ...valid, rank: 4, sortOrder: 7, summary: 'x', verdict: 'y', rejectionReason: 'z', published: true });
-    for (const field of ['rank', 'sortOrder', 'summary', 'verdict', 'rejectionReason', 'published']) {
+    const result = venueInputSchema.parse({
+      ...valid,
+      rank: 4,
+      sortOrder: 7,
+      summary: 'x',
+      verdict: 'y',
+      rejectionReason: 'z',
+      published: true,
+    });
+    for (const field of [
+      'rank',
+      'sortOrder',
+      'summary',
+      'verdict',
+      'rejectionReason',
+      'published',
+    ]) {
       assert.ok(!(field in result), field);
     }
   });
@@ -61,15 +90,40 @@ describe('venueInputSchema', () => {
   });
 
   it('rejects out-of-range and non-numeric coordinates', () => {
-    for (const [field, limit] of [['latitude', 90], ['longitude', 180]] as const) {
-      assert.equal(venueInputSchema.safeParse({ ...valid, latitude: 53.48, longitude: -2.25, [field]: limit + 0.1 }).success, false);
-      assert.equal(venueInputSchema.safeParse({ ...valid, latitude: 53.48, longitude: -2.25, [field]: -limit - 0.1 }).success, false);
+    for (const [field, limit] of [
+      ['latitude', 90],
+      ['longitude', 180],
+    ] as const) {
+      assert.equal(
+        venueInputSchema.safeParse({
+          ...valid,
+          latitude: 53.48,
+          longitude: -2.25,
+          [field]: limit + 0.1,
+        }).success,
+        false
+      );
+      assert.equal(
+        venueInputSchema.safeParse({
+          ...valid,
+          latitude: 53.48,
+          longitude: -2.25,
+          [field]: -limit - 0.1,
+        }).success,
+        false
+      );
     }
-    assert.equal(venueInputSchema.safeParse({ ...valid, latitude: 'abc', longitude: -2.25 }).success, false);
+    assert.equal(
+      venueInputSchema.safeParse({ ...valid, latitude: 'abc', longitude: -2.25 }).success,
+      false
+    );
   });
 
   it('only accepts coordinates inside the UK, given as a pair', () => {
-    assert.equal(venueInputSchema.safeParse({ ...valid, latitude: 53.48, longitude: -2.25 }).success, true);
+    assert.equal(
+      venueInputSchema.safeParse({ ...valid, latitude: 53.48, longitude: -2.25 }).success,
+      true
+    );
     const outside = venueInputSchema.safeParse({ ...valid, latitude: 40.7, longitude: -74 });
     assert.equal(outside.success, false);
     assert.deepEqual(outside.error?.issues[0].path, ['latitude']);
@@ -85,18 +139,35 @@ describe('venueInputSchema', () => {
   });
 
   it('only allows http(s) links', () => {
-    assert.equal(venueInputSchema.safeParse({ ...valid, websiteUrl: 'https://example.com' }).success, true);
-    assert.equal(venueInputSchema.safeParse({ ...valid, websiteUrl: 'javascript:alert(1)' }).success, false);
-    assert.equal(venueInputSchema.safeParse({ ...valid, mapSearchLink: 'ftp://example.com/a' }).success, false);
+    assert.equal(
+      venueInputSchema.safeParse({ ...valid, websiteUrl: 'https://example.com' }).success,
+      true
+    );
+    assert.equal(
+      venueInputSchema.safeParse({ ...valid, websiteUrl: 'javascript:alert(1)' }).success,
+      false
+    );
+    assert.equal(
+      venueInputSchema.safeParse({ ...valid, mapSearchLink: 'ftp://example.com/a' }).success,
+      false
+    );
     assert.equal(venueInputSchema.parse({ ...valid, mapSearchLink: '' }).mapSearchLink, null);
   });
 
   it('never accepts a hand-edited inspection date', () => {
-    assert.ok(!('lastInspectionDate' in venueInputSchema.parse({ ...valid, lastInspectionDate: '2026-09-01' })));
+    assert.ok(
+      !(
+        'lastInspectionDate' in
+        venueInputSchema.parse({ ...valid, lastInspectionDate: '2026-09-01' })
+      )
+    );
   });
 
   it('enforces text length limits', () => {
-    assert.equal(venueInputSchema.safeParse({ ...valid, pullQuote: 'x'.repeat(401) }).success, false);
+    assert.equal(
+      venueInputSchema.safeParse({ ...valid, pullQuote: 'x'.repeat(401) }).success,
+      false
+    );
     assert.equal(venueInputSchema.safeParse({ ...valid, name: 'x' }).success, false);
   });
 });
@@ -119,7 +190,7 @@ describe('isOutsideUk', () => {
 
 describe('slugify', () => {
   it('lowercases, strips accents and apostrophes, and hyphenates', () => {
-    assert.equal(slugify("Wright’s Fish & Chips"), 'wrights-fish-chips');
+    assert.equal(slugify('Wright’s Fish & Chips'), 'wrights-fish-chips');
     assert.equal(slugify('Café Müller'), 'cafe-muller');
     assert.equal(slugify('  --Hello   World--  '), 'hello-world');
   });

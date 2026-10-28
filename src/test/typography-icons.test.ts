@@ -21,17 +21,25 @@ function files(dir: string): string[] {
   });
 }
 
-const publicFiles = ['pages', 'components', 'layouts', 'lib'].flatMap((dir) => files(path.join(SRC, dir)));
+const publicFiles = ['pages', 'components', 'layouts', 'lib'].flatMap((dir) =>
+  files(path.join(SRC, dir))
+);
 
 describe('typography and icons', () => {
   it('has no emoji in public templates, components or tier data', () => {
     const offenders = publicFiles.filter((file) => EMOJI.test(readFileSync(file, 'utf8')));
-    assert.deepEqual(offenders.map((file) => path.relative(SRC, file)), []);
+    assert.deepEqual(
+      offenders.map((file) => path.relative(SRC, file)),
+      []
+    );
   });
 
   it('keeps the serif off page and section wrappers', () => {
     const wrappers = /<(?:article|section|main|div class="max-w-[^"]*")[^>]*font-serif-header/;
     const offenders = publicFiles.filter((file) => wrappers.test(readFileSync(file, 'utf8')));
-    assert.deepEqual(offenders.map((file) => path.relative(SRC, file)), []);
+    assert.deepEqual(
+      offenders.map((file) => path.relative(SRC, file)),
+      []
+    );
   });
 });

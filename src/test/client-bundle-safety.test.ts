@@ -12,7 +12,14 @@ import { runtimeImports } from './imports';
  */
 
 const ROOT = path.resolve('src');
-const SERVER_ONLY = ['lib/ors.ts', 'lib/env.ts', 'lib/walking-route.ts', 'lib/db.ts', 'lib/auth.ts', 'lib/og-card.ts'].map((file) => path.join(ROOT, file));
+const SERVER_ONLY = [
+  'lib/ors.ts',
+  'lib/env.ts',
+  'lib/walking-route.ts',
+  'lib/db.ts',
+  'lib/auth.ts',
+  'lib/og-card.ts',
+].map((file) => path.join(ROOT, file));
 
 function filesUnder(dir: string, pattern: RegExp): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -28,7 +35,12 @@ function resolveImport(from: string, specifier: string): string | null {
   else if (specifier.startsWith('.')) base = path.resolve(path.dirname(from), specifier);
   else return null; // a package
   for (const candidate of [base, `${base}.ts`, `${base}.vue`, path.join(base, 'index.ts')]) {
-    if (existsSync(candidate) && !candidate.endsWith(path.sep) && /\.(ts|vue|json)$/.test(candidate)) return candidate;
+    if (
+      existsSync(candidate) &&
+      !candidate.endsWith(path.sep) &&
+      /\.(ts|vue|json)$/.test(candidate)
+    )
+      return candidate;
   }
   return null;
 }
@@ -53,7 +65,10 @@ function reachable(entry: string): Set<string> {
 }
 
 describe('client bundle safety', () => {
-  const entries = [...filesUnder(path.join(ROOT, 'components'), /\.vue$/), ...filesUnder(path.join(ROOT, 'stores'), /^(?!.*\.test\.ts$).*\.ts$/)];
+  const entries = [
+    ...filesUnder(path.join(ROOT, 'components'), /\.vue$/),
+    ...filesUnder(path.join(ROOT, 'stores'), /^(?!.*\.test\.ts$).*\.ts$/),
+  ];
 
   it('follows runtime imports but not type-only ones', () => {
     const source = [
@@ -64,7 +79,12 @@ describe('client bundle safety', () => {
       "import '@/styles/global.css';",
       "const leaflet = await import('leaflet');",
     ].join('\n');
-    assert.deepEqual(runtimeImports(source), ['@/lib/db', '@/lib/tiers', '@/styles/global.css', 'leaflet']);
+    assert.deepEqual(runtimeImports(source), [
+      '@/lib/db',
+      '@/lib/tiers',
+      '@/styles/global.css',
+      'leaflet',
+    ]);
   });
 
   it('finds the islands to check', () => {
@@ -75,7 +95,10 @@ describe('client bundle safety', () => {
     it(`${path.relative(ROOT, entry)} never imports server-only modules`, () => {
       const graph = reachable(entry);
       for (const serverOnly of SERVER_ONLY) {
-        assert.ok(!graph.has(serverOnly), `${path.relative(ROOT, entry)} reaches ${path.relative(ROOT, serverOnly)}`);
+        assert.ok(
+          !graph.has(serverOnly),
+          `${path.relative(ROOT, entry)} reaches ${path.relative(ROOT, serverOnly)}`
+        );
       }
     });
   }
@@ -83,7 +106,10 @@ describe('client bundle safety', () => {
   it('no client code mentions the ORS key', () => {
     for (const entry of entries) {
       for (const file of reachable(entry)) {
-        assert.ok(!readFileSync(file, 'utf8').includes('ORS_API_KEY'), `${path.relative(ROOT, file)} mentions ORS_API_KEY`);
+        assert.ok(
+          !readFileSync(file, 'utf8').includes('ORS_API_KEY'),
+          `${path.relative(ROOT, file)} mentions ORS_API_KEY`
+        );
       }
     }
   });

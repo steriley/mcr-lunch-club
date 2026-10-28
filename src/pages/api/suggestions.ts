@@ -1,6 +1,13 @@
 import type { APIRoute } from 'astro';
 import { venueSuggestions } from '@/db/schema';
-import { hasTrustedOrigin, jsonError, jsonResponse, readJson, serverError, validationError } from '@/lib/admin-api';
+import {
+  hasTrustedOrigin,
+  jsonError,
+  jsonResponse,
+  readJson,
+  serverError,
+  validationError,
+} from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { suggestionInputSchema } from '@/lib/suggestion-schema';
 import { isSuggestionRateLimited, senderHash } from '@/lib/suggestions';
@@ -30,7 +37,10 @@ export const POST: APIRoute = async (context) => {
   try {
     const hash = senderHash(clientIp(request, () => context.clientAddress));
     if (await isSuggestionRateLimited(db, hash)) {
-      return jsonError(429, 'The Chairs have received a lot of petitions recently. Please try again later.');
+      return jsonError(
+        429,
+        'The Chairs have received a lot of petitions recently. Please try again later.'
+      );
     }
 
     const { website: _website, ...values } = parsed.data;

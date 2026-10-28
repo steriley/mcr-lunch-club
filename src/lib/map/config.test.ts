@@ -18,14 +18,21 @@ describe('map config', () => {
 
   it('orders isochrone rings by increasing radius', () => {
     const radii = WALKING_ISOCHRONES.map((ring) => ring.radius);
-    assert.deepEqual(radii, [...radii].sort((a, b) => a - b));
+    assert.deepEqual(
+      radii,
+      [...radii].sort((a, b) => a - b)
+    );
   });
 
   it('derives the walking rings from the shared straight-line pace', () => {
     // 24 min/mile, less a 1.2 detour: about 56 straight-line metres a minute.
     assert.equal(WALKING_METRES_PER_MINUTE, 1609.344 / MINUTES_PER_MILE / WALKING_DETOUR_FACTOR);
     for (const ring of WALKING_ISOCHRONES.filter((entry) => entry.label.endsWith('min walk'))) {
-      assert.equal(ring.radius, Number.parseInt(ring.label, 10) * WALKING_METRES_PER_MINUTE, ring.label);
+      assert.equal(
+        ring.radius,
+        Number.parseInt(ring.label, 10) * WALKING_METRES_PER_MINUTE,
+        ring.label
+      );
     }
     assert.deepEqual(
       WALKING_ISOCHRONES.map((ring) => Math.round(ring.radius)),
@@ -33,7 +40,7 @@ describe('map config', () => {
     );
   });
 
-  it('prints each ring\'s minutes on the ring, and the boundary in miles', () => {
+  it("prints each ring's minutes on the ring, and the boundary in miles", () => {
     assert.deepEqual(
       WALKING_ISOCHRONES.map((ring) => ring.shortLabel),
       ['5 min', '10 min', '15 min', '20 min', '25 min', '2.5 mi']

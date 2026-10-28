@@ -28,7 +28,7 @@ export interface RouteStat {
  */
 export function routeStats(
   walkingTimeMin: number | null,
-  distanceMiles: number | null,
+  distanceMiles: number | null
 ): { combined: true } | { combined: false; walk: RouteStat; distance: RouteStat } {
   if (walkingTimeMin === null && distanceMiles === null) return { combined: true };
   return {

@@ -21,18 +21,20 @@ const enabled = process.env.DB_INTEGRATION === '1';
 
 function unsafeReason(value: string): string | null {
   const parsed = new URL(value);
-  if (!['localhost', '127.0.0.1', '::1', '[::1]'].includes(parsed.hostname)) return `host ${parsed.hostname} is not local`;
-  if (!parsed.pathname.toLowerCase().includes('test')) return 'the database name does not contain "test"';
+  if (!['localhost', '127.0.0.1', '::1', '[::1]'].includes(parsed.hostname))
+    return `host ${parsed.hostname} is not local`;
+  if (!parsed.pathname.toLowerCase().includes('test'))
+    return 'the database name does not contain "test"';
   return null;
 }
 
 export const skipIntegration: string | false = !enabled
   ? 'database integration tests run with `pnpm test:db`'
   : !url
-  ? 'set TEST_DATABASE_URL to run database integration tests'
-  : unsafeReason(url)
-    ? `refusing TEST_DATABASE_URL: ${unsafeReason(url)}`
-    : false;
+    ? 'set TEST_DATABASE_URL to run database integration tests'
+    : unsafeReason(url)
+      ? `refusing TEST_DATABASE_URL: ${unsafeReason(url)}`
+      : false;
 
 let client: DatabaseClient | null = null;
 
@@ -60,19 +62,35 @@ export interface TestAdmin {
   email: string;
 }
 
-export async function createAdmin(id: string, name: string, options: { banned?: boolean; role?: string } = {}): Promise<TestAdmin> {
+export async function createAdmin(
+  id: string,
+  name: string,
+  options: { banned?: boolean; role?: string } = {}
+): Promise<TestAdmin> {
   const db = await testDb();
   const admin = { id, name, email: `${id}@example.com` };
-  await db.insert(user).values({ ...admin, role: options.role ?? 'admin', banned: options.banned ?? false });
+  await db
+    .insert(user)
+    .values({ ...admin, role: options.role ?? 'admin', banned: options.banned ?? false });
   return admin;
 }
 
-export async function createVenue(name = 'Chip Shop', overrides: Partial<typeof venues.$inferInsert> = {}): Promise<string> {
+export async function createVenue(
+  name = 'Chip Shop',
+  overrides: Partial<typeof venues.$inferInsert> = {}
+): Promise<string> {
   const db = await testDb();
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const [row] = await db
     .insert(venues)
-    .values({ name, slug, tier: 'to_be_assessed', latitude: '53.480000', longitude: '-2.250000', ...overrides })
+    .values({
+      name,
+      slug,
+      tier: 'to_be_assessed',
+      latitude: '53.480000',
+      longitude: '-2.250000',
+      ...overrides,
+    })
     .returning({ id: venues.id });
   return row.id;
 }

@@ -15,7 +15,8 @@ const notFound = () => jsonError(404, NOT_FOUND);
 
 export const PUT = adminRoute(
   {
-    action: 'Update venue', publishes: true,
+    action: 'Update venue',
+    publishes: true,
     params: { id: NOT_FOUND },
     body: venueInputSchema,
     onError: (error) => (isUniqueViolation(error) ? slugTaken() : undefined),
@@ -23,15 +24,31 @@ export const PUT = adminRoute(
   async ({ params, body, actor }) => {
     const result = await saveVenue(db, params.id, body, actor);
     if (!result.ok) return result.error === 'slug_taken' ? slugTaken() : notFound();
-    return jsonResponse({ venue: serializeVenue(result.venue), routeWarning: routeWarning(result.route) });
+    return jsonResponse({
+      venue: serializeVenue(result.venue),
+      routeWarning: routeWarning(result.route),
+    });
   }
 );
 
-export const DELETE = adminRoute({ action: 'Delete venue', publishes: true, params: { id: NOT_FOUND } }, async ({ params }) => {
-  // Collect the photos first: deleting the venue cascades to their rows.
-  const images = await db.select({ fullUrl: venueImages.fullUrl, thumbUrl: venueImages.thumbUrl }).from(venueImages).where(eq(venueImages.venueId, params.id));
-  const [row] = await db.delete(venues).where(eq(venues.id, params.id)).returning({ id: venues.id });
-  if (!row) return notFound();
-  await deleteOwnedBlobs(getBlobToken(), images.flatMap((image) => [image.fullUrl, image.thumbUrl]), 'Delete venue');
-  return jsonResponse({ ok: true });
-});
+export const DELETE = adminRoute(
+  { action: 'Delete venue', publishes: true, params: { id: NOT_FOUND } },
+  async ({ params }) => {
+    // Collect the photos first: deleting the venue cascades to their rows.
+    const images = await db
+      .select({ fullUrl: venueImages.fullUrl, thumbUrl: venueImages.thumbUrl })
+      .from(venueImages)
+      .where(eq(venueImages.venueId, params.id));
+    const [row] = await db
+      .delete(venues)
+      .where(eq(venues.id, params.id))
+      .returning({ id: venues.id });
+    if (!row) return notFound();
+    await deleteOwnedBlobs(
+      getBlobToken(),
+      images.flatMap((image) => [image.fullUrl, image.thumbUrl]),
+      'Delete venue'
+    );
+    return jsonResponse({ ok: true });
+  }
+);

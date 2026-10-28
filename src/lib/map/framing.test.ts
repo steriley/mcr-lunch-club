@@ -4,8 +4,20 @@ import { anyOutsideView, frameFor, type Frame, type FrameOptions, type LatLng } 
 
 const BASE: LatLng = { lat: 53.479, lng: -2.252 };
 
-const phone: FrameOptions = { width: 390, height: 520, padding: { top: 72, right: 48, bottom: 48, left: 48 }, minZoom: 12, maxZoom: 16 };
-const desktop: FrameOptions = { width: 900, height: 700, padding: { top: 72, right: 48, bottom: 48, left: 48 }, minZoom: 12, maxZoom: 16 };
+const phone: FrameOptions = {
+  width: 390,
+  height: 520,
+  padding: { top: 72, right: 48, bottom: 48, left: 48 },
+  minZoom: 12,
+  maxZoom: 16,
+};
+const desktop: FrameOptions = {
+  width: 900,
+  height: 700,
+  padding: { top: 72, right: 48, bottom: 48, left: 48 },
+  minZoom: 12,
+  maxZoom: 16,
+};
 
 const mercatorX = (lng: number) => (lng + 180) / 360;
 const mercatorY = (lat: number) => {
@@ -27,8 +39,14 @@ function assertFits(points: LatLng[], frame: Frame, options: FrameOptions) {
   for (const point of points) {
     const { x, y } = toScreen(point, frame, options);
     const slack = 0.5;
-    assert.ok(x >= padding.left - slack && x <= options.width - padding.right + slack, `x ${x.toFixed(1)} inside the padded width`);
-    assert.ok(y >= padding.top - slack && y <= options.height - padding.bottom + slack, `y ${y.toFixed(1)} inside the padded height`);
+    assert.ok(
+      x >= padding.left - slack && x <= options.width - padding.right + slack,
+      `x ${x.toFixed(1)} inside the padded width`
+    );
+    assert.ok(
+      y >= padding.top - slack && y <= options.height - padding.bottom + slack,
+      `y ${y.toFixed(1)} inside the padded height`
+    );
   }
 }
 
@@ -101,7 +119,12 @@ describe('anyOutsideView', () => {
   });
 
   it('is true when any point is off the view in any direction', () => {
-    for (const point of [{ lat: 53.46, lng: -2.25 }, { lat: 53.5, lng: -2.25 }, { lat: 53.48, lng: -2.3 }, { lat: 53.48, lng: -2.2 }]) {
+    for (const point of [
+      { lat: 53.46, lng: -2.25 },
+      { lat: 53.5, lng: -2.25 },
+      { lat: 53.48, lng: -2.3 },
+      { lat: 53.48, lng: -2.2 },
+    ]) {
       assert.equal(anyOutsideView([BASE, point], view), true);
     }
   });

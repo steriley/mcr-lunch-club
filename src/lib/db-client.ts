@@ -25,7 +25,13 @@ interface CreateDatabaseOptions {
   onNotice?: (message: string) => void;
 }
 
-export function createDatabase({ url, driver, maxConnections, logger = false, onNotice }: CreateDatabaseOptions): DatabaseClient {
+export function createDatabase({
+  url,
+  driver,
+  maxConnections,
+  logger = false,
+  onNotice,
+}: CreateDatabaseOptions): DatabaseClient {
   if (driver === 'neon-http') {
     // Query the endpoint host directly rather than the regional `api.` host,
     // so only the database's own hostname needs to be reachable.

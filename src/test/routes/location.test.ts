@@ -3,7 +3,16 @@ import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { GET as geocode } from '@/pages/api/admin/geocode';
 import { POST as recompute } from '@/pages/api/admin/venues/[id]/recompute-route';
-import { VENUE_ID, adminRequest, quietly, restoreStubs, run, signInAs, stubDb, stubTransactions } from '../route-helpers';
+import {
+  VENUE_ID,
+  adminRequest,
+  quietly,
+  restoreStubs,
+  run,
+  signInAs,
+  stubDb,
+  stubTransactions,
+} from '../route-helpers';
 
 const originalFetch = globalThis.fetch;
 const fetchCalls: string[] = [];
@@ -24,7 +33,18 @@ afterEach(() => {
 });
 
 const now = new Date('2026-01-01T00:00:00.000Z');
-const row = { id: VENUE_ID, slug: 'chip-shop', name: 'Chip Shop', tier: 'approved', latitude: '53.481000', longitude: '-2.249000', distanceMiles: '0.25', walkingTimeMin: 5, createdAt: now, updatedAt: now };
+const row = {
+  id: VENUE_ID,
+  slug: 'chip-shop',
+  name: 'Chip Shop',
+  tier: 'approved',
+  latitude: '53.481000',
+  longitude: '-2.249000',
+  distanceMiles: '0.25',
+  walkingTimeMin: 5,
+  createdAt: now,
+  updatedAt: now,
+};
 
 describe('GET /api/admin/geocode', () => {
   const get = (q: string | null) => {
@@ -45,10 +65,21 @@ describe('GET /api/admin/geocode', () => {
 
   it('returns the candidates', async () => {
     signInAs();
-    stubOrs(() => Response.json({ features: [{ geometry: { coordinates: [-2.25, 53.48] }, properties: { label: 'Deansgate, Manchester' } }] }));
+    stubOrs(() =>
+      Response.json({
+        features: [
+          {
+            geometry: { coordinates: [-2.25, 53.48] },
+            properties: { label: 'Deansgate, Manchester' },
+          },
+        ],
+      })
+    );
     const response = await get('deansgate');
     assert.equal(response.status, 200);
-    assert.deepEqual((await response.json()).results, [{ label: 'Deansgate, Manchester', address: 'Deansgate, Manchester', lat: 53.48, lng: -2.25 }]);
+    assert.deepEqual((await response.json()).results, [
+      { label: 'Deansgate, Manchester', address: 'Deansgate, Manchester', lat: 53.48, lng: -2.25 },
+    ]);
   });
 
   it('maps ORS rate limits to 429 and outages to 503, without leaking the key', async () => {

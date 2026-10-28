@@ -10,25 +10,23 @@ interface Props {
 const { walk, venueName } = Astro.props;
 ---
 
-{
-  walk === null ? null : walk.directionsUrl ? (
-    <a
-      class="bench-walk is-link"
-      href={walk.directionsUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={`Walking directions to ${venueName}`}
-      data-walk-directions
-      data-lat={walk.lat}
-      data-lng={walk.lng}
-    >
-      <Icon name="directions_walk" />
-      {walk.label}
-    </a>
-  ) : (
-    <span class="bench-walk">
-      <Icon name="directions_walk" />
-      {walk.label}
-    </span>
-  )
-}
+{walk === null ? null : walk.directionsUrl ? (
+  <a
+    class="bench-walk is-link"
+    href={walk.directionsUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label={`Walking directions to ${venueName}`}
+    data-walk-directions
+    data-lat={walk.lat}
+    data-lng={walk.lng}
+  >
+    <Icon name="directions_walk" />
+    {walk.label}
+  </a>
+) : (
+  <span class="bench-walk">
+    <Icon name="directions_walk" />
+    {walk.label}
+  </span>
+)}

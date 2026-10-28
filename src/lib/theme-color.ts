@@ -7,5 +7,8 @@
 export function themeColor(token: string): string {
   const reference = `var(--color-${token})`;
   if (typeof document === 'undefined' || typeof getComputedStyle === 'undefined') return reference;
-  return getComputedStyle(document.documentElement).getPropertyValue(`--color-${token}`).trim() || reference;
+  return (
+    getComputedStyle(document.documentElement).getPropertyValue(`--color-${token}`).trim() ||
+    reference
+  );
 }

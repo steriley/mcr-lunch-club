@@ -4,8 +4,24 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { venueEvents, venueImages, venues } from '@/db/schema';
-import { addVenueImage, deleteVenueImage, listVenueImages, setPrimary, updateImageMeta, type NewVenueImage } from '@/lib/venue-images';
-import { closeTestDb, createAdmin, createVenue, resetTestDb, skipIntegration, testDb, violates, type TestAdmin } from './db';
+import {
+  addVenueImage,
+  deleteVenueImage,
+  listVenueImages,
+  setPrimary,
+  updateImageMeta,
+  type NewVenueImage,
+} from '@/lib/venue-images';
+import {
+  closeTestDb,
+  createAdmin,
+  createVenue,
+  resetTestDb,
+  skipIntegration,
+  testDb,
+  violates,
+  type TestAdmin,
+} from './db';
 
 describe('venue images (database)', { skip: skipIntegration }, () => {
   let sam: TestAdmin;
@@ -43,7 +59,8 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     return result.value;
   };
 
-  const primaries = async (id = venueId) => (await listVenueImages(await testDb(), id)).filter((row) => row.isPrimary).map((row) => row.id);
+  const primaries = async (id = venueId) =>
+    (await listVenueImages(await testDb(), id)).filter((row) => row.isPrimary).map((row) => row.id);
 
   it('makes the first image primary and later ones not, keeping the pre-generated id', async () => {
     const first = await add({ caption: '  The counter  ' });
@@ -69,7 +86,11 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     const db = await testDb();
     const results = await Promise.all(Array.from({ length: 8 }, () => addVenueImage(db, image())));
     assert.equal(results.filter((result) => result.ok).length, 5);
-    assert.ok(results.filter((result) => !result.ok).every((result) => !result.ok && result.error === 'too_many_images'));
+    assert.ok(
+      results
+        .filter((result) => !result.ok)
+        .every((result) => !result.ok && result.error === 'too_many_images')
+    );
     assert.equal((await listVenueImages(db, venueId)).length, 5);
     assert.equal((await primaries()).length, 1);
   });
@@ -84,8 +105,14 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
 
   it('refuses an unknown venue and an over-long caption', async () => {
     const db = await testDb();
-    assert.deepEqual(await addVenueImage(db, image({ venueId: randomUUID() })), { ok: false, error: 'venue_not_found' });
-    assert.deepEqual(await addVenueImage(db, image({ caption: 'x'.repeat(201) })), { ok: false, error: 'caption_too_long' });
+    assert.deepEqual(await addVenueImage(db, image({ venueId: randomUUID() })), {
+      ok: false,
+      error: 'venue_not_found',
+    });
+    assert.deepEqual(await addVenueImage(db, image({ caption: 'x'.repeat(201) })), {
+      ok: false,
+      error: 'caption_too_long',
+    });
     assert.equal((await db.select().from(venueImages)).length, 0);
   });
 
@@ -97,7 +124,12 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     const changed = await setPrimary(db, venueId, second.id);
     assert.ok(changed.ok);
     assert.deepEqual(
-      { id: changed.value.image.id, isPrimary: changed.value.image.isPrimary, previous: changed.value.previousPrimaryId, changed: changed.value.changed },
+      {
+        id: changed.value.image.id,
+        isPrimary: changed.value.image.isPrimary,
+        previous: changed.value.previousPrimaryId,
+        changed: changed.value.changed,
+      },
       { id: second.id, isPrimary: true, previous: first.id, changed: true }
     );
     assert.deepEqual(await primaries(), [second.id]);
@@ -113,7 +145,10 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     const mine = await add();
     const otherVenue = await createVenue('Pie Shop');
     const theirs = await add({ venueId: otherVenue });
-    assert.deepEqual(await setPrimary(db, venueId, theirs.id), { ok: false, error: 'image_not_found' });
+    assert.deepEqual(await setPrimary(db, venueId, theirs.id), {
+      ok: false,
+      error: 'image_not_found',
+    });
     assert.deepEqual(await primaries(), [mine.id]);
     assert.deepEqual(await primaries(otherVenue), [theirs.id]);
   });
@@ -123,7 +158,11 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     await add();
     const b = await add();
     const c = await add();
-    const results = await Promise.all([setPrimary(db, venueId, b.id), setPrimary(db, venueId, c.id), setPrimary(db, venueId, b.id)]);
+    const results = await Promise.all([
+      setPrimary(db, venueId, b.id),
+      setPrimary(db, venueId, c.id),
+      setPrimary(db, venueId, b.id),
+    ]);
     assert.ok(results.every((result) => result.ok));
     const now = await primaries();
     assert.equal(now.length, 1);
@@ -134,7 +173,9 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     const db = await testDb();
     await add();
     await assert.rejects(
-      db.insert(venueImages).values({ venueId, fullUrl: 'https://example.com/x.jpg', isPrimary: true }),
+      db
+        .insert(venueImages)
+        .values({ venueId, fullUrl: 'https://example.com/x.jpg', isPrimary: true }),
       violates('venue_images_one_primary_per_venue')
     );
   });
@@ -173,7 +214,10 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     assert.equal(last.value.promoted, null);
     assert.deepEqual(await listVenueImages(db, venueId), []);
 
-    assert.deepEqual(await deleteVenueImage(db, venueId, first.id), { ok: false, error: 'image_not_found' });
+    assert.deepEqual(await deleteVenueImage(db, venueId, first.id), {
+      ok: false,
+      error: 'image_not_found',
+    });
   });
 
   it('after a delete the next upload is not primary when one remains, and is when none do', async () => {
@@ -190,15 +234,26 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     const db = await testDb();
     const row = await add();
 
-    const edited = await updateImageMeta(db, venueId, row.id, { caption: '  Top-down pizza ', focal: { focalX: 30, focalY: 70 } });
+    const edited = await updateImageMeta(db, venueId, row.id, {
+      caption: '  Top-down pizza ',
+      focal: { focalX: 30, focalY: 70 },
+    });
     assert.ok(edited.ok);
-    assert.deepEqual([edited.value.caption, edited.value.focalX, edited.value.focalY], ['Top-down pizza', 30, 70]);
+    assert.deepEqual(
+      [edited.value.caption, edited.value.focalX, edited.value.focalY],
+      ['Top-down pizza', 30, 70]
+    );
 
     const captionOnly = await updateImageMeta(db, venueId, row.id, { caption: '' });
     assert.ok(captionOnly.ok);
-    assert.deepEqual([captionOnly.value.caption, captionOnly.value.focalX, captionOnly.value.focalY], [null, 30, 70]);
+    assert.deepEqual(
+      [captionOnly.value.caption, captionOnly.value.focalX, captionOnly.value.focalY],
+      [null, 30, 70]
+    );
 
-    const reset = await updateImageMeta(db, venueId, row.id, { focal: { focalX: null, focalY: null } });
+    const reset = await updateImageMeta(db, venueId, row.id, {
+      focal: { focalX: null, focalY: null },
+    });
     assert.ok(reset.ok);
     assert.deepEqual([reset.value.focalX, reset.value.focalY], [null, null]);
   });
@@ -206,11 +261,23 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
   it('refuses bad metadata and images from another venue', async () => {
     const db = await testDb();
     const row = await add();
-    assert.deepEqual(await updateImageMeta(db, venueId, row.id, { caption: 'x'.repeat(201) }), { ok: false, error: 'caption_too_long' });
-    assert.deepEqual(await updateImageMeta(db, venueId, row.id, { focal: { focalX: 101, focalY: 5 } }), { ok: false, error: 'invalid_focal' });
-    assert.deepEqual(await updateImageMeta(db, venueId, row.id, { focal: { focalX: 5, focalY: null } }), { ok: false, error: 'invalid_focal' });
+    assert.deepEqual(await updateImageMeta(db, venueId, row.id, { caption: 'x'.repeat(201) }), {
+      ok: false,
+      error: 'caption_too_long',
+    });
+    assert.deepEqual(
+      await updateImageMeta(db, venueId, row.id, { focal: { focalX: 101, focalY: 5 } }),
+      { ok: false, error: 'invalid_focal' }
+    );
+    assert.deepEqual(
+      await updateImageMeta(db, venueId, row.id, { focal: { focalX: 5, focalY: null } }),
+      { ok: false, error: 'invalid_focal' }
+    );
     const otherVenue = await createVenue('Pie Shop');
-    assert.deepEqual(await updateImageMeta(db, otherVenue, row.id, { caption: 'Hijack' }), { ok: false, error: 'image_not_found' });
+    assert.deepEqual(await updateImageMeta(db, otherVenue, row.id, { caption: 'Hijack' }), {
+      ok: false,
+      error: 'image_not_found',
+    });
     const [stored] = await db.select().from(venueImages).where(eq(venueImages.id, row.id));
     assert.deepEqual([stored.caption, stored.focalX, stored.focalY], [null, null, null]);
   });
@@ -218,7 +285,10 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
   it('the database refuses a half-set or out-of-range focal point', async () => {
     const db = await testDb();
     const row = await add();
-    await assert.rejects(db.update(venueImages).set({ focalX: 50 }).where(eq(venueImages.id, row.id)), violates('venue_images_focal_range'));
+    await assert.rejects(
+      db.update(venueImages).set({ focalX: 50 }).where(eq(venueImages.id, row.id)),
+      violates('venue_images_focal_range')
+    );
     await assert.rejects(
       db.update(venueImages).set({ focalX: 50, focalY: 101 }).where(eq(venueImages.id, row.id)),
       violates('venue_images_focal_range')
@@ -231,7 +301,10 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     const first = await addVenueImage(db, image(), tick(), actor);
     const second = await addVenueImage(db, image(), tick(), actor);
     assert.ok(first.ok && second.ok);
-    await updateImageMeta(db, venueId, first.value.id, { caption: 'Counter', focal: { focalX: 10, focalY: 10 } });
+    await updateImageMeta(db, venueId, first.value.id, {
+      caption: 'Counter',
+      focal: { focalX: 10, focalY: 10 },
+    });
     await setPrimary(db, venueId, second.value.id, actor);
     await deleteVenueImage(db, venueId, second.value.id, actor);
 
@@ -251,7 +324,12 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
         { kind: 'image_added', actor: 'Sam', imageId: first.value.id },
         { kind: 'image_added', actor: 'Sam', imageId: second.value.id },
         { kind: 'image_primary_changed', actor: 'Sam', imageId: second.value.id },
-        { kind: 'image_primary_changed', actor: 'Sam', imageId: first.value.id, reason: 'promoted_after_delete' },
+        {
+          kind: 'image_primary_changed',
+          actor: 'Sam',
+          imageId: first.value.id,
+          reason: 'promoted_after_delete',
+        },
         { kind: 'image_removed', actor: 'Sam', imageId: second.value.id },
       ])
     );

@@ -33,7 +33,7 @@ withDefaults(
     disabledReason?: string;
     label?: string;
   }>(),
-  { disabled: () => [], disabledReason: undefined, label: 'Filter by verdict' },
+  { disabled: () => [], disabledReason: undefined, label: 'Filter by verdict' }
 );
 
 const emit = defineEmits<{ toggle: [tier: TierValue] }>();
@@ -46,7 +46,8 @@ onMounted(() => {
   enableHorizontalScroll(el);
   // The left fade only shows once chips have scrolled out of view, so the first chip stays
   // flush with the search box at rest.
-  const updateLeftFade = () => el.style.setProperty('--fade-left', el.scrollLeft > 1 ? '24px' : '0px');
+  const updateLeftFade = () =>
+    el.style.setProperty('--fade-left', el.scrollLeft > 1 ? '24px' : '0px');
   el.addEventListener('scroll', updateLeftFade, { passive: true });
   updateLeftFade();
 });
@@ -64,8 +65,20 @@ onMounted(() => {
   scrollbar-width: none;
   /* The fades hint that more tiers sit off-screen; the padding keeps it over empty space when every chip fits. */
   padding-right: 24px;
-  mask-image: linear-gradient(to right, transparent, var(--color-black) var(--fade-left, 0px), var(--color-black) calc(100% - 24px), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, var(--color-black) var(--fade-left, 0px), var(--color-black) calc(100% - 24px), transparent);
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    var(--color-black) var(--fade-left, 0px),
+    var(--color-black) calc(100% - 24px),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    var(--color-black) var(--fade-left, 0px),
+    var(--color-black) calc(100% - 24px),
+    transparent
+  );
 }
 
 .tier-filter-chips::-webkit-scrollbar {

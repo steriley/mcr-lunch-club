@@ -27,54 +27,84 @@ const focalValue = z.number().int().min(0).max(100).nullable();
  */
 const imagePatchSchema = z
   .object({
-    caption: z.string().max(CAPTION_MAX, `Keep the caption to ${CAPTION_MAX} characters or fewer.`).nullable().optional(),
+    caption: z
+      .string()
+      .max(CAPTION_MAX, `Keep the caption to ${CAPTION_MAX} characters or fewer.`)
+      .nullable()
+      .optional(),
     focalX: focalValue.optional(),
     focalY: focalValue.optional(),
     isPrimary: z.literal(true, 'Make another photo primary instead.').optional(),
   })
   .strict()
-  .refine((body) => (body.focalX === undefined) === (body.focalY === undefined), { message: 'Send focalX and focalY together.', path: ['focalX'] })
-  .refine((body) => (body.focalX === null) === (body.focalY === null), { message: 'Set both focal coordinates or reset both.', path: ['focalX'] })
-  .refine((body) => body.caption !== undefined || body.focalX !== undefined || body.isPrimary !== undefined, {
-    message: 'Nothing to change.',
-    path: ['form'],
-  });
+  .refine((body) => (body.focalX === undefined) === (body.focalY === undefined), {
+    message: 'Send focalX and focalY together.',
+    path: ['focalX'],
+  })
+  .refine((body) => (body.focalX === null) === (body.focalY === null), {
+    message: 'Set both focal coordinates or reset both.',
+    path: ['focalX'],
+  })
+  .refine(
+    (body) =>
+      body.caption !== undefined || body.focalX !== undefined || body.isPrimary !== undefined,
+    {
+      message: 'Nothing to change.',
+      path: ['form'],
+    }
+  );
 
-const failure = (error: VenueImageError) => jsonError(VENUE_IMAGE_ERROR_STATUS[error], VENUE_IMAGE_ERROR_MESSAGES[error]);
+const failure = (error: VenueImageError) =>
+  jsonError(VENUE_IMAGE_ERROR_STATUS[error], VENUE_IMAGE_ERROR_MESSAGES[error]);
 
-const imageParams = { id: VENUE_IMAGE_ERROR_MESSAGES.venue_not_found, imageId: VENUE_IMAGE_ERROR_MESSAGES.image_not_found };
+const imageParams = {
+  id: VENUE_IMAGE_ERROR_MESSAGES.venue_not_found,
+  imageId: VENUE_IMAGE_ERROR_MESSAGES.image_not_found,
+};
 const notConfigured = () => jsonError(503, 'Image uploads are not configured.');
 
-export const PATCH = adminRoute({ action: 'Update venue image', publishes: true, params: imageParams, body: imagePatchSchema }, async ({ params, body, actor }) => {
-  if (!isBlobConfigured()) return notConfigured();
+export const PATCH = adminRoute(
+  { action: 'Update venue image', publishes: true, params: imageParams, body: imagePatchSchema },
+  async ({ params, body, actor }) => {
+    if (!isBlobConfigured()) return notConfigured();
 
-  // Primary first: it is the one change that can fail on a stale image, so nothing is half-written.
-  let primaryImage: VenueImageRow | null = null;
-  if (body.isPrimary) {
-    const primary = await setPrimary(db, params.id, params.imageId, actor);
-    if (!primary.ok) return failure(primary.error);
-    primaryImage = primary.value.image;
+    // Primary first: it is the one change that can fail on a stale image, so nothing is half-written.
+    let primaryImage: VenueImageRow | null = null;
+    if (body.isPrimary) {
+      const primary = await setPrimary(db, params.id, params.imageId, actor);
+      if (!primary.ok) return failure(primary.error);
+      primaryImage = primary.value.image;
+    }
+
+    const changes: ImageMetaChanges = {};
+    if (body.caption !== undefined) changes.caption = body.caption;
+    if (body.focalX !== undefined && body.focalY !== undefined)
+      changes.focal = { focalX: body.focalX, focalY: body.focalY };
+
+    if (primaryImage && Object.keys(changes).length === 0)
+      return jsonResponse({ image: serializeVenueImage(primaryImage) });
+
+    const meta = await updateImageMeta(db, params.id, params.imageId, changes);
+    if (!meta.ok) return failure(meta.error);
+    return jsonResponse({ image: serializeVenueImage(meta.value) });
   }
-
-  const changes: ImageMetaChanges = {};
-  if (body.caption !== undefined) changes.caption = body.caption;
-  if (body.focalX !== undefined && body.focalY !== undefined) changes.focal = { focalX: body.focalX, focalY: body.focalY };
-
-  if (primaryImage && Object.keys(changes).length === 0) return jsonResponse({ image: serializeVenueImage(primaryImage) });
-
-  const meta = await updateImageMeta(db, params.id, params.imageId, changes);
-  if (!meta.ok) return failure(meta.error);
-  return jsonResponse({ image: serializeVenueImage(meta.value) });
-});
+);
 
 /** Row first (promoting a new primary if needed), then the blobs, best-effort. */
-export const DELETE = adminRoute({ action: 'Delete venue image', publishes: true, params: imageParams }, async ({ params, actor }) => {
-  if (!isBlobConfigured()) return notConfigured();
+export const DELETE = adminRoute(
+  { action: 'Delete venue image', publishes: true, params: imageParams },
+  async ({ params, actor }) => {
+    if (!isBlobConfigured()) return notConfigured();
 
-  const result = await deleteVenueImage(db, params.id, params.imageId, actor);
-  if (!result.ok) return failure(result.error);
+    const result = await deleteVenueImage(db, params.id, params.imageId, actor);
+    if (!result.ok) return failure(result.error);
 
-  const { deleted, promoted } = result.value;
-  await deleteOwnedBlobs(getBlobToken(), [deleted.fullUrl, deleted.thumbUrl], 'Delete venue image');
-  return jsonResponse({ ok: true, promoted: promoted ? serializeVenueImage(promoted) : null });
-});
+    const { deleted, promoted } = result.value;
+    await deleteOwnedBlobs(
+      getBlobToken(),
+      [deleted.fullUrl, deleted.thumbUrl],
+      'Delete venue image'
+    );
+    return jsonResponse({ ok: true, promoted: promoted ? serializeVenueImage(promoted) : null });
+  }
+);
