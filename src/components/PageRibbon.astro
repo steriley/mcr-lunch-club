@@ -1,8 +1,11 @@
 ---
+import Icon from '@/components/Icon.astro';
+import type { IconName } from '@/lib/icons';
+
 type QuoteLine = string | { text: string; /** Set in the brand orange. */ accent?: boolean };
 
 interface Props {
-  icon: string;
+  icon: IconName;
   /** Small uppercase label above the title. */
   kicker: string;
   title: string;
@@ -20,15 +23,17 @@ const { icon, kicker, title, quote, description, bannerClass = 'bg-deep', width 
 const quoteLines = (quote === undefined ? [] : Array.isArray(quote) ? quote : [quote]).map((line) =>
   typeof line === 'string' ? { text: line, accent: false } : { text: line.text, accent: line.accent ?? false }
 );
+/** Longer quotes would run past two lines in the display serif, so they are set in the body face. */
+const SERIF_QUOTE_MAX = 90;
 const onTier = bannerClass !== 'bg-deep';
 ---
 
 <!-- One ribbon for the Manifesto, Verdicts and Inspections pages, so their type and spacing match. -->
-<div class={`${bannerClass} tier-header-gradient text-parchment-fixed w-full font-serif-header`}>
+<div class={`${bannerClass} tier-header-gradient text-parchment-fixed w-full`}>
   <div class={`${width} mx-auto px-4 w-full`}>
     <div class="p-6 sm:p-8 space-y-4">
       <div class="flex items-center gap-3">
-        <span class="text-3xl sm:text-4xl">{icon}</span>
+        <Icon name={icon} class="icon-banner" />
         <div>
           <span class={`text-xs uppercase tracking-widest font-bold ${onTier ? 'text-parchment-fixed' : 'text-gold'}`}>
             {kicker}
@@ -39,7 +44,7 @@ const onTier = bannerClass !== 'bg-deep';
 
       {quoteLines.length > 0 && (
         <div class="space-y-2 pt-1 max-w-3xl text-base sm:text-lg italic leading-snug">
-          {quoteLines.map((line) => <p class:list={[line.accent && 'text-gold']}>“{line.text}”</p>)}
+          {quoteLines.map((line) => <p class:list={[line.accent && 'text-gold', line.text.length <= SERIF_QUOTE_MAX && 'font-serif-header']}>“{line.text}”</p>)}
         </div>
       )}
 

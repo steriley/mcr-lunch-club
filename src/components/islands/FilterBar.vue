@@ -73,12 +73,12 @@
                 :class="['ledger-select', filters.maxWalkMinutes !== initialFilterState.maxWalkMinutes && 'is-active']"
                 @change="onWalkChange"
               >
-                <option :value="60">🗺 All within 2.5 mi</option>
-                <option :value="25">🚶 25 min (1.25 mi)</option>
-                <option :value="20">🚶 20 min (1.00 mi)</option>
-                <option :value="15">🚶 15 min (0.75 mi)</option>
-                <option :value="10">🏃 10 min (0.50 mi)</option>
-                <option :value="5">⚡ 5 min (0.25 mi)</option>
+                <option :value="60">All within 2.5 mi</option>
+                <option :value="25">25 min (1.25 mi)</option>
+                <option :value="20">20 min (1.00 mi)</option>
+                <option :value="15">15 min (0.75 mi)</option>
+                <option :value="10">10 min (0.50 mi)</option>
+                <option :value="5">5 min (0.25 mi)</option>
               </select>
             </label>
 

@@ -1,6 +1,15 @@
 /*
  * Shared by the public site (global.css) and the Chairs' Area (admin.css): the
  * palette and the base styles. Each of those imports Tailwind, then this.
+ *
+ * Typography rule: Playfair Display is for headings (h1 to h3 get it automatically), pull
+ * quotes, decree quotes and tier mottos, and nothing longer than a line or two. Everything
+ * else (paragraphs, card blurbs, list items, buttons, labels) is Plus Jakarta Sans, the body
+ * face. Put `font-serif-header` on the heading or quote element itself, never on a page or
+ * section wrapper: it cascades into every paragraph inside. Cap long-form text at about 70ch.
+ *
+ * Icons: SVG only, via Icon.astro / Icon.vue (src/lib/icons.ts). No emoji in templates or
+ * components; emoji are fine only inside content the Chairs enter.
  */
 
 /*

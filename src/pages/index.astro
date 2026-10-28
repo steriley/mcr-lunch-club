@@ -136,9 +136,7 @@ const summonsColumns = [
 
               {hero.eatLikeUs && (
                 <div class="bench-eat">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M7 3v7m-2.5-7v5a2.5 2.5 0 0 0 5 0V3M7 10v11M17 21V3c-2.2 1.2-3.5 3.7-3.5 7.2V14H17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                  </svg>
+                  <Icon name="plate" />
                   <div>
                     <span class="bench-eat-label">Eat like us</span>
                     <span class="bench-eat-dish">{hero.eatLikeUs}</span>
@@ -183,9 +181,7 @@ const summonsColumns = [
       <section class="weekly-summons" aria-labelledby="weekly-summons-title">
         <div class="weekly-summons-heading">
           <h2 id="weekly-summons-title">
-            <svg class="field-icon is-gold" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 3h10l4 4v4M5 3v18h7m3-18v5h5m-9 9 2.5 2.5L19 13m-8 5h-2v-2l6.6-6.6a1.4 1.4 0 0 1 2 2L11 18Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+            <Icon name="clipboard" class="field-icon is-gold" />
             The Weekly Summons
           </h2>
           <span>Potential {gazetteLabel(issue)}</span>

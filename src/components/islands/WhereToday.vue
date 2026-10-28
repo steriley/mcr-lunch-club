@@ -13,7 +13,7 @@
       <!-- Header -->
       <div class="bg-deep text-parchment-fixed px-5 py-4 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3">
-          <span class="text-3xl" aria-hidden="true">⚖️</span>
+          <Icon name="scales" class="icon-lg" />
           <div>
             <h2 id="where-today-title" class="text-lg font-bold font-serif-header text-white leading-tight">
               The Executive Decision Oracle
@@ -30,15 +30,15 @@
           class="oracle-close"
           @click="closeModal"
         >
-          ✕
+          <Icon name="close" class="icon-md" />
         </button>
       </div>
 
       <!-- Overdue Re-inspection Alert Nudge -->
       <div v-if="overdueVenues.length" class="bg-card border-b border-hairline px-5 py-3 text-xs text-ink flex items-start gap-2">
-        <span class="text-base" aria-hidden="true">⚠️</span>
+        <Icon name="warning" class="icon-md shrink-0 text-ochre" />
         <div class="flex-1">
-          <strong class="font-serif-header font-bold text-ochre">Overdue Sovereign Inspection Notice:</strong>
+          <strong class="font-bold text-ochre">Overdue Sovereign Inspection Notice:</strong>
           <p class="text-xs font-sans text-stone-700 mt-0.5">
             <template v-for="(overdue, index) in overdueVenues" :key="overdue.venue.slug">
               <template v-if="index > 0"> and </template>
@@ -55,7 +55,7 @@
         <!-- 1. Available Time -->
         <div>
           <span class="oracle-label">1. How far will you walk?</span>
-          <div class="grid grid-cols-3 gap-2 font-serif-header">
+          <div class="grid grid-cols-3 gap-2">
             <button
               v-for="time in timeOptions"
               :key="time.val"
@@ -73,7 +73,7 @@
         <!-- 2. Budget (Cost Key) -->
         <div>
           <span class="oracle-label">2. Budget</span>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 font-serif-header">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button
               v-for="b in budgetOptions"
               :key="b.val"
@@ -95,7 +95,7 @@
           class="oracle-cta"
           @click="consultOracle"
         >
-          <span class="text-lg" :class="isRolling ? 'animate-spin' : ''" aria-hidden="true">🎲</span>
+          <Icon name="dice" class="icon-md" :class="isRolling ? 'animate-spin' : ''" />
           <span>{{ isRolling ? "Consulting the Rolls of Manchester..." : "Deliver the Uncontested Verdict" }}</span>
         </button>
 
@@ -141,7 +141,7 @@
           </div>
         </div>
 
-        <p v-else-if="hasRolled" class="text-center text-sm text-stone-600 font-serif-header italic">
+        <p v-else-if="hasRolled" class="text-center text-sm text-stone-600 italic">
           The Oracle has nothing to name. No venue is on the ledger for it to choose from yet.
         </p>
       </div>
@@ -326,7 +326,7 @@ function consultOracle() {
   border-radius: 12px;
   background: var(--color-deep);
   color: var(--color-parchment-fixed);
-  font: 700 14px/1.3 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font: 700 14px/1.3 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   box-shadow: 0 2px 6px rgb(17 30 71 / 30%);
   cursor: pointer;
   transition: background-color 140ms ease, transform 100ms ease;

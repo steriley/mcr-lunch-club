@@ -3,6 +3,7 @@ import Layout from '@/layouts/Layout.astro';
 import TierChip from '@/components/TierChip.vue';
 import BenchPillar from '@/components/BenchPillar.astro';
 import PageRibbon from '@/components/PageRibbon.astro';
+import Icon from '@/components/Icon.astro';
 import { getPublicInspections, getPublicVenues, type PublicVenue } from '@/lib/public-data';
 import { toCard } from '@/lib/sovereign-bench';
 import { sortByRecentInspection } from '@/lib/venue-order';
@@ -41,7 +42,7 @@ const tierCounts = countVenuesByTier(publicVenues);
     bannerClass={tier.bannerClass}
   />
 
-  <div class="w-full pt-6 sm:pt-8 font-serif-header">
+  <div class="w-full pt-6 sm:pt-8">
     <!-- Verdict Navigation Tabs: below the ribbon, edge to edge, fading out at both sides -->
     <div class="border-b border-hairline">
       <nav class="tier-nav-scroll pb-2" aria-label="Browse by verdict">
@@ -59,10 +60,10 @@ const tierCounts = countVenuesByTier(publicVenues);
     </div>
   </div>
 
-  <div class="max-w-6xl mx-auto px-4 pt-8 pb-8 sm:pt-10 sm:pb-12 w-full space-y-8 font-serif-header">
+  <div class="max-w-6xl mx-auto px-4 pt-8 pb-8 sm:pt-10 sm:pb-12 w-full space-y-8">
     <!-- Approved Verdict Michelin Star Style Prize Banner -->
     {tier.value === 'approved' && (
-      <div class="bg-deep text-parchment-fixed p-6 sm:p-7 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-6 font-serif-header relative overflow-hidden">
+      <div class="bg-deep text-parchment-fixed p-6 sm:p-7 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-6 relative overflow-hidden">
         <div class="relative z-10 shrink-0">
           <img
             src="/brand/approved-sticker-256.webp" width="256" height="256"
@@ -79,19 +80,17 @@ const tierCounts = countVenuesByTier(publicVenues);
           <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
             The MCR Lunch Club Approved Sticker
           </h2>
-          <p class="text-xs sm:text-sm text-ash font-sans leading-relaxed">
+          <p class="text-xs sm:text-sm text-ash leading-relaxed">
             We hand these official physical stickers out as prizes to venues that meet our rigorous standards. Treated like Manchester’s own lunchtime Michelin star, only establishments that survive the Chairs’ inspection across multiple visits earn the right to display this badge of lunchtime honour.
           </p>
         </div>
-        <div class="absolute -right-8 -bottom-10 text-8xl text-white/5 pointer-events-none select-none">
-          ⭐
-        </div>
+        <Icon name="star" class="absolute -right-8 -bottom-10 text-white/5 pointer-events-none icon-watermark" />
       </div>
     )}
 
     <!-- Venue Grid -->
     <div class="space-y-4">
-      <div class="space-y-2 font-serif-header">
+      <div class="space-y-2">
         <div class="border-b border-hairline pb-2 flex items-end justify-between gap-4">
           <div class="space-y-1">
             <h2 class="text-xl font-bold text-ink">Enrolled Establishments</h2>

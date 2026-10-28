@@ -77,19 +77,19 @@ function truncate(text: string, max: number): string {
     <link slot="head" rel="preload" as="image" href={venue.image.url} imagesrcset={photoSrcset} imagesizes={photoSrcset ? PHOTO_SIZES : undefined} fetchpriority="high" />
   )}
   {structuredData && <script slot="head" is:inline type="application/ld+json" set:html={serializeForScript(structuredData)} />}
-  <article class="w-full font-serif-header">
+  <article class="w-full">
       <!-- Status Banner: runs edge to edge, content stays within the page width -->
       <div class={`${tier.bannerClass} tier-header-gradient text-white`}>
         <div class="max-w-4xl mx-auto px-4 py-6 sm:py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div class="flex items-center gap-3">
-            <span class="text-3xl sm:text-4xl">{tier.icon}</span>
+            <Icon name={tier.icon} class="icon-banner" />
             <div>
               <div class="flex items-center gap-3">
                 <a href={`/verdicts/${tier.slug}`} class="tier-banner-link text-xs sm:text-sm font-bold uppercase tracking-widest text-parchment-fixed underline decoration-white/40 underline-offset-4 hover:decoration-white">
                   {tier.label}<span class="sr-only">: see all {tier.label} venues</span>
                 </a>
               </div>
-              <p class="text-xs sm:text-sm text-mist italic mt-1 font-serif-header">
+              <p class="text-xs sm:text-sm text-mist italic mt-1">
                 “{tier.quote}”
               </p>
             </div>
@@ -118,7 +118,7 @@ function truncate(text: string, max: number): string {
           </h1>
 
           <p class="text-sm text-stone-600 mt-2 font-sans flex items-center gap-2">
-            <span>📍 {venue.address || 'Address unrecorded; approximate Manchester zone'}</span>
+            <span class="inline-flex items-center gap-1.5"><Icon name="pin" class="icon-md" />{venue.address || 'Address unrecorded; approximate Manchester zone'}</span>
             {cuisine && <span class="text-stone-500"><span aria-hidden="true">·</span> <span class="sr-only">Cuisine: </span>{cuisine}</span>}
           </p>
 
@@ -170,14 +170,14 @@ function truncate(text: string, max: number): string {
 
         {venue.pullQuote && (
           <blockquote class="border-l-4 border-gold pl-5 py-1">
-            <p class="text-2xl sm:text-3xl italic leading-snug text-ink">“{venue.pullQuote}”</p>
+            <p class="font-serif-header text-2xl sm:text-3xl italic leading-snug text-ink">“{venue.pullQuote}”</p>
             <footer class="mt-2 text-xs font-sans uppercase tracking-widest text-stone-500">— The Chairs</footer>
           </blockquote>
         )}
 
         <!-- Official Approved Sticker Award Plaque (Manchester Michelin Star) -->
         {venue.tier === 'approved' && (
-          <div class="bg-gradient-to-r from-charcoal-fixed via-charcoal-soft to-charcoal-fixed text-parchment-fixed p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-5 font-serif-header relative overflow-hidden">
+          <div class="bg-gradient-to-r from-charcoal-fixed via-charcoal-soft to-charcoal-fixed text-parchment-fixed p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-5 relative overflow-hidden">
             <div class="shrink-0 relative z-10">
               <img
                 src="/brand/approved-sticker-256.webp" width="256" height="256"
@@ -189,13 +189,11 @@ function truncate(text: string, max: number): string {
               <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">
                 MCR Lunch Club Approved Venue
               </h2>
-              <p class="text-xs sm:text-sm text-ash font-sans leading-relaxed">
+              <p class="text-xs sm:text-sm text-ash leading-relaxed">
                 This establishment has been awarded the official <strong>MCR Lunch Club Approved sticker</strong>. Handed out as prizes by the Chairs to venues that meet our strict standards across at least two independent satisfactory audits — treated with the prestige of a Manchester lunching Michelin star.
               </p>
             </div>
-            <div class="absolute -right-8 -bottom-10 text-8xl text-white/5 pointer-events-none select-none">
-              ⭐
-            </div>
+            <Icon name="star" class="absolute -right-8 -bottom-10 text-white/5 pointer-events-none icon-watermark" />
           </div>
         )}
 
@@ -243,7 +241,7 @@ function truncate(text: string, max: number): string {
         {venue.tier === 'approved' && venue.eatLikeUs && (
         <div class="relative bg-amber-50/90 border-2 border-gold p-6 rounded-xl shadow-md">
           <div class="flex items-center gap-2 text-xs font-bold text-navy uppercase tracking-wider">
-            <span>🛡</span>
+            <Icon name="shield" class="icon-md" />
             <span>Eat Like Us — Sovereign Order Mandate</span>
           </div>
           <p class="text-lg italic text-stone-900 mt-2 leading-relaxed">
@@ -259,7 +257,7 @@ function truncate(text: string, max: number): string {
         <div class="border-t border-hairline pt-6 space-y-4">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold tracking-tight text-ink flex items-center gap-2">
-              <span>📋</span>
+              <Icon name="clipboard" class="icon-md" />
               <span>Chronological Inspection Ledger</span>
             </h2>
             <span class="text-xs font-sans tabular-nums text-stone-500 bg-stone-100 px-2 py-0.5 rounded">
@@ -297,7 +295,7 @@ function truncate(text: string, max: number): string {
         {nearby.length > 0 && (
           <section class="border-t border-hairline pt-6 space-y-4" aria-labelledby="nearby-heading">
             <h2 id="nearby-heading" class="text-xl font-bold tracking-tight text-ink flex items-center gap-2">
-              <span aria-hidden="true">🧭</span>
+              <Icon name="explore" class="icon-md" />
               <span>Nearby</span>
             </h2>
             <div class="bench-pillars tier-venue-grid">

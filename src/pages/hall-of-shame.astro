@@ -1,5 +1,6 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import Icon from '@/components/Icon.astro';
 import { getPublishedIncidents } from '@/lib/public-data';
 
 // Built with the site; admin saves trigger a rebuild (src/lib/rebuild.ts).
@@ -9,7 +10,7 @@ const incidentsData = await getPublishedIncidents();
 ---
 
 <Layout title="The Hall of Shame — Register of Improper Benefit Attempts | MCR Lunch Club" description="Every attempt to sway the Chairs with free chips, cold cans and other improper benefits, entered in the public record.">
-  <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8 font-serif-header">
+  <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8">
     <!-- Breadcrumb -->
     <div class="text-xs">
       <a href="/" class="text-navy hover:underline flex items-center gap-1 font-bold">
@@ -22,7 +23,7 @@ const incidentsData = await getPublishedIncidents();
     <div class="bg-deep text-parchment-fixed p-6 sm:p-10 rounded-2xl border-2 border-gold shadow-2xl relative overflow-hidden">
       <div class="relative z-10 space-y-3">
         <div class="flex items-center gap-3">
-          <span class="text-4xl">⚖️</span>
+          <Icon name="scales" class="icon-banner" />
           <div>
             <span class="text-xs uppercase tracking-widest text-gold font-bold font-sans tabular-nums">
               Confidential Ledger &bull; Article 9.4
@@ -37,16 +38,14 @@ const incidentsData = await getPublishedIncidents();
           “The Official Registry of Bribery, Improper Benefit Attempts, and Corrupt Solicitations documented in perpetuity to preserve the impartial integrity of the Chairs.”
         </p>
 
-        <div class="bg-amber-950/60 border border-brass/40 p-4 rounded-xl text-base text-amber-200 font-sans leading-relaxed">
-          <strong class="font-serif-header text-amber-100 block mb-1">Preamble to the Register:</strong>
+        <div class="bg-amber-950/60 border border-brass/40 p-4 rounded-xl text-base text-amber-200 leading-relaxed max-w-[70ch]">
+          <strong class="font-serif-header text-amber-100 block mb-1 text-lg">Preamble to the Register:</strong>
           As decreed in the Manifesto, members must respect the impartial authority of the Lunch Club Chairs and refrain from attempting to unduly influence their verdicts. Any member or petitioner who attempts to sway decisions, rescind terminations, or curry favor through gifts or improper benefits shall have their ignominy inscribed herein. The Chairs remain incorruptible; all confiscated tenders and items are retained as material evidence.
         </div>
       </div>
 
       <!-- Watermark emblem background -->
-      <div class="absolute -right-8 -bottom-12 text-9xl text-white/5 pointer-events-none select-none">
-        🏛️
-      </div>
+      <Icon name="landmark" class="absolute -right-8 -bottom-12 text-white/5 pointer-events-none icon-watermark" />
     </div>
 
     <!-- Timeline of Impropriety -->
@@ -68,21 +67,21 @@ const incidentsData = await getPublishedIncidents();
           <div class="relative group">
             <!-- Timeline Node Wax Seal Icon -->
             <div class="absolute -left-[35px] sm:-left-[43px] top-1.5 w-6 h-6 rounded-full bg-navy-fixed border-2 border-gold text-white flex items-center justify-center text-xs shadow">
-              🌹
+              <Icon name="scales" class="icon-sm" />
             </div>
 
             <!-- Incident Card -->
             <div class="bg-card rounded-2xl border border-hairline shadow-md p-6 space-y-4 hover:border-crimson transition-colors">
               <!-- Top Row: Date, Location, Value -->
-              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 pb-3 font-serif-header">
+              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stone-200 pb-3">
                 <div>
                   <div class="flex items-center gap-2">
                     <span class="text-xs font-sans tabular-nums font-bold text-stone-500 block">
                       Logged: {inc.formattedDate || inc.date}
                     </span>
                     {inc.location && (
-                      <span class="text-xs font-sans bg-stone-100 text-stone-700 px-2 py-0.5 rounded border border-stone-200">
-                        📍 {inc.location}
+                      <span class="inline-flex items-center gap-1 text-xs font-sans bg-stone-100 text-stone-700 px-2 py-0.5 rounded border border-stone-200">
+                        <Icon name="pin" class="icon-sm" /> {inc.location}
                       </span>
                     )}
                   </div>
@@ -102,18 +101,18 @@ const incidentsData = await getPublishedIncidents();
               <!-- Personnel Involved -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-base bg-paper p-3 rounded-xl border border-hairline">
                 <div>
-                  <span class="font-bold text-stone-700 font-serif-header block">People Involved:</span>
+                  <span class="font-bold text-stone-700 block">People Involved:</span>
                   <span class="text-stone-900 font-sans tabular-nums font-semibold">{inc.peopleInvolved.join(' & ')}</span>
                 </div>
                 <div>
-                  <span class="font-bold text-stone-700 font-serif-header block">Witnesses:</span>
+                  <span class="font-bold text-stone-700 block">Witnesses:</span>
                   <span class="text-stone-900 font-sans tabular-nums font-semibold">{inc.witnesses.join(', ')}</span>
                 </div>
               </div>
 
               <!-- Benefit Offered -->
               <div class="text-xs">
-                <span class="font-bold text-navy font-serif-header block mb-0.5">
+                <span class="font-bold text-navy block mb-0.5">
                   Benefit Offered:
                 </span>
                 <p class="text-stone-800 italic bg-amber-50 p-2.5 rounded border border-amber-200/60 font-serif-header">
@@ -123,14 +122,14 @@ const incidentsData = await getPublishedIncidents();
 
               <!-- Context -->
               <div class="text-xs text-stone-700 leading-relaxed">
-                <span class="font-bold text-stone-900 font-serif-header block mb-0.5">
+                <span class="font-bold text-stone-900 block mb-0.5">
                   Context & Tribunal Finding of Fact:
                 </span>
-                <p class="font-serif-header text-sm text-stone-800">{inc.context}</p>
+                <p class="text-sm text-stone-800 leading-relaxed max-w-[70ch]">{inc.context}</p>
               </div>
 
               <!-- Outcome / Penalty -->
-              <div class="bg-rose-50 border-l-4 border-rose-600 p-3 rounded-r-lg text-xs text-rose-950 font-serif-header">
+              <div class="bg-rose-50 border-l-4 border-rose-600 p-3 rounded-r-lg text-xs text-rose-950">
                 <span class="font-bold text-rose-900 uppercase tracking-wide block text-xs">
                   Executive Verdict & Sanctions:
                 </span>

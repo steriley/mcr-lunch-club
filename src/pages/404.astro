@@ -1,13 +1,14 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import Icon from '@/components/Icon.astro';
 
 // Served with a 404 status for any unknown path.
 export const prerender = true;
 ---
 
 <Layout title="Not Found — MCR Lunch Club" noindex>
-  <div class="max-w-xl mx-auto px-4 py-16 sm:py-24 w-full text-center space-y-5 font-serif-header">
-    <p class="text-5xl" aria-hidden="true">🍽️</p>
+  <div class="max-w-xl mx-auto px-4 py-16 sm:py-24 w-full flex flex-col items-center text-center space-y-5">
+    <Icon name="plate" class="icon-hero text-navy" />
     <p class="text-xs font-bold uppercase tracking-widest text-navy font-sans">Error 404 · No such entry</p>
     <h1 class="text-3xl sm:text-4xl font-bold text-ink">This page is not in the Ledger</h1>
     <p class="text-base text-stone-600 font-sans">
