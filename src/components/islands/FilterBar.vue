@@ -9,6 +9,8 @@
           @toggle="toggleTier"
         />
 
+        <LedgerSearchField ref="phoneSearchRef" input-id="ledger-search-input-phone" class="ledger-search-phone" placeholder="Search venues or dishes…" />
+
         <button
           type="button"
           class="ledger-secondary-toggle"
@@ -23,6 +25,7 @@
             <circle cx="15" cy="7" r="2" />
             <circle cx="9" cy="17" r="2" />
           </svg>
+          <span class="ledger-secondary-toggle-label">Filters</span>
           <span v-if="activeSecondaryFilterCount" class="ledger-secondary-filter-count" aria-hidden="true">{{ activeSecondaryFilterCount }}</span>
           <svg :class="['ledger-secondary-chevron', isSecondaryFiltersOpen && 'is-open']" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="m3 6 5 5 5-5" />
@@ -44,23 +47,7 @@
             <button type="button" class="ledger-reset-button" @click="resetAll">Reset filters</button>
           </div>
 
-          <div class="ledger-search-wrap">
-            <svg class="ledger-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="11" cy="11" r="7.5" />
-              <path d="m16.5 16.5 4 4" />
-            </svg>
-            <input
-              ref="searchInputRef"
-              id="ledger-search-input"
-              v-model="searchQueryModel"
-              type="search"
-              autocomplete="off"
-              aria-label="Search the venue ledger"
-              placeholder="Search by name, street or dish (e.g. Bada Bing, Bundobust, Salt Beef)…"
-              class="ledger-search-input"
-            />
-            <kbd class="ledger-search-shortcut" aria-hidden="true">⌘ K</kbd>
-          </div>
+          <LedgerSearchField ref="panelSearchRef" input-id="ledger-search-input" class="ledger-search-panel" shortcut />
 
           <div class="ledger-filter-groups">
             <div class="ledger-filter-group">
@@ -126,19 +113,20 @@ import {
   setCost,
   setMaxWalkMinutes,
   setInspectedDays,
-  setSearchQuery,
   resetFilters,
   openWhereToday,
   openSuggestModal,
 } from '@/stores/filters';
 import { $venuesList } from '@/stores/ledger';
 import { TIERS, countVenuesByTier } from '@/lib/tiers';
+import LedgerSearchField from '@/components/LedgerSearchField.vue';
 import TierFilterChips from '@/components/TierFilterChips.vue';
 import type { CostTier } from '@/types';
 
 const filters = useStore($filters);
 const venuesList = useStore($venuesList);
-const searchInputRef = ref<HTMLInputElement | null>(null);
+const panelSearchRef = ref<InstanceType<typeof LedgerSearchField> | null>(null);
+const phoneSearchRef = ref<InstanceType<typeof LedgerSearchField> | null>(null);
 const isSecondaryFiltersOpen = ref(false);
 
 const activeSecondaryFilterCount = computed(() => {
@@ -158,11 +146,6 @@ const costOptions: { id: CostTier | 'all'; label: string; title: string }[] = [
   { id: '££', label: '££', title: '££: Above £10' },
   { id: '£££', label: '£££', title: '£££: Payday treat' },
 ];
-
-const searchQueryModel = computed({
-  get: () => filters.value.searchQuery,
-  set: (value: string) => setSearchQuery(value),
-});
 
 function handleActionLink() {
   if (window.location.hash === '#suggest-a-venue') openSuggestModal();
@@ -185,9 +168,13 @@ function handleSearchShortcut(event: KeyboardEvent) {
   }
 
   event.preventDefault();
-  // The search box lives in the filters panel, so open it before moving focus there.
+  // On a phone the search box is in the bar; elsewhere it lives in the filters panel, so open that first.
+  if (phoneSearchRef.value?.isVisible()) {
+    phoneSearchRef.value.focus();
+    return;
+  }
   isSecondaryFiltersOpen.value = true;
-  nextTick(() => searchInputRef.value?.focus());
+  nextTick(() => panelSearchRef.value?.focus());
 }
 
 onMounted(() => {
@@ -248,10 +235,10 @@ function resetAll() {
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  width: 38px;
+  gap: 6px;
+  min-width: 38px;
   height: 32px;
-  padding: 0 4px;
+  padding: 0 8px;
   border: 1px solid var(--color-hairline);
   border-radius: 7px;
   background: var(--color-paper);
@@ -272,6 +259,10 @@ function resetAll() {
 .ledger-reset-button:focus-visible {
   outline: 2px solid var(--color-navy);
   outline-offset: 2px;
+}
+
+.ledger-secondary-toggle-label {
+  font: 700 12px/1 "Plus Jakarta Sans", sans-serif;
 }
 
 .ledger-secondary-toggle-icon {
@@ -538,11 +529,43 @@ function resetAll() {
   box-shadow: inset 0 0 0 1px var(--color-navy);
 }
 
+/* The bar's own copy of the search field is for phones; wider screens keep it in the panel. */
+.ledger-search-phone {
+  display: none;
+}
+
 @media (max-width: 720px) {
   .ledger-filters-inner {
     width: min(100% - 24px, 1440px);
     padding-block: 9px;
     gap: 8px;
+  }
+
+  /* Tiers on their own line, then search beside the Filters toggle. */
+  .ledger-tier-row {
+    flex-wrap: wrap;
+  }
+
+  .ledger-tier-row > .tier-filter-chips {
+    flex: 1 0 100%;
+  }
+
+  .ledger-search-phone {
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .ledger-search-phone .ledger-search-input {
+    padding-right: 12px;
+  }
+
+  .ledger-tier-row .ledger-secondary-toggle {
+    min-height: 44px;
+  }
+
+  .ledger-search-panel {
+    display: none;
   }
 
   /* 16px stops iOS Safari zooming the page when a field is focused. */

@@ -65,60 +65,23 @@ const summonsColumns = [
   <FilterBar client:load />
 
   <div class="home-workspace">
+    <!-- DOM order is the phone order (map, list, bench, summons, dispatch); wide screens place the items in grid areas. -->
     <div class="home-workspace-grid">
-      <div class="home-map-column">
-        <section class="home-map-stage relative w-full flex flex-col">
-          <LunchMap client:load mapApiKey={publicMapApiKey} />
-          <NearMeLoader client:only="vue" mapApiKey={publicMapApiKey} />
-          <WhereToday client:idle />
-          <SuggestModal client:idle />
-        </section>
+      <section class="home-map-stage relative w-full flex flex-col">
+        <LunchMap client:load mapApiKey={publicMapApiKey} />
+        <NearMeLoader client:only="vue" mapApiKey={publicMapApiKey} />
+        <WhereToday client:idle />
+        <SuggestModal client:idle />
+      </section>
 
-        <!-- On a phone: the venues the map is showing, as a list under it. Beside the map on wide screens it is the bench's "All venues" tab. -->
-        <VenueResults client:idle placement="inline" />
+      <!-- On a phone the nav entry sits in the hamburger menu; the lunch decision gets a button on the page. -->
+      <a class="where-today-cta" href="/#where-to-today" data-open-where-today>
+        <span class="material-symbols-outlined" aria-hidden="true">restaurant</span>
+        Where to today?
+      </a>
 
-        <section class="field-dispatch" aria-label="Tribunal field dispatch">
-          <div class="weekly-bulletin">
-            <span class="bulletin-icon" aria-hidden="true">
-              <span class="material-symbols-outlined">newspaper</span>
-            </span>
-            <div class="bulletin-copy">
-              <strong>Weekly inspection bulletin</strong>
-              <p>{bulletin}</p>
-            </div>
-            <a href="/inspections">{gazetteLabel(issue)}</a>
-          </div>
-
-          <div class="field-panel-grid">
-            <ChairsDeliberation client:idle />
-
-            <WeatherCard client:visible />
-          </div>
-
-          <section class="weekly-summons" aria-labelledby="weekly-summons-title">
-            <div class="weekly-summons-heading">
-              <h2 id="weekly-summons-title">
-                <svg class="field-icon is-gold" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M5 3h10l4 4v4M5 3v18h7m3-18v5h5m-9 9 2.5 2.5L19 13m-8 5h-2v-2l6.6-6.6a1.4 1.4 0 0 1 2 2L11 18Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-                The Weekly Summons
-              </h2>
-              <span>Potential {gazetteLabel(issue)}</span>
-            </div>
-            <div class="weekly-summons-grid">
-              {summonsColumns.map(({ day, card, tier, empty }) => (
-                <div class="weekly-summons-column">
-                  <p class="weekly-summons-day">
-                    {day}
-                    {tier && <span class="weekly-summons-tier" style={{ '--summons-tier': tier.color }}>{tier.label}</span>}
-                  </p>
-                  {card ? <BenchPillar pillar={card} /> : <p class="weekly-summons-empty">{empty}</p>}
-                </div>
-              ))}
-            </div>
-          </section>
-        </section>
-      </div>
+      <!-- On a phone: the venues the map is showing, as a list under it. Beside the map on wide screens it is the bench's "All venues" tab. -->
+      <VenueResults client:idle placement="inline" />
 
       <aside class="bench" aria-labelledby="bench-title">
         <div class="bench-header">
@@ -209,6 +172,48 @@ const summonsColumns = [
           <VenueResults client:idle placement="rail" />
         </div>
       </aside>
+
+      <section class="weekly-summons" aria-labelledby="weekly-summons-title">
+        <div class="weekly-summons-heading">
+          <h2 id="weekly-summons-title">
+            <svg class="field-icon is-gold" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 3h10l4 4v4M5 3v18h7m3-18v5h5m-9 9 2.5 2.5L19 13m-8 5h-2v-2l6.6-6.6a1.4 1.4 0 0 1 2 2L11 18Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            The Weekly Summons
+          </h2>
+          <span>Potential {gazetteLabel(issue)}</span>
+        </div>
+        <div class="weekly-summons-grid">
+          {summonsColumns.map(({ day, card, tier, empty }) => (
+            <div class="weekly-summons-column">
+              <p class="weekly-summons-day">
+                {day}
+                {tier && <span class="weekly-summons-tier" style={{ '--summons-tier': tier.color }}>{tier.label}</span>}
+              </p>
+              {card ? <BenchPillar pillar={card} /> : <p class="weekly-summons-empty">{empty}</p>}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="field-dispatch" aria-label="Tribunal field dispatch">
+        <div class="weekly-bulletin">
+          <span class="bulletin-icon" aria-hidden="true">
+            <span class="material-symbols-outlined">newspaper</span>
+          </span>
+          <div class="bulletin-copy">
+            <strong>Weekly inspection bulletin</strong>
+            <p>{bulletin}</p>
+          </div>
+          <a href="/inspections">{gazetteLabel(issue)}</a>
+        </div>
+
+        <div class="field-panel-grid">
+          <ChairsDeliberation client:idle />
+
+          <WeatherCard client:visible />
+        </div>
+      </section>
     </div>
   </div>
 </Layout>
