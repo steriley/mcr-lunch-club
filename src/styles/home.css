@@ -1125,3 +1125,23 @@ a.bench-details {
 .decree-badge.is-pending {
   visibility: hidden;
 }
+/* Touch: footer links and the bulletin link reach 44px without changing how the text looks. */
+@media (pointer: coarse) {
+  /* A negative margin cancels the padding, so the panel footer keeps its height. */
+  .field-panel-footer a {
+    padding-block: 13px;
+    margin-block: -13px;
+  }
+
+  .weekly-bulletin a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
+@media (pointer: coarse) {
+  .bench-details {
+    min-height: 44px;
+  }
+}

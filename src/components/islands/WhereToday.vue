@@ -382,4 +382,20 @@ function consultOracle() {
   outline-offset: 2px;
 }
 
+
+/* Touch: the close button keeps its 32px circle; a transparent extension makes the target 44px. */
+@media (pointer: coarse) {
+  .oracle-close {
+    position: relative;
+  }
+
+  .oracle-close::before {
+    content: "";
+    position: absolute;
+    left: -6px;
+    top: -6px;
+    width: 44px;
+    height: 44px;
+  }
+}
 </style>

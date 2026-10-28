@@ -76,4 +76,13 @@ onMounted(() => {
   cursor: grabbing;
   user-select: none;
 }
+
+/* Touch: the chips' hit extension reaches 7px above and below, so the scrolling row (which clips what
+   overflows it) needs that much room. The negative margin gives the room back, so the layout is unchanged. */
+@media (pointer: coarse) {
+  .tier-filter-chips {
+    padding-block: 8px 10px;
+    margin-block: -7px;
+  }
+}
 </style>

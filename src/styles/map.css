@@ -297,3 +297,33 @@
   width: 18px;
   height: 18px;
 }
+
+/*
+ * Touch screens: map controls and pins get a 44×44 hit area (WCAG 2.5.5, Apple HIG). The icons keep their size;
+ * only the target grows. Fine pointers (mouse, trackpad) are untouched.
+ */
+@media (pointer: coarse) {
+  /* Zoom +/−, Reset map view and Walking rings. Leaflet's own touch rule is 30px, so match its specificity. */
+  .leaflet-touch .leaflet-bar a,
+  .leaflet-bar a {
+    width: 44px;
+    height: 44px;
+    line-height: 44px;
+  }
+
+  /* Pins: a transparent extension around the marker, so the drawing stays the same size. The standard
+     pin is 28×34 and the HQ marker 32×32; clusters are already 44. */
+  .custom-ledger-pin:not(.ledger-cluster)::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: -5px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .custom-ledger-pin:has(.hq-hotspot)::before {
+    left: -6px;
+    top: -6px;
+  }
+}

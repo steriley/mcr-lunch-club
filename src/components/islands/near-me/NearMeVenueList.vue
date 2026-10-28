@@ -274,4 +274,12 @@ function rowWalkUrl(rv: RankedVenue): string | null {
   font-size: 0.8rem;
   font-weight: 600;
 }
+
+/* Touch: 44px price chips. */
+@media (pointer: coarse) {
+  .near-me-cost-chip {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
 </style>
