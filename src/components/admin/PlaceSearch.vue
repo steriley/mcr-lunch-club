@@ -63,7 +63,9 @@ watch(
       status.value = 'idle';
       return;
     }
-    timer = setTimeout(() => search(text), DEBOUNCE_MS);
+    timer = setTimeout(() => {
+      void search(text);
+    }, DEBOUNCE_MS);
   },
   { immediate: true }
 );

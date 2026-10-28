@@ -237,7 +237,7 @@ function handleSearchShortcut(event: KeyboardEvent) {
     return;
   }
   isSecondaryFiltersOpen.value = true;
-  nextTick(() => panelSearchRef.value?.focus());
+  void nextTick(() => panelSearchRef.value?.focus());
 }
 
 onMounted(() => {

@@ -893,7 +893,7 @@ function applyPin(venue: Venue, source: 'map' | 'list', viaKeyboard = false) {
   }
   // Once the card has rendered, nudge the map so the pin isn't hidden behind it or the controls up top,
   // and (for a keyboard user, who would otherwise have to Tab past every other pin to reach it) move focus in.
-  nextTick(() => {
+  void nextTick(() => {
     revealPin(venue);
     if (viaKeyboard) pinCardRef.value?.focus();
   });
@@ -907,7 +907,7 @@ function bringIntoView(venue: Venue) {
   // On a phone the list sits under the map: bring the map back into view.
   mapContainer.value?.scrollIntoView({ block: 'nearest', behavior: animate ? 'smooth' : 'auto' });
   if (markersById.has(venue.id) && mapInstance.getBounds().pad(-0.08).contains(spot)) {
-    nextTick(() => revealPin(venue));
+    void nextTick(() => revealPin(venue));
     return;
   }
   mapInstance.once('moveend', () => revealPin(venue));
@@ -923,7 +923,7 @@ function clearPin({ restoreFocus = false } = {}) {
   highlightPin();
   selectMapVenue(null);
   if (restoreFocus && hadCard) {
-    nextTick(() => {
+    void nextTick(() => {
       const target = returnFocusTo?.isConnected
         ? returnFocusTo
         : (mapInstance?.getContainer() as HTMLElement | undefined);
