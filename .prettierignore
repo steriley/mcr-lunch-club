@@ -1,0 +1,10 @@
+.astro
+.vercel
+dist
+node_modules
+drizzle
+pnpm-lock.yaml
+public
+test-results
+playwright-report
+*.csv
