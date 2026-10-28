@@ -49,6 +49,14 @@ describe('venueStructuredData', () => {
     assert.equal(venueStructuredData({ ...venue, image }, url)?.image, 'https://mcrlunchclub.com/venues/flat-iron.jpg');
   });
 
+  it('links the venue website as sameAs when it is http(s)', () => {
+    assert.equal(venueStructuredData({ ...venue, websiteUrl: 'https://happyseasons.example' }, url)?.sameAs, 'https://happyseasons.example/');
+    for (const websiteUrl of [null, 'javascript:alert(1)']) {
+      assert.equal('sameAs' in venueStructuredData({ ...venue, websiteUrl }, url)!, false);
+    }
+    assert.equal('sameAs' in venueStructuredData(venue, url)!, false);
+  });
+
   it('leaves out an Other cuisine and an empty address', () => {
     const data = venueStructuredData({ ...venue, cuisine: 'Other', address: '' }, url)!;
     assert.equal('servesCuisine' in data, false);

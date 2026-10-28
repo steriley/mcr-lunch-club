@@ -284,6 +284,7 @@ describe('public venue queries', () => {
     const venues = await getPublicVenueDetails();
     assert.equal(renderSql(calls.find((call) => call.method === 'where')!.args[0]).sql, renderSql(publicVenueCondition()).sql);
     assert.deepEqual(venues.map((venue) => [venue.slug, venue.pullQuote]), [['chip-shop', 'Gold']]);
+    assert.equal(venues[0].websiteUrl, 'https://chips.example');
     assert.equal(venues[0].image?.url, imageRow().fullUrl);
   });
 

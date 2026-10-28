@@ -83,6 +83,8 @@ export function toPublicVenue(row: PublicRow, image: VenueImageRow | null = null
 /** Public venue page extras that the list views don't need. */
 export interface PublicVenueDetail extends PublicVenue {
   pullQuote: string | null;
+  /** The venue's own website as the Chairs entered it; null when none. */
+  websiteUrl: string | null;
 }
 
 function isPublicRow(row: VenueRow): row is PublicRow {
@@ -118,7 +120,11 @@ export async function getMapVenues(): Promise<PublicVenue[]> {
   );
 }
 
-const toPublicDetail = (row: VenueWithImage): PublicVenueDetail => ({ ...toPublic(row), pullQuote: row.venue.pullQuote });
+const toPublicDetail = (row: VenueWithImage): PublicVenueDetail => ({
+  ...toPublic(row),
+  pullQuote: row.venue.pullQuote,
+  websiteUrl: row.venue.websiteUrl,
+});
 
 export async function getPublicVenue(slug: string): Promise<PublicVenueDetail | null> {
   const [row]: VenueWithImage[] = await publicVenueRows()

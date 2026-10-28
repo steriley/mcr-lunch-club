@@ -1,5 +1,6 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import BenchPillar from '@/components/BenchPillar.astro';
 import { formatDate } from '@/lib/dates';
 import { focalStyle } from '@/lib/image-upload';
 import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
@@ -7,8 +8,11 @@ import { getPublicInspections, getPublicVenueDetails, serializeForScript, type P
 import { getWalkingDirectionsUrl } from '@/lib/map/directions';
 import { milesText, walkText } from '@/lib/route-display';
 import { COST_LABELS } from '@/lib/cost-display';
+import { nearbyAlternatives } from '@/lib/nearby-venues';
+import { toCard, type BenchCard } from '@/lib/sovereign-bench';
 import { tierInfo } from '@/lib/tiers';
 import { venueStructuredData } from '@/lib/structured-data';
+import { safeWebsiteUrl, websiteHostname } from '@/lib/website';
 import type { Inspection } from '@/types';
 
 // Built with the site; admin saves trigger a rebuild (src/lib/rebuild.ts).
@@ -20,7 +24,12 @@ export async function getStaticPaths() {
   const [venues, inspections] = await Promise.all([getPublicVenueDetails(), getPublicInspections()]);
   return venues.map((venue) => ({
     params: { slug: venue.slug },
-    props: { venue, venueInspections: inspections.filter((inspection) => inspection.venueSlug === venue.slug) },
+    props: {
+      venue,
+      venueInspections: inspections.filter((inspection) => inspection.venueSlug === venue.slug),
+      // Worked out here, where every venue is already loaded, so pages cost no extra queries.
+      nearby: nearbyAlternatives(venue, venues).map((other) => toCard({ venue: other }, inspections)),
+    },
   }));
 }
 
@@ -28,12 +37,18 @@ interface Props {
   venue: PublicVenueDetail;
   /** Newest first, like getPublicInspections. */
   venueInspections: Inspection[];
+  /** Up to three other open venues, nearest first. */
+  nearby: BenchCard[];
 }
 
-const { venue, venueInspections } = Astro.props;
+const { venue, venueInspections, nearby } = Astro.props;
 
 const tier = tierInfo(venue.tier);
 const hasLocation = venue.lat !== null && venue.lng !== null;
+const websiteHref = venue.closed ? null : safeWebsiteUrl(venue.websiteUrl);
+const websiteHost = websiteHostname(venue.websiteUrl);
+const cuisine = venue.cuisine && venue.cuisine !== 'Other' ? venue.cuisine : null;
+const showActions = (hasLocation && !venue.closed) || websiteHref !== null;
 // The link preview when someone drops this page into the lunch chat.
 const walk = venue.walkingTimeMin == null ? null : `${walkText(venue.walkingTimeMin)} from Spinningfields`;
 const pageDescription = truncate(
@@ -61,9 +76,9 @@ function truncate(text: string, max: number): string {
             <span class="text-3xl sm:text-4xl">{tier.icon}</span>
             <div>
               <div class="flex items-center gap-3">
-                <span class="text-xs sm:text-sm font-bold uppercase tracking-widest text-parchment-fixed">
-                  {tier.label}
-                </span>
+                <a href={`/verdicts/${tier.slug}`} class="text-xs sm:text-sm font-bold uppercase tracking-widest text-parchment-fixed underline decoration-white/40 underline-offset-4 hover:decoration-white">
+                  {tier.label}<span class="sr-only">: see all {tier.label} venues</span>
+                </a>
               </div>
               <p class="text-xs sm:text-sm text-mist italic mt-1 font-serif-header">
                 “{tier.quote}”
@@ -95,10 +110,12 @@ function truncate(text: string, max: number): string {
 
           <p class="text-sm text-stone-600 mt-2 font-sans flex items-center gap-2">
             <span>📍 {venue.address || 'Address unrecorded; approximate Manchester zone'}</span>
+            {cuisine && <span class="text-stone-500"><span aria-hidden="true">·</span> <span class="sr-only">Cuisine: </span>{cuisine}</span>}
           </p>
 
-          {hasLocation && !venue.closed && (
+          {showActions && (
             <div class="dossier-actions">
+              {hasLocation && !venue.closed && (<>
               <a
                 class="dossier-action is-primary"
                 href={getWalkingDirectionsUrl(venue.lat!, venue.lng!, 'server')}
@@ -115,6 +132,13 @@ function truncate(text: string, max: number): string {
                 <span class="material-symbols-outlined" aria-hidden="true">explore</span>
                 Show on the map
               </a>
+              </>)}
+              {websiteHref && (
+                <a class="dossier-action" href={websiteHref} target="_blank" rel="noopener noreferrer">
+                  <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+                  Website<span class="sr-only"> ({websiteHost}, opens in a new tab)</span>
+                </a>
+              )}
             </div>
           )}
         </div>
@@ -239,6 +263,18 @@ function truncate(text: string, max: number): string {
             </div>
           )}
         </div>
+
+        {nearby.length > 0 && (
+          <section class="border-t border-hairline pt-6 space-y-4" aria-labelledby="nearby-heading">
+            <h2 id="nearby-heading" class="text-xl font-bold tracking-tight text-ink flex items-center gap-2">
+              <span aria-hidden="true">🧭</span>
+              <span>Nearby</span>
+            </h2>
+            <div class="bench-pillars tier-venue-grid">
+              {nearby.map((card) => <BenchPillar pillar={card} />)}
+            </div>
+          </section>
+        )}
       </div>
   </article>
 </Layout>
