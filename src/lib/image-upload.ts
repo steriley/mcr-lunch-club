@@ -37,6 +37,28 @@ export function focalStyle(image: FocalPoint): string {
   return `${image.focalX}% ${image.focalY}%`;
 }
 
+export interface ResponsiveImage {
+  url: string;
+  thumbUrl: string;
+  width: number | null;
+  height: number | null;
+}
+
+/**
+ * `srcset` for a public photo from the two stored variants, so small screens
+ * fetch the thumbnail. Undefined when there is nothing to choose between: a
+ * photo migrated from the old single link (no thumbnail, no stored size).
+ * Both variants are uncropped and fit within their longest edge, so the
+ * thumbnail's width follows from the full image's aspect ratio.
+ */
+export function imageSrcset(image: ResponsiveImage): string | undefined {
+  const { width, height } = image;
+  if (!width || !height || !image.thumbUrl || image.thumbUrl === image.url) return undefined;
+  const thumbWidth = Math.min(width, Math.max(1, Math.round((width * THUMB_MAX_EDGE) / Math.max(width, height))));
+  if (thumbWidth >= width) return undefined;
+  return `${image.thumbUrl} ${thumbWidth}w, ${image.url} ${width}w`;
+}
+
 /** A venue photo as JSON, for admin islands and API responses. */
 export interface SerializedVenueImage extends FocalPoint {
   id: string;
