@@ -22,7 +22,7 @@ import { getRecentTierChanges } from '@/lib/recent-tier-changes';
 import { buildSovereignBench, toCard } from '@/lib/sovereign-bench';
 import { getToBeAssessedEntries } from '@/lib/tier-entry-dates';
 import { tierInfo } from '@/lib/tiers';
-import { bulletinIssue, bulletinText, changesInIssue, gazetteLabel } from '@/lib/weekly-bulletin';
+import { bulletinIssue, bulletinText, changesInIssue, gazetteLabel, nextBulletinIssue } from '@/lib/weekly-bulletin';
 import { summonsFor } from '@/lib/weekly-summons';
 import { initialFilterState, matchesFilters } from '@/stores/filters';
 import { seedLedgerInspections, seedLedgerVenues } from '@/stores/ledger';
@@ -184,7 +184,7 @@ const summonsColumns = [
             <Icon name="clipboard" class="field-icon is-gold" />
             The Weekly Summons
           </h2>
-          <span>Potential {gazetteLabel(issue)}</span>
+          <span>Potential {gazetteLabel(nextBulletinIssue(issue))}</span>
         </div>
         <div class="weekly-summons-grid">
           {summonsColumns.map(({ day, card, tier, empty }) => (

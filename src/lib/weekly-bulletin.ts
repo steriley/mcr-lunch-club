@@ -63,6 +63,14 @@ export function bulletinIssue(now: Date = new Date()): BulletinIssue {
   };
 }
 
+/** Seven days and a few hours, so stepping from one Wednesday 18:00 London to the next stays on the Wednesday. */
+const NEXT_ISSUE_STEP_MS = 7 * DAY_MS + 3 * HOUR_MS;
+
+/** The issue after `issue`. */
+export function nextBulletinIssue(issue: Pick<BulletinIssue, 'publishedAt'>): BulletinIssue {
+  return bulletinIssue(new Date(issue.publishedAt.getTime() + NEXT_ISSUE_STEP_MS));
+}
+
 /** e.g. "Gazette #43.26". */
 export function gazetteLabel(issue: BulletinIssue): string {
   return `Gazette #${issue.week}.${issue.yy}`;

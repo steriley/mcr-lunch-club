@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { bulletinIssue, bulletinText, changesInIssue, gazetteLabel, type TierChange } from './weekly-bulletin';
+import { bulletinIssue, bulletinText, changesInIssue, gazetteLabel, nextBulletinIssue, type TierChange } from './weekly-bulletin';
 
 const change = (slug: string, fromTier: TierChange['fromTier'], toTier: TierChange['toTier'], at: string): TierChange => ({
   slug,
@@ -45,6 +45,15 @@ describe('bulletinIssue', () => {
     assert.deepEqual(lastOf2026.publishedAt, new Date('2026-12-30T18:00:00Z'));
     assert.equal(gazetteLabel(lastOf2026), 'Gazette #53.26');
     assert.equal(gazetteLabel(bulletinIssue(new Date('2027-01-06T19:00:00Z'))), 'Gazette #1.27');
+  });
+});
+
+describe('nextBulletinIssue', () => {
+  it('is the following Wednesday 18:00 London issue, across the clock change', () => {
+    const next = nextBulletinIssue(bulletinIssue(new Date('2026-10-22T12:00:00Z')));
+    assert.deepEqual(next.publishedAt, new Date('2026-10-28T18:00:00Z'));
+    assert.equal(gazetteLabel(next), 'Gazette #44.26');
+    assert.equal(gazetteLabel(nextBulletinIssue(next)), 'Gazette #45.26');
   });
 });
 

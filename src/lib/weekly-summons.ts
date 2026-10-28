@@ -1,7 +1,7 @@
 import { londonDate } from '@/lib/london-date';
 import type { PublicVenue } from '@/lib/public-data';
 import type { TierValue } from '@/lib/tiers';
-import { bulletinIssue, type BulletinIssue } from '@/lib/weekly-bulletin';
+import { bulletinIssue, nextBulletinIssue, type BulletinIssue } from '@/lib/weekly-bulletin';
 import type { Inspection } from '@/types';
 
 /**
@@ -130,9 +130,6 @@ export function pickSummons(
  */
 export const FIRST_SUMMONS_ISSUE = new Date('2026-10-28T18:00:00Z');
 
-/** Seven days and a few hours, so stepping from one Wednesday 18:00 London to the next stays on the Wednesday. */
-const NEXT_ISSUE_STEP_MS = 7 * DAY_MS + 3 * 3_600_000;
-
 /**
  * The picks for `issue`. A venue picked in the previous issue is skipped.
  * Nothing is stored, so the previous picks are found by replaying every issue
@@ -147,7 +144,7 @@ export function summonsFor(venues: PublicVenue[], inspections: Inspection[], ent
   let current = bulletinIssue(FIRST_SUMMONS_ISSUE);
   let summons = pickSummons(venues, inspections, entries, current, new Set());
   while (current.publishedAt < issue.publishedAt) {
-    current = bulletinIssue(new Date(current.publishedAt.getTime() + NEXT_ISSUE_STEP_MS));
+    current = nextBulletinIssue(current);
     const exclude = new Set([summons.tuesday?.slug, summons.wednesday?.slug].filter((slug): slug is string => Boolean(slug)));
     summons = pickSummons(venues, inspections, entries, current, exclude);
   }
