@@ -1,6 +1,7 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import Icon from '@/components/Icon.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import { getPublishedIncidents } from '@/lib/public-data';
 
 // Built with the site; admin saves trigger a rebuild (src/lib/rebuild.ts).
@@ -11,13 +12,7 @@ const incidentsData = await getPublishedIncidents();
 
 <Layout title="The Hall of Shame — Register of Improper Benefit Attempts | MCR Lunch Club" description="Every attempt to sway the Chairs with free chips, cold cans and other improper benefits, entered in the public record.">
   <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8">
-    <!-- Breadcrumb -->
-    <div class="text-xs">
-      <a href="/" class="text-navy hover:underline flex items-center gap-1 font-bold">
-        <span>←</span>
-        <span>Back to the map</span>
-      </a>
-    </div>
+    <Breadcrumbs items={[{ label: 'Map', href: '/' }, { label: 'Hall of Shame' }]} />
 
     <!-- Pompous Header Card -->
     <div class="bg-deep text-parchment-fixed p-6 sm:p-10 rounded-2xl border-2 border-gold shadow-2xl relative overflow-hidden">

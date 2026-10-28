@@ -2,6 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import BenchPillar from '@/components/BenchPillar.astro';
 import PageRibbon from '@/components/PageRibbon.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import { getPublicInspections, getPublicVenues } from '@/lib/public-data';
 import { toCard } from '@/lib/sovereign-bench';
 
@@ -22,6 +23,8 @@ const venuesBySlug = new Map(venues.map((venue) => [venue.slug, venue]));
   />
 
   <div class="max-w-5xl mx-auto px-4 py-8 sm:py-12 w-full space-y-8">
+    <Breadcrumbs items={[{ label: 'Map', href: '/' }, { label: 'Inspections' }]} />
+
     <!-- Inspection List -->
     <div class="space-y-4 font-sans">
       <div class="space-y-2">

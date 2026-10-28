@@ -159,9 +159,20 @@ test.describe('public pages', () => {
     // JSON-LD: every block parses and names a type.
     const blocks = await page.locator('script[type="application/ld+json"]').evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ''));
     expect(blocks.length, 'JSON-LD blocks on the venue page').toBeGreaterThan(0);
-    for (const block of blocks) expect(JSON.parse(block)['@type']).toBeTruthy();
+    const parsed = blocks.map((block) => JSON.parse(block));
+    for (const data of parsed) expect(data['@type']).toBeTruthy();
+    const trail = parsed.find((data) => data['@type'] === 'BreadcrumbList');
+    expect(trail, 'BreadcrumbList JSON-LD on the venue page').toBeTruthy();
+    expect(trail.itemListElement.map((item: { position: number }) => item.position)).toEqual([1, 2, 3, 4]);
+    const crumbs = page.getByRole('navigation', { name: 'Breadcrumb' });
+    await expect(crumbs.locator('[aria-current="page"]')).toBeVisible();
 
-    for (const path of ['/hall-of-shame', '/manifesto', '/inspections']) await visit(page, path);
+    for (const path of ['/hall-of-shame', '/manifesto', '/inspections']) {
+      await visit(page, path);
+      await expect(page.getByRole('navigation', { name: 'Breadcrumb' }).locator('[aria-current="page"]')).toBeVisible();
+    }
+    await visit(page, '/verdicts/approved');
+    expect(JSON.parse(await page.locator('script[type="application/ld+json"]').first().textContent() ?? '{}')['@type']).toBe('BreadcrumbList');
     expect(monitor.errors).toEqual([]);
   });
 
