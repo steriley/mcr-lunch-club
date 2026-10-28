@@ -1,9 +1,9 @@
 ---
+import ApprovedSticker from '@/components/ApprovedSticker.astro';
 import Layout from '@/layouts/Layout.astro';
 import TierChip from '@/components/TierChip.vue';
 import BenchPillar from '@/components/BenchPillar.astro';
 import PageRibbon from '@/components/PageRibbon.astro';
-import Icon from '@/components/Icon.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import { getPublicInspections, getPublicVenues, type PublicVenue } from '@/lib/public-data';
 import { toCard } from '@/lib/sovereign-bench';
@@ -72,32 +72,7 @@ const breadcrumbData = breadcrumbStructuredData(
   <div class="max-w-6xl mx-auto px-4 pt-8 pb-8 sm:pt-10 sm:pb-12 w-full space-y-8">
     <Breadcrumbs items={breadcrumbs} />
 
-    <!-- Approved Verdict Michelin Star Style Prize Banner -->
-    {tier.value === 'approved' && (
-      <div class="bg-deep text-parchment-fixed p-6 sm:p-7 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-6 relative overflow-hidden">
-        <div class="relative z-10 shrink-0">
-          <img
-            src="/brand/approved-sticker-256.webp" width="256" height="256"
-            alt="Official MCR Lunch Club Approved Sticker"
-            class="w-28 h-28 sm:w-32 sm:h-32 object-contain drop-shadow-[0_0_20px_rgba(197,155,39,0.4)] select-none hover:scale-105 transition-transform"
-          />
-        </div>
-        <div class="space-y-2 text-center sm:text-left relative z-10">
-          <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-            <span class="text-xs uppercase tracking-widest text-gold font-sans tabular-nums font-bold">
-              The Official Prize of Excellence
-            </span>
-          </div>
-          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            The MCR Lunch Club Approved Sticker
-          </h2>
-          <p class="text-xs sm:text-sm text-ash leading-relaxed">
-            We hand these official physical stickers out as prizes to venues that meet our rigorous standards. Treated like Manchester’s own lunchtime Michelin star, only establishments that survive the Chairs’ inspection across multiple visits earn the right to display this badge of lunchtime honour.
-          </p>
-        </div>
-        <Icon name="star" class="absolute -right-8 -bottom-10 text-white/5 pointer-events-none icon-watermark" />
-      </div>
-    )}
+    {tier.value === 'approved' && <ApprovedSticker />}
 
     <!-- Venue Grid -->
     <div class="space-y-4">
@@ -105,7 +80,7 @@ const breadcrumbData = breadcrumbStructuredData(
         <div class="border-b border-hairline pb-2 flex items-end justify-between gap-4">
           <div class="space-y-1">
             <h2 class="text-xl font-bold text-ink">Enrolled Establishments</h2>
-            <p class="text-xs font-sans tabular-nums text-stone-500">Origin: Spinningfields Base Quorum</p>
+            <p class="text-xs font-sans tabular-nums text-stone-500">Most recently inspected first</p>
           </div>
           <span class="bench-count shrink-0">{venues.length} {tier.label}</span>
         </div>
