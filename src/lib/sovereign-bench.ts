@@ -84,6 +84,19 @@ export function toCard(pick: Pick, inspections: Inspection[]): BenchCard {
   };
 }
 
+/** What the card says under the name: the Chairs' quote, else the prescribed order; null when neither. */
+export function cardBlurb(card: { quote: string | null; eatLikeUs: string | null }): { kind: 'quote' | 'eat'; text: string } | null {
+  if (card.quote) return { kind: 'quote', text: card.quote };
+  if (card.eatLikeUs) return { kind: 'eat', text: `Eat like us: ${card.eatLikeUs}` };
+  return null;
+}
+
+/** "1 Inspection" / "3 Inspections"; null when the venue has none. */
+export function inspectionCountLabel(card: { inspectionCount: number }): string | null {
+  const { inspectionCount: n } = card;
+  return n > 0 ? `${n} ${n === 1 ? 'Inspection' : 'Inspections'}` : null;
+}
+
 /**
  * The homepage "Sovereign Bench": the Chairs' Golden Cut when they have picked
  * any (no padding when it is short), otherwise the nearest Approved venues.

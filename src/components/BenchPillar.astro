@@ -3,7 +3,7 @@ import BenchWalk from '@/components/BenchWalk.astro';
 import { focalStyle } from '@/lib/image-upload';
 import { formatDate } from '@/lib/dates';
 import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
-import type { BenchCard } from '@/lib/sovereign-bench';
+import { cardBlurb, inspectionCountLabel, type BenchCard } from '@/lib/sovereign-bench';
 import type { Inspection } from '@/types';
 
 interface Props {
@@ -13,6 +13,8 @@ interface Props {
 }
 
 const { pillar, inspection } = Astro.props;
+const blurb = cardBlurb(pillar);
+const countLabel = inspectionCountLabel(pillar);
 ---
 
 <article class="bench-pillar">
@@ -56,17 +58,13 @@ const { pillar, inspection } = Astro.props;
             </span>
           )}
         </div>
-      ) : pillar.quote ? (
-        <p class="bench-pillar-text is-quote">{pillar.quote}</p>
       ) : (
-        pillar.eatLikeUs && <p class="bench-pillar-text">Eat like us: {pillar.eatLikeUs}</p>
+        blurb && <p class:list={['bench-pillar-text', blurb.kind === 'quote' && 'is-quote']}>{blurb.text}</p>
       )}
     </div>
   </div>
   <div class="bench-telemetry">
     <BenchWalk walk={pillar.walk} venueName={pillar.name} />
-    {pillar.inspectionCount > 0 && (
-      <span class="bench-count">{pillar.inspectionCount} {pillar.inspectionCount === 1 ? 'Inspection' : 'Inspections'}</span>
-    )}
+    {countLabel && <span class="bench-count">{countLabel}</span>}
   </div>
 </article>

@@ -3,15 +3,16 @@ import Icon from '@/components/Icon.vue';
 import { computed } from 'vue';
 import { focalStyle } from '@/lib/image-upload';
 import type { PublicVenue } from '@/lib/public-data';
-import { toCard } from '@/lib/sovereign-bench';
+import { cardBlurb, inspectionCountLabel, toCard } from '@/lib/sovereign-bench';
 import { COST_LABELS } from '@/lib/cost-display';
 import { DEFAULT_CUISINE, cuisineLabel } from '@/lib/cuisines';
 import { tierInfo } from '@/lib/tiers';
 import type { Inspection, Venue } from '@/types';
 
 /**
- * Vue twin of BenchPillar.astro for islands (Near Me): same markup and
- * classes, so the card looks the same as on the tier pages and homepage.
+ * Island flavour of BenchPillar.astro (Near Me). The two share the card view
+ * model (toCard, cardBlurb, inspectionCountLabel in sovereign-bench.ts) and the
+ * `.bench-*` class contract in home.css; this one adds the interactive bits.
  */
 const props = withDefaults(defineProps<{
   venue: Venue;
@@ -40,6 +41,8 @@ const emit = defineEmits<{ select: []; details: [] }>();
 const card = computed(() =>
   toCard({ venue: { ...props.venue, image: props.venue.image ?? null, closed: false } as PublicVenue }, [...props.inspections]),
 );
+const blurb = computed(() => cardBlurb(card.value));
+const countLabel = computed(() => inspectionCountLabel(card.value));
 const tier = computed(() => tierInfo(props.venue.tier));
 // "Other" is the catch-all, not a cuisine worth saying.
 const cuisine = computed(() => (props.venue.cuisine && props.venue.cuisine !== cuisineLabel(DEFAULT_CUISINE) ? props.venue.cuisine : ''));
@@ -91,8 +94,7 @@ function markBroken(event: Event) {
           <template v-if="cuisine">{{ cuisine }} · </template>{{ venue.cost }} · {{ COST_LABELS[venue.cost] }}
         </p>
         <p v-if="card.lastInspection" class="bench-last">Last Inspection: {{ card.lastInspection }}</p>
-        <p v-if="card.quote" class="bench-pillar-text is-quote">{{ card.quote }}</p>
-        <p v-else-if="card.eatLikeUs" class="bench-pillar-text">Eat like us: {{ card.eatLikeUs }}</p>
+        <p v-if="blurb" class="bench-pillar-text" :class="{ 'is-quote': blurb.kind === 'quote' }">{{ blurb.text }}</p>
       </div>
     </div>
     <div class="bench-telemetry">
@@ -115,9 +117,7 @@ function markBroken(event: Event) {
       <button v-else-if="selectable && showDetails" type="button" class="bench-details" :aria-label="`Details for ${card.name}`" @click="emit('details')">
         Details
       </button>
-      <span v-else-if="card.inspectionCount > 0" class="bench-count">
-        {{ card.inspectionCount }} {{ card.inspectionCount === 1 ? 'Inspection' : 'Inspections' }}
-      </span>
+      <span v-else-if="countLabel" class="bench-count">{{ countLabel }}</span>
     </div>
   </article>
 </template>
