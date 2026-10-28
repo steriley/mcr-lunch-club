@@ -219,7 +219,7 @@ function resetAll() {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
 }
 
 .ledger-tier-row {
@@ -262,7 +262,7 @@ function resetAll() {
 }
 
 .ledger-secondary-toggle-label {
-  font: 700 12px/1 "Plus Jakarta Sans", sans-serif;
+  font: 700 12px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
 }
 
 .ledger-secondary-toggle-icon {
@@ -363,7 +363,7 @@ function resetAll() {
   border-radius: 999px;
   background: var(--color-surface);
   color: var(--color-ochre);
-  font: 700 12px/1.2 "Plus Jakarta Sans", sans-serif;
+  font: 700 12px/1.2 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   white-space: nowrap;
   cursor: pointer;
   transition: background-color 140ms ease, border-color 140ms ease;
@@ -389,7 +389,7 @@ function resetAll() {
   background: var(--color-surface);
   box-shadow: inset 0 1px 2px rgb(22 19 15 / 5%);
   color: var(--color-ink);
-  font: 500 13px/1.45 "Plus Jakarta Sans", sans-serif;
+  font: 500 13px/1.45 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   transition: border-color 140ms ease, box-shadow 140ms ease;
 }
 
@@ -431,7 +431,7 @@ function resetAll() {
   border-radius: 5px;
   background: var(--color-paper);
   color: var(--color-muted);
-  font: 700 11px/1.5 "Plus Jakarta Sans", sans-serif;
+  font: 700 11px/1.5 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
 }
 
 /* No keyboard shortcut to advertise on touch screens. */
@@ -484,7 +484,7 @@ function resetAll() {
   border-radius: 7px;
   background: transparent;
   color: var(--color-muted);
-  font: 700 13px/1.2 "Plus Jakarta Sans", sans-serif;
+  font: 700 13px/1.2 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   cursor: pointer;
   transition: background-color 140ms ease, color 140ms ease;
 }
@@ -513,7 +513,7 @@ function resetAll() {
   background-repeat: no-repeat;
   background-size: 12px;
   color: var(--color-ink);
-  font: 600 13px/1.2 "Plus Jakarta Sans", sans-serif;
+  font: 600 13px/1.2 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   cursor: pointer;
   transition: border-color 140ms ease, background-color 140ms ease;
 }

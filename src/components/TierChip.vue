@@ -62,7 +62,7 @@ defineProps<{
   border-radius: 999px;
   background: var(--color-paper);
   color: var(--color-ink);
-  font: 600 12px/1.2 "Plus Jakarta Sans", sans-serif;
+  font: 600 12px/1.2 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
@@ -144,7 +144,7 @@ defineProps<{
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-ink) 7%, transparent);
   color: color-mix(in srgb, var(--color-ink) 70%, transparent);
-  font: 700 11px/1 "Plus Jakarta Sans", sans-serif;
+  font: 700 11px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   font-variant-numeric: tabular-nums;
 }
 

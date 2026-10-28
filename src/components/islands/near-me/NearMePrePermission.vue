@@ -66,7 +66,7 @@ defineProps<{ visible: boolean }>();
 }
 
 .near-me-prepermission-title {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Playfair Display Fallback", Georgia, serif;
   font-size: 1rem;
   font-weight: 700;
   color: var(--color-white);

@@ -36,7 +36,7 @@
   border-radius: 12px;
   background: var(--color-deep);
   color: var(--color-parchment-fixed);
-  font: 700 16px/1.3 "Playfair Display", Georgia, serif;
+  font: 700 16px/1.3 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
   box-shadow: 0 2px 6px rgb(17 30 71 / 30%);
   text-decoration: none;
 }
@@ -50,7 +50,7 @@
   outline-offset: 2px;
 }
 
-.where-today-cta .material-symbols-outlined {
+.where-today-cta .icon {
   font-size: 22px;
 }
 
@@ -123,7 +123,7 @@
 
 .map-header-kicker {
   color: var(--color-peach);
-  font: 700 11px/1.3 "Plus Jakarta Sans", sans-serif;
+  font: 700 11px/1.3 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   letter-spacing: .1em;
   text-transform: uppercase;
 }
@@ -131,7 +131,7 @@
 .map-header-subtitle {
   overflow: hidden;
   color: var(--color-on-dark);
-  font: 600 12px/1.4 "Playfair Display", Georgia, serif;
+  font: 600 12px/1.4 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -143,7 +143,7 @@
   border-radius: 4px;
   background: rgb(37 49 91 / 80%);
   color: var(--color-peach);
-  font: 700 13px/1.4 "Plus Jakarta Sans", sans-serif;
+  font: 700 13px/1.4 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   white-space: nowrap;
 }
 
@@ -164,7 +164,7 @@
   color: var(--color-white);
 }
 
-.bench .material-symbols-outlined {
+.bench .icon {
   flex: none;
   overflow: hidden;
   user-select: none;
@@ -199,7 +199,7 @@
   text-transform: uppercase;
 }
 
-.bench-kicker .material-symbols-outlined {
+.bench-kicker .icon {
   width: 22px;
   font-size: 22px;
 }
@@ -207,7 +207,7 @@
 .bench-title {
   margin: 2px 0 0;
   color: var(--color-on-dark);
-  font: 700 clamp(20px, 4vw, 24px)/1.2 "Playfair Display", Georgia, serif;
+  font: 700 clamp(20px, 4vw, 24px)/1.2 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
   letter-spacing: -.01em;
 }
 
@@ -311,7 +311,7 @@
 .bench-hero-name {
   margin: 0;
   color: var(--bench-primary);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Playfair Display", "Playfair Display Fallback", Georgia, serif;
   font-weight: 700;
   overflow-wrap: anywhere;
 }
@@ -373,7 +373,7 @@
 
 .bench-quote p {
   margin: 0;
-  font: italic 400 13px/1.6 "Playfair Display", Georgia, serif;
+  font: italic 400 13px/1.6 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
 }
 
 .bench-quote cite {
@@ -448,7 +448,7 @@ button.bench-pillar-link {
 .bench-rank {
   flex: none;
   color: var(--bench-amber);
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   font-size: 13px;
   font-weight: 800;
 }
@@ -505,7 +505,7 @@ button.bench-pillar-link {
   border-radius: 6px;
   background: var(--ledger-card);
   color: var(--color-deep-ink);
-  font: 700 12px "Plus Jakarta Sans", sans-serif;
+  font: 700 12px "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   cursor: pointer;
 }
 
@@ -544,7 +544,7 @@ a.bench-details {
   border-radius: 999px;
   background: transparent;
   color: var(--color-on-dark-soft);
-  font: 700 13px/1 "Plus Jakarta Sans", sans-serif;
+  font: 700 13px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   cursor: pointer;
   transition: background-color 140ms ease, color 140ms ease;
 }
@@ -605,7 +605,7 @@ a.bench-details {
 .venue-results-title {
   margin: 0;
   color: var(--color-on-dark);
-  font: 700 18px/1.2 "Playfair Display", Georgia, serif;
+  font: 700 18px/1.2 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
 }
 
 .venue-results-title:focus-visible {
@@ -618,7 +618,7 @@ a.bench-details {
   align-items: center;
   gap: 8px;
   color: var(--color-on-dark-soft);
-  font: 600 12px/1 "Plus Jakarta Sans", sans-serif;
+  font: 600 12px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
 }
 
 .venue-results-sort select {
@@ -628,7 +628,7 @@ a.bench-details {
   border-radius: 8px;
   background: var(--color-midnight);
   color: var(--color-on-dark);
-  font: 600 13px "Plus Jakarta Sans", sans-serif;
+  font: 600 13px "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
 }
 
 .venue-results-sort select:focus-visible {
@@ -666,7 +666,7 @@ a.bench-details {
 
 .venue-results-empty p {
   margin: 0;
-  font: 700 15px/1.3 "Playfair Display", Georgia, serif;
+  font: 700 15px/1.3 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
 }
 
 .venue-results-empty button {
@@ -676,7 +676,7 @@ a.bench-details {
   border-radius: 999px;
   background: var(--color-parchment-fixed);
   color: var(--color-deep);
-  font: 700 13px/1 "Plus Jakarta Sans", sans-serif;
+  font: 700 13px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   cursor: pointer;
 }
 
@@ -710,7 +710,7 @@ a.bench-details {
   border-radius: 14px;
   background: transparent;
   color: var(--color-ink);
-  font: 700 14px/1.2 "Plus Jakarta Sans", sans-serif;
+  font: 700 14px/1.2 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
   text-align: left;
   cursor: pointer;
 }
@@ -804,7 +804,7 @@ a.bench-details {
   color: var(--color-ochre-fixed);
 }
 
-.bulletin-icon .material-symbols-outlined {
+.bulletin-icon .icon {
   overflow: hidden;
   width: 24px;
   font-size: 24px;
@@ -932,7 +932,7 @@ a.bench-details {
   flex: 1;
   margin: 0;
   color: var(--color-ink-soft);
-  font: italic 14px/1.4 "Playfair Display", Georgia, serif;
+  font: italic 14px/1.4 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
 }
 
 .field-panel-footer {
