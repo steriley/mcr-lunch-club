@@ -84,7 +84,7 @@ function truncate(text: string, max: number): string {
 }
 ---
 
-<Layout title={`${venue.name} — Official Ledger Dossier | MCR Lunch Club`} description={pageDescription} image={venue.image?.url}>
+<Layout title={`${venue.name} — Official Ledger Dossier | MCR Lunch Club`} description={pageDescription} image={venue.image?.url ?? `/og/venues/${venue.slug}.png`}>
   {venue.image && (
     <link slot="head" rel="preload" as="image" href={venue.image.url} imagesrcset={photoSrcset} imagesizes={photoSrcset ? PHOTO_SIZES : undefined} fetchpriority="high" />
   )}
