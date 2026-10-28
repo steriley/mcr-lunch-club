@@ -124,11 +124,11 @@ export function pickSummons(
 }
 
 /**
- * The first issue with a Weekly Summons (Wednesday 28 October 2026, 18:00 GMT).
+ * The first issue with a Weekly Summons (Wednesday 28 October 2026, 23:59 GMT).
  * Earlier issues have no picks, so the replay in `summonsFor` starts here: a
  * fixed start keeps every week's derivation consistent with the week before.
  */
-export const FIRST_SUMMONS_ISSUE = new Date('2026-10-28T18:00:00Z');
+export const FIRST_SUMMONS_ISSUE = new Date('2026-10-28T23:59:00Z');
 
 /**
  * The picks for `issue`. A venue picked in the previous issue is skipped.

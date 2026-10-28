@@ -215,9 +215,10 @@ Use a Neon **branch** so local work never touches production data:
    ```
 5. **Rebuilds** (once): create a Deploy Hook for `main` under **Settings →
    Git → Deploy Hooks** and save its URL as `DEPLOY_HOOK_URL`, and set
-   `CRON_SECRET`, both for Production only. Then redeploy. The Wednesday
-   cron in `vercel.json` runs at 18:00 UTC, at or after the bulletin's 18:00
-   London issue time all year.
+   `CRON_SECRET`, both for Production only. Then redeploy. The cron in
+   `vercel.json` runs at 00:00 UTC on Thursday, after the bulletin's 23:59
+   Wednesday London issue time all year (Hobby crons fire at some point in the
+   scheduled hour, so it can't be set to the issue minute itself).
 6. **First Chair** (once): with production env vars set locally,
    ```bash
    NODE_ENV=production SEED_CHAIR_EMAIL=… SEED_CHAIR_NAME=… SEED_CHAIR_PASSWORD=… pnpm db:seed --force
