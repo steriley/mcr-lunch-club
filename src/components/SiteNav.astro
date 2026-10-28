@@ -1,0 +1,41 @@
+---
+import Icon from '@/components/Icon.astro';
+import type { IconName } from '@/lib/icons';
+import { isNavActive } from '@/lib/nav';
+
+export interface NavItem {
+  href: string;
+  label: string;
+  icon: IconName;
+  opensWhereToday?: boolean;
+}
+
+interface Props {
+  items: NavItem[];
+  currentPath: string;
+  /** Badge per item, keyed by href; a null or missing count shows no badge. */
+  counts?: Record<string, number | null>;
+  ariaLabel: string;
+}
+
+const { items, currentPath, counts = {}, ariaLabel } = Astro.props;
+---
+
+<nav class="site-nav" aria-label={ariaLabel}>
+  {items.map((item) => {
+    const active = isNavActive(currentPath, item.href);
+    const count = counts[item.href] ?? null;
+    return (
+      <a
+        href={item.href}
+        class:list={['site-nav-link', active && 'is-active']}
+        aria-current={active ? 'page' : undefined}
+        data-open-where-today={item.opensWhereToday ? '' : undefined}
+      >
+        <Icon name={item.icon} class="nav-icon" />
+        <span>{item.label}</span>
+        {count !== null && <span class="nav-count">{count}</span>}
+      </a>
+    );
+  })}
+</nav>

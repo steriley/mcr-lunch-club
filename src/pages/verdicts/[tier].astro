@@ -94,15 +94,7 @@ const breadcrumbData = breadcrumbStructuredData(
 </Layout>
 
 <script>
-  import { getWalkingDirectionsUrl } from '@/lib/map/directions';
   import { enableHorizontalScroll } from '@/lib/horizontal-scroll';
-
-  // Apple devices get Apple Maps, like the homepage walk links.
-  document.querySelectorAll<HTMLAnchorElement>('a[data-walk-directions]').forEach((link) => {
-    const lat = Number(link.dataset.lat);
-    const lng = Number(link.dataset.lng);
-    if (Number.isFinite(lat) && Number.isFinite(lng)) link.href = getWalkingDirectionsUrl(lat, lng);
-  });
 
   // A mouse can't scroll the tier strip sideways without a visible scrollbar, so add wheel and drag.
   const nav = document.querySelector<HTMLElement>('.tier-nav-scroll');

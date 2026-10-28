@@ -1,11 +1,10 @@
 ---
 import Icon from '@/components/Icon.astro';
-import type { IconName } from '@/lib/icons';
+import SiteNav, { type NavItem } from '@/components/SiteNav.astro';
 import '@/styles/global.css';
 import Fonts from '@/components/Fonts.astro';
 import ThemeScript from '@/components/ThemeScript.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
-import { isNavActive } from '@/lib/nav';
 import { countPublicInspections, countPublicInspectionsForBuild, countPublicVenues, countPublicVenuesForBuild } from '@/lib/public-data';
 
 interface Props {
@@ -36,12 +35,13 @@ const currentPath = Astro.url.pathname;
 const inspectionCount = await (Astro.isPrerendered ? countPublicInspectionsForBuild() : countPublicInspections()).catch(() => null);
 const venueCount = await (Astro.isPrerendered ? countPublicVenuesForBuild() : countPublicVenues()).catch(() => null);
 const currentYear = new Date().getFullYear();
-const navigation: { href: string; label: string; icon: IconName; opensWhereToday?: boolean }[] = [
+const navigation: NavItem[] = [
   { href: '/manifesto', label: 'The Manifesto', icon: 'history_edu' },
   { href: '/verdicts/approved', label: 'Verdicts', icon: 'military_tech' },
   { href: '/inspections', label: 'Inspections', icon: 'fact_check' },
   { href: '/#where-to-today', label: 'Where to today?', icon: 'restaurant', opensWhereToday: true },
 ];
+const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venueCount };
 ---
 
 <!doctype html>
@@ -80,48 +80,14 @@ const navigation: { href: string; label: string; icon: IconName; opensWhereToday
           </span>
         </a>
 
-        <nav class="site-nav" aria-label="Main navigation">
-          {navigation.map((item) => {
-            const active = isNavActive(currentPath, item.href);
-            return (
-              <a
-                href={item.href}
-                class:list={['site-nav-link', active && 'is-active']}
-                aria-current={active ? 'page' : undefined}
-                data-open-where-today={item.opensWhereToday ? '' : undefined}
-              >
-                <Icon name={item.icon} class="nav-icon" />
-                <span>{item.label}</span>
-                {item.label === 'Inspections' && inspectionCount !== null && <span class="nav-count">{inspectionCount}</span>}
-                {item.label === 'Verdicts' && venueCount !== null && <span class="nav-count">{venueCount}</span>}
-              </a>
-            );
-          })}
-        </nav>
+        <SiteNav items={navigation} currentPath={currentPath} counts={navCounts} ariaLabel="Main navigation" />
 
         <details class="mobile-menu">
           <summary class="mobile-menu-trigger" aria-label="Menu">
             <span class="mobile-menu-bars" aria-hidden="true"><span></span><span></span><span></span></span>
           </summary>
           <div class="mobile-menu-panel">
-            <nav class="site-nav" aria-label="Mobile navigation">
-              {navigation.map((item) => {
-                const active = isNavActive(currentPath, item.href);
-                return (
-                  <a
-                    href={item.href}
-                    class:list={['site-nav-link', active && 'is-active']}
-                    aria-current={active ? 'page' : undefined}
-                    data-open-where-today={item.opensWhereToday ? '' : undefined}
-                  >
-                    <Icon name={item.icon} class="nav-icon" />
-                    <span>{item.label}</span>
-                    {item.label === 'Inspections' && inspectionCount !== null && <span class="nav-count">{inspectionCount}</span>}
-                {item.label === 'Verdicts' && venueCount !== null && <span class="nav-count">{venueCount}</span>}
-                  </a>
-                );
-              })}
-            </nav>
+            <SiteNav items={navigation} currentPath={currentPath} counts={navCounts} ariaLabel="Mobile navigation" />
           </div>
         </details>
       </div>
