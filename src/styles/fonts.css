@@ -5,64 +5,64 @@
  * breaks and height when the real font swaps in.
  */
 @font-face {
-  font-family: "Plus Jakarta Sans";
+  font-family: 'Plus Jakarta Sans';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/plus-jakarta-sans-latin-400-normal.woff2") format("woff2");
+  src: url('/fonts/plus-jakarta-sans-latin-400-normal.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: "Plus Jakarta Sans";
+  font-family: 'Plus Jakarta Sans';
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url("/fonts/plus-jakarta-sans-latin-500-normal.woff2") format("woff2");
+  src: url('/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: "Plus Jakarta Sans";
+  font-family: 'Plus Jakarta Sans';
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url("/fonts/plus-jakarta-sans-latin-600-normal.woff2") format("woff2");
+  src: url('/fonts/plus-jakarta-sans-latin-600-normal.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: "Plus Jakarta Sans";
+  font-family: 'Plus Jakarta Sans';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("/fonts/plus-jakarta-sans-latin-700-normal.woff2") format("woff2");
+  src: url('/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: "Playfair Display";
+  font-family: 'Playfair Display';
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url("/fonts/playfair-display-latin-600-normal.woff2") format("woff2");
+  src: url('/fonts/playfair-display-latin-600-normal.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: "Playfair Display";
+  font-family: 'Playfair Display';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("/fonts/playfair-display-latin-700-normal.woff2") format("woff2");
+  src: url('/fonts/playfair-display-latin-700-normal.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: "Playfair Display";
+  font-family: 'Playfair Display';
   font-style: italic;
   font-weight: 600;
   font-display: swap;
-  src: url("/fonts/playfair-display-latin-600-italic.woff2") format("woff2");
+  src: url('/fonts/playfair-display-latin-600-italic.woff2') format('woff2');
 }
 
 @font-face {
-  font-family: "Plus Jakarta Sans Fallback";
-  src: local("Arial"), local("Liberation Sans"), local("Helvetica");
+  font-family: 'Plus Jakarta Sans Fallback';
+  src: local('Arial'), local('Liberation Sans'), local('Helvetica');
   size-adjust: 104%;
   ascent-override: 100%;
   descent-override: 21%;
@@ -70,8 +70,8 @@
 }
 
 @font-face {
-  font-family: "Playfair Display Fallback";
-  src: local("Georgia"), local("Times New Roman"), local("Liberation Serif");
+  font-family: 'Playfair Display Fallback';
+  src: local('Georgia'), local('Times New Roman'), local('Liberation Serif');
   size-adjust: 107%;
   ascent-override: 100%;
   descent-override: 23%;

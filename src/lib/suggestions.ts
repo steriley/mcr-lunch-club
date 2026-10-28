@@ -13,7 +13,10 @@ export const SUGGESTIONS_PER_DAY = 50;
 /** Keyed hash of the sender's IP so the raw address is never stored. */
 export function senderHash(ip: string | null): string | null {
   if (!ip) return null;
-  return createHmac('sha256', getAuthEnvironment().secret).update(`suggestion:${ip}`).digest('hex').slice(0, 32);
+  return createHmac('sha256', getAuthEnvironment().secret)
+    .update(`suggestion:${ip}`)
+    .digest('hex')
+    .slice(0, 32);
 }
 
 export async function isSuggestionRateLimited(db: Database, hash: string | null): Promise<boolean> {
@@ -28,7 +31,12 @@ export async function isSuggestionRateLimited(db: Database, hash: string | null)
   const [recent] = await db
     .select({ total: count() })
     .from(venueSuggestions)
-    .where(and(eq(venueSuggestions.senderHash, hash), gte(venueSuggestions.createdAt, new Date(now - 60 * 60 * 1000))));
+    .where(
+      and(
+        eq(venueSuggestions.senderHash, hash),
+        gte(venueSuggestions.createdAt, new Date(now - 60 * 60 * 1000))
+      )
+    );
   return recent.total >= SUGGESTIONS_PER_SENDER_PER_HOUR;
 }
 
@@ -50,7 +58,13 @@ export async function markSuggestionAccepted(
   const rows = await db
     .update(venueSuggestions)
     .set({ status: 'accepted', venueId, reviewedAt: now, reviewedBy: userId })
-    .where(and(eq(venueSuggestions.id, suggestionId), eq(venueSuggestions.status, 'new'), isNull(venueSuggestions.venueId)))
+    .where(
+      and(
+        eq(venueSuggestions.id, suggestionId),
+        eq(venueSuggestions.status, 'new'),
+        isNull(venueSuggestions.venueId)
+      )
+    )
     .returning({ id: venueSuggestions.id });
   return rows.length === 1;
 }

@@ -7,14 +7,20 @@ import Breadcrumbs from '@/components/Breadcrumbs.astro';
 export const prerender = true;
 ---
 
-<Layout title="The Manifesto & Articles of Governance — MCR Lunch Club" description="How the MCR Lunch Club judges Manchester lunch: the two-visit rule for Approved status, the six verdicts, the cost key and the Chairs’ code of conduct.">
+<Layout
+  title="The Manifesto & Articles of Governance — MCR Lunch Club"
+  description="How the MCR Lunch Club judges Manchester lunch: the two-visit rule for Approved status, the six verdicts, the cost key and the Chairs’ code of conduct."
+>
   <PageRibbon
     icon="scroll"
     kicker="The Constitutional Code"
     title="The Manifesto"
     quote={[
       'The MCR Lunch Club exists to seek out, assess, and celebrate the finest lunch offerings Manchester has to offer.',
-      { text: 'We lunch with purpose. We judge with integrity. We return only where deserved.', accent: true },
+      {
+        text: 'We lunch with purpose. We judge with integrity. We return only where deserved.',
+        accent: true,
+      },
     ]}
     width="max-w-4xl"
   />
@@ -39,7 +45,11 @@ export const prerender = true;
           </h3>
         </div>
         <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
-          The MCR Lunch Club exists to seek out, assess, and celebrate the finest lunch offerings Manchester has to offer. We are committed to independent venues first and foremost, championing originality, quality, and local character over the predictability of large chains. Exceptions may be made where a new chain enters the area and warrants official verification by the Lunch Club Chairs.
+          The MCR Lunch Club exists to seek out, assess, and celebrate the finest lunch offerings
+          Manchester has to offer. We are committed to independent venues first and foremost,
+          championing originality, quality, and local character over the predictability of large
+          chains. Exceptions may be made where a new chain enters the area and warrants official
+          verification by the Lunch Club Chairs.
         </p>
       </section>
 
@@ -51,7 +61,10 @@ export const prerender = true;
           </h3>
         </div>
         <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
-          No venue earns its place in the Lunch Club rotation lightly. Each must be visited on at least two separate occasions and deliver satisfactory outcomes on both. Consistency is king. A single sub-par performance constitutes desecration of the Chairs and may result in immediate ejection from the approved list.
+          No venue earns its place in the Lunch Club rotation lightly. Each must be visited on at
+          least two separate occasions and deliver satisfactory outcomes on both. Consistency is
+          king. A single sub-par performance constitutes desecration of the Chairs and may result in
+          immediate ejection from the approved list.
         </p>
       </section>
 
@@ -63,17 +76,23 @@ export const prerender = true;
           </h3>
         </div>
         <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
-          Value is a core principle. Price range will always be considered alongside quality, portion, and overall experience. We recognise excellence at all price points, but extravagance without merit will not pass inspection.
+          Value is a core principle. Price range will always be considered alongside quality,
+          portion, and overall experience. We recognise excellence at all price points, but
+          extravagance without merit will not pass inspection.
         </p>
 
         <!-- Official Cost Key: plain copy -->
-        <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
-          The Official Cost Key:
-        </p>
+        <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">The Official Cost Key:</p>
         <ul class="text-base text-stone-800 leading-relaxed max-w-[70ch] space-y-1 list-disc pl-6">
-          <li><strong>£</strong> under £10: everyday budget and grab</li>
-          <li><strong>££</strong> above £10: standard municipal protocol</li>
-          <li><strong>£££</strong> payday treat: special celebration feast</li>
+          <li>
+            <strong>£</strong> under £10: everyday budget and grab
+          </li>
+          <li>
+            <strong>££</strong> above £10: standard municipal protocol
+          </li>
+          <li>
+            <strong>£££</strong> payday treat: special celebration feast
+          </li>
         </ul>
       </section>
 
@@ -85,7 +104,9 @@ export const prerender = true;
           </h3>
         </div>
         <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
-          Within Manchester city centre, no distance is too far for proper evaluation. Beyond the centre, noteworthy venues within a 2.5-mile radius may be inducted where they demonstrate exceptional standards worthy of special recognition.
+          Within Manchester city centre, no distance is too far for proper evaluation. Beyond the
+          centre, noteworthy venues within a 2.5-mile radius may be inducted where they demonstrate
+          exceptional standards worthy of special recognition.
         </p>
       </section>
 
@@ -97,12 +118,17 @@ export const prerender = true;
           </h3>
         </div>
         <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
-          The Club is open to all who wish to join in the pursuit of lunchtime excellence. However, members must respect the impartial authority of the Lunch Club Chairs and refrain from attempting to unduly influence their verdicts.
+          The Club is open to all who wish to join in the pursuit of lunchtime excellence. However,
+          members must respect the impartial authority of the Lunch Club Chairs and refrain from
+          attempting to unduly influence their verdicts.
         </p>
         <div class="pt-2 text-xs text-stone-600 flex items-center gap-2">
           <Icon name="scales" class="icon-md" />
           <span>
-            Violations of this principle are logged in the&nbsp;<a href="/hall-of-shame" class="text-navy underline font-bold">Hall of Shame</a>
+            Violations of this principle are logged in the&nbsp;
+            <a href="/hall-of-shame" class="text-navy underline font-bold">
+              Hall of Shame
+            </a>
           </span>
         </div>
       </section>
@@ -131,9 +157,16 @@ export const prerender = true;
             <div class="space-y-1">
               <h3 class="text-2xl font-bold text-navy">Approved</h3>
               <p class="text-sm text-stone-800 leading-relaxed max-w-[70ch]">
-                Venue has survived the Chairs’ scrutiny by delivering consistent, good-value, characterful lunches across multiple visits. It has earned the highest honour in Manchester lunching: <strong>the right to be returned to</strong>.
+                Venue has survived the Chairs’ scrutiny by delivering consistent, good-value,
+                characterful lunches across multiple visits. It has earned the highest honour in
+                Manchester lunching: <strong>the right to be returned to</strong>.
               </p>
-              <a href="/verdicts/approved" class="inline-block text-sm text-navy hover:underline font-bold">Approved Venues →</a>
+              <a
+                href="/verdicts/approved"
+                class="inline-block text-sm text-navy hover:underline font-bold"
+              >
+                Approved Venues →
+              </a>
             </div>
 
             <div class="bg-stone-50 border border-stone-200 p-3 rounded-xl text-xs text-stone-700">
@@ -154,9 +187,16 @@ export const prerender = true;
             </div>
             <h3 class="text-2xl font-bold text-navy">Under Consideration</h3>
             <p class="text-sm text-stone-800 leading-relaxed max-w-[70ch]">
-              Venue has shown enough promise to warrant serious attention, but has not yet earned a final verdict from the Chairs. It sits in the waiting chamber of judgement, pending further evidence, appetite, and official lunching scrutiny.
+              Venue has shown enough promise to warrant serious attention, but has not yet earned a
+              final verdict from the Chairs. It sits in the waiting chamber of judgement, pending
+              further evidence, appetite, and official lunching scrutiny.
             </p>
-            <a href="/verdicts/under-consideration" class="inline-block text-sm text-navy hover:underline font-bold">Under Consideration Venues →</a>
+            <a
+              href="/verdicts/under-consideration"
+              class="inline-block text-sm text-navy hover:underline font-bold"
+            >
+              Under Consideration Venues →
+            </a>
           </div>
           <div class="bg-stone-50 border border-stone-200 p-3 rounded-xl text-xs text-stone-700">
             Pending confirmatory secondary visit & tribunal audit.
@@ -174,9 +214,16 @@ export const prerender = true;
             </div>
             <h3 class="text-2xl font-bold text-navy">To Be Assessed</h3>
             <p class="text-sm text-stone-800 leading-relaxed max-w-[70ch]">
-              Venue has entered the Lunch Club’s field of vision, but has not yet faced the full judgement of the Chairs. Its fate remains undecided until proper inspection confirms whether it is worthy of approval, rejection, or reluctant tolerance.
+              Venue has entered the Lunch Club’s field of vision, but has not yet faced the full
+              judgement of the Chairs. Its fate remains undecided until proper inspection confirms
+              whether it is worthy of approval, rejection, or reluctant tolerance.
             </p>
-            <a href="/verdicts/to-be-assessed" class="inline-block text-sm text-navy hover:underline font-bold">To Be Assessed Venues →</a>
+            <a
+              href="/verdicts/to-be-assessed"
+              class="inline-block text-sm text-navy hover:underline font-bold"
+            >
+              To Be Assessed Venues →
+            </a>
           </div>
           <div class="bg-stone-50 border border-stone-200 p-3 rounded-xl text-xs text-stone-700">
             Docketed for exploratory inspection by the Committee.
@@ -194,9 +241,16 @@ export const prerender = true;
             </div>
             <h3 class="text-2xl font-bold text-navy">If We Must</h3>
             <p class="text-sm text-stone-800 leading-relaxed max-w-[70ch]">
-              Venue is not celebrated, but tolerated: acceptable only when circumstance, convenience, or lack of better options forces the Club’s hand. It remains outside true approval, granted not honour, but reluctant permission.
+              Venue is not celebrated, but tolerated: acceptable only when circumstance,
+              convenience, or lack of better options forces the Club’s hand. It remains outside true
+              approval, granted not honour, but reluctant permission.
             </p>
-            <a href="/verdicts/if-we-must" class="inline-block text-sm text-navy hover:underline font-bold">If We Must Venues →</a>
+            <a
+              href="/verdicts/if-we-must"
+              class="inline-block text-sm text-navy hover:underline font-bold"
+            >
+              If We Must Venues →
+            </a>
           </div>
           <div class="bg-stone-50 border border-stone-200 p-3 rounded-xl text-xs text-stone-700">
             Reserved for extreme meteorological duress or proximity emergencies.
@@ -213,9 +267,16 @@ export const prerender = true;
           </div>
           <h3 class="text-2xl font-bold text-navy">Rejected Venues</h3>
           <p class="text-sm text-stone-800 leading-relaxed max-w-[70ch]">
-            Venue has failed to meet the standards of the Chairs, whether through poor value, weak quality, lack of character, or the unforgivable sin of inconsistency. It is removed from the sacred lunch rotation and may only return through exceptional redemption.
+            Venue has failed to meet the standards of the Chairs, whether through poor value, weak
+            quality, lack of character, or the unforgivable sin of inconsistency. It is removed from
+            the sacred lunch rotation and may only return through exceptional redemption.
           </p>
-          <a href="/verdicts/rejected" class="inline-block text-sm text-navy hover:underline font-bold">Rejected Venues →</a>
+          <a
+            href="/verdicts/rejected"
+            class="inline-block text-sm text-navy hover:underline font-bold"
+          >
+            Rejected Venues →
+          </a>
         </div>
 
         <!-- Gone But Not Forgotten -->
@@ -228,9 +289,16 @@ export const prerender = true;
           </div>
           <h3 class="text-2xl font-bold text-navy">Gone But Not Forgotten</h3>
           <p class="text-sm text-stone-800 leading-relaxed max-w-[70ch]">
-            Venue once held a place in the Club’s affections, but is no longer available to be judged, revisited, or relied upon. Its doors may be closed, but its legend remains in the lunching annals.
+            Venue once held a place in the Club’s affections, but is no longer available to be
+            judged, revisited, or relied upon. Its doors may be closed, but its legend remains in
+            the lunching annals.
           </p>
-          <a href="/verdicts/gone-but-not-forgotten" class="inline-block text-sm text-navy hover:underline font-bold">Gone But Not Forgotten Venues →</a>
+          <a
+            href="/verdicts/gone-but-not-forgotten"
+            class="inline-block text-sm text-navy hover:underline font-bold"
+          >
+            Gone But Not Forgotten Venues →
+          </a>
         </div>
       </div>
     </div>
@@ -238,9 +306,7 @@ export const prerender = true;
     <!-- Sign-off seal -->
     <div class="flex flex-col items-center text-center py-6 text-stone-600 text-xs space-y-1 border-t border-hairline">
       <Icon name="lock" class="icon-lg" />
-      <div class="font-bold text-navy uppercase tracking-wider">
-        Enacted by Order of The Chairs
-      </div>
+      <div class="font-bold text-navy uppercase tracking-wider">Enacted by Order of The Chairs</div>
       <div class="font-serif-header italic text-stone-500">
         “We lunch with purpose. We judge with integrity. We return only where deserved.”
       </div>

@@ -16,7 +16,16 @@ import {
 describe('venue image settings', () => {
   it('match the agreed starting values', () => {
     assert.deepEqual(
-      { MAX_IMAGES_PER_VENUE, FULL_MAX_EDGE, THUMB_MAX_EDGE, FULL_QUALITIES, THUMB_QUALITY, MAX_FULL_BYTES, MAX_THUMB_BYTES, CAPTION_MAX },
+      {
+        MAX_IMAGES_PER_VENUE,
+        FULL_MAX_EDGE,
+        THUMB_MAX_EDGE,
+        FULL_QUALITIES,
+        THUMB_QUALITY,
+        MAX_FULL_BYTES,
+        MAX_THUMB_BYTES,
+        CAPTION_MAX,
+      },
       {
         MAX_IMAGES_PER_VENUE: 5,
         FULL_MAX_EDGE: 1600,
@@ -48,14 +57,22 @@ describe('focalStyle', () => {
 });
 
 describe('imageSrcset', () => {
-  const image = { url: 'https://b/full.webp', thumbUrl: 'https://b/thumb.webp', width: 1600, height: 1200 };
+  const image = {
+    url: 'https://b/full.webp',
+    thumbUrl: 'https://b/thumb.webp',
+    width: 1600,
+    height: 1200,
+  };
 
   it('lists the thumbnail and the full image with their widths', () => {
     assert.equal(imageSrcset(image), 'https://b/thumb.webp 640w, https://b/full.webp 1600w');
   });
 
   it('derives the thumbnail width of a portrait photo from its aspect ratio', () => {
-    assert.equal(imageSrcset({ ...image, width: 1200, height: 1600 }), 'https://b/thumb.webp 480w, https://b/full.webp 1200w');
+    assert.equal(
+      imageSrcset({ ...image, width: 1200, height: 1600 }),
+      'https://b/thumb.webp 480w, https://b/full.webp 1200w'
+    );
   });
 
   it('is undefined for migrated photos with no thumbnail or stored size', () => {

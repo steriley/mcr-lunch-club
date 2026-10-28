@@ -38,13 +38,21 @@ if (!fs.existsSync(functionEntry)) {
   process.exit(1);
 }
 
-const routes: Route[] = JSON.parse(fs.readFileSync(path.join(output, 'config.json'), 'utf8')).routes;
-const globalHeaders: { source: string; headers: { key: string; value: string }[] }[] = fs.existsSync('vercel.json')
-  ? (JSON.parse(fs.readFileSync('vercel.json', 'utf8')).headers ?? [])
-  : [];
-const handler = (await import(pathToFileURL(functionEntry).href)).default as { fetch(request: Request): Promise<Response> | Response };
+const routes: Route[] = JSON.parse(
+  fs.readFileSync(path.join(output, 'config.json'), 'utf8')
+).routes;
+const globalHeaders: { source: string; headers: { key: string; value: string }[] }[] =
+  fs.existsSync('vercel.json')
+    ? (JSON.parse(fs.readFileSync('vercel.json', 'utf8')).headers ?? [])
+    : [];
+const handler = (await import(pathToFileURL(functionEntry).href)).default as {
+  fetch(request: Request): Promise<Response> | Response;
+};
 
-const port = Number(process.env.PORT || new URL(process.env.BETTER_AUTH_URL || 'http://localhost:4321').port) || 4321;
+const port =
+  Number(
+    process.env.PORT || new URL(process.env.BETTER_AUTH_URL || 'http://localhost:4321').port
+  ) || 4321;
 
 const TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8',
@@ -71,7 +79,8 @@ function staticFile(pathname: string): string | null {
   const base = clean.replace(/\/$/, '');
   for (const candidate of [clean, `${base}.html`, `${base}/index.html`]) {
     const file = path.join(staticDir, candidate);
-    if (file.startsWith(staticDir) && fs.existsSync(file) && fs.statSync(file).isFile()) return file;
+    if (file.startsWith(staticDir) && fs.existsSync(file) && fs.statSync(file).isFile())
+      return file;
   }
   return null;
 }
@@ -96,7 +105,12 @@ function toRequest(req: http.IncomingMessage, url: URL): Request {
   } as RequestInit);
 }
 
-function send(res: http.ServerResponse, status: number, headers: Headers, body: ReadableStream | Buffer | null) {
+function send(
+  res: http.ServerResponse,
+  status: number,
+  headers: Headers,
+  body: ReadableStream | Buffer | null
+) {
   res.statusCode = status;
   headers.forEach((value, key) => key !== 'set-cookie' && res.setHeader(key, value));
   // Headers.forEach folds Set-Cookie into one value; getSetCookie keeps each cookie separate.
@@ -111,7 +125,11 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', `http://${req.headers.host ?? `localhost:${port}`}`);
   const extra = new Headers();
   try {
-    let target: { kind: 'static'; file: string; status?: number } | { kind: 'function' } | { kind: 'redirect'; status: number; location: string } | null = null;
+    let target:
+      | { kind: 'static'; file: string; status?: number }
+      | { kind: 'function' }
+      | { kind: 'redirect'; status: number; location: string }
+      | null = null;
 
     for (const route of routes) {
       if (route.handle === 'filesystem') {
@@ -127,7 +145,8 @@ const server = http.createServer(async (req, res) => {
       if (!match) continue;
       for (const [key, value] of Object.entries(route.headers ?? {})) {
         const resolved = value.replace(/\$(\d)/g, (_, n) => match[Number(n)] ?? '');
-        if (route.status && key.toLowerCase() === 'location') target = { kind: 'redirect', status: route.status, location: resolved };
+        if (route.status && key.toLowerCase() === 'location')
+          target = { kind: 'redirect', status: route.status, location: resolved };
         else extra.set(key, resolved);
       }
       if (target) break;

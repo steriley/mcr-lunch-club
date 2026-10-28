@@ -37,7 +37,9 @@ export function isMappable(venue: VisibilityFields): boolean {
 }
 
 /** Why a venue is hidden, for the admin list and the venue dossier; null when it is public. */
-export function hiddenReason(venue: VisibilityFields): 'no_tier' | 'needs_location' | 'closed' | null {
+export function hiddenReason(
+  venue: VisibilityFields
+): 'no_tier' | 'needs_location' | 'closed' | null {
   if (venue.tier === null) return 'no_tier';
   if (venue.latitude === null || venue.longitude === null) return 'needs_location';
   if (!isPubliclyVisible(venue)) return 'closed';

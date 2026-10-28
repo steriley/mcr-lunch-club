@@ -3,13 +3,19 @@ import { expect, test, visit } from './fixtures';
 /** The smallest valid WebAssembly module. */
 const EMPTY_WASM = [0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00];
 /** A 1×1 PNG, to feed the Chairs' Area WebP encoder. */
-const PNG_1X1 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+const PNG_1X1 = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+  'base64'
+);
 
 const chairEmail = process.env.SMOKE_CHAIR_EMAIL ?? process.env.SEED_CHAIR_EMAIL;
 const chairPassword = process.env.SMOKE_CHAIR_PASSWORD ?? process.env.SEED_CHAIR_PASSWORD;
 
 test.describe('public pages', () => {
-  test('home: map marker, theme toggle, Where to today?, suggest form', async ({ page, monitor }) => {
+  test('home: map marker, theme toggle, Where to today?, suggest form', async ({
+    page,
+    monitor,
+  }) => {
     await visit(page, '/');
 
     // Map: open a venue's card from its pin.
@@ -35,7 +41,9 @@ test.describe('public pages', () => {
 
     // Suggest form. The request is stubbed: the public form is rate-limited per sender, so repeated runs
     // (and any Preview) would otherwise fill the Chairs' inbox or be refused. The form and its CSP still run.
-    await page.route('**/api/suggestions', (route) => route.fulfill({ status: 201, contentType: 'application/json', body: '{}' }));
+    await page.route('**/api/suggestions', (route) =>
+      route.fulfill({ status: 201, contentType: 'application/json', body: '{}' })
+    );
     await page.goto('/#suggest-a-venue');
     const form = page.getByRole('dialog', { name: /Petition the Chairs/ });
     await expect(form).toBeVisible();
@@ -47,13 +55,34 @@ test.describe('public pages', () => {
     expect(monitor.errors).toEqual([]);
   });
 
-  test('weather card: one request per page view, with sunny, night, stale and error states', async ({ page, monitor }) => {
-    const point = (time: string, weatherCode: number, temperatureC: number, icon: string, condition: string) => ({
-      time, temperatureC, minimumTemperatureC: null, feelsLikeC: temperatureC - 2, precipitationProbability: 10,
-      windSpeedMph: 7, weatherCode, condition, icon,
+  test('weather card: one request per page view, with sunny, night, stale and error states', async ({
+    page,
+    monitor,
+  }) => {
+    const point = (
+      time: string,
+      weatherCode: number,
+      temperatureC: number,
+      icon: string,
+      condition: string
+    ) => ({
+      time,
+      temperatureC,
+      minimumTemperatureC: null,
+      feelsLikeC: temperatureC - 2,
+      precipitationProbability: 10,
+      windSpeedMph: 7,
+      weatherCode,
+      condition,
+      icon,
     });
     // The stub stands in for the Met Office, which a Preview would otherwise answer with a real forecast.
-    const summary = (now: ReturnType<typeof point>, stale = false) => ({ stale, now, hours: [now], days: [now] });
+    const summary = (now: ReturnType<typeof point>, stale = false) => ({
+      stale,
+      now,
+      hours: [now],
+      days: [now],
+    });
     const requests: string[] = [];
     page.on('request', (request) => {
       if (new URL(request.url()).pathname.startsWith('/api/weather')) requests.push(request.url());
@@ -62,11 +91,13 @@ test.describe('public pages', () => {
     const card = page.locator('.weather-card');
     const showCard = async (response: { status?: number; body: unknown }) => {
       requests.length = 0;
-      await page.route('**/api/weather', (route) => route.fulfill({
-        status: response.status ?? 200,
-        contentType: 'application/json',
-        body: JSON.stringify(response.body),
-      }));
+      await page.route('**/api/weather', (route) =>
+        route.fulfill({
+          status: response.status ?? 200,
+          contentType: 'application/json',
+          body: JSON.stringify(response.body),
+        })
+      );
       await visit(page, '/');
       await card.scrollIntoViewIfNeeded();
     };
@@ -80,7 +111,9 @@ test.describe('public pages', () => {
     expect(requests).toHaveLength(1);
 
     await page.unroute('**/api/weather');
-    await showCard({ body: summary(point('2026-10-28T22:00Z', 0, 6, 'clear-night', 'Clear night')) });
+    await showCard({
+      body: summary(point('2026-10-28T22:00Z', 0, 6, 'clear-night', 'Clear night')),
+    });
     await expect(card).toHaveClass(/theme-night/);
     await expect(card).toContainText('Nocturnal Vault: Cloudless');
 
@@ -96,7 +129,10 @@ test.describe('public pages', () => {
     expect(monitor.errors).toEqual([]);
   });
 
-  test('home at phone width: Where to today? and search are on the page, the Bench follows the map', async ({ page, monitor }) => {
+  test('home at phone width: Where to today? and search are on the page, the Bench follows the map', async ({
+    page,
+    monitor,
+  }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await visit(page, '/');
 
@@ -106,8 +142,17 @@ test.describe('public pages', () => {
     await expect(page.locator('#ledger-search-input-phone')).toBeVisible();
 
     // Source order is the phone order: bench before the summons, the summons before the bulletin.
-    const top = (selector: string) => page.locator(selector).first().evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
-    const [map, bench, summons, bulletin] = await Promise.all([top('.home-map-stage'), top('.bench'), top('.weekly-summons'), top('.weekly-bulletin')]);
+    const top = (selector: string) =>
+      page
+        .locator(selector)
+        .first()
+        .evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    const [map, bench, summons, bulletin] = await Promise.all([
+      top('.home-map-stage'),
+      top('.bench'),
+      top('.weekly-summons'),
+      top('.weekly-bulletin'),
+    ]);
     expect(map).toBeLessThan(bench);
     expect(bench).toBeLessThan(summons);
     expect(summons).toBeLessThan(bulletin);
@@ -122,7 +167,11 @@ test.describe('public pages', () => {
     expect(monitor.errors).toEqual([]);
   });
 
-  test('Near Me, with location granted', async ({ browser, baseURL, monitor: _unused }, testInfo) => {
+  test('Near Me, with location granted', async ({
+    browser,
+    baseURL,
+    monitor: _unused,
+  }, testInfo) => {
     void _unused;
     void testInfo;
     const context = await browser.newContext({
@@ -133,9 +182,16 @@ test.describe('public pages', () => {
     const page = await context.newPage();
     const violations: string[] = [];
     const errors: string[] = [];
-    await page.exposeFunction('__reportCsp', (v: { directive: string; blocked: string }) => violations.push(`${v.directive} ${v.blocked}`));
+    await page.exposeFunction('__reportCsp', (v: { directive: string; blocked: string }) =>
+      violations.push(`${v.directive} ${v.blocked}`)
+    );
     await page.addInitScript(() =>
-      document.addEventListener('securitypolicyviolation', (e) => (window as any).__reportCsp({ directive: e.effectiveDirective, blocked: e.blockedURI || e.sample })),
+      document.addEventListener('securitypolicyviolation', (e) =>
+        (window as any).__reportCsp({
+          directive: e.effectiveDirective,
+          blocked: e.blockedURI || e.sample,
+        })
+      )
     );
     page.on('pageerror', (error) => errors.push(error.message));
 
@@ -157,22 +213,32 @@ test.describe('public pages', () => {
 
     await visit(page, venuePath!);
     // JSON-LD: every block parses and names a type.
-    const blocks = await page.locator('script[type="application/ld+json"]').evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ''));
+    const blocks = await page
+      .locator('script[type="application/ld+json"]')
+      .evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ''));
     expect(blocks.length, 'JSON-LD blocks on the venue page').toBeGreaterThan(0);
     const parsed = blocks.map((block) => JSON.parse(block));
     for (const data of parsed) expect(data['@type']).toBeTruthy();
     const trail = parsed.find((data) => data['@type'] === 'BreadcrumbList');
     expect(trail, 'BreadcrumbList JSON-LD on the venue page').toBeTruthy();
-    expect(trail.itemListElement.map((item: { position: number }) => item.position)).toEqual([1, 2, 3, 4]);
+    expect(trail.itemListElement.map((item: { position: number }) => item.position)).toEqual([
+      1, 2, 3, 4,
+    ]);
     const crumbs = page.getByRole('navigation', { name: 'Breadcrumb' });
     await expect(crumbs.locator('[aria-current="page"]')).toBeVisible();
 
     for (const path of ['/hall-of-shame', '/manifesto', '/inspections', '/faqs']) {
       await visit(page, path);
-      await expect(page.getByRole('navigation', { name: 'Breadcrumb' }).locator('[aria-current="page"]')).toBeVisible();
+      await expect(
+        page.getByRole('navigation', { name: 'Breadcrumb' }).locator('[aria-current="page"]')
+      ).toBeVisible();
     }
     await visit(page, '/verdicts/approved');
-    expect(JSON.parse(await page.locator('script[type="application/ld+json"]').first().textContent() ?? '{}')['@type']).toBe('BreadcrumbList');
+    expect(
+      JSON.parse(
+        (await page.locator('script[type="application/ld+json"]').first().textContent()) ?? '{}'
+      )['@type']
+    ).toBe('BreadcrumbList');
     expect(monitor.errors).toEqual([]);
   });
 
@@ -191,7 +257,10 @@ test.describe('Content-Security-Policy', () => {
       const style = document.createElement('style');
       style.textContent = 'body { outline: 7px solid rgb(1, 2, 3) !important }';
       document.head.append(style);
-      return { scriptRan: Boolean((window as any).__inlineScriptRan), outline: getComputedStyle(document.body).outlineWidth };
+      return {
+        scriptRan: Boolean((window as any).__inlineScriptRan),
+        outline: getComputedStyle(document.body).outlineWidth,
+      };
     });
   }
 
@@ -200,7 +269,9 @@ test.describe('Content-Security-Policy', () => {
     const result = await injectInline(page);
     expect(result.scriptRan).toBe(false);
     expect(result.outline).not.toBe('7px');
-    await expect.poll(() => monitor.violations.map((v) => v.directive).sort()).toEqual(expect.arrayContaining(['script-src-elem', 'style-src-elem']));
+    await expect
+      .poll(() => monitor.violations.map((v) => v.directive).sort())
+      .toEqual(expect.arrayContaining(['script-src-elem', 'style-src-elem']));
     monitor.clear();
   });
 
@@ -234,7 +305,10 @@ test.describe('Content-Security-Policy', () => {
 });
 
 async function signIn(page: import('@playwright/test').Page) {
-  expect(chairEmail && chairPassword, 'SEED_CHAIR_EMAIL / SEED_CHAIR_PASSWORD (or SMOKE_CHAIR_*) must name a Chair').toBeTruthy();
+  expect(
+    chairEmail && chairPassword,
+    'SEED_CHAIR_EMAIL / SEED_CHAIR_PASSWORD (or SMOKE_CHAIR_*) must name a Chair'
+  ).toBeTruthy();
   await page.goto('/admin/login');
   await page.waitForLoadState('networkidle');
   await page.getByLabel(/email/i).fill(chairEmail!);
@@ -249,12 +323,18 @@ test.describe('Chairs’ Area', () => {
     await signIn(page);
 
     await visit(page, '/admin/venues');
-    const editPath = await page.locator('a[href^="/admin/venues/"]:not([href$="/new"]):not([href*="/history"])').first().getAttribute('href');
+    const editPath = await page
+      .locator('a[href^="/admin/venues/"]:not([href$="/new"]):not([href*="/history"])')
+      .first()
+      .getAttribute('href');
     expect(editPath, 'a venue edit link in the ledger').toBeTruthy();
 
     const briberyPath = await (async () => {
       await visit(page, '/admin/bribery');
-      return page.locator('a[href^="/admin/bribery/"]:not([href$="/new"])').first().getAttribute('href');
+      return page
+        .locator('a[href^="/admin/bribery/"]:not([href$="/new"])')
+        .first()
+        .getAttribute('href');
     })();
 
     const paths = [
@@ -276,9 +356,20 @@ test.describe('Chairs’ Area', () => {
     // the encoder produced WebP, which it can only do while 'wasm-unsafe-eval' is allowed.
     await visit(page, editPath!);
     const picker = page.locator('input[type="file"]');
-    expect(await picker.count(), 'the photo picker (needs BLOB_READ_WRITE_TOKEN or BLOB_STORE_ID so uploads are enabled)').toBeGreaterThan(0);
-    const upload = page.waitForRequest((request) => request.method() === 'POST' && /\/images$/.test(request.url()));
-    await page.route(/\/api\/admin\/venues\/[^/]+\/images$/, (route) => route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":"stubbed by the smoke test"}' }));
+    expect(
+      await picker.count(),
+      'the photo picker (needs BLOB_READ_WRITE_TOKEN or BLOB_STORE_ID so uploads are enabled)'
+    ).toBeGreaterThan(0);
+    const upload = page.waitForRequest(
+      (request) => request.method() === 'POST' && /\/images$/.test(request.url())
+    );
+    await page.route(/\/api\/admin\/venues\/[^/]+\/images$/, (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: '{"error":"stubbed by the smoke test"}',
+      })
+    );
     await picker.setInputFiles({ name: 'smoke.png', mimeType: 'image/png', buffer: PNG_1X1 });
     const body = (await upload).postDataBuffer()?.toString('latin1') ?? '';
     expect(body).toContain('RIFF');

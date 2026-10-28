@@ -109,12 +109,18 @@ describe('name placement', () => {
 
   it('never overlaps its own pin, and hops to the other side of a neighbour pin', () => {
     const neighbour = pinRect({ x: 232, y: 200 });
-    const placed = placeLabels([{ id: 'a', options: nameOptions(point, 80) }], [pinRect(point), neighbour]);
+    const placed = placeLabels(
+      [{ id: 'a', options: nameOptions(point, 80) }],
+      [pinRect(point), neighbour]
+    );
     assert.equal(placed.get('a'), 1);
   });
 
   it('is blocked by a cluster marker', () => {
-    const placed = placeLabels([{ id: 'a', options: nameOptions(point, 80).slice(0, 1) }], [clusterRect({ x: 240, y: 184 })]);
+    const placed = placeLabels(
+      [{ id: 'a', options: nameOptions(point, 80).slice(0, 1) }],
+      [clusterRect({ x: 240, y: 184 })]
+    );
     assert.equal(placed.has('a'), false);
   });
 });
@@ -138,9 +144,18 @@ describe('ringLabelOptions', () => {
     const options = ringLabelOptions({ x: 200, y: 50 }, 100, size, screen);
     assert.ok(options.length > 0);
     for (const option of options) {
-      assert.ok(option.y >= 0 && option.x >= 0 && option.x + option.width <= 400 && option.y + option.height <= 400);
+      assert.ok(
+        option.y >= 0 &&
+          option.x >= 0 &&
+          option.x + option.width <= 400 &&
+          option.y + option.height <= 400
+      );
     }
-    assert.notEqual(options[0].x + size.width / 2, 200, 'the first option has swung away from due north, to where it can be seen');
+    assert.notEqual(
+      options[0].x + size.width / 2,
+      200,
+      'the first option has swung away from due north, to where it can be seen'
+    );
   });
 
   it('has no option for a ring that is entirely off screen', () => {
@@ -162,7 +177,10 @@ describe('name priority', () => {
   it('does not reorder the list it is given', () => {
     const list = [venue('b', { tier: 'rejected' }), venue('a')];
     byNamePriority(list);
-    assert.deepEqual(list.map((entry) => entry.id), ['b', 'a']);
+    assert.deepEqual(
+      list.map((entry) => entry.id),
+      ['b', 'a']
+    );
   });
 });
 
@@ -177,7 +195,10 @@ describe('label text and width', () => {
 
   it('estimates a width outside a browser and caps it', () => {
     const short = labelWidth('Pie', '600 12px serif');
-    const long = labelWidth('A very long restaurant name indeed that keeps going', '600 12px serif');
+    const long = labelWidth(
+      'A very long restaurant name indeed that keeps going',
+      '600 12px serif'
+    );
     assert.ok(short > 0 && short < long);
     assert.equal(long, 176);
   });

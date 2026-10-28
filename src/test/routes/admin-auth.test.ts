@@ -45,7 +45,11 @@ describe('every admin API handler', () => {
         assert.equal((await call()).status, 403, `${method} banned admin`);
         if (method !== 'GET') {
           signInAs();
-          assert.equal((await call('https://evil.example')).status, 403, `${method} foreign origin`);
+          assert.equal(
+            (await call('https://evil.example')).status,
+            403,
+            `${method} foreign origin`
+          );
         }
       }
     });

@@ -55,12 +55,22 @@ export function overlaps(a: Rect, b: Rect): boolean {
 
 /** The space a venue pin takes up, given where its point is. */
 export function pinRect(point: Point): Rect {
-  return { x: point.x - PIN.anchorX, y: point.y - PIN.anchorY, width: PIN.width, height: PIN.height };
+  return {
+    x: point.x - PIN.anchorX,
+    y: point.y - PIN.anchorY,
+    width: PIN.width,
+    height: PIN.height,
+  };
 }
 
 /** The space a cluster marker takes up: it is centred on its point. */
 export function clusterRect(point: Point): Rect {
-  return { x: point.x - CLUSTER_SIZE / 2, y: point.y - CLUSTER_SIZE / 2, width: CLUSTER_SIZE, height: CLUSTER_SIZE };
+  return {
+    x: point.x - CLUSTER_SIZE / 2,
+    y: point.y - CLUSTER_SIZE / 2,
+    width: CLUSTER_SIZE,
+    height: CLUSTER_SIZE,
+  };
 }
 
 /** Where a venue's name can go: beside its pin's disc, on the right if there is room, else on the left. */
@@ -81,7 +91,12 @@ const RING_BEARING_STEP = 6;
  * north first and then fanning out either side. `within` keeps it to what is on
  * screen, so a ring that is half off the map is labelled where it can be read.
  */
-export function ringLabelOptions(centre: Point, radiusPx: number, size: { width: number; height: number }, within: Rect): Rect[] {
+export function ringLabelOptions(
+  centre: Point,
+  radiusPx: number,
+  size: { width: number; height: number },
+  within: Rect
+): Rect[] {
   const options: Rect[] = [];
   for (let step = 0; step * RING_BEARING_STEP <= 180; step++) {
     // 0, +6, -6, +12, -12 ...: nearest to north first.
@@ -90,7 +105,12 @@ export function ringLabelOptions(centre: Point, radiusPx: number, size: { width:
       const x = centre.x + Math.sin(bearing) * radiusPx - size.width / 2;
       const y = centre.y - Math.cos(bearing) * radiusPx - size.height / 2;
       const rect = { x, y, width: size.width, height: size.height };
-      if (rect.x >= within.x && rect.y >= within.y && rect.x + rect.width <= within.x + within.width && rect.y + rect.height <= within.y + within.height) {
+      if (
+        rect.x >= within.x &&
+        rect.y >= within.y &&
+        rect.x + rect.width <= within.x + within.width &&
+        rect.y + rect.height <= within.y + within.height
+      ) {
         options.push(rect);
       }
     }
@@ -103,7 +123,10 @@ export function ringLabelOptions(centre: Point, radiusPx: number, size: { width:
  * touches neither an obstacle nor a label placed before it, and is left out if
  * none does. Returns the chosen option's index for each label that fits.
  */
-export function placeLabels(candidates: readonly LabelCandidate[], obstacles: readonly Rect[]): Map<string, number> {
+export function placeLabels(
+  candidates: readonly LabelCandidate[],
+  obstacles: readonly Rect[]
+): Map<string, number> {
   const taken: Rect[] = [...obstacles];
   const placed = new Map<string, number>();
   for (const candidate of candidates) {
@@ -121,7 +144,10 @@ export function placeLabels(candidates: readonly LabelCandidate[], obstacles: re
 /** Whose name is shown first when there isn't room for all: Approved venues, then the nearest to Base. */
 export function byNamePriority(venues: readonly Venue[]): Venue[] {
   const base = { lat: BASE_LAT, lng: BASE_LNG };
-  const distance = (venue: Venue) => (venue.lat == null || venue.lng == null ? Infinity : haversineMetres(base, { lat: venue.lat, lng: venue.lng }));
+  const distance = (venue: Venue) =>
+    venue.lat == null || venue.lng == null
+      ? Infinity
+      : haversineMetres(base, { lat: venue.lat, lng: venue.lng });
   const rank = (venue: Venue) => (venue.tier === 'approved' ? 0 : 1);
   return [...venues].sort((a, b) => rank(a) - rank(b) || distance(a) - distance(b));
 }
@@ -141,7 +167,8 @@ let canvasContext: CanvasRenderingContext2D | null | undefined;
 /** The width a label needs: measured in the label's own font in a browser, estimated elsewhere. */
 export function labelWidth(text: string, font: string, maxWidth = NAME_MAX_WIDTH_PX): number {
   if (canvasContext === undefined) {
-    canvasContext = typeof document === 'undefined' ? null : document.createElement('canvas').getContext('2d');
+    canvasContext =
+      typeof document === 'undefined' ? null : document.createElement('canvas').getContext('2d');
   }
   let measured = text.length * FALLBACK_CHAR_PX;
   if (canvasContext) {

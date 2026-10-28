@@ -10,6 +10,11 @@ const { name, class: className } = Astro.props;
 const { viewBox, stroke, d } = iconShape(name);
 ---
 
-<svg class:list={['icon', stroke && 'icon-stroke', className]} viewBox={viewBox} aria-hidden="true" focusable="false">
+<svg
+  class:list={['icon', stroke && 'icon-stroke', className]}
+  viewBox={viewBox}
+  aria-hidden="true"
+  focusable="false"
+>
   <path d={d}></path>
 </svg>

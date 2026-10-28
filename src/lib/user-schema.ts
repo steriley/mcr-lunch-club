@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-policy';
 
 export const USER_ROLES = [
-  { value: 'admin', label: "Chair (full access)" },
+  { value: 'admin', label: 'Chair (full access)' },
   { value: 'user', label: 'No admin access' },
 ] as const;
 

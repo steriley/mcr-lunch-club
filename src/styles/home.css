@@ -6,7 +6,6 @@
  * in global.css. Tailwind's @source scan lives in global.css; these rules use none.
  */
 
-
 .home-workspace {
   width: min(100% - 40px, 1440px);
   margin: 0 auto;
@@ -36,7 +35,10 @@
   border-radius: 12px;
   background: var(--color-deep);
   color: var(--color-parchment-fixed);
-  font: 700 16px/1.3 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 16px/1.3 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   box-shadow: 0 2px 6px rgb(17 30 71 / 30%);
   text-decoration: none;
 }
@@ -55,21 +57,36 @@
 }
 
 @media (min-width: 1001px) {
-
-.home-workspace-grid {
+  .home-workspace-grid {
     grid-template-rows: auto auto auto 1fr;
     row-gap: 0;
   }
 
-.home-map-stage { grid-column: 1; grid-row: 1; }
+  .home-map-stage {
+    grid-column: 1;
+    grid-row: 1;
+  }
 
-.where-today-cta { display: none; }
+  .where-today-cta {
+    display: none;
+  }
 
-.field-dispatch { grid-column: 1; grid-row: 2; margin-top: 12px; }
+  .field-dispatch {
+    grid-column: 1;
+    grid-row: 2;
+    margin-top: 12px;
+  }
 
-.weekly-summons { grid-column: 1; grid-row: 3; margin-top: 12px; }
+  .weekly-summons {
+    grid-column: 1;
+    grid-row: 3;
+    margin-top: 12px;
+  }
 
-.bench { grid-column: 2; grid-row: 1 / -1; }
+  .bench {
+    grid-column: 2;
+    grid-row: 1 / -1;
+  }
 }
 
 .home-map-stage {
@@ -115,7 +132,7 @@
   user-select: none;
 }
 
-:root[data-theme="dark"] .near-me-icon {
+:root[data-theme='dark'] .near-me-icon {
   color: currentColor;
 }
 
@@ -127,15 +144,22 @@
 
 .map-header-kicker {
   color: var(--color-peach);
-  font: 700 11px/1.3 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
-  letter-spacing: .1em;
+  font:
+    700 11px/1.3 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .map-header-subtitle {
   overflow: hidden;
   color: var(--color-on-dark);
-  font: 600 12px/1.4 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font:
+    600 12px/1.4 'Playfair Display',
+    'Playfair Display Fallback',
+    Georgia,
+    serif;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -147,7 +171,10 @@
   border-radius: 4px;
   background: rgb(37 49 91 / 80%);
   color: var(--color-peach);
-  font: 700 13px/1.4 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 13px/1.4 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   white-space: nowrap;
 }
 
@@ -198,7 +225,7 @@
   color: var(--bench-peach);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
   line-height: 1.3;
   text-transform: uppercase;
 }
@@ -211,8 +238,12 @@
 .bench-title {
   margin: 2px 0 0;
   color: var(--color-on-dark);
-  font: 700 clamp(20px, 4vw, 24px)/1.2 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
-  letter-spacing: -.01em;
+  font:
+    700 clamp(20px, 4vw, 24px)/1.2 'Playfair Display',
+    'Playfair Display Fallback',
+    Georgia,
+    serif;
+  letter-spacing: -0.01em;
 }
 
 .bench-empty {
@@ -243,7 +274,7 @@
   position: absolute;
   inset: 0;
   border-radius: 12px;
-  content: "";
+  content: '';
 }
 
 .bench-hero:hover .bench-hero-link {
@@ -315,7 +346,7 @@
 .bench-hero-name {
   margin: 0;
   color: var(--bench-primary);
-  font-family: "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font-family: 'Playfair Display', 'Playfair Display Fallback', Georgia, serif;
   font-weight: 700;
   overflow-wrap: anywhere;
 }
@@ -356,7 +387,7 @@
   color: var(--bench-amber);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -377,7 +408,11 @@
 
 .bench-quote p {
   margin: 0;
-  font: italic 400 13px/1.6 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font:
+    italic 400 13px/1.6 'Playfair Display',
+    'Playfair Display Fallback',
+    Georgia,
+    serif;
 }
 
 .bench-quote cite {
@@ -387,7 +422,7 @@
   font-size: 11px;
   font-style: normal;
   font-weight: 700;
-  letter-spacing: .06em;
+  letter-spacing: 0.06em;
   text-align: right;
   text-transform: uppercase;
 }
@@ -405,7 +440,7 @@
   color: var(--color-on-dark-warm);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -452,7 +487,7 @@ button.bench-pillar-link {
 .bench-rank {
   flex: none;
   color: var(--bench-amber);
-  font-family: "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', sans-serif;
   font-size: 13px;
   font-weight: 800;
 }
@@ -509,7 +544,10 @@ button.bench-pillar-link {
   border-radius: 6px;
   background: var(--ledger-card);
   color: var(--color-deep-ink);
-  font: 700 12px "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 12px 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   cursor: pointer;
 }
 
@@ -548,9 +586,14 @@ a.bench-details {
   border-radius: 999px;
   background: transparent;
   color: var(--color-on-dark-soft);
-  font: 700 13px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 13px/1 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   cursor: pointer;
-  transition: background-color 140ms ease, color 140ms ease;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
 }
 
 .bench-tab:hover {
@@ -585,7 +628,7 @@ a.bench-details {
 
 /* The "All venues" view has no use for the Golden Cut's kicker. */
 
-.bench[data-tab="all"] [data-golden-only] {
+.bench[data-tab='all'] [data-golden-only] {
   display: none;
 }
 
@@ -609,7 +652,11 @@ a.bench-details {
 .venue-results-title {
   margin: 0;
   color: var(--color-on-dark);
-  font: 700 18px/1.2 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font:
+    700 18px/1.2 'Playfair Display',
+    'Playfair Display Fallback',
+    Georgia,
+    serif;
 }
 
 .venue-results-title:focus-visible {
@@ -622,7 +669,10 @@ a.bench-details {
   align-items: center;
   gap: 8px;
   color: var(--color-on-dark-soft);
-  font: 600 12px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    600 12px/1 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
 }
 
 .venue-results-sort select {
@@ -632,7 +682,10 @@ a.bench-details {
   border-radius: 8px;
   background: var(--color-midnight);
   color: var(--color-on-dark);
-  font: 600 13px "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    600 13px 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
 }
 
 .venue-results-sort select:focus-visible {
@@ -670,7 +723,10 @@ a.bench-details {
 
 .venue-results-empty p {
   margin: 0;
-  font: 700 15px/1.3 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 15px/1.3 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
 }
 
 .venue-results-empty button {
@@ -680,7 +736,10 @@ a.bench-details {
   border-radius: 999px;
   background: var(--color-parchment-fixed);
   color: var(--color-deep);
-  font: 700 13px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 13px/1 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   cursor: pointer;
 }
 
@@ -714,7 +773,10 @@ a.bench-details {
   border-radius: 14px;
   background: transparent;
   color: var(--color-ink);
-  font: 700 14px/1.2 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 14px/1.2 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   text-align: left;
   cursor: pointer;
 }
@@ -757,21 +819,19 @@ a.bench-details {
 }
 
 @media (prefers-reduced-motion: reduce) {
-
-.bench-tab,
+  .bench-tab,
   .venue-results-chevron {
     transition: none;
   }
 }
 
 @media (max-width: 1000px) {
-
-.bench-tabs,
+  .bench-tabs,
   #bench-panel-all {
     display: none !important;
   }
 
-#bench-panel-golden[hidden] {
+  #bench-panel-golden[hidden] {
     display: flex;
   }
 }
@@ -825,7 +885,7 @@ a.bench-details {
   margin-bottom: 2px;
   color: var(--color-ochre);
   font-size: 12px;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -897,7 +957,7 @@ a.bench-details {
   color: var(--color-deep-ink);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: .055em;
+  letter-spacing: 0.055em;
   line-height: 1.35;
   text-transform: uppercase;
 }
@@ -937,7 +997,11 @@ a.bench-details {
   flex: 1;
   margin: 0;
   color: var(--color-ink-soft);
-  font: italic 14px/1.4 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font:
+    italic 14px/1.4 'Playfair Display',
+    'Playfair Display Fallback',
+    Georgia,
+    serif;
 }
 
 .field-panel-footer {
@@ -1016,7 +1080,7 @@ a.bench-details {
   color: var(--color-success-ink);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: .045em;
+  letter-spacing: 0.045em;
   text-transform: uppercase;
 }
 
@@ -1026,7 +1090,7 @@ a.bench-details {
   border-radius: 999px;
   color: var(--color-deep-ink);
   font-size: 11px;
-  letter-spacing: .03em;
+  letter-spacing: 0.03em;
 }
 
 .weekly-summons-empty {
@@ -1040,58 +1104,55 @@ a.bench-details {
 }
 
 @media (max-width: 1000px) {
-
-.home-workspace-grid {
+  .home-workspace-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (max-width: 720px) {
-
-.home-workspace {
+  .home-workspace {
     width: min(100% - 24px, 1440px);
     padding-top: 12px;
   }
 
-.home-workspace-grid {
+  .home-workspace-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
   }
 
-.home-map-stage {
+  .home-map-stage {
     aspect-ratio: auto;
     height: 58vh;
     min-height: 420px;
   }
 
-.weekly-bulletin {
+  .weekly-bulletin {
     display: grid;
     grid-template-columns: 42px minmax(0, 1fr);
     gap: 8px 10px;
     padding: 11px;
   }
 
-.bulletin-icon {
+  .bulletin-icon {
     grid-row: 1 / 3;
   }
 
-.weekly-bulletin a {
+  .weekly-bulletin a {
     justify-self: start;
     grid-column: 2;
   }
 
-.field-panel-grid {
+  .field-panel-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (max-width: 480px) {
-
-.weekly-summons-grid {
+  .weekly-summons-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 
-.weekly-summons-heading {
+  .weekly-summons-heading {
     align-items: flex-start;
     flex-direction: column;
   }
@@ -1108,18 +1169,19 @@ a.bench-details {
   grid-area: 1 / 1;
   opacity: 0;
   visibility: hidden;
-  transition: opacity .5s ease, visibility 0s linear .5s;
+  transition:
+    opacity 0.5s ease,
+    visibility 0s linear 0.5s;
 }
 
 .deliberation-stack .deliberation-quote.is-active {
   opacity: 1;
   visibility: visible;
-  transition: opacity .5s ease;
+  transition: opacity 0.5s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
-
-.deliberation-stack .deliberation-quote,
+  .deliberation-stack .deliberation-quote,
   .deliberation-stack .deliberation-quote.is-active {
     transition: none;
   }

@@ -7,8 +7,14 @@ export function safeAdminRedirect(next: string | null | undefined, fallback = '/
   if (!value.startsWith('/admin')) return fallback;
   // Control characters are rejected on purpose.
   // eslint-disable-next-line no-control-regex
-  if (value.startsWith('//') || value.includes('\\') || /[\u0000-\u001f]/.test(value)) return fallback;
-  if (value === '/admin/login' || value.startsWith('/admin/login?') || value.startsWith('/admin/login/')) return fallback;
+  if (value.startsWith('//') || value.includes('\\') || /[\u0000-\u001f]/.test(value))
+    return fallback;
+  if (
+    value === '/admin/login' ||
+    value.startsWith('/admin/login?') ||
+    value.startsWith('/admin/login/')
+  )
+    return fallback;
 
   // `/administrator` and similar must not pass the prefix check.
   const pathEnd = value.search(/[?#]/);

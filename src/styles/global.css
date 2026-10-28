@@ -4,7 +4,7 @@
  * The sign-in page lives under /admin but wears the public layout, so it is
  * scanned here.
  */
-@import "tailwindcss" source(none);
+@import 'tailwindcss' source(none);
 @source "../pages";
 @source not "../pages/admin";
 @source "../pages/admin/login.astro";
@@ -14,8 +14,8 @@
 @source "../lib";
 @source "../stores";
 
-@import "./theme.css";
-@import "./fonts.css";
+@import './theme.css';
+@import './fonts.css';
 
 .tier-header-gradient {
   background-image: linear-gradient(
@@ -39,7 +39,7 @@
   color: var(--color-parchment-fixed);
   font-weight: 700;
   transform: translateY(-200%);
-  transition: transform .15s ease;
+  transition: transform 0.15s ease;
 }
 
 .skip-link:focus-visible {
@@ -92,15 +92,19 @@
 }
 
 .brand-name {
-  font: 700 17px/1.2 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
-  letter-spacing: -.02em;
+  font:
+    700 17px/1.2 'Playfair Display',
+    'Playfair Display Fallback',
+    Georgia,
+    serif;
+  letter-spacing: -0.02em;
 }
 
 .brand-caption {
   color: var(--color-ochre);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: .13em;
+  letter-spacing: 0.13em;
 }
 
 .site-nav {
@@ -126,7 +130,9 @@
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
-  transition: background-color 140ms ease, color 140ms ease;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
 }
 
 .site-nav-link:hover,
@@ -159,17 +165,33 @@
   stroke-linejoin: round;
 }
 
-.icon-sm { font-size: 16px; }
-.icon-md { font-size: 20px; }
-.icon-lg { font-size: 32px; }
-.icon-xl { font-size: 40px; }
+.icon-sm {
+  font-size: 16px;
+}
+.icon-md {
+  font-size: 20px;
+}
+.icon-lg {
+  font-size: 32px;
+}
+.icon-xl {
+  font-size: 40px;
+}
 /* Page and venue banners: 32px, 40px from the sm breakpoint. */
-.icon-hero { font-size: 56px; }
+.icon-hero {
+  font-size: 56px;
+}
 /* A faint oversized mark in the corner of a dark panel. */
-.icon-watermark { font-size: 128px; }
-.icon-banner { font-size: 32px; }
+.icon-watermark {
+  font-size: 128px;
+}
+.icon-banner {
+  font-size: 32px;
+}
 @media (min-width: 640px) {
-  .icon-banner { font-size: 40px; }
+  .icon-banner {
+    font-size: 40px;
+  }
 }
 
 .nav-icon {
@@ -192,7 +214,7 @@
 
 /* The tint stays pale in dark mode, so the lightened green ink washes out on it: use the deep green.
    (Not the tier chips' counts: they have their own translucent pill, on a dark chip.) */
-:root[data-theme="dark"] .nav-count:not(.ledger-tier-count) {
+:root[data-theme='dark'] .nav-count:not(.ledger-tier-count) {
   color: var(--color-success-strong);
   font-weight: 700;
 }
@@ -213,7 +235,12 @@
   color: var(--color-deep-ink);
   cursor: pointer;
   list-style: none;
-  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, box-shadow 140ms ease, transform 100ms ease;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 100ms ease;
 }
 
 .mobile-menu-trigger::-webkit-details-marker {
@@ -226,7 +253,7 @@
 }
 
 .mobile-menu-trigger:active {
-  transform: scale(.95);
+  transform: scale(0.95);
 }
 
 /* Focus sits inside the button as well as around it, so it reads on the pale header. */
@@ -306,10 +333,12 @@
   box-shadow: 0 12px 28px rgb(22 19 15 / 18%);
   /* Closed look; .is-open slides it in. The script keeps [open] until the fade-out ends. */
   opacity: 0;
-  transform: translateY(-8px) scale(.97);
+  transform: translateY(-8px) scale(0.97);
   transform-origin: top right;
   pointer-events: none;
-  transition: opacity 180ms ease, transform 180ms ease;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
 }
 
 .mobile-menu[open] .mobile-menu-panel {
@@ -371,7 +400,11 @@
   align-items: center;
   gap: 9px;
   color: var(--color-on-dark);
-  font: 700 14px/1.4 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font:
+    700 14px/1.4 'Playfair Display',
+    'Playfair Display Fallback',
+    Georgia,
+    serif;
 }
 
 .footer-column-icon {
@@ -383,14 +416,18 @@
   color: var(--color-peach);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .footer-creed {
   margin: 0;
   color: var(--color-on-dark);
-  font: italic 12px/1.6 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font:
+    italic 12px/1.6 'Playfair Display',
+    'Playfair Display Fallback',
+    Georgia,
+    serif;
 }
 
 .footer-detail {
@@ -524,7 +561,7 @@
   position: absolute;
   inset: 0;
   border-radius: 12px;
-  content: "";
+  content: '';
 }
 
 .bench-pillar:hover .bench-pillar-link {
@@ -582,9 +619,9 @@
   width: 88px;
   height: 88px;
   background: var(--color-hairline);
-  content: "";
-  -webkit-mask: url("/brand/burger-silhouette.svg") center / contain no-repeat;
-  mask: url("/brand/burger-silhouette.svg") center / contain no-repeat;
+  content: '';
+  -webkit-mask: url('/brand/burger-silhouette.svg') center / contain no-repeat;
+  mask: url('/brand/burger-silhouette.svg') center / contain no-repeat;
 }
 
 .bench-thumb .bench-placeholder::after {
@@ -595,7 +632,7 @@
 .bench-pillar-name {
   margin: 0;
   color: var(--bench-primary);
-  font-family: "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font-family: 'Playfair Display', 'Playfair Display Fallback', Georgia, serif;
   font-weight: 700;
   overflow-wrap: anywhere;
 }
@@ -603,7 +640,10 @@
 .bench-last {
   margin: 0;
   color: var(--bench-amber);
-  font: italic 500 13px/1.4 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    italic 500 13px/1.4 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
 }
 
 /* Walk link and inspections pill, on the hero and every pillar */
@@ -661,7 +701,7 @@
   color: var(--color-success-ink);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: .06em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -843,7 +883,6 @@
 }
 
 @media (max-width: 480px) {
-
   .site-footer-inner {
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
@@ -942,8 +981,11 @@
   padding: 1px 6px;
   border: 1px solid;
   border-radius: 4px;
-  font: 700 10px/1.4 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
-  letter-spacing: .06em;
+  font:
+    700 10px/1.4 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -971,8 +1013,11 @@
   padding: 0 8px;
   border: 1px solid;
   border-radius: 4px;
-  font: 700 11px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
-  letter-spacing: .06em;
+  font:
+    700 11px/1 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -991,8 +1036,20 @@
   overflow-x: auto;
   padding-inline: max(24px, calc((100% - 72rem) / 2 + 16px));
   scrollbar-width: none;
-  mask-image: linear-gradient(to right, transparent, var(--color-black) 24px, var(--color-black) calc(100% - 24px), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, var(--color-black) 24px, var(--color-black) calc(100% - 24px), transparent);
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    var(--color-black) 24px,
+    var(--color-black) calc(100% - 24px),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    var(--color-black) 24px,
+    var(--color-black) calc(100% - 24px),
+    transparent
+  );
 }
 
 .tier-nav-scroll::-webkit-scrollbar {
@@ -1016,7 +1073,10 @@
   /* A -fixed colour: the ribbon stays dark in both themes, so the text must stay light.
      (stone-200 is flipped to a dark shade in dark mode, which left it unreadable.) */
   color: var(--color-cream-fixed);
-  font: 400 12px/1.5 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    400 12px/1.5 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
 }
 
 @media (min-width: 640px) {
@@ -1080,9 +1140,14 @@
   border: 1px solid var(--color-action-outline);
   border-radius: 999px;
   color: var(--color-deep-ink);
-  font: 700 14px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 14px/1 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   text-decoration: none;
-  transition: background-color .15s ease, color .15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .dossier-action .icon {

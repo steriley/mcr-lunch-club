@@ -1,5 +1,11 @@
 <template>
-  <section v-if="active" id="venue-results" class="venue-results" :class="`is-${placement}`" aria-labelledby="venue-results-title">
+  <section
+    v-if="active"
+    id="venue-results"
+    class="venue-results"
+    :class="`is-${placement}`"
+    aria-labelledby="venue-results-title"
+  >
     <!-- On a phone the list folds away under the map until asked for. -->
     <h2 v-if="placement === 'inline'" id="venue-results-title" class="venue-results-heading">
       <button
@@ -11,21 +17,44 @@
         @click="open = !open"
       >
         <span>{{ countLabel }} · {{ open ? 'Hide list' : 'Show list' }}</span>
-        <svg class="venue-results-chevron" :class="{ 'is-open': open }" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <path d="m5 8 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <svg
+          class="venue-results-chevron"
+          :class="{ 'is-open': open }"
+          viewBox="0 0 20 20"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="m5 8 5 5 5-5"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
         </svg>
       </button>
     </h2>
 
     <div v-show="placement === 'rail' || open" id="venue-results-body" class="venue-results-body">
       <div class="venue-results-head">
-        <h2 v-if="placement === 'rail'" id="venue-results-title" class="venue-results-title" tabindex="-1" data-results-heading>
+        <h2
+          v-if="placement === 'rail'"
+          id="venue-results-title"
+          class="venue-results-title"
+          tabindex="-1"
+          data-results-heading
+        >
           {{ countLabel }}
         </h2>
         <label class="venue-results-sort">
           <span>Sort by</span>
-          <select :value="sort" @change="setResultsSort(($event.target as HTMLSelectElement).value as ResultsSort)">
-            <option v-for="option in RESULTS_SORTS" :key="option.value" :value="option.value">{{ option.label }}</option>
+          <select
+            :value="sort"
+            @change="setResultsSort(($event.target as HTMLSelectElement).value as ResultsSort)"
+          >
+            <option v-for="option in RESULTS_SORTS" :key="option.value" :value="option.value">
+              {{ option.label }}
+            </option>
           </select>
         </label>
       </div>
@@ -135,6 +164,9 @@ watch(selection, async (current) => {
   if (!container || !row || container.offsetParent === null) return;
   // The list is positioned (see .venue-results-rows), so a row's offsetTop is its place inside it.
   const top = row.offsetTop;
-  container.scrollTo({ top: Math.max(top - container.clientHeight / 3, 0), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  container.scrollTo({
+    top: Math.max(top - container.clientHeight / 3, 0),
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+  });
 });
 </script>

@@ -5,7 +5,8 @@ import { currentTheme, isThemePreference, resolveTheme, themePreference } from '
 describe('theme', () => {
   it('accepts light, dark and system as preferences', () => {
     for (const value of ['light', 'dark', 'system']) assert.ok(isThemePreference(value), value);
-    for (const value of ['auto', '', null, undefined]) assert.ok(!isThemePreference(value), String(value));
+    for (const value of ['auto', '', null, undefined])
+      assert.ok(!isThemePreference(value), String(value));
   });
 
   it('follows the system only when the preference is system', () => {

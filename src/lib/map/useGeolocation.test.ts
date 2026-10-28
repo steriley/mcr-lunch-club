@@ -6,7 +6,13 @@ const globals = globalThis as any;
 const originalNavigator = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
 
 type Success = (pos: { coords: { latitude: number; longitude: number; accuracy: number } }) => void;
-type Failure = (err: { code: number; message: string; PERMISSION_DENIED: 1; POSITION_UNAVAILABLE: 2; TIMEOUT: 3 }) => void;
+type Failure = (err: {
+  code: number;
+  message: string;
+  PERMISSION_DENIED: 1;
+  POSITION_UNAVAILABLE: 2;
+  TIMEOUT: 3;
+}) => void;
 
 let success: Success;
 let failure: Failure;
@@ -54,7 +60,11 @@ describe('useGeolocation', () => {
     const geo = useGeolocation();
     geo.start();
     assert.equal(geo.state.value, 'requesting');
-    assert.deepEqual(watchOptions, { enableHighAccuracy: true, timeout: GEOLOCATION_TIMEOUT_MS, maximumAge: 0 });
+    assert.deepEqual(watchOptions, {
+      enableHighAccuracy: true,
+      timeout: GEOLOCATION_TIMEOUT_MS,
+      maximumAge: 0,
+    });
 
     success({ coords: { latitude: 53.48, longitude: -2.25, accuracy: 20 } });
     assert.equal(geo.state.value, 'active');

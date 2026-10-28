@@ -21,9 +21,13 @@ if (!process.env.TEST_DATABASE_URL) {
   process.exit(1);
 }
 
-const result = spawnSync('tsx', ['--test', '--test-concurrency=1', 'src/test/integration/*.test.ts'], {
-  stdio: 'inherit',
-  env: { ...process.env, DB_INTEGRATION: '1' },
-  shell: process.platform === 'win32',
-});
+const result = spawnSync(
+  'tsx',
+  ['--test', '--test-concurrency=1', 'src/test/integration/*.test.ts'],
+  {
+    stdio: 'inherit',
+    env: { ...process.env, DB_INTEGRATION: '1' },
+    shell: process.platform === 'win32',
+  }
+);
 process.exit(result.status ?? 1);

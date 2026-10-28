@@ -16,8 +16,14 @@ import {
 const LEGACY: Record<CuisineValue, string[]> = {
   pizza: ['Detroit Pan Pizza', 'NYC Style Pizza', 'Neapolitan Pizza', 'Pizza', 'Pizza & Slices'],
   fast_food: [
-    'Burgers', 'Burgers & Loaded Fries', 'Smash Burgers', 'Fried Chicken', 'Louisiana Fried Chicken',
-    'Nashville Hot Chicken', 'Wings', 'Wings & Dive Bar',
+    'Burgers',
+    'Burgers & Loaded Fries',
+    'Smash Burgers',
+    'Fried Chicken',
+    'Louisiana Fried Chicken',
+    'Nashville Hot Chicken',
+    'Wings',
+    'Wings & Dive Bar',
   ],
   fish_and_chips: ['Fish & Chips', 'Traditional Chippy'],
   sandwiches_subs: ['Deli & Sandwiches', 'Gourmet Subs', 'Italian-American Subs', 'Grilled Cheese'],
@@ -33,8 +39,17 @@ const LEGACY: Record<CuisineValue, string[]> = {
 describe('CUISINES', () => {
   it('has the eleven categories with Other last', () => {
     assert.deepEqual(CUISINE_VALUES, [
-      'asian', 'bakery_cafe', 'fast_food', 'fish_and_chips', 'indian', 'mexican',
-      'middle_eastern_mediterranean', 'pizza', 'sandwiches_subs', 'steak_grill', 'other',
+      'asian',
+      'bakery_cafe',
+      'fast_food',
+      'fish_and_chips',
+      'indian',
+      'mexican',
+      'middle_eastern_mediterranean',
+      'pizza',
+      'sandwiches_subs',
+      'steak_grill',
+      'other',
     ]);
     assert.equal(CUISINES.at(-1)?.label, 'Other');
   });
@@ -62,7 +77,9 @@ describe('parseCuisine', () => {
 });
 
 describe('mapLegacyCuisine', () => {
-  const all = Object.entries(LEGACY).flatMap(([category, values]) => values.map((value) => [value, category] as const));
+  const all = Object.entries(LEGACY).flatMap(([category, values]) =>
+    values.map((value) => [value, category] as const)
+  );
 
   it('covers all 35 legacy values', () => {
     assert.equal(all.length, 35);
@@ -97,7 +114,10 @@ describe('migration 0005', () => {
   it('uses the same legacy mapping as mapLegacyCuisine', () => {
     const sql = readFileSync('drizzle/0005_fixed_cuisines.sql', 'utf8');
     const rows = new Map(
-      [...sql.matchAll(/^\s+\('((?:[^']|'')+)', '([a-z_]+)'\)/gm)].map((match) => [match[1].replace(/''/g, "'"), match[2]])
+      [...sql.matchAll(/^\s+\('((?:[^']|'')+)', '([a-z_]+)'\)/gm)].map((match) => [
+        match[1].replace(/''/g, "'"),
+        match[2],
+      ])
     );
     for (const [raw, value] of Object.entries(LEGACY_CUISINE_MAP)) {
       assert.equal(rows.get(raw), value, raw);

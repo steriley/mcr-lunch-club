@@ -5,12 +5,16 @@ export const prerender = false;
 
 export const POST = adminRoute(
   {
-    action: 'Unban user', publishes: false,
+    action: 'Unban user',
+    publishes: false,
     params: { id: { schema: userIdParam, notFound: 'User not found.' } },
     onError: (error) => authApiError('Unban user', error),
   },
   async ({ request, params }) => {
-    const result = await auth.api.unbanUser({ headers: request.headers, body: { userId: params.id } });
+    const result = await auth.api.unbanUser({
+      headers: request.headers,
+      body: { userId: params.id },
+    });
     return jsonResponse(result);
   }
 );

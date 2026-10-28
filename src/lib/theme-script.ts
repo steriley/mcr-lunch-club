@@ -42,4 +42,5 @@ export const THEME_SCRIPT = `(() => {
   window.__mcrApplyTheme = apply;
 })();`;
 
-export const THEME_SCRIPT_HASH = `sha256-${createHash('sha256').update(THEME_SCRIPT).digest('base64')}` as const;
+export const THEME_SCRIPT_HASH =
+  `sha256-${createHash('sha256').update(THEME_SCRIPT).digest('base64')}` as const;

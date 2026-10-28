@@ -35,7 +35,9 @@ function findViolations(source: string, file: string): string[] {
   const lines = source.split('\n');
   return lines.flatMap((line, index) => {
     if (ALLOW.test(line) || (index > 0 && ALLOW.test(lines[index - 1]))) return [];
-    return FORBIDDEN.filter(([pattern]) => pattern.test(line)).map(([, name]) => `${file}:${index + 1} uses ${name}`);
+    return FORBIDDEN.filter(([pattern]) => pattern.test(line)).map(
+      ([, name]) => `${file}:${index + 1} uses ${name}`
+    );
   });
 }
 
@@ -44,7 +46,9 @@ describe('dates guard', () => {
     const violations = files(ROOT)
       .map((file) => path.relative(ROOT, file).split(path.sep).join('/'))
       .filter((file) => !EXEMPT.has(file))
-      .flatMap((file) => findViolations(readFileSync(path.join(ROOT, file), 'utf8'), `src/${file}`));
+      .flatMap((file) =>
+        findViolations(readFileSync(path.join(ROOT, file), 'utf8'), `src/${file}`)
+      );
     assert.deepEqual(
       violations,
       [],
@@ -53,15 +57,27 @@ describe('dates guard', () => {
   });
 
   it('catches a deliberately added toLocaleDateString', () => {
-    assert.deepEqual(findViolations("const a = 1;\nconst when = date.toLocaleDateString('en-GB');", 'src/x.ts'), [
-      'src/x.ts:2 uses toLocaleDateString',
+    assert.deepEqual(
+      findViolations("const a = 1;\nconst when = date.toLocaleDateString('en-GB');", 'src/x.ts'),
+      ['src/x.ts:2 uses toLocaleDateString']
+    );
+    assert.deepEqual(findViolations("{ dateStyle: 'medium' }", 'src/x.vue'), [
+      'src/x.vue:1 uses dateStyle',
     ]);
-    assert.deepEqual(findViolations("{ dateStyle: 'medium' }", 'src/x.vue'), ['src/x.vue:1 uses dateStyle']);
   });
 
   it('accepts an allow comment with a reason on the same or the preceding line', () => {
-    assert.deepEqual(findViolations('n.toLocaleString(); // dates-guard:allow number formatting', 'src/x.ts'), []);
-    assert.deepEqual(findViolations('// dates-guard:allow machine-readable day\nnew Intl.DateTimeFormat()', 'src/x.ts'), []);
+    assert.deepEqual(
+      findViolations('n.toLocaleString(); // dates-guard:allow number formatting', 'src/x.ts'),
+      []
+    );
+    assert.deepEqual(
+      findViolations(
+        '// dates-guard:allow machine-readable day\nnew Intl.DateTimeFormat()',
+        'src/x.ts'
+      ),
+      []
+    );
   });
 
   it('rejects an allow comment without a reason', () => {

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import type { WeatherSummary } from '@/lib/weather';
 
-const fixture = (name: string): unknown => JSON.parse(readFileSync(new URL(`../lib/fixtures/${name}`, import.meta.url), 'utf8'));
+const fixture = (name: string): unknown =>
+  JSON.parse(readFileSync(new URL(`../lib/fixtures/${name}`, import.meta.url), 'utf8'));
 const hourlyForecast = fixture('metoffice-hourly.json');
 const dailyForecast = fixture('metoffice-daily.json');
 
@@ -22,12 +23,16 @@ let clock: number;
 // Each test imports its own copy of the route, so the module-level forecast cache never carries over.
 let copies = 0;
 const call = async () => {
-  const { GET } = (await import(`@/pages/api/weather?copy=${copies}`)) as typeof import('@/pages/api/weather');
+  const { GET } = (await import(
+    `@/pages/api/weather?copy=${copies}`
+  )) as typeof import('@/pages/api/weather');
   return GET({} as any) as Promise<Response>;
 };
 const ok = (body: unknown) => () => Promise.resolve(Response.json(body));
 const failing = (status: number) => () => Promise.resolve(new Response('no', { status }));
-const freshRoute = () => { copies += 1; };
+const freshRoute = () => {
+  copies += 1;
+};
 const healthy = () => ({ hourly: ok(hourlyForecast), daily: ok(dailyForecast) });
 
 beforeEach(() => {
@@ -188,7 +193,10 @@ describe('GET /api/weather', () => {
     await call();
 
     clock = START + 61 * 60 * 1000;
-    upstream = { hourly: ok({ features: [{ properties: { timeSeries: [] } }] }), daily: ok(dailyForecast) };
+    upstream = {
+      hourly: ok({ features: [{ properties: { timeSeries: [] } }] }),
+      daily: ok(dailyForecast),
+    };
     assert.equal((await call()).headers.get('X-Weather-Cache'), 'stale');
 
     // The Met Office recovers: the next request refreshes both steps.

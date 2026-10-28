@@ -59,7 +59,10 @@ export interface OrsOptions {
 }
 
 /** Stored route values: miles to two decimal places, whole minutes at MINUTES_PER_MILE, not ORS's faster duration (at least one). */
-export function routeToVenueValues(route: WalkingRoute): { distanceMiles: number; walkingTimeMin: number } {
+export function routeToVenueValues(route: WalkingRoute): {
+  distanceMiles: number;
+  walkingTimeMin: number;
+} {
   const miles = route.distanceMetres / METRES_PER_MILE;
   return {
     distanceMiles: Math.round(miles * 100) / 100,
@@ -69,7 +72,11 @@ export function routeToVenueValues(route: WalkingRoute): { distanceMiles: number
 
 async function orsRequest(path: string, init: RequestInit, options: OrsOptions): Promise<unknown> {
   const apiKey = options.apiKey ?? getOrsApiKey();
-  if (!apiKey) throw new OrsError('not_configured', 'Location lookup is not configured (ORS_API_KEY is missing).');
+  if (!apiKey)
+    throw new OrsError(
+      'not_configured',
+      'Location lookup is not configured (ORS_API_KEY is missing).'
+    );
 
   const doFetch = options.fetch ?? fetch;
   let response: Response;
@@ -80,8 +87,14 @@ async function orsRequest(path: string, init: RequestInit, options: OrsOptions):
       signal: AbortSignal.timeout(options.timeoutMs ?? ORS_TIMEOUT_MS),
     });
   } catch (error) {
-    const timedOut = error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
-    throw new OrsError('unavailable', timedOut ? 'OpenRouteService did not respond in time.' : 'OpenRouteService could not be reached.');
+    const timedOut =
+      error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError');
+    throw new OrsError(
+      'unavailable',
+      timedOut
+        ? 'OpenRouteService did not respond in time.'
+        : 'OpenRouteService could not be reached.'
+    );
   }
 
   if (response.status === 429) {
@@ -122,7 +135,10 @@ function addressFrom(properties: NonNullable<PeliasFeature['properties']>): stri
 }
 
 /** Up to five places matching `query`, biased to Greater Manchester. */
-export async function searchPlaces(query: string, options: OrsOptions = {}): Promise<PlaceCandidate[]> {
+export async function searchPlaces(
+  query: string,
+  options: OrsOptions = {}
+): Promise<PlaceCandidate[]> {
   const params = new URLSearchParams({
     text: query,
     'focus.point.lon': String(BASE_COORDINATES.lng),
@@ -142,31 +158,49 @@ export async function searchPlaces(query: string, options: OrsOptions = {}): Pro
     throw error;
   }
 
-  const features = ((body as { features?: PeliasFeature[] })?.features ?? []).slice(0, MAX_PLACE_RESULTS);
+  const features = ((body as { features?: PeliasFeature[] })?.features ?? []).slice(
+    0,
+    MAX_PLACE_RESULTS
+  );
   const candidates: PlaceCandidate[] = [];
   for (const feature of features) {
     const [lng, lat] = feature.geometry?.coordinates ?? [];
     const properties = feature.properties ?? {};
     if (typeof lat !== 'number' || typeof lng !== 'number') continue;
-    candidates.push({ label: properties.label ?? properties.name ?? addressFrom(properties), address: addressFrom(properties), lat, lng });
+    candidates.push({
+      label: properties.label ?? properties.name ?? addressFrom(properties),
+      address: addressFrom(properties),
+      lat,
+      lng,
+    });
   }
   return candidates;
 }
 
 /** Foot-walking route between two points. */
-export async function walkingRoute(from: LatLng, to: LatLng, options: OrsOptions = {}): Promise<WalkingRoute> {
+export async function walkingRoute(
+  from: LatLng,
+  to: LatLng,
+  options: OrsOptions = {}
+): Promise<WalkingRoute> {
   const body = await orsRequest(
     '/v2/directions/foot-walking',
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       // ORS takes [lon, lat] pairs.
-      body: JSON.stringify({ coordinates: [[from.lng, from.lat], [to.lng, to.lat]] }),
+      body: JSON.stringify({
+        coordinates: [
+          [from.lng, from.lat],
+          [to.lng, to.lat],
+        ],
+      }),
     },
     options
   );
 
-  const summary = (body as { routes?: { summary?: { distance?: number; duration?: number } }[] })?.routes?.[0]?.summary;
+  const summary = (body as { routes?: { summary?: { distance?: number; duration?: number } }[] })
+    ?.routes?.[0]?.summary;
   if (!summary) throw new OrsError('no_result', 'OpenRouteService found no walking route.');
   // A zero-length route (venue at HQ) comes back without distance/duration.
   return { distanceMetres: summary.distance ?? 0, durationSeconds: summary.duration ?? 0 };
@@ -180,9 +214,13 @@ export const MATRIX_BATCH_SIZE = 25;
  * the backfill). Entries are null where ORS found no route. Matrix has its
  * own, lower daily quota than Directions.
  */
-export async function walkingMatrixFromBase(destinations: LatLng[], options: OrsOptions = {}): Promise<(WalkingRoute | null)[]> {
+export async function walkingMatrixFromBase(
+  destinations: LatLng[],
+  options: OrsOptions = {}
+): Promise<(WalkingRoute | null)[]> {
   if (!destinations.length) return [];
-  if (destinations.length > MATRIX_BATCH_SIZE) throw new Error(`At most ${MATRIX_BATCH_SIZE} destinations per Matrix request.`);
+  if (destinations.length > MATRIX_BATCH_SIZE)
+    throw new Error(`At most ${MATRIX_BATCH_SIZE} destinations per Matrix request.`);
 
   const body = await orsRequest(
     '/v2/matrix/foot-walking',
@@ -190,7 +228,10 @@ export async function walkingMatrixFromBase(destinations: LatLng[], options: Ors
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        locations: [[BASE_COORDINATES.lng, BASE_COORDINATES.lat], ...destinations.map((point) => [point.lng, point.lat])],
+        locations: [
+          [BASE_COORDINATES.lng, BASE_COORDINATES.lat],
+          ...destinations.map((point) => [point.lng, point.lat]),
+        ],
         sources: [0],
         destinations: destinations.map((_, index) => index + 1),
         metrics: ['distance', 'duration'],
@@ -200,11 +241,16 @@ export async function walkingMatrixFromBase(destinations: LatLng[], options: Ors
     options
   );
 
-  const { distances, durations } = (body ?? {}) as { distances?: (number | null)[][]; durations?: (number | null)[][] };
+  const { distances, durations } = (body ?? {}) as {
+    distances?: (number | null)[][];
+    durations?: (number | null)[][];
+  };
   return destinations.map((_, index) => {
     const distance = distances?.[0]?.[index];
     const duration = durations?.[0]?.[index];
-    return typeof distance === 'number' && typeof duration === 'number' ? { distanceMetres: distance, durationSeconds: duration } : null;
+    return typeof distance === 'number' && typeof duration === 'number'
+      ? { distanceMetres: distance, durationSeconds: duration }
+      : null;
   });
 }
 

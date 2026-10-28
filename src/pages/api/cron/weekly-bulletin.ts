@@ -5,7 +5,10 @@ import { requestRebuild } from '@/lib/rebuild';
 export const prerender = false;
 
 function json(body: Record<string, unknown>, status: number): Response {
-  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+  });
 }
 
 /**
@@ -22,5 +25,7 @@ export const GET: APIRoute = async ({ request }) => {
     return json({ error: 'Unauthorized' }, 401);
   }
   const requested = await requestRebuild('Weekly bulletin');
-  return requested ? json({ rebuild: 'requested' }, 202) : json({ error: 'Rebuild could not be requested.' }, 502);
+  return requested
+    ? json({ rebuild: 'requested' }, 202)
+    : json({ error: 'Rebuild could not be requested.' }, 502);
 };

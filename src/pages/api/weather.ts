@@ -90,7 +90,9 @@ export const GET: APIRoute = async () => {
   if (!hourly.ok) return unavailable(hourly.status);
   if (!daily.ok) return unavailable(daily.status);
 
-  const staleStatuses = [hourly, daily].flatMap((result) => result.cache === 'stale' ? [result.upstreamStatus] : []);
+  const staleStatuses = [hourly, daily].flatMap((result) =>
+    result.cache === 'stale' ? [result.upstreamStatus] : []
+  );
   const stale = staleStatuses.length > 0;
 
   // Both steps were validated before they were cached, so this does not throw on upstream data.
@@ -106,7 +108,7 @@ export const GET: APIRoute = async () => {
         // Stale data must not be cached at the CDN, or it would outlive the outage.
         'Cache-Control': 'no-store',
         'X-Weather-Cache': 'stale',
-        'Warning': `110 - "Serving stale weather after upstream status ${status}"`,
+        Warning: `110 - "Serving stale weather after upstream status ${status}"`,
       },
     });
   }

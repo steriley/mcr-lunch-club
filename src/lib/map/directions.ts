@@ -6,11 +6,14 @@
  *
  * Detection uses userAgent only (navigator.platform is deprecated).
  */
-export function getWalkingDirectionsUrl(lat: number, lng: number, platformOverride?: string): string {
+export function getWalkingDirectionsUrl(
+  lat: number,
+  lng: number,
+  platformOverride?: string
+): string {
   const isApple = platformOverride
     ? /Mac|iPhone|iPod|iPad/.test(platformOverride)
-    : typeof navigator !== 'undefined' &&
-      /Macintosh|iPhone|iPad/.test(navigator.userAgent || '');
+    : typeof navigator !== 'undefined' && /Macintosh|iPhone|iPad/.test(navigator.userAgent || '');
 
   if (isApple) {
     return `https://maps.apple.com/?daddr=${lat},${lng}&dirflg=w`;

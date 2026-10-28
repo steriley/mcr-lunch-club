@@ -16,7 +16,17 @@
       :style="!selected ? { backgroundColor: color } : { color }"
       aria-hidden="true"
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path :d="glyph" /></svg>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        focusable="false"
+      >
+        <path :d="glyph" />
+      </svg>
     </span>
     <span
       v-else
@@ -62,11 +72,17 @@ defineProps<{
   border-radius: 999px;
   background: var(--color-paper);
   color: var(--color-ink);
-  font: 600 12px/1.2 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    600 12px/1.2 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease;
 }
 
 .ledger-tier-chip.is-disabled {
@@ -144,7 +160,10 @@ defineProps<{
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-ink) 7%, transparent);
   color: color-mix(in srgb, var(--color-ink) 70%, transparent);
-  font: 700 11px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 11px/1 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   font-variant-numeric: tabular-nums;
 }
 
@@ -173,7 +192,7 @@ defineProps<{
   }
 
   .ledger-tier-chip::before {
-    content: "";
+    content: '';
     position: absolute;
     left: 0;
     top: -7px;

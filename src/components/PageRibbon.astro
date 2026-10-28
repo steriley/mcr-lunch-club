@@ -19,9 +19,20 @@ interface Props {
   width?: string;
 }
 
-const { icon, kicker, title, quote, description, bannerClass = 'bg-deep', width = 'max-w-6xl' } = Astro.props;
-const quoteLines = (quote === undefined ? [] : Array.isArray(quote) ? quote : [quote]).map((line) =>
-  typeof line === 'string' ? { text: line, accent: false } : { text: line.text, accent: line.accent ?? false }
+const {
+  icon,
+  kicker,
+  title,
+  quote,
+  description,
+  bannerClass = 'bg-deep',
+  width = 'max-w-6xl',
+} = Astro.props;
+const quoteLines = (quote === undefined ? [] : Array.isArray(quote) ? quote : [quote]).map(
+  (line) =>
+    typeof line === 'string'
+      ? { text: line, accent: false }
+      : { text: line.text, accent: line.accent ?? false }
 );
 /** Longer quotes would run past two lines in the display serif, so they are set in the body face. */
 const SERIF_QUOTE_MAX = 90;
@@ -35,7 +46,9 @@ const onTier = bannerClass !== 'bg-deep';
       <div class="flex items-center gap-3">
         <Icon name={icon} class="icon-banner" />
         <div>
-          <span class={`text-xs uppercase tracking-widest font-bold ${onTier ? 'text-parchment-fixed' : 'text-gold'}`}>
+          <span
+            class={`text-xs uppercase tracking-widest font-bold ${onTier ? 'text-parchment-fixed' : 'text-gold'}`}
+          >
             {kicker}
           </span>
           <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-white">{title}</h1>
@@ -44,7 +57,16 @@ const onTier = bannerClass !== 'bg-deep';
 
       {quoteLines.length > 0 && (
         <div class="space-y-2 pt-1 max-w-3xl text-base sm:text-lg italic leading-snug">
-          {quoteLines.map((line) => <p class:list={[line.accent && 'text-gold', line.text.length <= SERIF_QUOTE_MAX && 'font-serif-header']}>“{line.text}”</p>)}
+          {quoteLines.map((line) => (
+            <p
+              class:list={[
+                line.accent && 'text-gold',
+                line.text.length <= SERIF_QUOTE_MAX && 'font-serif-header',
+              ]}
+            >
+              “{line.text}”
+            </p>
+          ))}
         </div>
       )}
 

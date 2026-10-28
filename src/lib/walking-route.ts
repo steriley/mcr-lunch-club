@@ -1,4 +1,10 @@
-import { OrsError, routeToVenueValues, walkingRouteFromBase, type LatLng, type WalkingRoute } from '@/lib/ors';
+import {
+  OrsError,
+  routeToVenueValues,
+  walkingRouteFromBase,
+  type LatLng,
+  type WalkingRoute,
+} from '@/lib/ors';
 
 /**
  * Distance and walking time from HQ for a venue being saved. They are only
@@ -41,17 +47,27 @@ export function sameCoordinates(
   input: { latitude: number | null; longitude: number | null },
   stored: { latitude: string | null; longitude: string | null }
 ): boolean {
-  if (input.latitude === null || input.longitude === null) return stored.latitude === null && stored.longitude === null;
+  if (input.latitude === null || input.longitude === null)
+    return stored.latitude === null && stored.longitude === null;
   if (stored.latitude === null || stored.longitude === null) return false;
-  return storedCoordinate(input.latitude) === Number(stored.latitude).toFixed(6) && storedCoordinate(input.longitude) === Number(stored.longitude).toFixed(6);
+  return (
+    storedCoordinate(input.latitude) === Number(stored.latitude).toFixed(6) &&
+    storedCoordinate(input.longitude) === Number(stored.longitude).toFixed(6)
+  );
 }
 
 /** Calls ORS for the route to `to`, turning any failure into a pending route. */
-export async function computeRoute(to: LatLng, lookup: RouteLookup = walkingRouteFromBase): Promise<ResolvedRoute> {
+export async function computeRoute(
+  to: LatLng,
+  lookup: RouteLookup = walkingRouteFromBase
+): Promise<ResolvedRoute> {
   try {
     return { ...routeToVenueValues(await lookup(to)), routeUpdatedAt: new Date(), error: null };
   } catch (error) {
-    const orsError = error instanceof OrsError ? error : new OrsError('unavailable', 'Walking route lookup failed.');
+    const orsError =
+      error instanceof OrsError
+        ? error
+        : new OrsError('unavailable', 'Walking route lookup failed.');
     return { ...NO_ROUTE, error: orsError };
   }
 }
@@ -69,8 +85,17 @@ export async function resolveRoute(
 ): Promise<ResolvedRoute> {
   if (input.latitude === null || input.longitude === null) return { ...NO_ROUTE, error: null };
 
-  if (existing && sameCoordinates(input, existing) && existing.distanceMiles !== null && existing.walkingTimeMin !== null) {
-    const kept: ResolvedRoute = { distanceMiles: Number(existing.distanceMiles), walkingTimeMin: existing.walkingTimeMin, error: null };
+  if (
+    existing &&
+    sameCoordinates(input, existing) &&
+    existing.distanceMiles !== null &&
+    existing.walkingTimeMin !== null
+  ) {
+    const kept: ResolvedRoute = {
+      distanceMiles: Number(existing.distanceMiles),
+      walkingTimeMin: existing.walkingTimeMin,
+      error: null,
+    };
     if (existing.routeUpdatedAt !== null) return kept;
     const upgraded = await computeRoute({ lat: input.latitude, lng: input.longitude }, lookup);
     return upgraded.error ? { ...kept, error: upgraded.error } : upgraded;
@@ -83,7 +108,10 @@ export async function resolveRoute(
  * went wrong. `save` words it as the outcome of a save; `reroute` as the
  * outcome of a retry, which saves nothing.
  */
-export function routeWarning(route: ResolvedRoute, context: 'save' | 'reroute' = 'save'): string | null {
+export function routeWarning(
+  route: ResolvedRoute,
+  context: 'save' | 'reroute' = 'save'
+): string | null {
   if (!route.error) return null;
   const reason =
     route.error.kind === 'rate_limited'
@@ -93,7 +121,9 @@ export function routeWarning(route: ResolvedRoute, context: 'save' | 'reroute' =
         : route.error.kind === 'no_result'
           ? 'no walking route was found'
           : 'the route service is unavailable';
-  if (context === 'reroute') return `The walking route is pending because ${reason}. Use Retry later.`;
-  if (route.distanceMiles !== null) return `Saved. The walk is still a straight-line estimate because ${reason}. Use Re-route later.`;
+  if (context === 'reroute')
+    return `The walking route is pending because ${reason}. Use Retry later.`;
+  if (route.distanceMiles !== null)
+    return `Saved. The walk is still a straight-line estimate because ${reason}. Use Re-route later.`;
   return `Saved, but the walking route is pending because ${reason}. Use Retry later.`;
 }

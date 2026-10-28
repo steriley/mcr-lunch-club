@@ -49,7 +49,17 @@ describe('seedLedgerVenues', () => {
 });
 
 describe('seedLedgerInspections', () => {
-  const log: Inspection[] = [{ id: 'i1', venueSlug: 'chip-shop', venueName: 'Chip Shop', date: '2026-10-01', kind: 'verified', outcome: 'satisfactory', chairs: ['Sam', 'Alex'] }];
+  const log: Inspection[] = [
+    {
+      id: 'i1',
+      venueSlug: 'chip-shop',
+      venueName: 'Chip Shop',
+      date: '2026-10-01',
+      kind: 'verified',
+      outcome: 'satisfactory',
+      chairs: ['Sam', 'Alex'],
+    },
+  ];
 
   it('publishes the inspections on the server', () => {
     seedLedgerInspections(log);

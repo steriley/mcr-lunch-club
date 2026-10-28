@@ -1,6 +1,13 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { collapsedSnap, cycledSnap, expandedSnap, sheetHeightCss, sheetHeightPx, snapAfterSwipe } from './sheet';
+import {
+  collapsedSnap,
+  cycledSnap,
+  expandedSnap,
+  sheetHeightCss,
+  sheetHeightPx,
+  snapAfterSwipe,
+} from './sheet';
 
 describe('Near Me bottom sheet', () => {
   it('steps up and down, stopping at either end', () => {

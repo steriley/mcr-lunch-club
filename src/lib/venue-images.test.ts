@@ -25,7 +25,11 @@ describe('readWebpInfo', () => {
     assert.equal(readWebpInfo(new Uint8Array()), null);
     assert.equal(readWebpInfo(VP8.subarray(0, 12)), null);
     for (const file of [VP8, VP8L, VP8X]) {
-      assert.equal(readWebpInfo(file.subarray(0, file.length - 1)), null, 'one byte short of the RIFF size');
+      assert.equal(
+        readWebpInfo(file.subarray(0, file.length - 1)),
+        null,
+        'one byte short of the RIFF size'
+      );
       assert.equal(readWebpInfo(file.subarray(0, 24)), null, 'cut inside the first chunk');
     }
   });
@@ -68,8 +72,14 @@ describe('readWebpInfo', () => {
 
 describe('isOwnedBlobUrl', () => {
   it('accepts our public Vercel Blob URLs', () => {
-    assert.equal(isOwnedBlobUrl('https://abc123.public.blob.vercel-storage.com/dev/venues/v/i-full.webp'), true);
-    assert.equal(isOwnedBlobUrl('https://ABC123.Public.Blob.Vercel-Storage.com/venues/old.jpg'), true);
+    assert.equal(
+      isOwnedBlobUrl('https://abc123.public.blob.vercel-storage.com/dev/venues/v/i-full.webp'),
+      true
+    );
+    assert.equal(
+      isOwnedBlobUrl('https://ABC123.Public.Blob.Vercel-Storage.com/venues/old.jpg'),
+      true
+    );
   });
 
   it('rejects external links and look-alike hosts', () => {
@@ -96,7 +106,10 @@ describe('isOwnedBlobUrl', () => {
 
 describe('normaliseCaption', () => {
   it('trims, and stores a blank caption as null', () => {
-    assert.deepEqual(normaliseCaption('  Pizza, top down  '), { ok: true, value: 'Pizza, top down' });
+    assert.deepEqual(normaliseCaption('  Pizza, top down  '), {
+      ok: true,
+      value: 'Pizza, top down',
+    });
     assert.deepEqual(normaliseCaption('   '), { ok: true, value: null });
     assert.deepEqual(normaliseCaption(null), { ok: true, value: null });
     assert.deepEqual(normaliseCaption(undefined), { ok: true, value: null });

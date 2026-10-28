@@ -10,7 +10,17 @@ export async function getStaticPaths() {
   const venues = await getPublicVenueDetails();
   return venues
     .filter((venue) => !venue.image)
-    .map((venue) => ({ params: { slug: venue.slug }, props: { venue: { name: venue.name, tier: venue.tier, cost: venue.cost, walkingTimeMin: venue.walkingTimeMin } } }));
+    .map((venue) => ({
+      params: { slug: venue.slug },
+      props: {
+        venue: {
+          name: venue.name,
+          tier: venue.tier,
+          cost: venue.cost,
+          walkingTimeMin: venue.walkingTimeMin,
+        },
+      },
+    }));
 }
 
 export const GET: APIRoute = async ({ props }) => {

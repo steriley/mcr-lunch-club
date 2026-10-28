@@ -44,7 +44,10 @@ async function performDelete() {
   if (!record) return;
 
   busy.value[record.id] = true;
-  const result = await apiFetch(`/api/admin/bribery/${record.id}`, { method: 'DELETE', fallback: 'Could not delete the record.' });
+  const result = await apiFetch(`/api/admin/bribery/${record.id}`, {
+    method: 'DELETE',
+    fallback: 'Could not delete the record.',
+  });
   busy.value[record.id] = false;
   if (!result.ok) {
     errorMessage.value = result.error;
@@ -63,8 +66,20 @@ onMounted(() => {
 
 <template>
   <div class="space-y-4">
-    <p v-if="message" role="status" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{{ message }}</p>
-    <p v-if="errorMessage" role="alert" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
+    <p
+      v-if="message"
+      role="status"
+      class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+    >
+      {{ message }}
+    </p>
+    <p
+      v-if="errorMessage"
+      role="alert"
+      class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+    >
+      {{ errorMessage }}
+    </p>
 
     <div class="overflow-hidden rounded-2xl border border-hairline bg-parchment shadow-sm">
       <div class="overflow-x-auto">
@@ -79,26 +94,55 @@ onMounted(() => {
           </thead>
           <tbody class="divide-y divide-sand">
             <tr v-if="!rows.length">
-              <td colspan="4" class="px-4 py-10 text-center text-soot">No records yet. The Chairs remain incorruptible.</td>
+              <td colspan="4" class="px-4 py-10 text-center text-soot">
+                No records yet. The Chairs remain incorruptible.
+              </td>
             </tr>
             <tr v-for="record in rows" :key="record.id">
               <td class="max-w-md px-4 py-3">
-                <a :href="`/admin/bribery/${record.id}`" class="font-semibold text-ink hover:underline">{{ record.title || 'Untitled incident' }}</a>
-                <div class="truncate text-xs text-graphite">{{ record.venueNameText || record.description }}</div>
+                <a
+                  :href="`/admin/bribery/${record.id}`"
+                  class="font-semibold text-ink hover:underline"
+                  >{{ record.title || 'Untitled incident' }}</a
+                >
+                <div class="truncate text-xs text-graphite">
+                  {{ record.venueNameText || record.description }}
+                </div>
               </td>
               <td class="whitespace-nowrap px-4 py-3">{{ formatDate(record.incidentDate) }}</td>
               <td class="px-4 py-3">
-                <span :class="['inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]', record.published ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-200 text-stone-700']">
+                <span
+                  :class="[
+                    'inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]',
+                    record.published
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-stone-200 text-stone-700',
+                  ]"
+                >
                   {{ record.published ? 'Published' : 'Hidden' }}
                 </span>
               </td>
               <td class="px-4 py-3">
                 <div class="flex justify-end gap-2">
-                  <a :href="`/admin/bribery/${record.id}`" class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen">Edit</a>
-                  <button type="button" class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[record.id]" @click="togglePublished(record)">
+                  <a
+                    :href="`/admin/bribery/${record.id}`"
+                    class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen"
+                    >Edit</a
+                  >
+                  <button
+                    type="button"
+                    class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60"
+                    :disabled="busy[record.id]"
+                    @click="togglePublished(record)"
+                  >
                     {{ record.published ? 'Unpublish' : 'Publish' }}
                   </button>
-                  <button type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60" :disabled="busy[record.id]" @click="pendingDelete = record">
+                  <button
+                    type="button"
+                    class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60"
+                    :disabled="busy[record.id]"
+                    @click="pendingDelete = record"
+                  >
                     Delete
                   </button>
                 </div>

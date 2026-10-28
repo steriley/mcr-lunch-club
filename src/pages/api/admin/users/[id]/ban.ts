@@ -6,7 +6,8 @@ export const prerender = false;
 /** Deactivates a user; Better Auth also revokes their sessions. */
 export const POST = adminRoute(
   {
-    action: 'Ban user', publishes: false,
+    action: 'Ban user',
+    publishes: false,
     params: { id: { schema: userIdParam, notFound: 'User not found.' } },
     onError: (error) => authApiError('Ban user', error),
   },

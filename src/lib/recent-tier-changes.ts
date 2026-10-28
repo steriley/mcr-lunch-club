@@ -15,9 +15,16 @@ import type { BulletinIssue, TierChange } from '@/lib/weekly-bulletin';
  *
  * changesInIssue() in src/lib/weekly-bulletin.ts nets the moves per venue.
  */
-export async function getRecentTierChanges(issue: Pick<BulletinIssue, 'coversFrom' | 'publishedAt'>): Promise<TierChange[]> {
+export async function getRecentTierChanges(
+  issue: Pick<BulletinIssue, 'coversFrom' | 'publishedAt'>
+): Promise<TierChange[]> {
   const rows = await db
-    .select({ fromTier: tierProposals.fromTier, toTier: tierProposals.proposedTier, decidedAt: tierProposals.decidedAt, venue: venues })
+    .select({
+      fromTier: tierProposals.fromTier,
+      toTier: tierProposals.proposedTier,
+      decidedAt: tierProposals.decidedAt,
+      venue: venues,
+    })
     .from(tierProposals)
     .innerJoin(venues, eq(tierProposals.venueId, venues.id))
     .where(
@@ -29,6 +36,8 @@ export async function getRecentTierChanges(issue: Pick<BulletinIssue, 'coversFro
       )
     );
   return rows.flatMap(({ fromTier, toTier, decidedAt, venue }) =>
-    decidedAt && isPubliclyVisible(venue) ? [{ slug: venue.slug, name: venue.name, fromTier, toTier, decidedAt }] : []
+    decidedAt && isPubliclyVisible(venue)
+      ? [{ slug: venue.slug, name: venue.name, fromTier, toTier, decidedAt }]
+      : []
   );
 }

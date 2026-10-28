@@ -1,7 +1,12 @@
 <template>
-  <div ref="rootRef" class="relative isolate flex flex-col w-full h-full overflow-hidden bg-paper rounded-2xl border border-hairline shadow-inner">
+  <div
+    ref="rootRef"
+    class="relative isolate flex flex-col w-full h-full overflow-hidden bg-paper rounded-2xl border border-hairline shadow-inner"
+  >
     <!-- A map is a poor way through 56 venues for anyone not using a pointer: the list is the other route. -->
-    <a href="#venue-results" class="skip-link" @click.prevent="skipToList">Skip the map and go to the venue list</a>
+    <a href="#venue-results" class="skip-link" @click.prevent="skipToList"
+      >Skip the map and go to the venue list</a
+    >
     <!-- Announces the card for screen readers; it appears beside the map, away from where focus is. -->
     <p class="sr-only" role="status" aria-live="polite">{{ announcement }}</p>
 
@@ -14,7 +19,9 @@
           <span class="map-header-subtitle">Lunch Club HQ: Spinningfields</span>
         </div>
       </div>
-      <span class="map-header-count">{{ visibleVenuesCount }} of {{ totalVenuesCount }} venues shown</span>
+      <span class="map-header-count"
+        >{{ visibleVenuesCount }} of {{ totalVenuesCount }} venues shown</span
+      >
     </header>
 
     <!-- Map Container (positioning context for the floating controls) -->
@@ -45,9 +52,30 @@
 
       <!-- The selected pin's card: fixed to the bottom of the map, not floating over the pin -->
       <Transition name="pin-card">
-        <div v-if="pinVenue" ref="pinCardRef" class="pin-card" role="group" tabindex="-1" :aria-label="`${pinVenue.name}`">
-          <button type="button" class="pin-card-close" aria-label="Close venue card" @click="onCloseClick">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m4 4 8 8m0-8-8 8" /></svg>
+        <div
+          v-if="pinVenue"
+          ref="pinCardRef"
+          class="pin-card"
+          role="group"
+          tabindex="-1"
+          :aria-label="`${pinVenue.name}`"
+        >
+          <button
+            type="button"
+            class="pin-card-close"
+            aria-label="Close venue card"
+            @click="onCloseClick"
+          >
+            <svg
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="m4 4 8 8m0-8-8 8" />
+            </svg>
           </button>
           <BenchPillar :venue="pinVenue" :inspections="inspectionsList" show-tier detailed />
         </div>
@@ -170,7 +198,9 @@ const pinCardRef = ref<HTMLElement | null>(null);
 const rootRef = ref<HTMLElement | null>(null);
 
 const announcement = computed(() =>
-  pinVenue.value ? `Showing ${pinVenue.value.name}, ${tierInfo(pinVenue.value.tier).label}, ${pinVenue.value.cost}` : ''
+  pinVenue.value
+    ? `Showing ${pinVenue.value.name}, ${tierInfo(pinVenue.value.tier).label}, ${pinVenue.value.cost}`
+    : ''
 );
 
 // What shares the pick with the list: the venue chosen there (or here), and the row being pointed at.
@@ -287,8 +317,17 @@ function frameAll({ animate }: { animate: boolean }) {
   }
   const size = mapInstance.getSize();
   const frame = frameFor(
-    [{ lat: BASE_LAT, lng: BASE_LNG }, ...venues.map((venue) => ({ lat: venue.lat!, lng: venue.lng! }))],
-    { width: size.x, height: size.y, padding: FRAME_PADDING, minZoom: FRAME_MIN_ZOOM, maxZoom: FRAME_MAX_ZOOM }
+    [
+      { lat: BASE_LAT, lng: BASE_LNG },
+      ...venues.map((venue) => ({ lat: venue.lat!, lng: venue.lng! })),
+    ],
+    {
+      width: size.x,
+      height: size.y,
+      padding: FRAME_PADDING,
+      minZoom: FRAME_MIN_ZOOM,
+      maxZoom: FRAME_MAX_ZOOM,
+    }
   );
   if (frame) mapInstance.setView([frame.lat, frame.lng], frame.zoom, options);
 }
@@ -490,7 +529,9 @@ function updateNames() {
   if (!mapInstance || !namesLayer) return;
   const L = leaflet();
   namesLayer.clearLayers();
-  namedPins.forEach((id) => (markersById.get(id) ?? spiderMarkers.get(id))?.getElement()?.classList.remove('has-name-label'));
+  namedPins.forEach((id) =>
+    (markersById.get(id) ?? spiderMarkers.get(id))?.getElement()?.classList.remove('has-name-label')
+  );
   namedPins = new Set();
   placedNameRects = [];
 
@@ -506,12 +547,20 @@ function updateNames() {
   clusterLayer.eachLayer((marker: any) => obstacles.push(clusterRect(project(marker.getLatLng()))));
 
   const byId = new Map(filteredVenues.value.map((venue) => [venue.id, venue]));
-  const shown = [...markersById.keys()].map((id) => byId.get(id)).filter((venue): venue is Venue => !!venue);
-  const candidates: Array<LabelCandidate & { venue: Venue }> = byNamePriority(shown).map((venue) => {
-    const text = nameLabelText(venue);
-    const width = labelWidth(text, NAME_FONT);
-    return { id: venue.id, venue, options: nameOptions(project([venue.lat!, venue.lng!]), width) };
-  });
+  const shown = [...markersById.keys()]
+    .map((id) => byId.get(id))
+    .filter((venue): venue is Venue => !!venue);
+  const candidates: Array<LabelCandidate & { venue: Venue }> = byNamePriority(shown).map(
+    (venue) => {
+      const text = nameLabelText(venue);
+      const width = labelWidth(text, NAME_FONT);
+      return {
+        id: venue.id,
+        venue,
+        options: nameOptions(project([venue.lat!, venue.lng!]), width),
+      };
+    }
+  );
 
   const placed = placeLabels(candidates, obstacles);
   for (const candidate of candidates) {
@@ -522,7 +571,15 @@ function updateNames() {
     namedPins.add(candidate.id);
     markersById.get(candidate.id)?.getElement()?.classList.add('has-name-label');
     const centre = mapInstance.unproject([box.x + box.width / 2, box.y + box.height / 2], zoom);
-    namesLayer.addLayer(createLabelMarker(L, [centre.lat, centre.lng], nameLabelText(candidate.venue), { width: box.width, height: NAME_HEIGHT_PX }, 'name'));
+    namesLayer.addLayer(
+      createLabelMarker(
+        L,
+        [centre.lat, centre.lng],
+        nameLabelText(candidate.venue),
+        { width: box.width, height: NAME_HEIGHT_PX },
+        'name'
+      )
+    );
   }
 }
 
@@ -541,20 +598,35 @@ function updateRingLabels() {
   // The view in the same pixel space as project(), wherever the map has been dragged to.
   const origin = mapInstance.getPixelBounds().min;
   const view: Rect = { x: origin.x, y: origin.y, width: size.x, height: size.y };
-  const inset = (rect: Rect, by: number): Rect => ({ x: rect.x + by, y: rect.y + by, width: rect.width - by * 2, height: rect.height - by * 2 });
+  const inset = (rect: Rect, by: number): Rect => ({
+    x: rect.x + by,
+    y: rect.y + by,
+    width: rect.width - by * 2,
+    height: rect.height - by * 2,
+  });
 
   const obstacles: Rect[] = [...placedNameRects];
   markersById.forEach((marker) => obstacles.push(pinRect(project(marker.getLatLng()))));
   spiderMarkers.forEach((marker) => obstacles.push(pinRect(project(marker.getLatLng()))));
-  clusterLayer?.eachLayer((marker: any) => obstacles.push(clusterRect(project(marker.getLatLng()))));
-  obstacles.push(...controlZones(size).map((zone) => ({ ...zone, x: zone.x + origin.x, y: zone.y + origin.y })));
+  clusterLayer?.eachLayer((marker: any) =>
+    obstacles.push(clusterRect(project(marker.getLatLng())))
+  );
+  obstacles.push(
+    ...controlZones(size).map((zone) => ({ ...zone, x: zone.x + origin.x, y: zone.y + origin.y }))
+  );
 
   const centre = project([BASE_LAT, BASE_LNG]);
   // Web Mercator: a metre is this many pixels at Base's latitude.
-  const pixelsPerMetre = (256 * 2 ** zoom) / (EARTH_CIRCUMFERENCE_M * Math.cos((BASE_LAT * Math.PI) / 180));
+  const pixelsPerMetre =
+    (256 * 2 ** zoom) / (EARTH_CIRCUMFERENCE_M * Math.cos((BASE_LAT * Math.PI) / 180));
   const candidates = WALKING_ISOCHRONES.map((ring) => {
     const width = labelWidth(ring.shortLabel, RING_FONT, 80);
-    const options = ringLabelOptions(centre, ring.radius * pixelsPerMetre, { width, height: RING_LABEL_HEIGHT_PX }, inset(view, 6));
+    const options = ringLabelOptions(
+      centre,
+      ring.radius * pixelsPerMetre,
+      { width, height: RING_LABEL_HEIGHT_PX },
+      inset(view, 6)
+    );
     return { id: ring.shortLabel, ring, options };
   });
 
@@ -564,7 +636,15 @@ function updateRingLabels() {
     if (index === undefined) continue;
     const box = candidate.options[index];
     const at = mapInstance.unproject([box.x + box.width / 2, box.y + box.height / 2], zoom);
-    ringLabelsLayer.addLayer(createLabelMarker(L, [at.lat, at.lng], candidate.ring.shortLabel, { width: box.width, height: RING_LABEL_HEIGHT_PX }, 'ring'));
+    ringLabelsLayer.addLayer(
+      createLabelMarker(
+        L,
+        [at.lat, at.lng],
+        candidate.ring.shortLabel,
+        { width: box.width, height: RING_LABEL_HEIGHT_PX },
+        'ring'
+      )
+    );
   }
 }
 
@@ -580,7 +660,9 @@ function itemsToShow(zoom: number): MapItem[] {
   if (shownAlone || fannedOut) return items;
 
   pinnedOutsideClusters = true;
-  const others = createClusterIndex(filteredVenues.value.filter((venue) => venue.id !== selected.id));
+  const others = createClusterIndex(
+    filteredVenues.value.filter((venue) => venue.id !== selected.id)
+  );
   return [...others.itemsAt(zoom), { kind: 'venue', venue: selected }];
 }
 
@@ -593,9 +675,12 @@ function renderMarkers() {
   // A tapped one-building cluster fans out as soon as the map is deep enough to show it honestly.
   if (pendingFanOut && Date.now() > pendingFanOut.until) pendingFanOut = null;
   if (pendingFanOut && mapInstance.getZoom() >= maxZoom) {
-    const target = items.find((item): item is ClusterItem => item.kind === 'cluster' && item.key === pendingFanOut!.key);
+    const target = items.find(
+      (item): item is ClusterItem => item.kind === 'cluster' && item.key === pendingFanOut!.key
+    );
     pendingFanOut = null;
-    if (target) spiderfied = { key: target.key, lat: target.lat, lng: target.lng, venues: target.venues };
+    if (target)
+      spiderfied = { key: target.key, lat: target.lat, lng: target.lng, venues: target.venues };
   }
 
   clusterLayer.clearLayers();
@@ -655,7 +740,9 @@ function keepFocusInMap() {
   if (Date.now() > keepKeyboardInMapUntil) return;
   keepKeyboardInMapUntil = 0;
   const firstPin = spiderMarkers.values().next().value?.getElement() as HTMLElement | undefined;
-  (firstPin ?? (mapInstance?.getContainer() as HTMLElement | undefined))?.focus({ preventScroll: true });
+  (firstPin ?? (mapInstance?.getContainer() as HTMLElement | undefined))?.focus({
+    preventScroll: true,
+  });
 }
 
 /**
@@ -665,11 +752,26 @@ function keepFocusInMap() {
  */
 function orderMarkersForKeyboard() {
   const pane = mapInstance?.getPane('markerPane');
-  if (!pane || (document.activeElement && document.activeElement !== pane && pane.contains(document.activeElement))) return;
-  const markers = [...markersById.values(), ...(clusterLayer?.getLayers() ?? []), ...spiderMarkers.values()];
+  if (
+    !pane ||
+    (document.activeElement &&
+      document.activeElement !== pane &&
+      pane.contains(document.activeElement))
+  )
+    return;
+  const markers = [
+    ...markersById.values(),
+    ...(clusterLayer?.getLayers() ?? []),
+    ...spiderMarkers.values(),
+  ];
   markers
-    .map((marker) => ({ element: marker.getElement() as HTMLElement | undefined, at: marker.getLatLng() }))
-    .filter((entry): entry is { element: HTMLElement; at: { lat: number; lng: number } } => Boolean(entry.element))
+    .map((marker) => ({
+      element: marker.getElement() as HTMLElement | undefined,
+      at: marker.getLatLng(),
+    }))
+    .filter((entry): entry is { element: HTMLElement; at: { lat: number; lng: number } } =>
+      Boolean(entry.element)
+    )
     .sort((a, b) => b.at.lat - a.at.lat || a.at.lng - b.at.lng)
     .forEach((entry) => pane.appendChild(entry.element));
 }
@@ -700,7 +802,9 @@ function openCluster(cluster: ClusterItem, viaKeyboard = false) {
     } else {
       // Zooming never splits it: go to street level, then fan it out (see renderMarkers).
       pendingFanOut = { key: cluster.key, until: Date.now() + FAN_OUT_WAIT_MS };
-      mapInstance.setView([cluster.lat, cluster.lng], maxZoom, { animate: !prefersReducedMotion() });
+      mapInstance.setView([cluster.lat, cluster.lng], maxZoom, {
+        animate: !prefersReducedMotion(),
+      });
     }
     return;
   }
@@ -730,10 +834,30 @@ function drawSpider() {
   const offsets = spiderfyOffsets(venues.length);
   const ink = themeColor('graphite');
 
-  spiderLayer.addLayer(L.circleMarker([lat, lng], { className: 'ledger-spider', radius: 4, color: ink, weight: 1.5, fillColor: ink, fillOpacity: 1, interactive: false }));
+  spiderLayer.addLayer(
+    L.circleMarker([lat, lng], {
+      className: 'ledger-spider',
+      radius: 4,
+      color: ink,
+      weight: 1.5,
+      fillColor: ink,
+      fillOpacity: 1,
+      interactive: false,
+    })
+  );
   venues.forEach((venue, i) => {
-    const spot = mapInstance.containerPointToLatLng(L.point(centre.x + offsets[i].x, centre.y + offsets[i].y));
-    spiderLayer.addLayer(L.polyline([[lat, lng], spot], { className: 'ledger-spider', color: ink, weight: 1.5, opacity: 0.7, interactive: false }));
+    const spot = mapInstance.containerPointToLatLng(
+      L.point(centre.x + offsets[i].x, centre.y + offsets[i].y)
+    );
+    spiderLayer.addLayer(
+      L.polyline([[lat, lng], spot], {
+        className: 'ledger-spider',
+        color: ink,
+        weight: 1.5,
+        opacity: 0.7,
+        interactive: false,
+      })
+    );
     const marker = L.marker(spot, { icon: createVenueIcon(L, venue) });
     onActivate(marker, (viaKeyboard) => showPin(venue, viaKeyboard));
     spiderMarkers.set(venue.id, marker);
@@ -742,7 +866,8 @@ function drawSpider() {
 }
 
 function highlightPin() {
-  const mark = (marker: any, id: string) => marker.getElement()?.classList.toggle('is-selected-pin', id === pinVenue.value?.id);
+  const mark = (marker: any, id: string) =>
+    marker.getElement()?.classList.toggle('is-selected-pin', id === pinVenue.value?.id);
   markersById.forEach(mark);
   spiderMarkers.forEach(mark);
 }
@@ -756,7 +881,8 @@ function showPin(venue: Venue, viaKeyboard = false) {
 /** Shows the card for `venue`, however it was picked (a pin here, a row in the list, a ?venue= link). */
 function applyPin(venue: Venue, source: 'map' | 'list', viaKeyboard = false) {
   const focused = document.activeElement;
-  returnFocusTo = focused instanceof HTMLElement && rootRef.value?.contains(focused) ? focused : null;
+  returnFocusTo =
+    focused instanceof HTMLElement && rootRef.value?.contains(focused) ? focused : null;
   pinVenue.value = venue;
   // A venue that isn't on the map as a pin of its own (it sits in a cluster) comes out of it.
   if (!markersById.has(venue.id) && !spiderMarkers.has(venue.id)) renderMarkers();
@@ -798,7 +924,9 @@ function clearPin({ restoreFocus = false } = {}) {
   selectMapVenue(null);
   if (restoreFocus && hadCard) {
     nextTick(() => {
-      const target = returnFocusTo?.isConnected ? returnFocusTo : (mapInstance?.getContainer() as HTMLElement | undefined);
+      const target = returnFocusTo?.isConnected
+        ? returnFocusTo
+        : (mapInstance?.getContainer() as HTMLElement | undefined);
       target?.focus();
       returnFocusTo = null;
     });
@@ -827,8 +955,14 @@ watch(selection, (current) => {
 /** Lights up the pin (or the cluster it sits in) of the list row being pointed at. */
 function markHovered() {
   const id = hovered.value;
-  const lit = id ? (markersById.get(id) ?? spiderMarkers.get(id) ?? clusterMarkerByVenue.get(id) ?? null) : null;
-  const all = new Set<any>([...markersById.values(), ...spiderMarkers.values(), ...clusterMarkerByVenue.values()]);
+  const lit = id
+    ? (markersById.get(id) ?? spiderMarkers.get(id) ?? clusterMarkerByVenue.get(id) ?? null)
+    : null;
+  const all = new Set<any>([
+    ...markersById.values(),
+    ...spiderMarkers.values(),
+    ...clusterMarkerByVenue.values(),
+  ]);
   all.forEach((marker) => marker.getElement()?.classList.toggle('is-hovered-pin', marker === lit));
 }
 watch(hovered, markHovered);
@@ -838,7 +972,9 @@ function skipToList() {
   window.dispatchEvent(new CustomEvent('mcr:show-results'));
   // Two frames: one for the list to open, one for its heading to exist.
   requestAnimationFrame(() =>
-    requestAnimationFrame(() => document.querySelector<HTMLElement>('[data-results-heading]')?.focus())
+    requestAnimationFrame(() =>
+      document.querySelector<HTMLElement>('[data-results-heading]')?.focus()
+    )
   );
 }
 
@@ -850,16 +986,18 @@ function revealPin(venue: Venue) {
   const cardTop = size.y - (pinCardRef.value?.offsetHeight ?? 0) - 24;
   const lowest = cardTop - 24;
   const highest = 72;
-  if (point.y > lowest) mapInstance.panBy([0, point.y - lowest], { animate: !prefersReducedMotion() });
-  else if (point.y < highest) mapInstance.panBy([0, point.y - highest], { animate: !prefersReducedMotion() });
+  if (point.y > lowest)
+    mapInstance.panBy([0, point.y - lowest], { animate: !prefersReducedMotion() });
+  else if (point.y < highest)
+    mapInstance.panBy([0, point.y - highest], { animate: !prefersReducedMotion() });
 }
 
 function onMapKeydown(event: KeyboardEvent) {
   if (event.key !== 'Escape') return;
   if (spiderfied) collapseSpider();
-  else if (pinVenue.value) clearPin({ restoreFocus: Boolean(rootRef.value?.contains(document.activeElement)) });
+  else if (pinVenue.value)
+    clearPin({ restoreFocus: Boolean(rootRef.value?.contains(document.activeElement)) });
 }
-
 </script>
 
 <style scoped>
@@ -912,7 +1050,9 @@ function onMapKeydown(event: KeyboardEvent) {
 
 .pin-card-enter-active,
 .pin-card-leave-active {
-  transition: opacity 160ms ease, transform 160ms ease;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
 }
 
 .pin-card-enter-from,
@@ -969,7 +1109,9 @@ function onMapKeydown(event: KeyboardEvent) {
 }
 
 :deep(.custom-ledger-pin.is-selected-pin .rounded-full) {
-  box-shadow: 0 0 0 3px var(--color-brass), 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+  box-shadow:
+    0 0 0 3px var(--color-brass),
+    0 4px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
 .map-loading {
@@ -999,7 +1141,11 @@ function onMapKeydown(event: KeyboardEvent) {
 .map-empty-title {
   margin: 0;
   color: var(--color-ink);
-  font: 700 16px/1.3 "Playfair Display", "Playfair Display Fallback", Georgia, serif;
+  font:
+    700 16px/1.3 'Playfair Display',
+    'Playfair Display Fallback',
+    Georgia,
+    serif;
 }
 
 .map-empty-button {
@@ -1009,7 +1155,10 @@ function onMapKeydown(event: KeyboardEvent) {
   border-radius: 999px;
   background: var(--color-deep);
   color: var(--color-parchment-fixed);
-  font: 700 13px/1 "Plus Jakarta Sans", "Plus Jakarta Sans Fallback", sans-serif;
+  font:
+    700 13px/1 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
   cursor: pointer;
 }
 

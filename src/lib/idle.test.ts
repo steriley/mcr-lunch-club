@@ -25,7 +25,10 @@ describe('whenIdle', () => {
     idleCallback!();
     cancel();
     assert.equal(ran, 1);
-    assert.deepEqual(calls, [['request', { timeout: 1500 }], ['cancel', 7]]);
+    assert.deepEqual(calls, [
+      ['request', { timeout: 1500 }],
+      ['cancel', 7],
+    ]);
   });
 
   it('falls back to a short timeout without requestIdleCallback, and cancels it', () => {
@@ -41,6 +44,9 @@ describe('whenIdle', () => {
     let ran = 0;
     whenIdle(() => ran++)();
     assert.equal(ran, 1);
-    assert.deepEqual(calls, [['set', IDLE_FALLBACK_MS], ['clear', 3]]);
+    assert.deepEqual(calls, [
+      ['set', IDLE_FALLBACK_MS],
+      ['clear', 3],
+    ]);
   });
 });

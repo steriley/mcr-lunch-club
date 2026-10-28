@@ -3,13 +3,27 @@ import assert from 'node:assert/strict';
 import { trapTabKey } from './focus-trap';
 
 function element(name: string) {
-  const el: any = { name, focus: () => { (globalThis as any).document.activeElement = el; } };
+  const el: any = {
+    name,
+    focus: () => {
+      (globalThis as any).document.activeElement = el;
+    },
+  };
   return el;
 }
 
 function key(keyName: string, shiftKey = false) {
   let prevented = false;
-  return { key: keyName, shiftKey, preventDefault: () => { prevented = true; }, get prevented() { return prevented; } } as any;
+  return {
+    key: keyName,
+    shiftKey,
+    preventDefault: () => {
+      prevented = true;
+    },
+    get prevented() {
+      return prevented;
+    },
+  } as any;
 }
 
 const first = element('first');
@@ -17,7 +31,9 @@ const middle = element('middle');
 const last = element('last');
 const container: any = { querySelectorAll: () => [first, middle, last] };
 
-afterEach(() => { delete (globalThis as any).document; });
+afterEach(() => {
+  delete (globalThis as any).document;
+});
 
 describe('trapTabKey', () => {
   it('wraps Tab from the last element to the first', () => {

@@ -136,7 +136,13 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
    * above the bottom sheet on a phone, right of the floating panel on desktop. `fraction` is
    * how far down the uncovered height the point sits on a phone (0.5 is the middle).
    */
-  function centreForVisibleMap(lat: number, lng: number, zoom: number, sheetState: SheetSnap = sheet.snap.value, fraction = 0.5) {
+  function centreForVisibleMap(
+    lat: number,
+    lng: number,
+    zoom: number,
+    sheetState: SheetSnap = sheet.snap.value,
+    fraction = 0.5
+  ) {
     const point = mapInstance.project([lat, lng], zoom);
     if (sheet.isDesktop.value) {
       // Offset so the point isn't hidden behind the 380px left floating panel
@@ -159,7 +165,8 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
 
   // First-fix bounds fitting: fits user plus top 3 venues
   function fitFirstFixBounds() {
-    if (options.hasFittedFirstFix.value || !mapInstance || !leafletModule || !geo.position.value) return;
+    if (options.hasFittedFirstFix.value || !mapInstance || !leafletModule || !geo.position.value)
+      return;
     const L = leaflet();
 
     const points: [number, number][] = [[geo.position.value.lat, geo.position.value.lng]];
@@ -173,21 +180,41 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
     options.hasFittedFirstFix.value = true;
     moveProgrammatically(() => {
       if (sheet.isDesktop.value) {
-        mapInstance.fitBounds(bounds, { paddingTopLeft: [410, 60], paddingBottomRight: [60, 60], maxZoom: 17, animate: true });
+        mapInstance.fitBounds(bounds, {
+          paddingTopLeft: [410, 60],
+          paddingBottomRight: [60, 60],
+          maxZoom: 17,
+          animate: true,
+        });
       } else {
         // Fit into the part of the map the bottom sheet leaves showing.
         const bottomPadding = Math.round(sheet.settledHeightPx()) + 24;
-        mapInstance.fitBounds(bounds, { paddingTopLeft: [30, 80], paddingBottomRight: [30, bottomPadding], maxZoom: 17, animate: true });
+        mapInstance.fitBounds(bounds, {
+          paddingTopLeft: [30, 80],
+          paddingBottomRight: [30, bottomPadding],
+          maxZoom: 17,
+          animate: true,
+        });
       }
     }, 500);
   }
 
   /** Pans so the venue's pin sits in the clear part of the map: above the sheet, or beside the panel. */
   function focusVenue(venue: Venue, { sheetState }: { sheetState: SheetSnap }) {
-    if (!mapInstance || !venueMarkersMap.has(venue.id) || venue.lat == null || venue.lng == null) return;
+    if (!mapInstance || !venueMarkersMap.has(venue.id) || venue.lat == null || venue.lng == null)
+      return;
     moveProgrammatically(() => {
       const zoom = mapInstance.getZoom();
-      mapInstance.panTo(centreForVisibleMap(venue.lat!, venue.lng!, zoom, sheetState, SELECTED_PIN_VISIBLE_FRACTION), { animate: true });
+      mapInstance.panTo(
+        centreForVisibleMap(
+          venue.lat!,
+          venue.lng!,
+          zoom,
+          sheetState,
+          SELECTED_PIN_VISIBLE_FRACTION
+        ),
+        { animate: true }
+      );
     });
   }
 
@@ -202,7 +229,9 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
   function showBase() {
     if (!mapInstance) return;
     moveProgrammatically(() => {
-      mapInstance.setView(centreForVisibleMap(BASE_LAT, BASE_LNG, DEFAULT_ZOOM), DEFAULT_ZOOM, { animate: true });
+      mapInstance.setView(centreForVisibleMap(BASE_LAT, BASE_LNG, DEFAULT_ZOOM), DEFAULT_ZOOM, {
+        animate: true,
+      });
     });
   }
 
@@ -220,7 +249,10 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
 
     options.isLowAccuracy.value = position.accuracy > 100;
 
-    const distFromBase = haversineMetres({ lat: position.lat, lng: position.lng }, { lat: BASE_LAT, lng: BASE_LNG });
+    const distFromBase = haversineMetres(
+      { lat: position.lat, lng: position.lng },
+      { lat: BASE_LAT, lng: BASE_LNG }
+    );
     const wasFarAway = options.isUserFarFromManchester.value;
     options.isUserFarFromManchester.value = distFromBase > FAR_FROM_BASE_METRES;
 
@@ -252,7 +284,11 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
    * while Leaflet was loading. `onReady` runs once the pins and user marker are
    * on the map.
    */
-  async function init(isCurrent: () => boolean, panel: () => HTMLElement | null, onReady: () => void): Promise<boolean> {
+  async function init(
+    isCurrent: () => boolean,
+    panel: () => HTMLElement | null,
+    onReady: () => void
+  ): Promise<boolean> {
     if (typeof window === 'undefined' || !options.container.value) return false;
 
     if (!leafletModule) leafletModule = await import('leaflet');
@@ -260,7 +296,11 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
     const L = leaflet();
 
     removeMap?.();
-    mapInstance = L.map(options.container.value, { center: [BASE_LAT, BASE_LNG], zoom: DEFAULT_ZOOM, zoomControl: false });
+    mapInstance = L.map(options.container.value, {
+      center: [BASE_LAT, BASE_LNG],
+      zoom: DEFAULT_ZOOM,
+      zoomControl: false,
+    });
     removeMap = createMapRemover(mapInstance);
 
     // Top-right zoom controls (below header overlay)

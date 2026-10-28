@@ -26,13 +26,13 @@ pnpm check:built     # browser smoke test of the real build output
 ## Rules that are easy to break
 
 - **CSP.** Astro hashes `is:inline` scripts only on prerendered pages. On-demand pages (sign-in, the Chairs' Area) send their policy before a component can add a hash, so an inline script there needs its hash in `astro.config.mjs` (see `src/lib/theme-script.ts`). Any new third-party script, style, image or API host goes in `security.csp` in `astro.config.mjs`. The Chairs' Area adds `'wasm-unsafe-eval'` for the WebP encoder and sets Zod `jitless` (no eval probe); keep both.
-- **Tiers.** `venues.tier` changes only through two-Chair proposals (`src/lib/tier-proposals.ts`), never through `venueInputSchema` or an admin edit. The one exception is `pnpm db:import`, the bootstrap path, which sets the tier of *new* venues; `--update` leaves existing tiers alone and `--update-tiers` is the explicit opt-in. A venue with no tier is hidden.
+- **Tiers.** `venues.tier` changes only through two-Chair proposals (`src/lib/tier-proposals.ts`), never through `venueInputSchema` or an admin edit. The one exception is `pnpm db:import`, the bootstrap path, which sets the tier of _new_ venues; `--update` leaves existing tiers alone and `--update-tiers` is the explicit opt-in. A venue with no tier is hidden.
 - Domain modules in `src/lib` never import `admin-api` or `auth` (`src/test/layering.test.ts`).
 
 ## Before you push
 
 ```bash
-pnpm lint && pnpm test && pnpm typecheck && pnpm test:db     # test:db reads TEST_DATABASE_URL from .env.local
+pnpm lint && pnpm format:check && pnpm test && pnpm typecheck && pnpm test:db     # test:db reads TEST_DATABASE_URL from .env.local
 pnpm build && pnpm check:bundle && pnpm check:built
 ```
 

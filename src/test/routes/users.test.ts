@@ -6,11 +6,22 @@ import { POST } from '@/pages/api/admin/users';
 import { POST as ban } from '@/pages/api/admin/users/[id]/ban';
 import { POST as unban } from '@/pages/api/admin/users/[id]/unban';
 import { POST as resetPassword } from '@/pages/api/admin/users/[id]/reset-password';
-import { ADMIN, adminRequest, quietly, restoreStubs, run, signInAs, stubAuthApi } from '../route-helpers';
+import {
+  ADMIN,
+  adminRequest,
+  quietly,
+  restoreStubs,
+  run,
+  signInAs,
+  stubAuthApi,
+} from '../route-helpers';
 
 afterEach(restoreStubs);
 
-const ctx = (id: string | undefined, body?: unknown) => ({ request: adminRequest('POST', body), params: { id } });
+const ctx = (id: string | undefined, body?: unknown) => ({
+  request: adminRequest('POST', body),
+  params: { id },
+});
 const newUser = { name: 'Ann', email: 'ann@example.com', password: 'a-long-enough-password' };
 
 describe('/api/admin/users', () => {
@@ -18,8 +29,12 @@ describe('/api/admin/users', () => {
     signInAs();
     assert.equal((await run(POST, { request: adminRequest('POST', { name: '' }) })).status, 400);
 
-    const calls = stubAuthApi('createUser', () => ({ user: { id: 'u2', email: 'ann@example.com' } }));
-    const response = await run(POST, { request: adminRequest('POST', { ...newUser, email: 'Ann@Example.com' }) });
+    const calls = stubAuthApi('createUser', () => ({
+      user: { id: 'u2', email: 'ann@example.com' },
+    }));
+    const response = await run(POST, {
+      request: adminRequest('POST', { ...newUser, email: 'Ann@Example.com' }),
+    });
     assert.equal(response.status, 201);
     assert.equal((await response.json()).user.id, 'u2');
     assert.equal(calls[0].body.email, 'ann@example.com');
@@ -76,7 +91,6 @@ describe('POST /api/admin/users/[id]/unban', () => {
     });
     assert.equal((await run(unban, ctx('u2'))).status, 404);
   });
-
 });
 
 describe('POST /api/admin/users/[id]/reset-password', () => {

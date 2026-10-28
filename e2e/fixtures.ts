@@ -29,7 +29,9 @@ export const test = base.extend<{ monitor: Monitor }>({
       },
     };
     // Survives navigations, unlike a window global.
-    await page.exposeFunction('__reportCsp', (violation: Violation) => monitor.violations.push(violation));
+    await page.exposeFunction('__reportCsp', (violation: Violation) =>
+      monitor.violations.push(violation)
+    );
     await page.addInitScript(() => {
       document.addEventListener('securitypolicyviolation', (event) => {
         (window as any).__reportCsp({

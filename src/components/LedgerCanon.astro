@@ -12,5 +12,17 @@ interface Props {
 const { venues, inspections } = Astro.props;
 ---
 
-<script is:inline type="application/json" id={LEDGER_CANON_ELEMENT_ID} set:html={serializeForScript(venues)} />
-{inspections && <script is:inline type="application/json" id={LEDGER_INSPECTIONS_ELEMENT_ID} set:html={serializeForScript(inspections)} />}
+<script
+  is:inline
+  type="application/json"
+  id={LEDGER_CANON_ELEMENT_ID}
+  set:html={serializeForScript(venues)}
+/>
+{inspections && (
+  <script
+    is:inline
+    type="application/json"
+    id={LEDGER_INSPECTIONS_ELEMENT_ID}
+    set:html={serializeForScript(inspections)}
+  />
+)}

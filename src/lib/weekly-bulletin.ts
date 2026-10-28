@@ -91,7 +91,9 @@ export interface TierChange {
 /** Changes the issue covers, collapsed to one net move per venue (a venue that ended where it began is dropped). */
 export function changesInIssue(changes: TierChange[], issue: BulletinIssue): TierChange[] {
   const inIssue = changes
-    .filter((change) => change.decidedAt > issue.coversFrom && change.decidedAt <= issue.publishedAt)
+    .filter(
+      (change) => change.decidedAt > issue.coversFrom && change.decidedAt <= issue.publishedAt
+    )
     .sort((a, b) => a.decidedAt.getTime() - b.decidedAt.getTime());
 
   const net = new Map<string, TierChange>();
@@ -130,7 +132,8 @@ function clause({ verb, names }: Group): string {
 
 /** The one-liner. `changes` must already be the issue's net changes (see changesInIssue). */
 export function bulletinText(changes: TierChange[]): string {
-  if (changes.length === 0) return 'Quiet week on the ledger. No verdicts have moved since the last bulletin.';
+  if (changes.length === 0)
+    return 'Quiet week on the ledger. No verdicts have moved since the last bulletin.';
 
   const groups = new Map<string, Group>();
   for (const change of changes) {

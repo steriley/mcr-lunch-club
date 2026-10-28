@@ -6,13 +6,17 @@ import { db } from '@/lib/db';
 
 export const prerender = false;
 
-export const POST = adminRoute({ action: 'Create bribery record', publishes: true, body: briberyInputSchema }, async ({ body, actor }) => {
-  const result = await briberyValues(db, body);
-  if (!result.ok) return jsonError(400, 'Please correct the highlighted fields.', { venueId: result.error });
+export const POST = adminRoute(
+  { action: 'Create bribery record', publishes: true, body: briberyInputSchema },
+  async ({ body, actor }) => {
+    const result = await briberyValues(db, body);
+    if (!result.ok)
+      return jsonError(400, 'Please correct the highlighted fields.', { venueId: result.error });
 
-  const [row] = await db
-    .insert(briberyRecords)
-    .values({ ...result.values, createdBy: actor.email })
-    .returning();
-  return jsonResponse({ record: serializeBribery(row) }, 201);
-});
+    const [row] = await db
+      .insert(briberyRecords)
+      .values({ ...result.values, createdBy: actor.email })
+      .returning();
+    return jsonResponse({ record: serializeBribery(row) }, 201);
+  }
+);

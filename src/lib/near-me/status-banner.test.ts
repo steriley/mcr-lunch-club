@@ -12,8 +12,16 @@ const actions = {
 
 function banner(overrides: Partial<StatusBannerState> = {}) {
   return nearMeStatusBanner(
-    { devForced: null, picking: false, geoState: 'active', farFromManchester: false, manual: false, lowAccuracy: false, ...overrides },
-    actions,
+    {
+      devForced: null,
+      picking: false,
+      geoState: 'active',
+      farFromManchester: false,
+      manual: false,
+      lowAccuracy: false,
+      ...overrides,
+    },
+    actions
   );
 }
 
@@ -40,7 +48,10 @@ describe('Near Me status banner', () => {
   });
 
   it('flags a far-away live fix, but not a hand-placed one', () => {
-    assert.equal(banner({ farFromManchester: true })?.text, 'Outside Manchester · showing Spinningfields');
+    assert.equal(
+      banner({ farFromManchester: true })?.text,
+      'Outside Manchester · showing Spinningfields'
+    );
     assert.equal(banner({ farFromManchester: true, manual: true })?.text, 'Position set manually');
   });
 

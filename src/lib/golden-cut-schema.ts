@@ -12,7 +12,7 @@ export const ANCHOR_DISH_MAX = 120;
 
 const optionalText = (max: number, label: string) =>
   z.preprocess(
-    (value) => (typeof value === 'string' && value.trim() === '' ? null : value ?? null),
+    (value) => (typeof value === 'string' && value.trim() === '' ? null : (value ?? null)),
     z.string().trim().max(max, `${label} must be ${max} characters or fewer.`).nullable()
   );
 
@@ -27,7 +27,10 @@ export const goldenCutInputSchema = z.object({
   entries: z
     .array(goldenCutEntrySchema)
     .max(GOLDEN_CUT_SIZE, `The Golden Cut holds at most ${GOLDEN_CUT_SIZE} venues.`)
-    .refine((entries) => new Set(entries.map((entry) => entry.venueId)).size === entries.length, 'Each venue can only appear once.'),
+    .refine(
+      (entries) => new Set(entries.map((entry) => entry.venueId)).size === entries.length,
+      'Each venue can only appear once.'
+    ),
 });
 
 export type GoldenCutEntryInput = z.infer<typeof goldenCutEntrySchema>;

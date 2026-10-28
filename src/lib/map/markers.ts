@@ -72,7 +72,10 @@ export const CLUSTER_ICON_SIZE = 44;
  * share, so "5 venues, mostly Approved" reads at a glance. `label` is its
  * accessible name.
  */
-export function createClusterIconHtml(cluster: Pick<ClusterItem, 'count' | 'tiers'>, label: string): string {
+export function createClusterIconHtml(
+  cluster: Pick<ClusterItem, 'count' | 'tiers'>,
+  label: string
+): string {
   const size = CLUSTER_ICON_SIZE;
   const mid = size / 2;
   const radius = 18;
@@ -144,7 +147,7 @@ export function createBaseMarker(L: any): any {
       direction: 'top',
       offset: [0, -14],
       className: 'hq-label',
-    },
+    }
   );
 
   return baseMarker;
@@ -175,7 +178,13 @@ export function createWalkingIsochrones(L: any): any[] {
  * on `latlng` and `size` is the box it fills. Screen readers get the same facts
  * from the pins and the list, so the text is hidden from them.
  */
-export function createLabelMarker(L: any, latlng: [number, number], text: string, size: { width: number; height: number }, kind: 'name' | 'ring'): any {
+export function createLabelMarker(
+  L: any,
+  latlng: [number, number],
+  text: string,
+  size: { width: number; height: number },
+  kind: 'name' | 'ring'
+): any {
   return L.marker(latlng, {
     icon: L.divIcon({
       html: `<span class="ledger-label-text" aria-hidden="true">${escapeHtml(text)}</span>`,

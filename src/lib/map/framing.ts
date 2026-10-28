@@ -32,7 +32,8 @@ const mercatorY = (lat: number) => {
   return 0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI);
 };
 
-const latFromMercatorY = (y: number) => (Math.atan(Math.sinh(Math.PI * (1 - 2 * y))) * 180) / Math.PI;
+const latFromMercatorY = (y: number) =>
+  (Math.atan(Math.sinh(Math.PI * (1 - 2 * y))) * 180) / Math.PI;
 
 /**
  * The centre and whole-number zoom that put every point inside the map's padded
@@ -54,7 +55,10 @@ export function frameFor(points: readonly LatLng[], options: FrameOptions): Fram
   const zoomForX = maxX > minX ? Math.log2(availableWidth / ((maxX - minX) * TILE_PX)) : Infinity;
   const zoomForY = maxY > minY ? Math.log2(availableHeight / ((maxY - minY) * TILE_PX)) : Infinity;
   const fit = Math.min(zoomForX, zoomForY);
-  const zoom = Math.min(Math.max(Number.isFinite(fit) ? Math.floor(fit) : maxZoom, minZoom), maxZoom);
+  const zoom = Math.min(
+    Math.max(Number.isFinite(fit) ? Math.floor(fit) : maxZoom, minZoom),
+    maxZoom
+  );
 
   // The map centre sits half the padding difference away from the points' centre,
   // so the points centre in the padded area rather than in the whole map.
@@ -74,5 +78,11 @@ export interface ViewBounds {
 
 /** True when any point lies outside the map's current view. */
 export function anyOutsideView(points: readonly LatLng[], view: ViewBounds): boolean {
-  return points.some((point) => point.lat < view.south || point.lat > view.north || point.lng < view.west || point.lng > view.east);
+  return points.some(
+    (point) =>
+      point.lat < view.south ||
+      point.lat > view.north ||
+      point.lng < view.west ||
+      point.lng > view.east
+  );
 }

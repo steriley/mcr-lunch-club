@@ -6,10 +6,24 @@ import BenchPillar from '@/components/BenchPillar.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import { formatDate } from '@/lib/dates';
 import { focalStyle, imageSrcset } from '@/lib/image-upload';
-import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
-import { getPublicInspections, getPublicVenueDetails, serializeForScript, type PublicVenueDetail } from '@/lib/public-data';
+import {
+  INSPECTION_KIND_LABELS,
+  INSPECTION_OUTCOME_BADGE_CLASSES,
+  INSPECTION_OUTCOME_LABELS,
+} from '@/lib/inspection-display';
+import {
+  getPublicInspections,
+  getPublicVenueDetails,
+  serializeForScript,
+  type PublicVenueDetail,
+} from '@/lib/public-data';
 import { getWalkingDirectionsUrl } from '@/lib/map/directions';
-import { NOT_INSPECTED_LABEL, ROUTE_PENDING_LABEL, routeStats, walkText } from '@/lib/route-display';
+import {
+  NOT_INSPECTED_LABEL,
+  ROUTE_PENDING_LABEL,
+  routeStats,
+  walkText,
+} from '@/lib/route-display';
 import { COST_LABELS } from '@/lib/cost-display';
 import { nearbyAlternatives } from '@/lib/nearby-venues';
 import { toCard, type BenchCard } from '@/lib/sovereign-bench';
@@ -24,14 +38,19 @@ export const prerender = true;
 
 export async function getStaticPaths() {
   // Two queries for every venue page, rather than two per page.
-  const [venues, inspections] = await Promise.all([getPublicVenueDetails(), getPublicInspections()]);
+  const [venues, inspections] = await Promise.all([
+    getPublicVenueDetails(),
+    getPublicInspections(),
+  ]);
   return venues.map((venue) => ({
     params: { slug: venue.slug },
     props: {
       venue,
       venueInspections: inspections.filter((inspection) => inspection.venueSlug === venue.slug),
       // Worked out here, where every venue is already loaded, so pages cost no extra queries.
-      nearby: nearbyAlternatives(venue, venues).map((other) => toCard({ venue: other }, inspections)),
+      nearby: nearbyAlternatives(venue, venues).map((other) =>
+        toCard({ venue: other }, inspections)
+      ),
     },
   }));
 }
@@ -54,12 +73,17 @@ const cuisine = venue.cuisine && venue.cuisine !== 'Other' ? venue.cuisine : nul
 const showActions = (hasLocation && !venue.closed) || websiteHref !== null;
 // The link preview when someone drops this page into the lunch chat.
 const stats = routeStats(venue.walkingTimeMin, venue.distanceMiles);
-const walk = venue.walkingTimeMin == null ? null : `${walkText(venue.walkingTimeMin)} from Spinningfields`;
+const walk =
+  venue.walkingTimeMin == null ? null : `${walkText(venue.walkingTimeMin)} from Spinningfields`;
 const pageDescription = truncate(
-  [`${tier.label} by the MCR Lunch Club.`, [venue.cuisine, venue.cost, walk].filter(Boolean).join(' · ') + '.', venue.tier === 'approved' && venue.eatLikeUs && `Eat like us: ${venue.eatLikeUs}`]
+  [
+    `${tier.label} by the MCR Lunch Club.`,
+    [venue.cuisine, venue.cost, walk].filter(Boolean).join(' · ') + '.',
+    venue.tier === 'approved' && venue.eatLikeUs && `Eat like us: ${venue.eatLikeUs}`,
+  ]
     .filter(Boolean)
     .join(' '),
-  200,
+  200
 );
 
 // Search engines read the venue's address, price and cuisine from this.
@@ -67,7 +91,10 @@ const pageDescription = truncate(
 const photoSrcset = venue.image ? imageSrcset(venue.image) : undefined;
 const PHOTO_SIZES = '(min-width: 896px) 864px, calc(100vw - 2rem)';
 
-const structuredData = venueStructuredData(venue, new URL(`/venues/${venue.slug}`, Astro.site ?? Astro.url).href);
+const structuredData = venueStructuredData(
+  venue,
+  new URL(`/venues/${venue.slug}`, Astro.site ?? Astro.url).href
+);
 const breadcrumbs = [
   { label: 'Map', href: '/' },
   { label: 'Verdicts', href: '/verdicts/approved' },
@@ -76,7 +103,7 @@ const breadcrumbs = [
 ];
 const breadcrumbData = breadcrumbStructuredData(
   breadcrumbs.map(({ label, href }) => ({ name: label, href: href ?? `/venues/${venue.slug}` })),
-  new URL(`/venues/${venue.slug}`, Astro.site ?? Astro.url).href,
+  new URL(`/venues/${venue.slug}`, Astro.site ?? Astro.url).href
 );
 
 function truncate(text: string, max: number): string {
@@ -84,216 +111,297 @@ function truncate(text: string, max: number): string {
 }
 ---
 
-<Layout title={`${venue.name} — Official Ledger Dossier | MCR Lunch Club`} description={pageDescription} image={venue.image?.url ?? `/og/venues/${venue.slug}.png`}>
+<Layout
+  title={`${venue.name} — Official Ledger Dossier | MCR Lunch Club`}
+  description={pageDescription}
+  image={venue.image?.url ?? `/og/venues/${venue.slug}.png`}
+>
   {venue.image && (
-    <link slot="head" rel="preload" as="image" href={venue.image.url} imagesrcset={photoSrcset} imagesizes={photoSrcset ? PHOTO_SIZES : undefined} fetchpriority="high" />
+    <link
+      slot="head"
+      rel="preload"
+      as="image"
+      href={venue.image.url}
+      imagesrcset={photoSrcset}
+      imagesizes={photoSrcset ? PHOTO_SIZES : undefined}
+      fetchpriority="high"
+    />
   )}
-  {structuredData && <script slot="head" is:inline type="application/ld+json" set:html={serializeForScript(structuredData)} />}
-  <script slot="head" is:inline type="application/ld+json" set:html={serializeForScript(breadcrumbData)} />
+  {structuredData && (
+    <script
+      slot="head"
+      is:inline
+      type="application/ld+json"
+      set:html={serializeForScript(structuredData)}
+    />
+  )}
+  <script
+    slot="head"
+    is:inline
+    type="application/ld+json"
+    set:html={serializeForScript(breadcrumbData)}
+  />
   <article class="w-full">
-      <!-- Status Banner: runs edge to edge, content stays within the page width -->
-      <div class={`${tier.bannerClass} tier-header-gradient text-white`}>
-        <div class="max-w-4xl mx-auto px-4 py-6 sm:py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <Icon name={tier.icon} class="icon-banner" />
-            <div>
-              <div class="flex items-center gap-3">
-                <a href={`/verdicts/${tier.slug}`} class="tier-banner-link text-xs sm:text-sm font-bold uppercase tracking-widest text-parchment-fixed underline decoration-white/40 underline-offset-4 hover:decoration-white">
-                  {tier.label}<span class="sr-only">: see all {tier.label} venues</span>
-                </a>
-              </div>
-              <p class="text-xs sm:text-sm text-mist italic mt-1">
-                “{tier.quote}”
-              </p>
+    <!-- Status Banner: runs edge to edge, content stays within the page width -->
+    <div class={`${tier.bannerClass} tier-header-gradient text-white`}>
+      <div class="max-w-4xl mx-auto px-4 py-6 sm:py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <Icon name={tier.icon} class="icon-banner" />
+          <div>
+            <div class="flex items-center gap-3">
+              <a
+                href={`/verdicts/${tier.slug}`}
+                class="tier-banner-link text-xs sm:text-sm font-bold uppercase tracking-widest text-parchment-fixed underline decoration-white/40 underline-offset-4 hover:decoration-white"
+              >
+                {tier.label}
+                <span class="sr-only">: see all {tier.label} venues</span>
+              </a>
             </div>
+            <p class="text-xs sm:text-sm text-mist italic mt-1">“{tier.quote}”</p>
           </div>
+        </div>
 
-          <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 border-white/20 pt-3 sm:pt-0">
-            <span class="text-2xl font-sans tabular-nums font-bold text-white">{venue.cost}</span>
-            <span class="text-xs text-mist font-sans uppercase tracking-wider font-semibold">
-              {COST_LABELS[venue.cost]}
+        <div class="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto border-t sm:border-t-0 border-white/20 pt-3 sm:pt-0">
+          <span class="text-2xl font-sans tabular-nums font-bold text-white">{venue.cost}</span>
+          <span class="text-xs text-mist font-sans uppercase tracking-wider font-semibold">
+            {COST_LABELS[venue.cost]}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dossier Body Content -->
+    <div class="max-w-4xl mx-auto px-4 pt-4 pb-8 sm:pt-5 sm:pb-12 space-y-6 text-ink">
+      <Breadcrumbs items={breadcrumbs} />
+      {venue.closed && (
+        <p class="rounded-xl border-2 border-neutral-edge-strong bg-neutral-wash px-4 py-3 font-sans text-sm font-bold uppercase tracking-wider text-soot">
+          Permanently closed
+        </p>
+      )}
+      <!-- Title & Location Bar -->
+      <div class="border-b border-hairline pb-6">
+        <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-ink">{venue.name}</h1>
+
+        <p class="text-sm text-graphite mt-2 font-sans flex items-center gap-2">
+          <span class="inline-flex items-center gap-1.5">
+            <Icon name="pin" class="icon-md" />
+            {venue.address || 'Address unrecorded; approximate Manchester zone'}
+          </span>
+          {cuisine && (
+            <span class="text-dim">
+              <span aria-hidden="true">·</span> <span class="sr-only">Cuisine: </span>
+              {cuisine}
             </span>
+          )}
+        </p>
+
+        {showActions && (
+          <div class="dossier-actions">
+            {hasLocation && !venue.closed && (
+              <>
+                <a
+                  class="dossier-action is-primary"
+                  href={getWalkingDirectionsUrl(venue.lat!, venue.lng!, 'server')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-walk-directions
+                  data-lat={venue.lat}
+                  data-lng={venue.lng}
+                >
+                  <Icon name="directions_walk" />
+                  Walk there
+                  {venue.walkingTimeMin !== null && ` · ${walkText(venue.walkingTimeMin)}`}
+                </a>
+                <a class="dossier-action" href={`/?venue=${encodeURIComponent(venue.slug)}`}>
+                  <Icon name="explore" />
+                  Show on the map
+                </a>
+              </>
+            )}
+            {websiteHref && (
+              <a
+                class="dossier-action"
+                href={websiteHref}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Icon name="open_in_new" />
+                Website<span class="sr-only"> ({websiteHost}, opens in a new tab)</span>
+              </a>
+            )}
           </div>
+        )}
+      </div>
+
+      {venue.image && (
+        <img
+          src={venue.image.url}
+          srcset={photoSrcset}
+          sizes={photoSrcset ? PHOTO_SIZES : undefined}
+          alt={venue.image.alt}
+          width={venue.image.width ?? undefined}
+          height={venue.image.height ?? undefined}
+          style={{ objectPosition: focalStyle(venue.image) }}
+          fetchpriority="high"
+          decoding="async"
+          onerror="this.remove()"
+          class="w-full max-h-96 object-cover rounded-xl border border-hairline bg-paper"
+        />
+      )}
+
+      {venue.pullQuote && (
+        <blockquote class="border-l-4 border-gold pl-5 py-1">
+          <p class="font-serif-header text-2xl sm:text-3xl italic leading-snug text-ink">
+            “{venue.pullQuote}”
+          </p>
+          <footer class="mt-2 text-xs font-sans uppercase tracking-widest text-dim">
+            — The Chairs
+          </footer>
+        </blockquote>
+      )}
+
+      {venue.tier === 'approved' && <ApprovedSticker variant="compact" />}
+
+      <!-- Geographic & Walking Specifications -->
+      <div
+        class={`grid ${stats.combined ? 'grid-cols-2' : 'grid-cols-3'} gap-2 sm:gap-4 bg-paper p-2 sm:p-4 rounded-xl border border-hairline text-center`}
+      >
+        {stats.combined ? (
+          <div class="p-1 sm:p-2">
+            <span class="text-xs text-graphite uppercase tracking-wider block font-sans">Walk</span>
+            <span class="text-xl sm:text-2xl font-bold text-subtle" aria-label="Not available">
+              —
+            </span>
+            <span class="text-xs text-dim block font-sans">{ROUTE_PENDING_LABEL}</span>
+          </div>
+        ) : (
+          <>
+            <div class="p-1 sm:p-2">
+              <span class="text-xs text-graphite uppercase tracking-wider block font-sans">
+                Walk
+              </span>
+              <span
+                class={`text-xl sm:text-2xl font-bold ${stats.walk.value === null ? 'text-subtle' : 'text-navy'}`}
+                aria-label={stats.walk.value === null ? 'Not available' : undefined}
+              >
+                {stats.walk.value ?? '—'}
+              </span>
+              <span class="text-xs text-dim block font-sans">{stats.walk.caption}</span>
+            </div>
+
+            <div class="p-1 sm:p-2 border-l border-hairline">
+              <span class="text-xs text-graphite uppercase tracking-wider block font-sans">
+                Distance
+              </span>
+              <span
+                class={`text-xl sm:text-2xl font-bold ${stats.distance.value === null ? 'text-subtle' : 'text-ink'}`}
+                aria-label={stats.distance.value === null ? 'Not available' : undefined}
+              >
+                {stats.distance.value ?? '—'}
+              </span>
+              <span class="text-xs text-dim block font-sans">{stats.distance.caption}</span>
+            </div>
+          </>
+        )}
+
+        <div class="p-1 sm:p-2 border-l border-hairline">
+          <span class="text-xs text-graphite uppercase tracking-wider block font-sans">
+            Last inspected
+          </span>
+          {venue.lastInspectionDate ? (
+            <>
+              <span class="text-sm sm:text-lg font-bold text-ink-soft font-sans tabular-nums sm:mt-1 block">
+                {formatDate(venue.lastInspectionDate)}
+              </span>
+              <span class="text-xs text-dim block font-sans">by the Chairs</span>
+            </>
+          ) : (
+            <>
+              <span
+                class="text-sm sm:text-lg font-bold text-subtle font-sans sm:mt-1 block"
+                aria-label="Not available"
+              >
+                —
+              </span>
+              <span class="text-xs text-dim block font-sans">{NOT_INSPECTED_LABEL}</span>
+            </>
+          )}
         </div>
       </div>
 
-      <!-- Dossier Body Content -->
-      <div class="max-w-4xl mx-auto px-4 pt-4 pb-8 sm:pt-5 sm:pb-12 space-y-6 text-ink">
-        <Breadcrumbs items={breadcrumbs} />
-        {venue.closed && (
-          <p class="rounded-xl border-2 border-neutral-edge-strong bg-neutral-wash px-4 py-3 font-sans text-sm font-bold uppercase tracking-wider text-soot">
-            Permanently closed
-          </p>
-        )}
-        <!-- Title & Location Bar -->
-        <div class="border-b border-hairline pb-6">
-          <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-ink">
-            {venue.name}
-          </h1>
-
-          <p class="text-sm text-graphite mt-2 font-sans flex items-center gap-2">
-            <span class="inline-flex items-center gap-1.5"><Icon name="pin" class="icon-md" />{venue.address || 'Address unrecorded; approximate Manchester zone'}</span>
-            {cuisine && <span class="text-dim"><span aria-hidden="true">·</span> <span class="sr-only">Cuisine: </span>{cuisine}</span>}
-          </p>
-
-          {showActions && (
-            <div class="dossier-actions">
-              {hasLocation && !venue.closed && (<>
-              <a
-                class="dossier-action is-primary"
-                href={getWalkingDirectionsUrl(venue.lat!, venue.lng!, 'server')}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-walk-directions
-                data-lat={venue.lat}
-                data-lng={venue.lng}
-              >
-                <Icon name="directions_walk" />
-                Walk there{venue.walkingTimeMin !== null && ` · ${walkText(venue.walkingTimeMin)}`}
-              </a>
-              <a class="dossier-action" href={`/?venue=${encodeURIComponent(venue.slug)}`}>
-                <Icon name="explore" />
-                Show on the map
-              </a>
-              </>)}
-              {websiteHref && (
-                <a class="dossier-action" href={websiteHref} target="_blank" rel="noopener noreferrer">
-                  <Icon name="open_in_new" />
-                  Website<span class="sr-only"> ({websiteHost}, opens in a new tab)</span>
-                </a>
-              )}
-            </div>
-          )}
-        </div>
-
-        {venue.image && (
-          <img
-            src={venue.image.url}
-            srcset={photoSrcset}
-            sizes={photoSrcset ? PHOTO_SIZES : undefined}
-            alt={venue.image.alt}
-            width={venue.image.width ?? undefined}
-            height={venue.image.height ?? undefined}
-            style={{ objectPosition: focalStyle(venue.image) }}
-            fetchpriority="high"
-            decoding="async"
-            onerror="this.remove()"
-            class="w-full max-h-96 object-cover rounded-xl border border-hairline bg-paper"
-          />
-        )}
-
-        {venue.pullQuote && (
-          <blockquote class="border-l-4 border-gold pl-5 py-1">
-            <p class="font-serif-header text-2xl sm:text-3xl italic leading-snug text-ink">“{venue.pullQuote}”</p>
-            <footer class="mt-2 text-xs font-sans uppercase tracking-widest text-dim">— The Chairs</footer>
-          </blockquote>
-        )}
-
-        {venue.tier === 'approved' && <ApprovedSticker variant="compact" />}
-
-        <!-- Geographic & Walking Specifications -->
-        <div class={`grid ${stats.combined ? 'grid-cols-2' : 'grid-cols-3'} gap-2 sm:gap-4 bg-paper p-2 sm:p-4 rounded-xl border border-hairline text-center`}>
-          {stats.combined ? (
-            <div class="p-1 sm:p-2">
-              <span class="text-xs text-graphite uppercase tracking-wider block font-sans">Walk</span>
-              <span class="text-xl sm:text-2xl font-bold text-subtle" aria-label="Not available">—</span>
-              <span class="text-xs text-dim block font-sans">{ROUTE_PENDING_LABEL}</span>
-            </div>
-          ) : (
-            <>
-              <div class="p-1 sm:p-2">
-                <span class="text-xs text-graphite uppercase tracking-wider block font-sans">Walk</span>
-                <span class={`text-xl sm:text-2xl font-bold ${stats.walk.value === null ? 'text-subtle' : 'text-navy'}`} aria-label={stats.walk.value === null ? 'Not available' : undefined}>{stats.walk.value ?? '—'}</span>
-                <span class="text-xs text-dim block font-sans">{stats.walk.caption}</span>
-              </div>
-
-              <div class="p-1 sm:p-2 border-l border-hairline">
-                <span class="text-xs text-graphite uppercase tracking-wider block font-sans">Distance</span>
-                <span class={`text-xl sm:text-2xl font-bold ${stats.distance.value === null ? 'text-subtle' : 'text-ink'}`} aria-label={stats.distance.value === null ? 'Not available' : undefined}>{stats.distance.value ?? '—'}</span>
-                <span class="text-xs text-dim block font-sans">{stats.distance.caption}</span>
-              </div>
-            </>
-          )}
-
-          <div class="p-1 sm:p-2 border-l border-hairline">
-            <span class="text-xs text-graphite uppercase tracking-wider block font-sans">Last inspected</span>
-            {venue.lastInspectionDate ? (
-              <>
-                <span class="text-sm sm:text-lg font-bold text-ink-soft font-sans tabular-nums sm:mt-1 block">{formatDate(venue.lastInspectionDate)}</span>
-                <span class="text-xs text-dim block font-sans">by the Chairs</span>
-              </>
-            ) : (
-              <>
-                <span class="text-sm sm:text-lg font-bold text-subtle font-sans sm:mt-1 block" aria-label="Not available">—</span>
-                <span class="text-xs text-dim block font-sans">{NOT_INSPECTED_LABEL}</span>
-              </>
-            )}
-          </div>
-        </div>
-
-        <!-- Eat Like Us Box (Wax Seal Styling) -->
-        {venue.tier === 'approved' && venue.eatLikeUs && (
+      <!-- Eat Like Us Box (Wax Seal Styling) -->
+      {venue.tier === 'approved' && venue.eatLikeUs && (
         <div class="relative bg-ochre-wash/90 border-2 border-gold p-6 rounded-xl shadow-md">
           <div class="flex items-center gap-2 text-xs font-bold text-navy uppercase tracking-wider">
             <Icon name="shield" class="icon-md" />
             <span>Eat like us — what to order</span>
           </div>
-          <p class="text-lg italic text-ink mt-2 leading-relaxed">
-            “{venue.eatLikeUs}”
-          </p>
+          <p class="text-lg italic text-ink mt-2 leading-relaxed">“{venue.eatLikeUs}”</p>
         </div>
-        )}
+      )}
 
-        <!-- Formal Inspection History Ledger -->
-        <div class="border-t border-hairline pt-6 space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold tracking-tight text-ink flex items-center gap-2">
-              <Icon name="clipboard" class="icon-md" />
-              <span>Chronological Inspection Ledger</span>
-            </h2>
-            <span class="text-xs font-sans tabular-nums text-dim bg-neutral-wash px-2 py-0.5 rounded">
-              {venueInspections.length} recorded visits
-            </span>
+      <!-- Formal Inspection History Ledger -->
+      <div class="border-t border-hairline pt-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold tracking-tight text-ink flex items-center gap-2">
+            <Icon name="clipboard" class="icon-md" />
+            <span>Chronological Inspection Ledger</span>
+          </h2>
+          <span class="text-xs font-sans tabular-nums text-dim bg-neutral-wash px-2 py-0.5 rounded">
+            {venueInspections.length} recorded visits
+          </span>
+        </div>
+
+        {venueInspections.length === 0 ? (
+          <div class="p-6 text-center bg-ivory rounded-xl border border-dashed border-hairline text-sm text-dim font-sans">
+            No inspections on record for this venue yet. One is entered once two Chairs confirm the
+            same day's visit.
           </div>
-
-          {venueInspections.length === 0 ? (
-            <div class="p-6 text-center bg-ivory rounded-xl border border-dashed border-hairline text-sm text-dim font-sans">
-              No inspections on record for this venue yet. One is entered once two Chairs confirm the same day's visit.
-            </div>
-          ) : (
-            <div class="space-y-3 font-sans">
-              {venueInspections.map((insp) => (
-                <div class="px-4 py-2.5 rounded-xl bg-surface border border-hairline shadow-xs">
-                  <div class="flex items-center justify-between gap-2">
-                    <span class="font-sans tabular-nums text-xs font-bold text-ink-soft">{formatDate(insp.date)}</span>
-                    <div class="flex items-center gap-1.5">
-                      {insp.outcome && (
-                        <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-sans tabular-nums border ${INSPECTION_OUTCOME_BADGE_CLASSES[insp.outcome]}`}>
-                          {INSPECTION_OUTCOME_LABELS[insp.outcome]}
-                        </span>
-                      )}
-                      <span class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-sans tabular-nums ${insp.kind === 'verified' ? 'bg-success-wash text-success-ink border border-success/40' : 'bg-neutral-wash text-graphite border border-neutral-edge'}`}>
-                        {INSPECTION_KIND_LABELS[insp.kind]}
+        ) : (
+          <div class="space-y-3 font-sans">
+            {venueInspections.map((insp) => (
+              <div class="px-4 py-2.5 rounded-xl bg-surface border border-hairline shadow-xs">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-sans tabular-nums text-xs font-bold text-ink-soft">
+                    {formatDate(insp.date)}
+                  </span>
+                  <div class="flex items-center gap-1.5">
+                    {insp.outcome && (
+                      <span
+                        class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-sans tabular-nums border ${INSPECTION_OUTCOME_BADGE_CLASSES[insp.outcome]}`}
+                      >
+                        {INSPECTION_OUTCOME_LABELS[insp.outcome]}
                       </span>
-                    </div>
+                    )}
+                    <span
+                      class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-sans tabular-nums ${insp.kind === 'verified' ? 'bg-success-wash text-success-ink border border-success/40' : 'bg-neutral-wash text-graphite border border-neutral-edge'}`}
+                    >
+                      {INSPECTION_KIND_LABELS[insp.kind]}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {nearby.length > 0 && (
-          <section class="border-t border-hairline pt-6 space-y-4" aria-labelledby="nearby-heading">
-            <h2 id="nearby-heading" class="text-xl font-bold tracking-tight text-ink flex items-center gap-2">
-              <Icon name="explore" class="icon-md" />
-              <span>Nearby</span>
-            </h2>
-            <div class="bench-pillars tier-venue-grid">
-              {nearby.map((card) => <BenchPillar pillar={card} />)}
-            </div>
-          </section>
+              </div>
+            ))}
+          </div>
         )}
       </div>
+
+      {nearby.length > 0 && (
+        <section class="border-t border-hairline pt-6 space-y-4" aria-labelledby="nearby-heading">
+          <h2
+            id="nearby-heading"
+            class="text-xl font-bold tracking-tight text-ink flex items-center gap-2"
+          >
+            <Icon name="explore" class="icon-md" />
+            <span>Nearby</span>
+          </h2>
+          <div class="bench-pillars tier-venue-grid">
+            {nearby.map((card) => (
+              <BenchPillar pillar={card} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
   </article>
 </Layout>

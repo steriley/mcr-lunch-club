@@ -127,7 +127,7 @@ function unitFor(metadata: UnknownRecord, keys: string[]): string | null {
 function temperatureInCelsius(value: number | null, unit: string | null): number | null {
   if (value === null) return null;
   if (unit?.includes('kelvin') || unit === 'k') return value - 273.15;
-  if (unit?.includes('fahrenheit') || unit === 'f' || unit === '°f') return (value - 32) * 5 / 9;
+  if (unit?.includes('fahrenheit') || unit === 'f' || unit === '°f') return ((value - 32) * 5) / 9;
   return value;
 }
 
@@ -147,7 +147,11 @@ function getTimeSeries(data: unknown): { metadata: UnknownRecord; series: Unknow
     throw new Error('Met Office forecast did not contain a GeoJSON feature collection.');
   }
   const feature = data.features[0];
-  if (!isRecord(feature) || !isRecord(feature.properties) || !Array.isArray(feature.properties.timeSeries)) {
+  if (
+    !isRecord(feature) ||
+    !isRecord(feature.properties) ||
+    !Array.isArray(feature.properties.timeSeries)
+  ) {
     throw new Error('Met Office forecast did not contain a time series.');
   }
   const series = feature.properties.timeSeries.filter(isRecord);
@@ -165,26 +169,61 @@ export function isUsableForecast(data: unknown): boolean {
   }
 }
 
-function weatherPoint(record: UnknownRecord, metadata: UnknownRecord, daily: boolean): WeatherPoint {
+function weatherPoint(
+  record: UnknownRecord,
+  metadata: UnknownRecord,
+  daily: boolean
+): WeatherPoint {
   const temperatureKeys = daily
-    ? ['dayMaxScreenTemperature', 'maxScreenAirTemp', 'dayMaxScreenAirTemp', 'dayMaxTemp', 'maxTemperature', 'screenTemperature']
+    ? [
+        'dayMaxScreenTemperature',
+        'maxScreenAirTemp',
+        'dayMaxScreenAirTemp',
+        'dayMaxTemp',
+        'maxTemperature',
+        'screenTemperature',
+      ]
     : ['screenTemperature', 'temperature'];
   const feelsLikeKeys = daily
-    ? ['dayUpperBoundMaxFeelsLikeTemp', 'dayLowerBoundMaxFeelsLikeTemp', 'dayMaxFeelsLikeTemp', 'feelsLikeTemp', 'feelsLikeTemperature', 'dayFeelsLikeTemp']
+    ? [
+        'dayUpperBoundMaxFeelsLikeTemp',
+        'dayLowerBoundMaxFeelsLikeTemp',
+        'dayMaxFeelsLikeTemp',
+        'feelsLikeTemp',
+        'feelsLikeTemperature',
+        'dayFeelsLikeTemp',
+      ]
     : ['feelsLikeTemperature', 'feelsLikeTemp'];
   const precipitationKeys = daily
-    ? ['dayProbabilityOfRain', 'nightProbabilityOfRain', 'dayProbabilityOfPrecipitation', 'probOfPrecipitation', 'probabilityOfPrecipitation']
+    ? [
+        'dayProbabilityOfRain',
+        'nightProbabilityOfRain',
+        'dayProbabilityOfPrecipitation',
+        'probOfPrecipitation',
+        'probabilityOfPrecipitation',
+      ]
     : ['probOfPrecipitation', 'probabilityOfPrecipitation'];
   const windKeys = daily
-    ? ['midday10MWindSpeed', 'midnight10MWindSpeed', 'windSpeed10m', 'dayMaxWindSpeed', 'dayMax10mWindGust', 'max10mWindGust']
+    ? [
+        'midday10MWindSpeed',
+        'midnight10MWindSpeed',
+        'windSpeed10m',
+        'dayMaxWindSpeed',
+        'dayMax10mWindGust',
+        'max10mWindGust',
+      ]
     : ['windSpeed10m', 'windSpeed'];
   const weatherCodeKeys = daily
     ? ['daySignificantWeatherCode', 'significantWeatherCode', 'nightSignificantWeatherCode']
     : ['significantWeatherCode', 'weatherCode'];
   const weatherCode = numberValue(record, weatherCodeKeys);
-  const condition = weatherCode === null
-    ? { condition: 'Conditions unavailable', icon: 'overcast' as const }
-    : weatherConditions[weatherCode] ?? { condition: 'Mixed conditions', icon: 'overcast' as const };
+  const condition =
+    weatherCode === null
+      ? { condition: 'Conditions unavailable', icon: 'overcast' as const }
+      : (weatherConditions[weatherCode] ?? {
+          condition: 'Mixed conditions',
+          icon: 'overcast' as const,
+        });
   const temperatureValues = temperatureKeys
     .map((key) => numberValue(record, [key]))
     .filter((value): value is number => value !== null);
@@ -198,30 +237,30 @@ function weatherPoint(record: UnknownRecord, metadata: UnknownRecord, daily: boo
     .map((key) => numberValue(record, [key]))
     .filter((value): value is number => value !== null);
   const dailyMinimum = daily ? numberValue(record, ['nightMinScreenTemperature']) : null;
-  const feelsLike = daily && feelsLikeValues.length > 1
-    ? (Math.min(...feelsLikeValues) + Math.max(...feelsLikeValues)) / 2
-    : (feelsLikeValues[0] ?? null);
-  const precipitation = daily && precipitationValues.length > 1
-    ? Math.max(...precipitationValues)
-    : (precipitationValues[0] ?? null);
-  const windSpeed = daily && windValues.length > 1
-    ? (windValues.reduce((total, value) => total + value, 0) / windValues.length)
-    : (windValues[0] ?? null);
+  const feelsLike =
+    daily && feelsLikeValues.length > 1
+      ? (Math.min(...feelsLikeValues) + Math.max(...feelsLikeValues)) / 2
+      : (feelsLikeValues[0] ?? null);
+  const precipitation =
+    daily && precipitationValues.length > 1
+      ? Math.max(...precipitationValues)
+      : (precipitationValues[0] ?? null);
+  const windSpeed =
+    daily && windValues.length > 1
+      ? windValues.reduce((total, value) => total + value, 0) / windValues.length
+      : (windValues[0] ?? null);
 
   return {
     time: typeof record.time === 'string' ? record.time : '',
     temperatureC: temperatureInCelsius(
       temperatureValues[0] ?? null,
-      unitFor(metadata, temperatureKeys),
+      unitFor(metadata, temperatureKeys)
     ),
     minimumTemperatureC: temperatureInCelsius(
       dailyMinimum,
-      unitFor(metadata, ['nightMinScreenTemperature']),
+      unitFor(metadata, ['nightMinScreenTemperature'])
     ),
-    feelsLikeC: temperatureInCelsius(
-      feelsLike,
-      unitFor(metadata, feelsLikeKeys),
-    ),
+    feelsLikeC: temperatureInCelsius(feelsLike, unitFor(metadata, feelsLikeKeys)),
     precipitationProbability: precipitation,
     windSpeedMph: windInMph(windSpeed, unitFor(metadata, windKeys)),
     weatherCode,
@@ -240,7 +279,8 @@ function dateInManchester(value: string): string | null {
     month: '2-digit',
     day: '2-digit',
   }).formatToParts(date);
-  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((item) => item.type === type)?.value;
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((item) => item.type === type)?.value;
   const year = part('year');
   const month = part('month');
   const day = part('day');
@@ -250,7 +290,7 @@ function dateInManchester(value: string): string | null {
 export function normalizeWeather(
   hourlyData: unknown,
   dailyData: unknown,
-  referenceTime = Date.now(),
+  referenceTime = Date.now()
 ): NormalizedWeather {
   const hourly = getTimeSeries(hourlyData);
   const daily = getTimeSeries(dailyData);
@@ -267,7 +307,9 @@ export function normalizeWeather(
   });
   return {
     now: weatherPoint(hourly.series[nowIndex], hourly.metadata, false),
-    hours: hourly.series.slice(nowIndex + 1, nowIndex + 7).map((record) => weatherPoint(record, hourly.metadata, false)),
+    hours: hourly.series
+      .slice(nowIndex + 1, nowIndex + 7)
+      .map((record) => weatherPoint(record, hourly.metadata, false)),
     days: upcomingDays.slice(0, 5).map((record) => weatherPoint(record, daily.metadata, true)),
   };
 }
@@ -296,7 +338,7 @@ function compactPoint(point: WeatherPoint): WeatherPoint {
 export function summarizeWeather(
   hourlyData: unknown,
   dailyData: unknown,
-  options: { referenceTime?: number; stale?: boolean } = {},
+  options: { referenceTime?: number; stale?: boolean } = {}
 ): WeatherSummary {
   const { now, hours, days } = normalizeWeather(hourlyData, dailyData, options.referenceTime);
   return {

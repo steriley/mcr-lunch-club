@@ -15,7 +15,10 @@ export async function requestRebuild(reason: string): Promise<boolean> {
     // The hook URL is a credential, so only the reason and status are logged.
     console.error(`Rebuild after "${reason}" was refused with status ${response.status}.`);
   } catch (error) {
-    console.error(`Rebuild after "${reason}" could not be requested:`, error instanceof Error ? error.message : error);
+    console.error(
+      `Rebuild after "${reason}" could not be requested:`,
+      error instanceof Error ? error.message : error
+    );
   }
   return false;
 }

@@ -15,14 +15,20 @@ describe('venue import (database)', { skip: skipIntegration }, () => {
   beforeEach(resetTestDb);
   after(closeTestDb);
 
-  const tierOf = async (slug: string) => (await (await testDb()).select({ tier: venues.tier }).from(venues).where(eq(venues.slug, slug)))[0].tier;
+  const tierOf = async (slug: string) =>
+    (
+      await (await testDb()).select({ tier: venues.tier }).from(venues).where(eq(venues.slug, slug))
+    )[0].tier;
 
   it('inserts every venue with its tier, so none are hidden', async () => {
     const db = await testDb();
     const result = await importVenues(db, items);
     assert.equal(result.inserted, legacy.length);
 
-    const [{ count }] = await db.select({ count: sql<number>`count(*)::int` }).from(venues).where(isNotNull(venues.tier));
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(venues)
+      .where(isNotNull(venues.tier));
     assert.equal(count, legacy.length);
   });
 
@@ -43,7 +49,10 @@ describe('venue import (database)', { skip: skipIntegration }, () => {
 
     await importVenues(db, items, { update: true });
     assert.equal(await tierOf(slug), otherTier);
-    assert.equal((await db.select({ name: venues.name }).from(venues).where(eq(venues.slug, slug)))[0].name, items[0].input.name);
+    assert.equal(
+      (await db.select({ name: venues.name }).from(venues).where(eq(venues.slug, slug)))[0].name,
+      items[0].input.name
+    );
 
     await importVenues(db, items, { update: true, updateTiers: true });
     assert.equal(await tierOf(slug), fileTier);

@@ -7,14 +7,28 @@ function fakeMap() {
   const calls: string[] = [];
   return {
     calls,
-    on(event: string, handler: () => void) { (handlers[event] ??= []).push(handler); return this; },
+    on(event: string, handler: () => void) {
+      (handlers[event] ??= []).push(handler);
+      return this;
+    },
     once(event: string, handler: () => void) {
-      const wrapped = () => { handlers[event] = handlers[event].filter((h) => h !== wrapped); handler(); };
+      const wrapped = () => {
+        handlers[event] = handlers[event].filter((h) => h !== wrapped);
+        handler();
+      };
       return this.on(event, wrapped);
     },
-    fire(event: string) { for (const handler of [...(handlers[event] ?? [])]) handler(); },
-    stop() { calls.push('stop'); return this; },
-    remove() { calls.push('remove'); return this; },
+    fire(event: string) {
+      for (const handler of [...(handlers[event] ?? [])]) handler();
+    },
+    stop() {
+      calls.push('stop');
+      return this;
+    },
+    remove() {
+      calls.push('remove');
+      return this;
+    },
   };
 }
 

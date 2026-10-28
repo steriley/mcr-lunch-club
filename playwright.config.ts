@@ -30,5 +30,10 @@ export default defineConfig({
   },
   webServer: remote
     ? undefined
-    : { command: 'pnpm serve:build', url: baseURL, reuseExistingServer: !process.env.CI, timeout: 60_000 },
+    : {
+        command: 'pnpm serve:build',
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 60_000,
+      },
 });

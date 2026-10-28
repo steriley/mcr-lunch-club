@@ -22,7 +22,11 @@ export function jsonResponse(body: unknown, status = 200): Response {
 }
 
 /** Consistent error shape for every admin endpoint: `{ error, fields? }`. */
-export function jsonError(status: number, error: string, fields?: Record<string, string>): Response {
+export function jsonError(
+  status: number,
+  error: string,
+  fields?: Record<string, string>
+): Response {
   return jsonResponse(fields ? { error, fields } : { error }, status);
 }
 
@@ -37,7 +41,10 @@ export function validationError(error: z.ZodError): Response {
 
 /** Logs without request bodies or credentials and returns a generic 500. */
 export function serverError(context: string, error: unknown): Response {
-  console.error(`[admin] ${context} failed:`, error instanceof Error ? error.message : 'Unknown error');
+  console.error(
+    `[admin] ${context} failed:`,
+    error instanceof Error ? error.message : 'Unknown error'
+  );
   return jsonError(500, 'Something went wrong. Please try again.');
 }
 
@@ -90,7 +97,10 @@ export const uuidParam = z.uuid();
 /** Maps a Better Auth API error to the admin error shape; anything else becomes a 500. */
 export function authApiError(context: string, error: unknown): Response {
   if (isAPIError(error) && error.statusCode >= 400 && error.statusCode < 500) {
-    return jsonError(error.statusCode, error.body?.message || 'That request could not be completed.');
+    return jsonError(
+      error.statusCode,
+      error.body?.message || 'That request could not be completed.'
+    );
   }
   return serverError(context, error);
 }
@@ -99,7 +109,9 @@ export const userIdParam = z.string().trim().min(1).max(100);
 
 /** The 409 for a venue slug another venue already has, from the pre-check or the unique index. */
 export function slugTaken(): Response {
-  return jsonError(409, 'That slug is already in use.', { slug: 'That slug is already in use. Choose another.' });
+  return jsonError(409, 'That slug is already in use.', {
+    slug: 'That slug is already in use. Choose another.',
+  });
 }
 
 /** A route param: the not-found message for a UUID param, or a custom schema with its message. */
@@ -137,7 +149,9 @@ export interface AdminRouteContext<P extends string, B> {
  */
 export function adminRoute<P extends string = never, S extends z.ZodType | undefined = undefined>(
   spec: AdminRouteSpec<P, S>,
-  handler: (context: AdminRouteContext<P, S extends z.ZodType ? z.output<S> : undefined>) => Promise<Response>
+  handler: (
+    context: AdminRouteContext<P, S extends z.ZodType ? z.output<S> : undefined>
+  ) => Promise<Response>
 ): APIRoute {
   return async ({ request, params: rawParams, url }) => {
     const session = await requireAdmin(request);
@@ -145,7 +159,8 @@ export function adminRoute<P extends string = never, S extends z.ZodType | undef
 
     const params = {} as Record<P, string>;
     for (const [name, param] of Object.entries(spec.params ?? {}) as [P, ParamSpec][]) {
-      const { schema, notFound } = typeof param === 'string' ? { schema: uuidParam, notFound: param } : param;
+      const { schema, notFound } =
+        typeof param === 'string' ? { schema: uuidParam, notFound: param } : param;
       const parsed = schema.safeParse(rawParams[name]);
       if (!parsed.success) return jsonError(404, notFound);
       params[name] = parsed.data;

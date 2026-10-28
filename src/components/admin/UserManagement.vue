@@ -44,12 +44,25 @@ async function createUser() {
   message.value = '';
   const checked = createUserSchema.safeParse({ ...form });
   if (!checked.success) {
-    for (const issue of checked.error.issues) errors[String(issue.path[0] ?? 'form')] ??= issue.message;
+    for (const issue of checked.error.issues)
+      errors[String(issue.path[0] ?? 'form')] ??= issue.message;
     return;
   }
 
   isCreating.value = true;
-  const result = await apiFetch<{ user: { id: string; email: string; name: string; role?: string | null; createdAt?: string | null } }>('/api/admin/users', { method: 'POST', body: checked.data, fallback: 'Unable to create this account.' });
+  const result = await apiFetch<{
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      role?: string | null;
+      createdAt?: string | null;
+    };
+  }>('/api/admin/users', {
+    method: 'POST',
+    body: checked.data,
+    fallback: 'Unable to create this account.',
+  });
   isCreating.value = false;
   if (!result.ok) {
     Object.assign(errors, result.fields);
@@ -77,10 +90,13 @@ async function performAction() {
   message.value = '';
   errorMessage.value = '';
   busy.value[target.user.id] = true;
-  const result = await apiFetch(`/api/admin/users/${encodeURIComponent(target.user.id)}/${target.action}`, {
-    method: 'POST',
-    fallback: 'Unable to update this account.',
-  });
+  const result = await apiFetch(
+    `/api/admin/users/${encodeURIComponent(target.user.id)}/${target.action}`,
+    {
+      method: 'POST',
+      fallback: 'Unable to update this account.',
+    }
+  );
   busy.value[target.user.id] = false;
   if (!result.ok) {
     errorMessage.value = result.error;
@@ -121,14 +137,27 @@ async function submitReset() {
   message.value = `Temporary password set for ${user.email}. They have been signed out everywhere.`;
 }
 
-const inputClass = 'w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink focus:border-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/30';
+const inputClass =
+  'w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink focus:border-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy/30';
 const errorClass = 'mt-1 block text-xs font-medium text-red-700';
 </script>
 
 <template>
   <div class="space-y-6">
-    <p v-if="message" role="status" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{{ message }}</p>
-    <p v-if="errorMessage" role="alert" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
+    <p
+      v-if="message"
+      role="status"
+      class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+    >
+      {{ message }}
+    </p>
+    <p
+      v-if="errorMessage"
+      role="alert"
+      class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+    >
+      {{ errorMessage }}
+    </p>
 
     <div class="overflow-hidden rounded-2xl border border-hairline bg-parchment shadow-sm">
       <div class="overflow-x-auto">
@@ -146,26 +175,52 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
               <td class="px-4 py-3">
                 <div class="font-semibold text-ink">
                   {{ user.name || user.email }}
-                  <span v-if="user.id === currentUserId" class="ml-1 text-xs font-normal text-graphite">(you)</span>
+                  <span
+                    v-if="user.id === currentUserId"
+                    class="ml-1 text-xs font-normal text-graphite"
+                    >(you)</span
+                  >
                 </div>
                 <div class="text-xs text-graphite">{{ user.email }}</div>
               </td>
               <td class="px-4 py-3 text-xs">{{ roleLabel(user.role) }}</td>
               <td class="px-4 py-3">
-                <span :class="['inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]', user.banned ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800']">
+                <span
+                  :class="[
+                    'inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]',
+                    user.banned ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800',
+                  ]"
+                >
                   {{ user.banned ? 'Deactivated' : 'Active' }}
                 </span>
               </td>
               <td class="px-4 py-3">
                 <div class="flex justify-end gap-2">
-                  <button type="button" class="whitespace-nowrap rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[user.id]" @click="openReset(user)">
+                  <button
+                    type="button"
+                    class="whitespace-nowrap rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60"
+                    :disabled="busy[user.id]"
+                    @click="openReset(user)"
+                  >
                     Reset password
                   </button>
                   <template v-if="user.id !== currentUserId">
-                    <button v-if="!user.banned" type="button" class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'ban' }">
+                    <button
+                      v-if="!user.banned"
+                      type="button"
+                      class="rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60"
+                      :disabled="busy[user.id]"
+                      @click="pending = { user, action: 'ban' }"
+                    >
                       Deactivate
                     </button>
-                    <button v-else type="button" class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60" :disabled="busy[user.id]" @click="pending = { user, action: 'unban' }">
+                    <button
+                      v-else
+                      type="button"
+                      class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60"
+                      :disabled="busy[user.id]"
+                      @click="pending = { user, action: 'unban' }"
+                    >
                       Reactivate
                     </button>
                   </template>
@@ -177,12 +232,24 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
       </div>
     </div>
 
-    <form class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm" novalidate @submit.prevent="createUser">
+    <form
+      class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
+      novalidate
+      @submit.prevent="createUser"
+    >
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Add a Chair</p>
       <h2 class="mt-2 text-2xl font-bold text-ink">Create an account</h2>
-      <p class="mt-2 text-sm text-soot">There is no public sign-up. Choose an initial password and share it with them securely.</p>
+      <p class="mt-2 text-sm text-soot">
+        There is no public sign-up. Choose an initial password and share it with them securely.
+      </p>
 
-      <div v-if="formError" role="alert" class="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ formError }}</div>
+      <div
+        v-if="formError"
+        role="alert"
+        class="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+      >
+        {{ formError }}
+      </div>
 
       <div class="mt-5 grid gap-4 md:grid-cols-2">
         <label class="block text-sm font-semibold text-ink">
@@ -193,7 +260,9 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
         <label class="block text-sm font-semibold text-ink">
           <span class="mb-2 block">Access</span>
           <select v-model="form.role" :class="inputClass">
-            <option v-for="role in USER_ROLES" :key="role.value" :value="role.value">{{ role.label }}</option>
+            <option v-for="role in USER_ROLES" :key="role.value" :value="role.value">
+              {{ role.label }}
+            </option>
           </select>
         </label>
         <label class="block text-sm font-semibold text-ink">
@@ -203,12 +272,22 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
         </label>
         <label class="block text-sm font-semibold text-ink">
           <span class="mb-2 block">Initial password</span>
-          <input v-model="form.password" type="password" autocomplete="new-password" :class="inputClass" :placeholder="`At least ${MIN_PASSWORD_LENGTH} characters`" />
+          <input
+            v-model="form.password"
+            type="password"
+            autocomplete="new-password"
+            :class="inputClass"
+            :placeholder="`At least ${MIN_PASSWORD_LENGTH} characters`"
+          />
           <span v-if="errors.password" :class="errorClass">{{ errors.password }}</span>
         </label>
       </div>
       <div class="mt-5 flex justify-end">
-        <button type="submit" :disabled="isCreating" class="inline-flex items-center justify-center rounded-lg bg-navy-fixed px-4 py-2.5 text-sm font-semibold text-white hover:bg-deep disabled:opacity-70">
+        <button
+          type="submit"
+          :disabled="isCreating"
+          class="inline-flex items-center justify-center rounded-lg bg-navy-fixed px-4 py-2.5 text-sm font-semibold text-white hover:bg-deep disabled:opacity-70"
+        >
           {{ isCreating ? 'Creating…' : 'Create account' }}
         </button>
       </div>
@@ -217,25 +296,62 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
     <ConfirmDialog
       :open="Boolean(pending)"
       :title="pending?.action === 'ban' ? 'Deactivate account' : 'Reactivate account'"
-      :message="pending?.action === 'ban' ? `${pending?.user.email} will be signed out and unable to sign in until reactivated.` : `${pending?.user.email} will be able to sign in again.`"
+      :message="
+        pending?.action === 'ban'
+          ? `${pending?.user.email} will be signed out and unable to sign in until reactivated.`
+          : `${pending?.user.email} will be able to sign in again.`
+      "
       :confirm-label="pending?.action === 'ban' ? 'Deactivate' : 'Reactivate'"
       @cancel="pending = null"
       @confirm="performAction"
     />
 
-    <div v-if="resetTarget" class="fixed inset-0 z-50 flex items-center justify-center bg-charcoal-fixed/40 px-4" @click.self="resetTarget = null" @keydown.esc="resetTarget = null">
-      <form role="dialog" aria-modal="true" aria-labelledby="reset-title" class="w-full max-w-md rounded-2xl border border-hairline bg-parchment p-6 shadow-xl" novalidate @submit.prevent="submitReset">
+    <div
+      v-if="resetTarget"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-charcoal-fixed/40 px-4"
+      @click.self="resetTarget = null"
+      @keydown.esc="resetTarget = null"
+    >
+      <form
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reset-title"
+        class="w-full max-w-md rounded-2xl border border-hairline bg-parchment p-6 shadow-xl"
+        novalidate
+        @submit.prevent="submitReset"
+      >
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Reset password</p>
         <h3 id="reset-title" class="mt-2 text-xl font-bold text-ink">{{ resetTarget.email }}</h3>
-        <p class="mt-2 text-sm text-soot">Set a temporary password. They will be signed out everywhere and should change it after signing in.</p>
+        <p class="mt-2 text-sm text-soot">
+          Set a temporary password. They will be signed out everywhere and should change it after
+          signing in.
+        </p>
         <label class="mt-4 block text-sm font-semibold text-ink">
           <span class="mb-2 block">Temporary password</span>
-          <input v-model="resetPassword" type="password" autocomplete="new-password" autofocus :class="inputClass" />
+          <input
+            v-model="resetPassword"
+            type="password"
+            autocomplete="new-password"
+            autofocus
+            :class="inputClass"
+          />
           <span v-if="resetError" role="alert" :class="errorClass">{{ resetError }}</span>
         </label>
         <div class="mt-6 flex justify-end gap-3">
-          <button type="button" class="rounded-lg border border-hairline bg-surface px-4 py-2 text-sm font-semibold text-ink hover:bg-linen" @click="resetTarget = null">Cancel</button>
-          <button type="submit" :disabled="busy[resetTarget.id]" class="rounded-lg bg-navy-fixed px-4 py-2 text-sm font-semibold text-white hover:bg-deep disabled:opacity-70">Set password</button>
+          <button
+            type="button"
+            class="rounded-lg border border-hairline bg-surface px-4 py-2 text-sm font-semibold text-ink hover:bg-linen"
+            @click="resetTarget = null"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            :disabled="busy[resetTarget.id]"
+            class="rounded-lg bg-navy-fixed px-4 py-2 text-sm font-semibold text-white hover:bg-deep disabled:opacity-70"
+          >
+            Set password
+          </button>
         </div>
       </form>
     </div>

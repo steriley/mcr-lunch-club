@@ -29,7 +29,9 @@ function validateDatabaseUrl(name: string, value: string): string {
   }
 
   if (parsed.protocol !== 'postgres:' && parsed.protocol !== 'postgresql:') {
-    throw new Error(`Invalid environment variable: ${name} must use the postgres or postgresql protocol.`);
+    throw new Error(
+      `Invalid environment variable: ${name} must use the postgres or postgresql protocol.`
+    );
   }
 
   return value;
@@ -57,9 +59,14 @@ export function getRuntimeDatabaseUrl(): string {
 export function getMigrationDatabaseUrl(): string {
   const value = optional('DATABASE_URL_UNPOOLED') ?? optional('DATABASE_URL');
   if (!value) {
-    throw new Error('Missing required environment variable: DATABASE_URL_UNPOOLED (or fallback DATABASE_URL).');
+    throw new Error(
+      'Missing required environment variable: DATABASE_URL_UNPOOLED (or fallback DATABASE_URL).'
+    );
   }
-  return validateDatabaseUrl(optional('DATABASE_URL_UNPOOLED') ? 'DATABASE_URL_UNPOOLED' : 'DATABASE_URL', value);
+  return validateDatabaseUrl(
+    optional('DATABASE_URL_UNPOOLED') ? 'DATABASE_URL_UNPOOLED' : 'DATABASE_URL',
+    value
+  );
 }
 
 export type DatabaseDriver = 'pg' | 'neon-http';
@@ -88,7 +95,9 @@ export function isVercelPreview(): boolean {
  */
 export function getPreviewOrigins(): string[] {
   if (!isVercelPreview()) return [];
-  const hosts = [optional('VERCEL_BRANCH_URL'), optional('VERCEL_URL')].filter((host): host is string => Boolean(host));
+  const hosts = [optional('VERCEL_BRANCH_URL'), optional('VERCEL_URL')].filter(
+    (host): host is string => Boolean(host)
+  );
   return Array.from(new Set(hosts.map((host) => `https://${host}`)));
 }
 
@@ -107,16 +116,22 @@ function getAllowedHosts(authUrl: string): string[] {
   if (env.VERCEL_ENV === 'production') {
     vercelHosts.push(optional('VERCEL_PROJECT_PRODUCTION_URL'));
   }
-  const extraHosts = (optional('BETTER_AUTH_ALLOWED_HOSTS') ?? '').split(',').map((host) => host.trim());
+  const extraHosts = (optional('BETTER_AUTH_ALLOWED_HOSTS') ?? '')
+    .split(',')
+    .map((host) => host.trim());
 
-  const hosts = [authUrl, ...vercelHosts, ...extraHosts].filter((host): host is string => Boolean(host));
+  const hosts = [authUrl, ...vercelHosts, ...extraHosts].filter((host): host is string =>
+    Boolean(host)
+  );
   return Array.from(new Set(hosts.map(hostOf)));
 }
 
 export function getAuthEnvironment() {
   const secret = required('BETTER_AUTH_SECRET');
   if (secret.length < 32) {
-    throw new Error('Invalid environment variable: BETTER_AUTH_SECRET must be at least 32 characters long.');
+    throw new Error(
+      'Invalid environment variable: BETTER_AUTH_SECRET must be at least 32 characters long.'
+    );
   }
 
   // Preview URLs change per branch and deployment, so previews use their own

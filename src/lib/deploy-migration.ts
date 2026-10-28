@@ -6,19 +6,26 @@
  * Local and other builds never migrate.
  */
 export type DeployMigrationDecision =
-  | { run: false; reason: string }
-  | { run: true; target: 'production' | 'preview'; host: string };
+  { run: false; reason: string } | { run: true; target: 'production' | 'preview'; host: string };
 
 /** Neon endpoint id of a host or connection string, e.g. `ep-cool-darkness-123456`. */
 export function neonEndpointId(value: string): string {
   const host = value.includes('://') ? new URL(value).hostname : value.trim();
-  return host.split('.')[0].replace(/-pooler$/, '').toLowerCase();
+  return host
+    .split('.')[0]
+    .replace(/-pooler$/, '')
+    .toLowerCase();
 }
 
-export function decideDeployMigration(env: Record<string, string | undefined>): DeployMigrationDecision {
+export function decideDeployMigration(
+  env: Record<string, string | undefined>
+): DeployMigrationDecision {
   const target = env.VERCEL_ENV;
   if (target !== 'production' && target !== 'preview') {
-    return { run: false, reason: `not a Vercel production or preview build (VERCEL_ENV=${target ?? 'unset'})` };
+    return {
+      run: false,
+      reason: `not a Vercel production or preview build (VERCEL_ENV=${target ?? 'unset'})`,
+    };
   }
 
   const url = env.DATABASE_URL_UNPOOLED?.trim() || env.DATABASE_URL?.trim();

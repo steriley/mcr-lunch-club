@@ -1,7 +1,15 @@
 import { and, asc, isNotNull, isNull } from 'drizzle-orm';
 import { venues } from '@/db/schema';
 import type { Database } from '@/lib/db-client';
-import { MATRIX_BATCH_SIZE, OrsError, routeToVenueValues, walkingMatrixFromBase, walkingRouteFromBase, type LatLng, type WalkingRoute } from '@/lib/ors';
+import {
+  MATRIX_BATCH_SIZE,
+  OrsError,
+  routeToVenueValues,
+  walkingMatrixFromBase,
+  walkingRouteFromBase,
+  type LatLng,
+  type WalkingRoute,
+} from '@/lib/ors';
 import { routeColumns, updateVenue } from '@/lib/venues';
 
 /**
@@ -37,21 +45,37 @@ export interface BackfillResult {
   remaining: number;
 }
 
-export async function backfillRoutes(db: Database, options: BackfillOptions = {}): Promise<BackfillResult> {
-  const matrix = options.matrix ?? ((destinations: LatLng[]) => walkingMatrixFromBase(destinations));
+export async function backfillRoutes(
+  db: Database,
+  options: BackfillOptions = {}
+): Promise<BackfillResult> {
+  const matrix =
+    options.matrix ?? ((destinations: LatLng[]) => walkingMatrixFromBase(destinations));
   const route = options.route ?? ((to: LatLng) => walkingRouteFromBase(to));
-  const sleep = options.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+  const sleep =
+    options.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
   const log = options.log ?? (() => {});
   const delayMs = options.delayMs ?? 2000;
 
   const hasCoordinates = and(isNotNull(venues.latitude), isNotNull(venues.longitude));
   const todo = await db
-    .select({ id: venues.id, name: venues.name, latitude: venues.latitude, longitude: venues.longitude })
+    .select({
+      id: venues.id,
+      name: venues.name,
+      latitude: venues.latitude,
+      longitude: venues.longitude,
+    })
     .from(venues)
     .where(options.all ? hasCoordinates : and(hasCoordinates, isNull(venues.routeUpdatedAt)))
     .orderBy(asc(venues.name));
 
-  const result: BackfillResult = { todo: todo.length, routed: 0, failed: [], stopped: null, remaining: todo.length };
+  const result: BackfillResult = {
+    todo: todo.length,
+    routed: 0,
+    failed: [],
+    stopped: null,
+    remaining: todo.length,
+  };
   if (options.dryRun) {
     for (const venue of todo) log(`  would route ${venue.name}`);
     return result;
@@ -72,8 +96,12 @@ export async function backfillRoutes(db: Database, options: BackfillOptions = {}
     log(`  ${venue.name}: ${values.distanceMiles.toFixed(2)} mi, ${values.walkingTimeMin} min`);
   };
 
-  const stopsRun = (error: unknown) => error instanceof OrsError && (error.kind === 'rate_limited' || error.kind === 'not_configured');
-  const point = (venue: (typeof todo)[number]): LatLng => ({ lat: Number(venue.latitude), lng: Number(venue.longitude) });
+  const stopsRun = (error: unknown) =>
+    error instanceof OrsError && (error.kind === 'rate_limited' || error.kind === 'not_configured');
+  const point = (venue: (typeof todo)[number]): LatLng => ({
+    lat: Number(venue.latitude),
+    lng: Number(venue.longitude),
+  });
 
   for (let start = 0; start < todo.length; start += MATRIX_BATCH_SIZE) {
     const batch = todo.slice(start, start + MATRIX_BATCH_SIZE);
@@ -88,7 +116,9 @@ export async function backfillRoutes(db: Database, options: BackfillOptions = {}
           result.stopped = (error as OrsError).message;
           return result;
         }
-        log(`  Matrix request failed (${error instanceof Error ? error.message : 'unknown error'}); routing this batch one by one.`);
+        log(
+          `  Matrix request failed (${error instanceof Error ? error.message : 'unknown error'}); routing this batch one by one.`
+        );
       }
     }
 
@@ -107,7 +137,9 @@ export async function backfillRoutes(db: Database, options: BackfillOptions = {}
           return result;
         }
         result.failed.push(venue.name);
-        log(`  ${venue.name}: ${error instanceof Error ? error.message : 'failed'} (left as it is)`);
+        log(
+          `  ${venue.name}: ${error instanceof Error ? error.message : 'failed'} (left as it is)`
+        );
       }
     }
   }

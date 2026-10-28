@@ -30,7 +30,10 @@ describe('design system', () => {
     for (const file of sourceFiles(SRC)) {
       const lines = readFileSync(file, 'utf8').split('\n');
       lines.forEach((line, index) => {
-        assert.ok(!monospace.test(line), `${path.relative(SRC, file)}:${index + 1} uses a monospaced font: use tabular-nums instead`);
+        assert.ok(
+          !monospace.test(line),
+          `${path.relative(SRC, file)}:${index + 1} uses a monospaced font: use tabular-nums instead`
+        );
       });
     }
   });
@@ -41,7 +44,10 @@ describe('design system', () => {
       if (file.endsWith('.css')) continue;
       const lines = readFileSync(file, 'utf8').split('\n');
       lines.forEach((line, index) => {
-        assert.ok(!hexClass.test(line), `${path.relative(SRC, file)}:${index + 1} has a hex colour class: use a token (src/styles/theme.css)`);
+        assert.ok(
+          !hexClass.test(line),
+          `${path.relative(SRC, file)}:${index + 1} has a hex colour class: use a token (src/styles/theme.css)`
+        );
       });
     }
   });
@@ -56,7 +62,10 @@ describe('design system', () => {
       text = text.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '));
       text.split('\n').forEach((line, index) => {
         if (line.includes('name="theme-color"') || /^\s*\/\//.test(line)) return;
-        assert.ok(!hex.test(line), `${path.relative(SRC, file)}:${index + 1} has a raw hex colour: use a token (src/styles/theme.css)`);
+        assert.ok(
+          !hex.test(line),
+          `${path.relative(SRC, file)}:${index + 1} has a raw hex colour: use a token (src/styles/theme.css)`
+        );
       });
     }
   });

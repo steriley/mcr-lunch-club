@@ -6,7 +6,12 @@ import { apiFetch } from '@/lib/api-fetch';
  * Approve / Decline (with a required, internal reason) for admins other than
  * the proposer; Withdraw for the proposer. The server enforces all of this.
  */
-const props = defineProps<{ proposalId: string; proposedBy: string | null; currentUserId: string; canDecide: boolean }>();
+const props = defineProps<{
+  proposalId: string;
+  proposedBy: string | null;
+  currentUserId: string;
+  canDecide: boolean;
+}>();
 
 const isMine = computed(() => props.proposedBy === props.currentUserId);
 const declining = ref(false);
@@ -17,7 +22,8 @@ const errorMessage = ref('');
 async function act(action: 'approve' | 'decline' | 'withdraw') {
   errorMessage.value = '';
   if (action === 'decline' && !reason.value.trim()) {
-    errorMessage.value = 'Give a reason for declining. It is kept internal and never shown publicly.';
+    errorMessage.value =
+      'Give a reason for declining. It is kept internal and never shown publicly.';
     return;
   }
   busy.value = true;
@@ -34,30 +40,51 @@ async function act(action: 'approve' | 'decline' | 'withdraw') {
   window.location.reload();
 }
 
-const primary = 'rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-white hover:bg-success-strong disabled:opacity-60';
-const secondary = 'rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60';
-const danger = 'rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60';
+const primary =
+  'rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-white hover:bg-success-strong disabled:opacity-60';
+const secondary =
+  'rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60';
+const danger =
+  'rounded-lg bg-danger px-3 py-1.5 text-xs font-semibold text-white hover:bg-danger-strong disabled:opacity-60';
 </script>
 
 <template>
   <div class="space-y-2">
     <div v-if="isMine" class="flex flex-wrap items-center gap-2">
-      <span class="text-xs text-graphite">You proposed this. A different admin must approve or decline it.</span>
-      <button type="button" :class="secondary" :disabled="busy" @click="act('withdraw')">Withdraw</button>
+      <span class="text-xs text-graphite"
+        >You proposed this. A different admin must approve or decline it.</span
+      >
+      <button type="button" :class="secondary" :disabled="busy" @click="act('withdraw')">
+        Withdraw
+      </button>
     </div>
     <template v-else-if="canDecide">
       <div v-if="!declining" class="flex flex-wrap gap-2">
-        <button type="button" :class="primary" :disabled="busy" @click="act('approve')">Approve</button>
-        <button type="button" :class="secondary" :disabled="busy" @click="declining = true">Decline…</button>
+        <button type="button" :class="primary" :disabled="busy" @click="act('approve')">
+          Approve
+        </button>
+        <button type="button" :class="secondary" :disabled="busy" @click="declining = true">
+          Decline…
+        </button>
       </div>
       <div v-else class="space-y-2">
         <label class="block text-xs font-semibold text-ink">
           Reason for declining (internal, never shown publicly)
-          <textarea v-model="reason" rows="2" maxlength="1000" required class="mt-1 w-full rounded-lg border border-hairline bg-surface px-3 py-2 text-sm"></textarea>
+          <textarea
+            v-model="reason"
+            rows="2"
+            maxlength="1000"
+            required
+            class="mt-1 w-full rounded-lg border border-hairline bg-surface px-3 py-2 text-sm"
+          ></textarea>
         </label>
         <div class="flex gap-2">
-          <button type="button" :class="danger" :disabled="busy" @click="act('decline')">Decline</button>
-          <button type="button" :class="secondary" :disabled="busy" @click="declining = false">Cancel</button>
+          <button type="button" :class="danger" :disabled="busy" @click="act('decline')">
+            Decline
+          </button>
+          <button type="button" :class="secondary" :disabled="busy" @click="declining = false">
+            Cancel
+          </button>
         </div>
       </div>
     </template>

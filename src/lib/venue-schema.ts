@@ -38,13 +38,20 @@ const optionalNumber = (schema: z.ZodNumber) =>
 const optionalUrl = (label: string) =>
   z.preprocess(
     emptyToNull,
-    z.url({ protocol: /^https?$/, error: `${label} must be a full http(s) link.` }).max(2000).nullable()
+    z
+      .url({ protocol: /^https?$/, error: `${label} must be a full http(s) link.` })
+      .max(2000)
+      .nullable()
   );
 
 export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const venueFields = z.object({
-  name: z.string().trim().min(2, 'Venue name is required.').max(200, 'Venue name must be 200 characters or fewer.'),
+  name: z
+    .string()
+    .trim()
+    .min(2, 'Venue name is required.')
+    .max(200, 'Venue name must be 200 characters or fewer.'),
   slug: z
     .string()
     .trim()
@@ -53,26 +60,45 @@ const venueFields = z.object({
     .regex(SLUG_PATTERN, 'Use lowercase letters, numbers and single hyphens only.'),
   address: optionalText(255, 'Address'),
   latitude: optionalNumber(
-    z.number({ error: 'Latitude must be a number.' }).min(-90, 'Latitude must be between -90 and 90.').max(90, 'Latitude must be between -90 and 90.')
+    z
+      .number({ error: 'Latitude must be a number.' })
+      .min(-90, 'Latitude must be between -90 and 90.')
+      .max(90, 'Latitude must be between -90 and 90.')
   ),
   longitude: optionalNumber(
-    z.number({ error: 'Longitude must be a number.' }).min(-180, 'Longitude must be between -180 and 180.').max(180, 'Longitude must be between -180 and 180.')
+    z
+      .number({ error: 'Longitude must be a number.' })
+      .min(-180, 'Longitude must be between -180 and 180.')
+      .max(180, 'Longitude must be between -180 and 180.')
   ),
   pullQuote: optionalText(400, 'Pull quote'),
   lunchSpecial: optionalText(1000, 'Lunch special'),
   websiteUrl: optionalUrl('Website URL'),
   cost: z.enum(COST_BANDS, { error: 'Choose a cost band.' }),
-  cuisine: z.enum(CUISINE_VALUES, { error: 'Choose a cuisine from the list.' }).default(DEFAULT_CUISINE),
+  cuisine: z
+    .enum(CUISINE_VALUES, { error: 'Choose a cuisine from the list.' })
+    .default(DEFAULT_CUISINE),
   mapSearchLink: optionalUrl('Map link'),
 });
 
-function checkLocation(venue: { latitude: number | null; longitude: number | null }, context: z.RefinementCtx) {
+function checkLocation(
+  venue: { latitude: number | null; longitude: number | null },
+  context: z.RefinementCtx
+) {
   // Coordinates come from an ORS search pick, or manual entry when search finds nothing.
   if ((venue.latitude === null) !== (venue.longitude === null)) {
     const field = venue.latitude === null ? 'latitude' : 'longitude';
-    context.addIssue({ code: 'custom', path: [field], message: 'Enter both latitude and longitude, or neither.' });
+    context.addIssue({
+      code: 'custom',
+      path: [field],
+      message: 'Enter both latitude and longitude, or neither.',
+    });
   } else if (isOutsideUk(venue.latitude, venue.longitude)) {
-    context.addIssue({ code: 'custom', path: ['latitude'], message: 'These coordinates are outside the UK. Check them, or search for the venue instead.' });
+    context.addIssue({
+      code: 'custom',
+      path: ['latitude'],
+      message: 'These coordinates are outside the UK. Check them, or search for the venue instead.',
+    });
   }
 }
 
@@ -89,8 +115,12 @@ export const venueInputSchema = venueFields.superRefine(checkLocation);
  */
 export const venueCreateSchema = venueFields
   .extend({
-    proposedTier: z.preprocess(emptyToNull, z.enum(TIER_VALUES, { error: 'Choose a verdict.' }).nullable()).default(null),
-    fromSuggestion: z.preprocess(emptyToNull, z.uuid({ error: 'Unknown suggestion.' }).nullable()).default(null),
+    proposedTier: z
+      .preprocess(emptyToNull, z.enum(TIER_VALUES, { error: 'Choose a verdict.' }).nullable())
+      .default(null),
+    fromSuggestion: z
+      .preprocess(emptyToNull, z.uuid({ error: 'Unknown suggestion.' }).nullable())
+      .default(null),
   })
   .superRefine((venue, context) => {
     checkLocation(venue, context);
@@ -98,14 +128,16 @@ export const venueCreateSchema = venueFields
       context.addIssue({
         code: 'custom',
         path: ['latitude'],
-        message: 'Pick the venue from the location search (or enter it manually) before accepting a suggestion.',
+        message:
+          'Pick the venue from the location search (or enter it manually) before accepting a suggestion.',
       });
     }
     if (venue.proposedTier === 'approved') {
       context.addIssue({
         code: 'custom',
         path: ['proposedTier'],
-        message: 'A new venue cannot be proposed straight into Approved: it needs a dual-verified inspection first.',
+        message:
+          'A new venue cannot be proposed straight into Approved: it needs a dual-verified inspection first.',
       });
     }
   });

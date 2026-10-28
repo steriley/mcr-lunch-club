@@ -14,25 +14,43 @@
  */
 import fs from 'node:fs';
 import { closeDatabase, db } from '@/lib/db-script';
-import { importLegacyInspections, UnmatchedVenuesError, type LegacyEntry } from '@/lib/legacy-inspections';
+import {
+  importLegacyInspections,
+  UnmatchedVenuesError,
+  type LegacyEntry,
+} from '@/lib/legacy-inspections';
 
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
 const keepUnlisted = args.has('--keep-unlisted');
 
-const { inspections: entries } = JSON.parse(fs.readFileSync('drizzle/data/legacy-inspections.json', 'utf8')) as { inspections: LegacyEntry[] };
+const { inspections: entries } = JSON.parse(
+  fs.readFileSync('drizzle/data/legacy-inspections.json', 'utf8')
+) as { inspections: LegacyEntry[] };
 
 let exitCode = 0;
 try {
-  const { plan, inserted, changedDates } = await importLegacyInspections(db, entries, { dryRun, keepUnlisted });
+  const { plan, inserted, changedDates } = await importLegacyInspections(db, entries, {
+    dryRun,
+    keepUnlisted,
+  });
   const prefix = dryRun ? '[dry run] ' : '';
-  console.log(`${prefix}Matched ${plan.matched.length + plan.never.length} of ${entries.length} listed venues (${plan.never.length} never inspected).`);
-  console.log(`${prefix}Legacy inspections ${dryRun ? 'to insert' : 'inserted'}: ${inserted} (already present rows are skipped).`);
+  console.log(
+    `${prefix}Matched ${plan.matched.length + plan.never.length} of ${entries.length} listed venues (${plan.never.length} never inspected).`
+  );
+  console.log(
+    `${prefix}Legacy inspections ${dryRun ? 'to insert' : 'inserted'}: ${inserted} (already present rows are skipped).`
+  );
   const cleared = changedDates.filter((change) => change.after === null);
   const updated = changedDates.filter((change) => change.after !== null);
-  console.log(`${prefix}Last inspection date ${dryRun ? 'would change' : 'changed'} for ${updated.length} venue(s):`);
-  for (const change of updated) console.log(`  ${change.name}: ${change.before ?? '—'} -> ${change.after}`);
-  console.log(`${prefix}Last inspection date ${dryRun ? 'would be cleared' : 'cleared'} for ${cleared.length} venue(s)${keepUnlisted ? ' (listed as never inspected)' : ''}:`);
+  console.log(
+    `${prefix}Last inspection date ${dryRun ? 'would change' : 'changed'} for ${updated.length} venue(s):`
+  );
+  for (const change of updated)
+    console.log(`  ${change.name}: ${change.before ?? '—'} -> ${change.after}`);
+  console.log(
+    `${prefix}Last inspection date ${dryRun ? 'would be cleared' : 'cleared'} for ${cleared.length} venue(s)${keepUnlisted ? ' (listed as never inspected)' : ''}:`
+  );
   for (const change of cleared) console.log(`  ${change.name} (was ${change.before})`);
 } catch (error) {
   if (error instanceof UnmatchedVenuesError) {

@@ -24,7 +24,9 @@ import { renderSql, restoreStubs, stubDb } from '../test/route-helpers';
 
 afterEach(restoreStubs);
 
-function venueRow(overrides: Partial<VenueRow> = {}): VenueRow & { tier: NonNullable<VenueRow['tier']> } {
+function venueRow(
+  overrides: Partial<VenueRow> = {}
+): VenueRow & { tier: NonNullable<VenueRow['tier']> } {
   return {
     id: 'uuid',
     slug: 'chip-shop',
@@ -132,14 +134,22 @@ describe('toPublicVenue', () => {
     assert.equal(venue.walkingTimeMin, null);
     assert.equal(venue.cuisine, 'Other');
     assert.equal(venue.lastInspectionDate, 'Awaiting Assessment');
-    assert.equal(venue.mapSearchLink, 'https://www.google.com/maps/search/?api=1&query=Chip%20Shop%20Manchester');
+    assert.equal(
+      venue.mapSearchLink,
+      'https://www.google.com/maps/search/?api=1&query=Chip%20Shop%20Manchester'
+    );
   });
 
   it('never estimates distance or walking time, but links to the coordinates', () => {
-    const venue = toPublicVenue(venueRow({ distanceMiles: null, walkingTimeMin: null, mapSearchLink: null }));
+    const venue = toPublicVenue(
+      venueRow({ distanceMiles: null, walkingTimeMin: null, mapSearchLink: null })
+    );
     assert.equal(venue.distanceMiles, null);
     assert.equal(venue.walkingTimeMin, null);
-    assert.equal(venue.mapSearchLink, 'https://www.google.com/maps/search/?api=1&query=53.480000%2C-2.250000');
+    assert.equal(
+      venue.mapSearchLink,
+      'https://www.google.com/maps/search/?api=1&query=53.480000%2C-2.250000'
+    );
   });
 });
 
@@ -150,7 +160,10 @@ describe('toPublicImage', () => {
   });
 
   it('exposes the URLs, size, alt text and focal point, and nothing else', () => {
-    const image = toPublicImage(imageRow({ caption: '  Top-down pizza ', focalX: 30, focalY: 70 }), 'Chip Shop');
+    const image = toPublicImage(
+      imageRow({ caption: '  Top-down pizza ', focalX: 30, focalY: 70 }),
+      'Chip Shop'
+    );
     assert.deepEqual(image, {
       url: imageRow().fullUrl,
       thumbUrl: imageRow().thumbUrl,
@@ -163,8 +176,20 @@ describe('toPublicImage', () => {
   });
 
   it('falls back to the full image for a migrated photo and to the venue name for alt text', () => {
-    const image = toPublicImage(imageRow({ fullUrl: 'https://example.com/old.jpg', thumbUrl: null, width: null, height: null, caption: '  ' }), 'Chip Shop');
-    assert.deepEqual([image?.thumbUrl, image?.width, image?.alt], ['https://example.com/old.jpg', null, 'Chip Shop']);
+    const image = toPublicImage(
+      imageRow({
+        fullUrl: 'https://example.com/old.jpg',
+        thumbUrl: null,
+        width: null,
+        height: null,
+        caption: '  ',
+      }),
+      'Chip Shop'
+    );
+    assert.deepEqual(
+      [image?.thumbUrl, image?.width, image?.alt],
+      ['https://example.com/old.jpg', null, 'Chip Shop']
+    );
   });
 });
 
@@ -199,7 +224,16 @@ describe('toPublicIncident', () => {
 
   it('omits optional fields and falls back to the venue name for location', () => {
     const incident = toPublicIncident(
-      briberyRow({ incidentDate: null, incidentTime: null, location: null, venueNameText: 'Chip Shop', title: null as any, benefitOffered: null, value: null, outcome: null })
+      briberyRow({
+        incidentDate: null,
+        incidentTime: null,
+        location: null,
+        venueNameText: 'Chip Shop',
+        title: null as any,
+        benefitOffered: null,
+        value: null,
+        outcome: null,
+      })
     );
     assert.equal(incident.date, '');
     assert.ok(!('time' in incident));
@@ -212,7 +246,9 @@ describe('toPublicIncident', () => {
   });
 
   it('has no location when neither location nor venue name is set', () => {
-    assert.ok(!('location' in toPublicIncident(briberyRow({ location: null, venueNameText: null }))));
+    assert.ok(
+      !('location' in toPublicIncident(briberyRow({ location: null, venueNameText: null })))
+    );
   });
 });
 
@@ -234,7 +270,7 @@ describe('public venue queries', () => {
     assert.equal(sql, renderSql(publicVenueCondition()).sql);
   });
 
-  it('getPublicVenues groups by tier and applies each tier\'s order', async () => {
+  it("getPublicVenues groups by tier and applies each tier's order", async () => {
     stubDb('select', [
       joined(venueRow({ slug: 'z-reject', name: 'Zed', tier: 'rejected', walkingTimeMin: 1 })),
       joined(venueRow({ slug: 'far', name: 'Far', walkingTimeMin: 20 })),
@@ -242,7 +278,10 @@ describe('public venue queries', () => {
       joined(venueRow({ slug: 'near', name: 'Near', walkingTimeMin: 5 })),
     ]);
     const venues = await getPublicVenues();
-    assert.deepEqual(venues.map((venue) => venue.slug), ['near', 'far', 'a-reject', 'z-reject']);
+    assert.deepEqual(
+      venues.map((venue) => venue.slug),
+      ['near', 'far', 'a-reject', 'z-reject']
+    );
     assert.equal(venues[2].tier, 'rejected');
   });
 
@@ -253,20 +292,32 @@ describe('public venue queries', () => {
       joined(venueRow({ slug: 'closed-gone', tier: 'gone_but_not_forgotten', closedAt })),
       joined(venueRow({ slug: 'open-gone', tier: 'gone_but_not_forgotten' })),
     ]);
-    assert.deepEqual((await getMapVenues()).map((venue) => venue.slug), ['open', 'open-gone']);
+    assert.deepEqual(
+      (await getMapVenues()).map((venue) => venue.slug),
+      ['open', 'open-gone']
+    );
   });
 
   it('flags closed venues for the public pages', async () => {
-    stubDb('select', [joined(venueRow({ slug: 'closed-gone', tier: 'gone_but_not_forgotten', closedAt: new Date() }))]);
+    stubDb('select', [
+      joined(
+        venueRow({ slug: 'closed-gone', tier: 'gone_but_not_forgotten', closedAt: new Date() })
+      ),
+    ]);
     const [venue] = await getPublicVenues();
     assert.equal(venue.closed, true);
     assert.equal(venue.tier, 'gone_but_not_forgotten');
   });
 
   it('getPublicVenue checks visibility and returns the detail fields, or null when hidden or missing', async () => {
-    const calls = stubDb('select', [joined(venueRow({ pullQuote: 'Gold' }), imageRow({ caption: 'The counter' }))]);
+    const calls = stubDb('select', [
+      joined(venueRow({ pullQuote: 'Gold' }), imageRow({ caption: 'The counter' })),
+    ]);
     const venue = await getPublicVenue('chip-shop');
-    assert.match(renderSql(calls.find((call) => call.method === 'where')!.args[0]).sql, /"tier" is not null/);
+    assert.match(
+      renderSql(calls.find((call) => call.method === 'where')!.args[0]).sql,
+      /"tier" is not null/
+    );
     assert.equal(venue?.pullQuote, 'Gold');
     assert.equal(venue?.image?.url, imageRow().fullUrl);
     assert.equal(venue?.image?.alt, 'The counter');
@@ -282,8 +333,14 @@ describe('public venue queries', () => {
       joined(venueRow({ slug: 'pending', tier: null as never })),
     ]);
     const venues = await getPublicVenueDetails();
-    assert.equal(renderSql(calls.find((call) => call.method === 'where')!.args[0]).sql, renderSql(publicVenueCondition()).sql);
-    assert.deepEqual(venues.map((venue) => [venue.slug, venue.pullQuote]), [['chip-shop', 'Gold']]);
+    assert.equal(
+      renderSql(calls.find((call) => call.method === 'where')!.args[0]).sql,
+      renderSql(publicVenueCondition()).sql
+    );
+    assert.deepEqual(
+      venues.map((venue) => [venue.slug, venue.pullQuote]),
+      [['chip-shop', 'Gold']]
+    );
     assert.equal(venues[0].websiteUrl, 'https://chips.example');
     assert.equal(venues[0].image?.url, imageRow().fullUrl);
   });
@@ -292,9 +349,15 @@ describe('public venue queries', () => {
     const calls = stubDb('select', []);
     await getPublicVenues();
     const join = calls.find((call) => call.method === 'leftJoin')!;
-    assert.match(renderSql(join.args[1]).sql, /"venue_images"\."venue_id" = "venues"\."id" and "venue_images"\."is_primary" = \$1/);
+    assert.match(
+      renderSql(join.args[1]).sql,
+      /"venue_images"\."venue_id" = "venues"\."id" and "venue_images"\."is_primary" = \$1/
+    );
     assert.deepEqual(renderSql(join.args[1]).params, [true]);
-    assert.equal(renderSql(calls.find((call) => call.method === 'where')!.args[0]).sql, renderSql(publicVenueCondition()).sql);
+    assert.equal(
+      renderSql(calls.find((call) => call.method === 'where')!.args[0]).sql,
+      renderSql(publicVenueCondition()).sql
+    );
   });
 
   it('a venue that is not publicly visible exposes no image anywhere', async () => {
@@ -310,25 +373,45 @@ describe('public venue queries', () => {
     }
     stubDb('select', [hidden[0]]);
     assert.equal(await getPublicVenue('pending'), null);
-    stubDb('select', [{ entry: { venueId: 'uuid', position: 1, puffPiece: null, anchorDish: null }, ...hidden[0] }]);
+    stubDb('select', [
+      { entry: { venueId: 'uuid', position: 1, puffPiece: null, anchorDish: null }, ...hidden[0] },
+    ]);
     assert.deepEqual(await getGoldenCut(), []);
   });
 
   it('carries the primary photo onto public venues and The Golden Cut', async () => {
-    stubDb('select', [joined(venueRow({ slug: 'with-photo' }), imageRow()), joined(venueRow({ slug: 'without', name: 'Bare' }))]);
+    stubDb('select', [
+      joined(venueRow({ slug: 'with-photo' }), imageRow()),
+      joined(venueRow({ slug: 'without', name: 'Bare' })),
+    ]);
     const venues = await getMapVenues();
     const bySlug = new Map(venues.map((venue) => [venue.slug, venue.image?.thumbUrl ?? null]));
-    assert.deepEqual(Object.fromEntries(bySlug), { 'with-photo': imageRow().thumbUrl, without: null });
+    assert.deepEqual(Object.fromEntries(bySlug), {
+      'with-photo': imageRow().thumbUrl,
+      without: null,
+    });
 
-    stubDb('select', [{ entry: { venueId: 'uuid', position: 1, puffPiece: null, anchorDish: null }, venue: venueRow(), image: imageRow({ focalX: 10, focalY: 90 }) }]);
+    stubDb('select', [
+      {
+        entry: { venueId: 'uuid', position: 1, puffPiece: null, anchorDish: null },
+        venue: venueRow(),
+        image: imageRow({ focalX: 10, focalY: 90 }),
+      },
+    ]);
     const [hero] = await getGoldenCut();
-    assert.deepEqual([hero.venue.image?.url, hero.venue.image?.focalX, hero.venue.image?.focalY], [imageRow().fullUrl, 10, 90]);
+    assert.deepEqual(
+      [hero.venue.image?.url, hero.venue.image?.focalX, hero.venue.image?.focalY],
+      [imageRow().fullUrl, 10, 90]
+    );
   });
 
   it('getPublishedIncidents maps every returned record', async () => {
     stubDb('select', [briberyRow(), briberyRow({ id: 'b2', incidentDate: null })]);
     const incidents = await getPublishedIncidents();
-    assert.deepEqual(incidents.map((incident) => incident.id), ['b1', 'b2']);
+    assert.deepEqual(
+      incidents.map((incident) => incident.id),
+      ['b1', 'b2']
+    );
     assert.equal(incidents[1].date, '');
   });
 });
@@ -365,18 +448,35 @@ describe('toPublicInspection', () => {
   });
 
   it('shows a below-par outcome, and none for a legacy record', () => {
-    assert.equal(toPublicInspection(inspectionRow({ outcome: 'below_par' }), venueRow()).outcome, 'below_par');
-    assert.equal(toPublicInspection(inspectionRow({ kind: 'legacy', outcome: null }), venueRow()).outcome, null);
+    assert.equal(
+      toPublicInspection(inspectionRow({ outcome: 'below_par' }), venueRow()).outcome,
+      'below_par'
+    );
+    assert.equal(
+      toPublicInspection(inspectionRow({ kind: 'legacy', outcome: null }), venueRow()).outcome,
+      null
+    );
   });
 
   it('copes with deleted Chairs and names nobody on a legacy record', () => {
-    assert.deepEqual(toPublicInspection(inspectionRow({ firstAdminName: null, secondAdminName: null }), venueRow()).chairs, ['Former Chair', 'Former Chair']);
-    assert.deepEqual(toPublicInspection(inspectionRow({ kind: 'legacy', firstAdminName: null, secondAdminName: null }), venueRow()).chairs, []);
+    assert.deepEqual(
+      toPublicInspection(inspectionRow({ firstAdminName: null, secondAdminName: null }), venueRow())
+        .chairs,
+      ['Former Chair', 'Former Chair']
+    );
+    assert.deepEqual(
+      toPublicInspection(
+        inspectionRow({ kind: 'legacy', firstAdminName: null, secondAdminName: null }),
+        venueRow()
+      ).chairs,
+      []
+    );
   });
 
   it('never exposes admin ids', () => {
     const inspection = toPublicInspection(inspectionRow(), venueRow());
-    for (const key of ['firstAdminId', 'secondAdminId', 'venueId', 'status']) assert.ok(!(key in inspection), key);
+    for (const key of ['firstAdminId', 'secondAdminId', 'venueId', 'status'])
+      assert.ok(!(key in inspection), key);
   });
 });
 
@@ -387,7 +487,11 @@ describe('public inspection queries', () => {
     const { sql, params } = renderSql(calls.find((call) => call.method === 'where')!.args[0]);
     assert.match(sql, /"inspections"\."status" = \$1/);
     assert.equal(params[0], 'confirmed');
-    assert.ok(sql.includes(renderSql(publicVenueCondition()).sql.replace(/\$\d+/g, (n) => `$${Number(n.slice(1)) + 1}`)));
+    assert.ok(
+      sql.includes(
+        renderSql(publicVenueCondition()).sql.replace(/\$\d+/g, (n) => `$${Number(n.slice(1)) + 1}`)
+      )
+    );
   });
 
   it('filters by venue when given a slug', async () => {
@@ -401,9 +505,15 @@ describe('public inspection queries', () => {
   it('maps rows and drops any venue that fails the visibility rule', async () => {
     stubDb('select', [
       { inspection: inspectionRow(), venue: venueRow() },
-      { inspection: inspectionRow({ id: 'hidden' }), venue: venueRow({ slug: 'closed', closedAt: new Date() }) },
+      {
+        inspection: inspectionRow({ id: 'hidden' }),
+        venue: venueRow({ slug: 'closed', closedAt: new Date() }),
+      },
     ]);
-    assert.deepEqual((await getPublicInspections()).map((inspection) => inspection.id), ['i1']);
+    assert.deepEqual(
+      (await getPublicInspections()).map((inspection) => inspection.id),
+      ['i1']
+    );
   });
 
   it('counts public inspections, with 0 for an empty result', async () => {
@@ -426,7 +536,13 @@ describe('countPublicVenues', () => {
 });
 
 describe('getGoldenCut', () => {
-  const entry = (venueId: string, position: number, overrides = {}) => ({ venueId, position, puffPiece: null, anchorDish: null, ...overrides });
+  const entry = (venueId: string, position: number, overrides = {}) => ({
+    venueId,
+    position,
+    puffPiece: null,
+    anchorDish: null,
+    ...overrides,
+  });
 
   it('reads Approved public venues in position order', async () => {
     const calls = stubDb('select', []);
@@ -439,22 +555,49 @@ describe('getGoldenCut', () => {
 
   it('skips venues that left Approved or closed, so the next one moves up', async () => {
     stubDb('select', [
-      { entry: entry('a', 1), venue: venueRow({ slug: 'closed', tier: 'approved', closedAt: new Date() }), image: null },
-      { entry: entry('b', 2), venue: venueRow({ slug: 'demoted', tier: 'if_we_must' }), image: null },
+      {
+        entry: entry('a', 1),
+        venue: venueRow({ slug: 'closed', tier: 'approved', closedAt: new Date() }),
+        image: null,
+      },
+      {
+        entry: entry('b', 2),
+        venue: venueRow({ slug: 'demoted', tier: 'if_we_must' }),
+        image: null,
+      },
       { entry: entry('c', 3), venue: venueRow({ slug: 'open' }), image: null },
     ]);
-    assert.deepEqual((await getGoldenCut()).map((item) => item.venue.slug), ['open']);
+    assert.deepEqual(
+      (await getGoldenCut()).map((item) => item.venue.slug),
+      ['open']
+    );
   });
 
   it("uses the Chairs' text, falling back to the pull quote and lunch special", async () => {
     stubDb('select', [
-      { entry: entry('a', 1, { puffPiece: 'The best.', anchorDish: 'Pizza' }), venue: venueRow({ slug: 'written' }), image: null },
-      { entry: entry('b', 2), venue: venueRow({ slug: 'fallback', pullQuote: 'Gold', lunchSpecial: 'Chips' }), image: null },
-      { entry: entry('c', 3), venue: venueRow({ slug: 'bare', pullQuote: null, lunchSpecial: null }), image: null },
+      {
+        entry: entry('a', 1, { puffPiece: 'The best.', anchorDish: 'Pizza' }),
+        venue: venueRow({ slug: 'written' }),
+        image: null,
+      },
+      {
+        entry: entry('b', 2),
+        venue: venueRow({ slug: 'fallback', pullQuote: 'Gold', lunchSpecial: 'Chips' }),
+        image: null,
+      },
+      {
+        entry: entry('c', 3),
+        venue: venueRow({ slug: 'bare', pullQuote: null, lunchSpecial: null }),
+        image: null,
+      },
     ]);
     assert.deepEqual(
       (await getGoldenCut()).map(({ puffPiece, anchorDish }) => [puffPiece, anchorDish]),
-      [['The best.', 'Pizza'], ['Gold', 'Chips'], [null, null]]
+      [
+        ['The best.', 'Pizza'],
+        ['Gold', 'Chips'],
+        [null, null],
+      ]
     );
   });
 });

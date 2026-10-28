@@ -17,7 +17,12 @@ import DossierIcon from './DossierIcon.vue';
 const props = defineProps<{ open: boolean; entries: AuditEntry[]; historyUrl: string }>();
 const emit = defineEmits<{ (event: 'close'): void }>();
 
-const KIND_LABELS: Record<AuditEntry['kind'], string> = { inspection: 'Inspection', motion: 'Motion', amendment: 'Amendment', event: 'Action' };
+const KIND_LABELS: Record<AuditEntry['kind'], string> = {
+  inspection: 'Inspection',
+  motion: 'Motion',
+  amendment: 'Amendment',
+  event: 'Action',
+};
 const KIND_TONES: Record<AuditEntry['kind'], string> = {
   inspection: 'bg-success-tint text-success',
   motion: 'bg-warning-tint text-warning',
@@ -54,31 +59,59 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex justify-end bg-ink-fixed/35" @click.self="emit('close')">
+  <div
+    v-if="open"
+    class="fixed inset-0 z-50 flex justify-end bg-ink-fixed/35"
+    @click.self="emit('close')"
+  >
     <aside
       role="dialog"
       aria-modal="true"
       aria-labelledby="audit-title"
       class="dossier flex h-full w-full max-w-md flex-col border-l border-[var(--dossier-border)] bg-[var(--dossier-canvas)] shadow-2xl"
     >
-      <div class="flex items-start justify-between gap-3 border-b border-[var(--dossier-border)] p-5">
+      <div
+        class="flex items-start justify-between gap-3 border-b border-[var(--dossier-border)] p-5"
+      >
         <div>
           <p class="dossier-overline">Judicial inspection log</p>
-          <h2 id="audit-title" class="mt-1 text-2xl font-bold text-[var(--dossier-primary)]">Audit history</h2>
+          <h2 id="audit-title" class="mt-1 text-2xl font-bold text-[var(--dossier-primary)]">
+            Audit history
+          </h2>
         </div>
-        <button ref="closeButton" type="button" class="dossier-btn is-quiet is-small" aria-label="Close audit history" @click="emit('close')">
+        <button
+          ref="closeButton"
+          type="button"
+          class="dossier-btn is-quiet is-small"
+          aria-label="Close audit history"
+          @click="emit('close')"
+        >
           <DossierIcon name="x" />
         </button>
       </div>
 
       <ol v-if="entries.length" class="flex-1 space-y-3 overflow-y-auto p-5">
-        <li v-for="entry in entries" :key="entry.id" class="rounded-lg border border-[var(--dossier-border)] bg-[var(--dossier-card)] p-3">
+        <li
+          v-for="entry in entries"
+          :key="entry.id"
+          class="rounded-lg border border-[var(--dossier-border)] bg-[var(--dossier-card)] p-3"
+        >
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <span :class="['rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]', KIND_TONES[entry.kind]]">{{ KIND_LABELS[entry.kind] }}</span>
-            <span class="dossier-figures text-[11px] text-[var(--dossier-muted)]">{{ entry.when }}</span>
+            <span
+              :class="[
+                'rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]',
+                KIND_TONES[entry.kind],
+              ]"
+              >{{ KIND_LABELS[entry.kind] }}</span
+            >
+            <span class="dossier-figures text-[11px] text-[var(--dossier-muted)]">{{
+              entry.when
+            }}</span>
           </div>
           <p class="mt-2 text-[13px] leading-[19px]">{{ entry.text }}</p>
-          <p v-if="entry.note" class="mt-1 text-[12px] italic text-[var(--dossier-muted)]">Reason: {{ entry.note }}</p>
+          <p v-if="entry.note" class="mt-1 text-[12px] italic text-[var(--dossier-muted)]">
+            Reason: {{ entry.note }}
+          </p>
         </li>
       </ol>
       <p v-else class="flex-1 p-5 text-sm text-[var(--dossier-muted)]">Nothing on record yet.</p>

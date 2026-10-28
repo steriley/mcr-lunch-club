@@ -9,7 +9,11 @@ import { formatDate } from '@/lib/dates';
 import { db } from '@/lib/db';
 import { getPublicMapApiKey, isBlobConfigured } from '@/lib/env';
 import { describeInspection, getVisitStatus, latestVerifiedInspection } from '@/lib/inspections';
-import { countActiveAdmins, pendingProposalForVenue, serializeProposal } from '@/lib/tier-proposals';
+import {
+  countActiveAdmins,
+  pendingProposalForVenue,
+  serializeProposal,
+} from '@/lib/tier-proposals';
 import { loadVenueTimeline } from '@/lib/venue-history';
 import { listVenueImages, serializeVenueImage } from '@/lib/venue-images';
 import { serializeVenue } from '@/lib/venues';
@@ -17,7 +21,9 @@ import { serializeVenue } from '@/lib/venues';
 export const prerender = false;
 
 const id = uuidParam.safeParse(Astro.params.id);
-const [row] = id.success ? await db.select().from(venues).where(eq(venues.id, id.data)).limit(1) : [];
+const [row] = id.success
+  ? await db.select().from(venues).where(eq(venues.id, id.data)).limit(1)
+  : [];
 if (!row) {
   return new Response('Venue not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
 }
@@ -25,11 +31,24 @@ if (!row) {
 const currentUser = Astro.locals.user!;
 const nameOf = async (userId: string | null) => {
   if (!userId) return null;
-  const [found] = await db.select({ name: user.name, email: user.email }).from(user).where(eq(user.id, userId)).limit(1);
+  const [found] = await db
+    .select({ name: user.name, email: user.email })
+    .from(user)
+    .where(eq(user.id, userId))
+    .limit(1);
   return found ? found.name || found.email : null;
 };
 
-const [editorName, closerName, visitStatus, timeline, pendingProposal, verifiedInspection, activeAdmins, images] = await Promise.all([
+const [
+  editorName,
+  closerName,
+  visitStatus,
+  timeline,
+  pendingProposal,
+  verifiedInspection,
+  activeAdmins,
+  images,
+] = await Promise.all([
   nameOf(row.updatedBy),
   nameOf(row.closedBy),
   getVisitStatus(db, row.id, currentUser.id),
@@ -42,7 +61,9 @@ const [editorName, closerName, visitStatus, timeline, pendingProposal, verifiedI
 
 const closedText = row.closedAt
   ? `Permanently closed: marked on ${formatDate(row.closedAt)}${closerName ? ` by ${closerName}` : ''}. Off the map and Near Me${
-      row.tier === 'gone_but_not_forgotten' ? '; still listed under Gone But Not Forgotten.' : '; hidden from the public site.'
+      row.tier === 'gone_but_not_forgotten'
+        ? '; still listed under Gone But Not Forgotten.'
+        : '; hidden from the public site.'
     }`
   : null;
 
@@ -58,7 +79,13 @@ const dossier = {
   activeAdmins,
   closed: row.closedAt !== null,
   closedText,
-  timeline: timeline.map(({ id, kind, when, text, note }) => ({ id, kind, when, text, ...(note ? { note } : {}) })),
+  timeline: timeline.map(({ id, kind, when, text, note }) => ({
+    id,
+    kind,
+    when,
+    text,
+    ...(note ? { note } : {}),
+  })),
 };
 ---
 

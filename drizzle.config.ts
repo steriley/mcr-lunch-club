@@ -6,6 +6,6 @@ export default defineConfig({
   schema: ['./src/db/schema.ts', './src/db/auth-schema.ts'],
   out: './drizzle',
   dbCredentials: {
-    url: getMigrationDatabaseUrl()
-  }
+    url: getMigrationDatabaseUrl(),
+  },
 });

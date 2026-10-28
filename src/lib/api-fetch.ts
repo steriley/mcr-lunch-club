@@ -26,7 +26,10 @@ export interface ApiFetchOptions {
   offline?: string;
 }
 
-export async function apiFetch<T = unknown>(url: string, options: ApiFetchOptions): Promise<ApiFetchResult<T>> {
+export async function apiFetch<T = unknown>(
+  url: string,
+  options: ApiFetchOptions
+): Promise<ApiFetchResult<T>> {
   const { method = 'GET', body, signal, fallback, offline = fallback } = options;
   const isForm = body instanceof FormData;
 

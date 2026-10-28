@@ -10,11 +10,21 @@ import { serializeSuggestion } from '@/lib/suggestions';
 export const prerender = false;
 
 const requested = Astro.url.searchParams.get('status');
-const status: SuggestionStatus = SUGGESTION_STATUSES.includes(requested as SuggestionStatus) ? (requested as SuggestionStatus) : 'new';
+const status: SuggestionStatus = SUGGESTION_STATUSES.includes(requested as SuggestionStatus)
+  ? (requested as SuggestionStatus)
+  : 'new';
 
 const [rows, counts] = await Promise.all([
-  db.select().from(venueSuggestions).where(eq(venueSuggestions.status, status)).orderBy(desc(venueSuggestions.createdAt)).limit(200),
-  db.select({ status: venueSuggestions.status, total: count() }).from(venueSuggestions).groupBy(venueSuggestions.status),
+  db
+    .select()
+    .from(venueSuggestions)
+    .where(eq(venueSuggestions.status, status))
+    .orderBy(desc(venueSuggestions.createdAt))
+    .limit(200),
+  db
+    .select({ status: venueSuggestions.status, total: count() })
+    .from(venueSuggestions)
+    .groupBy(venueSuggestions.status),
 ]);
 
 const totals = new Map(counts.map((row) => [row.status, row.total]));
@@ -22,7 +32,11 @@ const tabs = [
   { status: 'new', label: 'Inbox' },
   { status: 'accepted', label: 'Accepted' },
   { status: 'dismissed', label: 'Dismissed' },
-].map((tab) => ({ ...tab, total: totals.get(tab.status as SuggestionStatus) ?? 0, active: tab.status === status }));
+].map((tab) => ({
+  ...tab,
+  total: totals.get(tab.status as SuggestionStatus) ?? 0,
+  active: tab.status === status,
+}));
 ---
 
 <AdminLayout title="Suggestions">
@@ -31,15 +45,24 @@ const tabs = [
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Member petitions</p>
       <h1 class="mt-2 text-3xl font-bold text-ink">Venue suggestions</h1>
       <p class="mt-2 max-w-2xl text-sm text-soot">
-        Sent from the public “Suggest a Venue” form. Nothing here appears on the site. Accepting one opens the new-venue form; saving it creates a hidden venue with a To Be Assessed proposal that a different Chair must approve.
+        Sent from the public “Suggest a Venue” form. Nothing here appears on the site. Accepting one
+        opens the new-venue form; saving it creates a hidden venue with a To Be Assessed proposal
+        that a different Chair must approve.
       </p>
     </div>
 
     <nav class="flex flex-wrap gap-2" aria-label="Suggestion status">
       {tabs.map((tab) => (
         <a
-          href={tab.status === 'new' ? '/admin/suggestions' : `/admin/suggestions?status=${tab.status}`}
-          class:list={['rounded-full border px-3 py-1.5 text-sm font-semibold', tab.active ? 'border-navy bg-navy-fixed text-white' : 'border-hairline bg-surface text-ink hover:bg-linen']}
+          href={
+            tab.status === 'new' ? '/admin/suggestions' : `/admin/suggestions?status=${tab.status}`
+          }
+          class:list={[
+            'rounded-full border px-3 py-1.5 text-sm font-semibold',
+            tab.active
+              ? 'border-navy bg-navy-fixed text-white'
+              : 'border-hairline bg-surface text-ink hover:bg-linen',
+          ]}
           aria-current={tab.active ? 'page' : undefined}
         >
           {tab.label} <span class="ml-1 opacity-75">{tab.total}</span>

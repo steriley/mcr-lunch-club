@@ -10,13 +10,17 @@ export const prerender = false;
  */
 export const POST = adminRoute(
   {
-    action: 'Reset password', publishes: false,
+    action: 'Reset password',
+    publishes: false,
     params: { id: { schema: userIdParam, notFound: 'User not found.' } },
     body: resetPasswordSchema,
     onError: (error) => authApiError('Reset password', error),
   },
   async ({ request, params, body, actor }) => {
-    await auth.api.setUserPassword({ headers: request.headers, body: { userId: params.id, newPassword: body.password } });
+    await auth.api.setUserPassword({
+      headers: request.headers,
+      body: { userId: params.id, newPassword: body.password },
+    });
     if (params.id !== actor.id) {
       await auth.api.revokeUserSessions({ headers: request.headers, body: { userId: params.id } });
     }

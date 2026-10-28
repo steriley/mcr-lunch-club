@@ -15,7 +15,11 @@ describe('briberyInputSchema', () => {
   });
 
   it('splits people and witnesses on commas and newlines', () => {
-    const result = briberyInputSchema.parse({ ...valid, peopleInvolved: 'Ann, Bob\nCy,, ', witnesses: [' Dee ', ''] });
+    const result = briberyInputSchema.parse({
+      ...valid,
+      peopleInvolved: 'Ann, Bob\nCy,, ',
+      witnesses: [' Dee ', ''],
+    });
     assert.deepEqual(result.peopleInvolved, ['Ann', 'Bob', 'Cy']);
     assert.deepEqual(result.witnesses, ['Dee']);
   });
@@ -23,21 +27,31 @@ describe('briberyInputSchema', () => {
   it('limits list size and name length', () => {
     const many = Array.from({ length: 31 }, (_, i) => `p${i}`);
     assert.equal(briberyInputSchema.safeParse({ ...valid, witnesses: many }).success, false);
-    assert.equal(briberyInputSchema.safeParse({ ...valid, peopleInvolved: ['x'.repeat(121)] }).success, false);
+    assert.equal(
+      briberyInputSchema.safeParse({ ...valid, peopleInvolved: ['x'.repeat(121)] }).success,
+      false
+    );
   });
 
   it('requires a title and a meaningful description', () => {
     assert.equal(briberyInputSchema.safeParse({ ...valid, title: 'a' }).success, false);
-    assert.equal(briberyInputSchema.safeParse({ ...valid, description: 'too short' }).success, false);
+    assert.equal(
+      briberyInputSchema.safeParse({ ...valid, description: 'too short' }).success,
+      false
+    );
   });
 
   it('validates venue id, date and 24-hour time', () => {
     assert.equal(briberyInputSchema.safeParse({ ...valid, venueId: 'not-a-uuid' }).success, false);
     assert.equal(
-      briberyInputSchema.safeParse({ ...valid, venueId: '3f2b7a52-5c1e-4c0d-9a4f-1a2b3c4d5e6f' }).success,
+      briberyInputSchema.safeParse({ ...valid, venueId: '3f2b7a52-5c1e-4c0d-9a4f-1a2b3c4d5e6f' })
+        .success,
       true
     );
-    assert.equal(briberyInputSchema.safeParse({ ...valid, incidentDate: '2026-02-30' }).success, false);
+    assert.equal(
+      briberyInputSchema.safeParse({ ...valid, incidentDate: '2026-02-30' }).success,
+      false
+    );
     assert.equal(briberyInputSchema.safeParse({ ...valid, incidentTime: '12:30' }).success, true);
     assert.equal(briberyInputSchema.safeParse({ ...valid, incidentTime: '24:00' }).success, false);
     assert.equal(briberyInputSchema.safeParse({ ...valid, incidentTime: '9:30' }).success, false);
@@ -46,7 +60,10 @@ describe('briberyInputSchema', () => {
 
   it('enforces optional text limits', () => {
     assert.equal(briberyInputSchema.safeParse({ ...valid, value: 'x'.repeat(61) }).success, false);
-    assert.equal(briberyInputSchema.safeParse({ ...valid, benefitOffered: 'x'.repeat(501) }).success, false);
+    assert.equal(
+      briberyInputSchema.safeParse({ ...valid, benefitOffered: 'x'.repeat(501) }).success,
+      false
+    );
   });
 });
 

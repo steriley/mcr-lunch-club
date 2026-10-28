@@ -4,22 +4,41 @@ import ProposalActions from '@/components/admin/ProposalActions.vue';
 import { db } from '@/lib/db';
 import { formatDate, formatDateTime } from '@/lib/dates';
 import { describeInspection, latestVerifiedInspection } from '@/lib/inspections';
-import { countActiveAdmins, listPendingProposals, listRecentDecisions, tierText } from '@/lib/tier-proposals';
+import {
+  countActiveAdmins,
+  listPendingProposals,
+  listRecentDecisions,
+  tierText,
+} from '@/lib/tier-proposals';
 
 export const prerender = false;
 
 const currentUserId = Astro.locals.user!.id;
-const [pending, recent, activeAdmins] = await Promise.all([listPendingProposals(db), listRecentDecisions(db), countActiveAdmins(db)]);
+const [pending, recent, activeAdmins] = await Promise.all([
+  listPendingProposals(db),
+  listRecentDecisions(db),
+  countActiveAdmins(db),
+]);
 const inspectionByVenue = new Map(
   await Promise.all(
     pending.map(async (proposal) => {
       const inspection = await latestVerifiedInspection(db, proposal.venueId);
-      return [proposal.venueId, inspection ? `${formatDate(inspection.inspectionDate)} (${describeInspection(inspection)})` : 'No verified inspection'] as const;
+      return [
+        proposal.venueId,
+        inspection
+          ? `${formatDate(inspection.inspectionDate)} (${describeInspection(inspection)})`
+          : 'No verified inspection',
+      ] as const;
     })
   )
 );
 
-const STATUS_TEXT: Record<string, string> = { approved: 'Approved', declined: 'Declined', withdrawn: 'Withdrawn', superseded: 'Replaced' };
+const STATUS_TEXT: Record<string, string> = {
+  approved: 'Approved',
+  declined: 'Declined',
+  withdrawn: 'Withdrawn',
+  superseded: 'Replaced',
+};
 ---
 
 <AdminLayout title="Pending verdict changes">
@@ -28,18 +47,28 @@ const STATUS_TEXT: Record<string, string> = { approved: 'Approved', declined: 'D
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Countersigning</p>
       <h1 class="mt-2 text-3xl font-bold text-ink">Pending verdict changes</h1>
       <p class="mt-2 max-w-3xl text-sm text-graphite">
-        Every verdict change needs a second Chair. Approve or decline anything you did not propose yourself. There are no notifications: tell each other in person.
+        Every verdict change needs a second Chair. Approve or decline anything you did not propose
+        yourself. There are no notifications: tell each other in person.
       </p>
     </div>
 
     {activeAdmins < 2 && (
-      <p role="status" class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-        Only {activeAdmins} active admin{activeAdmins === 1 ? '' : 's'}. A second active admin is required before anything can be approved; there is no override.
+      <p
+        role="status"
+        class="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+      >
+        Only {activeAdmins} active admin{activeAdmins === 1 ? '' : 's'}. A second active admin is
+        required before anything can be approved; there is no override.
       </p>
     )}
 
-    <section class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm" aria-labelledby="pending-heading">
-      <h2 id="pending-heading" class="text-xl font-bold text-ink">Awaiting a decision ({pending.length})</h2>
+    <section
+      class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
+      aria-labelledby="pending-heading"
+    >
+      <h2 id="pending-heading" class="text-xl font-bold text-ink">
+        Awaiting a decision ({pending.length})
+      </h2>
       {pending.length === 0 ? (
         <p class="mt-4 text-sm text-soot">Nothing waiting.</p>
       ) : (
@@ -47,20 +76,43 @@ const STATUS_TEXT: Record<string, string> = { approved: 'Approved', declined: 'D
           {pending.map((proposal) => (
             <li class="grid gap-3 py-4 md:grid-cols-[1fr_auto] md:items-start">
               <div class="space-y-1 text-sm">
-                <a href={`/admin/venues/${proposal.venueId}`} class="text-base font-semibold text-ink hover:underline">{proposal.venueName}</a>
-                <p class="text-ink">{tierText(proposal.fromTier)} → <strong>{tierText(proposal.proposedTier)}</strong></p>
-                <p class="text-graphite">Proposed by {proposal.proposedByName ?? 'a former admin'} · {formatDateTime(proposal.proposedAt)}</p>
-                <p class="text-graphite">Latest verified inspection: {inspectionByVenue.get(proposal.venueId)}</p>
+                <a
+                  href={`/admin/venues/${proposal.venueId}`}
+                  class="text-base font-semibold text-ink hover:underline"
+                >
+                  {proposal.venueName}
+                </a>
+                <p class="text-ink">
+                  {tierText(proposal.fromTier)} → <strong>{tierText(proposal.proposedTier)}</strong>
+                </p>
+                <p class="text-graphite">
+                  Proposed by {proposal.proposedByName ?? 'a former admin'} ·{' '}
+                  {formatDateTime(proposal.proposedAt)}
+                </p>
+                <p class="text-graphite">
+                  Latest verified inspection: {inspectionByVenue.get(proposal.venueId)}
+                </p>
               </div>
-              <ProposalActions client:load proposalId={proposal.id} proposedBy={proposal.proposedBy} currentUserId={currentUserId} canDecide={activeAdmins >= 2} />
+              <ProposalActions
+                client:load
+                proposalId={proposal.id}
+                proposedBy={proposal.proposedBy}
+                currentUserId={currentUserId}
+                canDecide={activeAdmins >= 2}
+              />
             </li>
           ))}
         </ul>
       )}
     </section>
 
-    <section class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm" aria-labelledby="recent-heading">
-      <h2 id="recent-heading" class="text-xl font-bold text-ink">Recently decided</h2>
+    <section
+      class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
+      aria-labelledby="recent-heading"
+    >
+      <h2 id="recent-heading" class="text-xl font-bold text-ink">
+        Recently decided
+      </h2>
       {recent.length === 0 ? (
         <p class="mt-4 text-sm text-soot">No decisions yet.</p>
       ) : (
@@ -68,13 +120,21 @@ const STATUS_TEXT: Record<string, string> = { approved: 'Approved', declined: 'D
           {recent.map((proposal) => (
             <li class="space-y-1 py-3">
               <p>
-                <a href={`/admin/venues/${proposal.venueId}`} class="font-semibold text-ink hover:underline">{proposal.venueName}</a>:
-                {' '}{tierText(proposal.fromTier)} → {tierText(proposal.proposedTier)}
-                {' '}<span class="font-semibold">{STATUS_TEXT[proposal.status] ?? proposal.status}</span>
+                <a
+                  href={`/admin/venues/${proposal.venueId}`}
+                  class="font-semibold text-ink hover:underline"
+                >
+                  {proposal.venueName}
+                </a>
+                : {tierText(proposal.fromTier)} → {tierText(proposal.proposedTier)}{' '}
+                <span class="font-semibold">{STATUS_TEXT[proposal.status] ?? proposal.status}</span>
               </p>
               <p class="text-graphite">
                 Proposed by {proposal.proposedByName ?? 'a former admin'}
-                {proposal.decidedByName && (proposal.status === 'approved' || proposal.status === 'declined') ? ` · ${STATUS_TEXT[proposal.status].toLowerCase()} by ${proposal.decidedByName}` : ''}
+                {proposal.decidedByName &&
+                (proposal.status === 'approved' || proposal.status === 'declined')
+                  ? ` · ${STATUS_TEXT[proposal.status].toLowerCase()} by ${proposal.decidedByName}`
+                  : ''}
                 {proposal.decidedAt ? ` · ${formatDateTime(proposal.decidedAt)}` : ''}
               </p>
               {proposal.declineReason && <p class="text-soot">Reason: {proposal.declineReason}</p>}

@@ -6,8 +6,11 @@ import { goldenCutInputSchema } from '@/lib/golden-cut-schema';
 export const prerender = false;
 
 /** Replaces the whole list, in the order given. Any admin; no countersign. */
-export const PUT = adminRoute({ action: 'Save the Golden Cut', publishes: true, body: goldenCutInputSchema }, async ({ body, actor }) => {
-  const result = await saveGoldenCut(db, body.entries, actor);
-  if (!result.ok) return jsonError(400, result.error);
-  return jsonResponse({ entries: await listGoldenCut(db) });
-});
+export const PUT = adminRoute(
+  { action: 'Save the Golden Cut', publishes: true, body: goldenCutInputSchema },
+  async ({ body, actor }) => {
+    const result = await saveGoldenCut(db, body.entries, actor);
+    if (!result.ok) return jsonError(400, result.error);
+    return jsonResponse({ entries: await listGoldenCut(db) });
+  }
+);

@@ -10,7 +10,9 @@
       <Icon name="scales" class="field-icon is-gold" />
     </template>
     <template #badge>
-      <span class="decree-badge" :class="{ 'is-pending': current < 0 }">Decree #{{ DECREES[Math.max(current, 0)].number }}</span>
+      <span class="decree-badge" :class="{ 'is-pending': current < 0 }"
+        >Decree #{{ DECREES[Math.max(current, 0)].number }}</span
+      >
     </template>
     <!-- Every decree sits in one grid cell, so the panel keeps the height of the longest. -->
     <div class="deliberation-stack" aria-live="off">

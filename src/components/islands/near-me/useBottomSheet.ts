@@ -26,9 +26,15 @@ export function useBottomSheet() {
     return sheetHeightPx(state, window.innerHeight);
   }
 
-  const expand = () => { snap.value = expandedSnap(snap.value); };
-  const collapse = () => { snap.value = collapsedSnap(snap.value); };
-  const cycle = () => { snap.value = cycledSnap(snap.value); };
+  const expand = () => {
+    snap.value = expandedSnap(snap.value);
+  };
+  const collapse = () => {
+    snap.value = collapsedSnap(snap.value);
+  };
+  const cycle = () => {
+    snap.value = cycledSnap(snap.value);
+  };
 
   // Swipes on the handle row.
   let touchStartY = 0;
@@ -51,7 +57,20 @@ export function useBottomSheet() {
     touchDeltaY = 0;
   }
 
-  return { isDesktop, snap, isCollapsedMobile, heightCss, checkScreenSize, settledHeightPx, expand, collapse, cycle, onTouchStart, onTouchMove, onTouchEnd };
+  return {
+    isDesktop,
+    snap,
+    isCollapsedMobile,
+    heightCss,
+    checkScreenSize,
+    settledHeightPx,
+    expand,
+    collapse,
+    cycle,
+    onTouchStart,
+    onTouchMove,
+    onTouchEnd,
+  };
 }
 
 export type BottomSheet = ReturnType<typeof useBottomSheet>;

@@ -73,7 +73,8 @@ const isCluster = (group: Group) => group.venues.length > 1;
 /** How far apart two groups' markers sit on screen at `scale` px per world unit, allowing for a pin's lift. */
 function screenDistance(a: Group, b: Group, scale: number): number {
   const dx = (a.x - b.x) * scale;
-  const dy = (a.y - b.y) * scale + ((isCluster(b) ? 0 : PIN_LIFT_PX) - (isCluster(a) ? 0 : PIN_LIFT_PX));
+  const dy =
+    (a.y - b.y) * scale + ((isCluster(b) ? 0 : PIN_LIFT_PX) - (isCluster(a) ? 0 : PIN_LIFT_PX));
   return Math.hypot(dx, dy);
 }
 
@@ -101,7 +102,10 @@ function mergeTouching(groups: Group[], zoom: number): Group[] {
     for (let i = 0; i < result.length; i++) {
       for (let j = i + 1; j < result.length; j++) {
         const distance = screenDistance(result[i], result[j], scale);
-        if (distance < touchingDistance(result[i], result[j]) && (!closest || distance < closest.distance)) {
+        if (
+          distance < touchingDistance(result[i], result[j]) &&
+          (!closest || distance < closest.distance)
+        ) {
           closest = { i, j, distance };
         }
       }
@@ -113,12 +117,19 @@ function mergeTouching(groups: Group[], zoom: number): Group[] {
   }
 }
 
-const keyOf = (venues: readonly Venue[]) => venues.map((venue) => venue.id).sort().join('|');
+const keyOf = (venues: readonly Venue[]) =>
+  venues
+    .map((venue) => venue.id)
+    .sort()
+    .join('|');
 
 function tierCounts(venues: readonly Venue[]): ClusterItem['tiers'] {
   const counts = new Map<TierValue, number>();
   for (const venue of venues) counts.set(venue.tier, (counts.get(venue.tier) ?? 0) + 1);
-  return TIERS.filter((tier) => counts.has(tier.value)).map((tier) => ({ tier: tier.value, count: counts.get(tier.value)! }));
+  return TIERS.filter((tier) => counts.has(tier.value)).map((tier) => ({
+    tier: tier.value,
+    count: counts.get(tier.value)!,
+  }));
 }
 
 /** Builds the cluster index for the venues that have a location. */
@@ -165,7 +176,10 @@ export function createClusterIndex(venues: readonly Venue[]): ClusterIndex {
 }
 
 /** A cluster's accessible name, e.g. "5 venues: 3 Approved, 2 Under Consideration. Zoom in". */
-export function clusterLabel(cluster: Pick<ClusterItem, 'count' | 'tiers'>, action = 'Zoom in'): string {
+export function clusterLabel(
+  cluster: Pick<ClusterItem, 'count' | 'tiers'>,
+  action = 'Zoom in'
+): string {
   const parts = cluster.tiers.map(({ tier, count }) => `${count} ${tierInfo(tier).label}`);
   return `${cluster.count} venues: ${parts.join(', ')}. ${action}`;
 }

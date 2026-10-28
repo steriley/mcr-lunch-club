@@ -7,7 +7,12 @@ const shape = computed(() => iconShape(props.name));
 </script>
 
 <template>
-  <svg :class="['icon', shape.stroke && 'icon-stroke']" :viewBox="shape.viewBox" aria-hidden="true" focusable="false">
+  <svg
+    :class="['icon', shape.stroke && 'icon-stroke']"
+    :viewBox="shape.viewBox"
+    aria-hidden="true"
+    focusable="false"
+  >
     <path :d="shape.d" />
   </svg>
 </template>

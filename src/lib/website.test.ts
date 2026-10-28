@@ -9,7 +9,15 @@ describe('safeWebsiteUrl', () => {
   });
 
   it('rejects other schemes, junk and blanks', () => {
-    for (const bad of ['javascript:alert(1)', 'data:text/html,hi', 'ftp://chips.example', 'chips.example', '', null, undefined]) {
+    for (const bad of [
+      'javascript:alert(1)',
+      'data:text/html,hi',
+      'ftp://chips.example',
+      'chips.example',
+      '',
+      null,
+      undefined,
+    ]) {
       assert.equal(safeWebsiteUrl(bad), null);
     }
   });

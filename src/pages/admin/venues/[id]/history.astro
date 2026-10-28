@@ -10,7 +10,11 @@ export const prerender = false;
 
 const id = uuidParam.safeParse(Astro.params.id);
 const [venue] = id.success
-  ? await db.select({ id: venues.id, name: venues.name }).from(venues).where(eq(venues.id, id.data)).limit(1)
+  ? await db
+      .select({ id: venues.id, name: venues.name })
+      .from(venues)
+      .where(eq(venues.id, id.data))
+      .limit(1)
   : [];
 if (!venue) {
   return new Response('Venue not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
@@ -25,50 +29,65 @@ const timeline = await loadVenueTimeline(db, venue.id);
       <div>
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Audit trail</p>
         <h1 class="mt-2 text-3xl font-bold text-ink">{venue.name}: history</h1>
-        <p class="mt-2 text-sm text-graphite">A snapshot is stored every time the venue is saved (latest 100 shown), alongside inspections, verdict motions and actions such as closing and reopening.</p>
+        <p class="mt-2 text-sm text-graphite">
+          A snapshot is stored every time the venue is saved (latest 100 shown), alongside
+          inspections, verdict motions and actions such as closing and reopening.
+        </p>
       </div>
-      <a href={`/admin/venues/${venue.id}`} class="rounded-lg border border-hairline bg-surface px-4 py-2.5 text-sm font-semibold text-ink hover:bg-linen">Back to venue</a>
+      <a
+        href={`/admin/venues/${venue.id}`}
+        class="rounded-lg border border-hairline bg-surface px-4 py-2.5 text-sm font-semibold text-ink hover:bg-linen"
+      >
+        Back to venue
+      </a>
     </div>
 
     {timeline.length === 0 && (
-      <p class="rounded-2xl border border-hairline bg-parchment p-6 text-sm text-soot">No saved revisions yet.</p>
+      <p class="rounded-2xl border border-hairline bg-parchment p-6 text-sm text-soot">
+        No saved revisions yet.
+      </p>
     )}
 
     <ol class="space-y-4">
-      {timeline.map((entry) => entry.kind !== 'amendment' ? (
-        <li class="rounded-2xl border border-navy/30 bg-navy-tint p-5 shadow-sm">
-          <div class="flex flex-wrap items-baseline justify-between gap-2">
-            <p class="font-semibold text-ink">{entry.text}</p>
-            <p class="text-sm text-graphite">{entry.when}</p>
-          </div>
-          {entry.note && <p class="mt-1 text-sm text-soot">Reason: {entry.note}</p>}
-        </li>
-      ) : (
-        <li class="rounded-2xl border border-hairline bg-parchment p-5 shadow-sm">
-          <div class="flex flex-wrap items-baseline justify-between gap-2">
-            <p class="font-semibold text-ink">{entry.who}</p>
-            <p class="text-sm text-graphite">{entry.when}</p>
-          </div>
-          {entry.isFirst ? (
-            <p class="mt-2 text-sm text-soot">Earliest recorded version.</p>
-          ) : !entry.changes?.length ? (
-            <p class="mt-2 text-sm text-soot">Saved with no field changes.</p>
-          ) : (
-            <dl class="mt-3 grid gap-2 text-sm">
-              {entry.changes.map((change) => (
-                <div class="grid gap-1 sm:grid-cols-[10rem_1fr]">
-                  <dt class="font-semibold text-ink">{change.field}</dt>
-                  <dd class="break-words text-soot"><span class="line-through decoration-red-400">{change.from}</span> → <span>{change.to}</span></dd>
-                </div>
-              ))}
-            </dl>
-          )}
-          <details class="mt-3 text-sm">
-            <summary class="cursor-pointer font-semibold text-navy">Full snapshot</summary>
-            <pre class="mt-2 max-h-80 overflow-auto rounded-lg bg-surface p-3 text-xs text-coal">{entry.snapshot}</pre>
-          </details>
-        </li>
-      ))}
+      {timeline.map((entry) =>
+        entry.kind !== 'amendment' ? (
+          <li class="rounded-2xl border border-navy/30 bg-navy-tint p-5 shadow-sm">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <p class="font-semibold text-ink">{entry.text}</p>
+              <p class="text-sm text-graphite">{entry.when}</p>
+            </div>
+            {entry.note && <p class="mt-1 text-sm text-soot">Reason: {entry.note}</p>}
+          </li>
+        ) : (
+          <li class="rounded-2xl border border-hairline bg-parchment p-5 shadow-sm">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <p class="font-semibold text-ink">{entry.who}</p>
+              <p class="text-sm text-graphite">{entry.when}</p>
+            </div>
+            {entry.isFirst ? (
+              <p class="mt-2 text-sm text-soot">Earliest recorded version.</p>
+            ) : !entry.changes?.length ? (
+              <p class="mt-2 text-sm text-soot">Saved with no field changes.</p>
+            ) : (
+              <dl class="mt-3 grid gap-2 text-sm">
+                {entry.changes.map((change) => (
+                  <div class="grid gap-1 sm:grid-cols-[10rem_1fr]">
+                    <dt class="font-semibold text-ink">{change.field}</dt>
+                    <dd class="break-words text-soot">
+                      <span class="line-through decoration-red-400">{change.from}</span> →{' '}
+                      <span>{change.to}</span>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+            <details class="mt-3 text-sm">
+              <summary class="cursor-pointer font-semibold text-navy">Full snapshot</summary>
+              <pre class="mt-2 max-h-80 overflow-auto rounded-lg bg-surface p-3 text-xs text-coal">{entry.snapshot}</pre>
+            </details>
+          </li>
+        )
+      )}
     </ol>
   </div>
 </AdminLayout>

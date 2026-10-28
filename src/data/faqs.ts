@@ -44,14 +44,20 @@ export const FAQ_PARTS: FaqPart[] = [
         a: [
           'We are a body of Chairs and field operatives who exist to seek out, assess, and celebrate the finest lunch offerings Manchester has to offer. We are not a review site, a blog, or an influencer collective. We are a tribunal that happens to eat.',
         ],
-        quote: { text: 'People keep calling us “foodies”. We are not foodies. Foodies have opinions. We have <em>rulings</em>.', chair: 'The Chair of Rulings' },
+        quote: {
+          text: 'People keep calling us “foodies”. We are not foodies. Foodies have opinions. We have <em>rulings</em>.',
+          chair: 'The Chair of Rulings',
+        },
       },
       {
         q: 'Who are the Chairs?',
         a: [
           'The Chairs are the final authority on all verdicts. They eat at their own expense, they cannot be hurried, and they cannot be flattered. Remarkably few venues recognise them when they walk in. We consider this a feature.',
         ],
-        quote: { text: 'Don’t look for a clipboard. The clipboard is in my head. It has always been in my head.', chair: 'The Chair of Discretion' },
+        quote: {
+          text: 'Don’t look for a clipboard. The clipboard is in my head. It has always been in my head.',
+          chair: 'The Chair of Discretion',
+        },
       },
       {
         q: 'Are you affiliated with anyone?',
@@ -64,7 +70,10 @@ export const FAQ_PARTS: FaqPart[] = [
         a: [
           'Never. We pay full price, like everyone else, and we tip according to our conscience. A free lunch is a compromised lunch, and a compromised lunch cannot be judged. See also: <a href="#the-bribery-question">the Bribery Question</a>, below.',
         ],
-        quote: { text: 'A free meal is the most expensive thing a venue can give us. It costs them their verdict.', chair: 'The Chair of Integrity' },
+        quote: {
+          text: 'A free meal is the most expensive thing a venue can give us. It costs them their verdict.',
+          chair: 'The Chair of Integrity',
+        },
       },
       {
         q: 'Why lunch? Why not dinner?',
@@ -90,7 +99,10 @@ export const FAQ_PARTS: FaqPart[] = [
         a: [
           'You are almost certainly listed as <strong>To Be Assessed</strong> (the Field of Vision). It means you are noticed, docketed, and waiting. The Committee has a great many lunches to get through and only so many lunchtimes in a week.',
         ],
-        quote: { text: 'Being To Be Assessed is not a rejection. It is a queue. Some queues are worth standing in.', chair: 'The Chair of Patience' },
+        quote: {
+          text: 'Being To Be Assessed is not a rejection. It is a queue. Some queues are worth standing in.',
+          chair: 'The Chair of Patience',
+        },
       },
       {
         q: 'Can we request an inspection?',
@@ -100,14 +112,19 @@ export const FAQ_PARTS: FaqPart[] = [
       },
       {
         q: 'Can we pick a date for the inspection?',
-        a: ['No. If you know when we are coming, we are not inspecting. We are attending a performance.'],
+        a: [
+          'No. If you know when we are coming, we are not inspecting. We are attending a performance.',
+        ],
       },
       {
         q: 'Do you only visit independents?',
         a: [
           'Mostly. Article I gives independent venues first claim on our attention, over large chains. There is an exception: when a new chain arrives in an area and the Chairs verify it, we may take a look. It is rare. It is rarely flattering.',
         ],
-        quote: { text: 'A chain has to earn its place twice: once on the plate, and once against the sheer weight of its own marketing.', chair: 'The Chair of Originality' },
+        quote: {
+          text: 'A chain has to earn its place twice: once on the plate, and once against the sheer weight of its own marketing.',
+          chair: 'The Chair of Originality',
+        },
       },
       {
         q: 'What counts as “in Manchester”?',
@@ -132,16 +149,42 @@ export const FAQ_PARTS: FaqPart[] = [
     items: [
       {
         q: 'What do the different statuses mean?',
-        a: ['Six, each with a formal title. The full definitions are set out in <a href="/manifesto">the Manifesto</a>; the short version:'],
+        a: [
+          'Six, each with a formal title. The full definitions are set out in <a href="/manifesto">the Manifesto</a>; the short version:',
+        ],
         table: {
           head: ['Status', 'Formal title', 'What it means'],
           rows: [
-            ['<strong>Approved</strong>', 'The Sovereign Rotation', 'Survived our scrutiny across multiple visits. Consistent, good value, characterful. The highest honour we confer.'],
-            ['<strong>Under Consideration</strong>', 'The Waiting Chamber', 'Promising. Awaiting a confirmatory second visit and a tribunal audit.'],
-            ['<strong>To Be Assessed</strong>', 'The Field of Vision', 'Entered our view. Docketed for exploratory inspection.'],
-            ['<strong>If We Must</strong>', 'Reluctant Permission', 'Tolerated, not celebrated. For extreme weather and proximity emergencies.'],
-            ['<strong>Rejected</strong>', 'Removed from the Sacred Rotation', 'Failed on value, quality, character, or consistency.'],
-            ['<strong>Gone But Not Forgotten</strong>', 'In Memoriam', 'Closed. We cannot judge what is no longer there.'],
+            [
+              '<strong>Approved</strong>',
+              'The Sovereign Rotation',
+              'Survived our scrutiny across multiple visits. Consistent, good value, characterful. The highest honour we confer.',
+            ],
+            [
+              '<strong>Under Consideration</strong>',
+              'The Waiting Chamber',
+              'Promising. Awaiting a confirmatory second visit and a tribunal audit.',
+            ],
+            [
+              '<strong>To Be Assessed</strong>',
+              'The Field of Vision',
+              'Entered our view. Docketed for exploratory inspection.',
+            ],
+            [
+              '<strong>If We Must</strong>',
+              'Reluctant Permission',
+              'Tolerated, not celebrated. For extreme weather and proximity emergencies.',
+            ],
+            [
+              '<strong>Rejected</strong>',
+              'Removed from the Sacred Rotation',
+              'Failed on value, quality, character, or consistency.',
+            ],
+            [
+              '<strong>Gone But Not Forgotten</strong>',
+              'In Memoriam',
+              'Closed. We cannot judge what is no longer there.',
+            ],
           ],
         },
       },
@@ -166,7 +209,10 @@ export const FAQ_PARTS: FaqPart[] = [
         a: [
           'It is a little insulting. It is also honest. Your venue is tolerated: not celebrated, not condemned. You are the lunch we eat when it is raining sideways, or when the nearest alternative is a petrol station. It is a status of last resort, and sometimes lunch is exactly that.',
         ],
-        quote: { text: '“If We Must” is not a failure. It is a mercy. Some people never get one.', chair: 'The Chair of Clemency' },
+        quote: {
+          text: '“If We Must” is not a failure. It is a mercy. Some people never get one.',
+          chair: 'The Chair of Clemency',
+        },
       },
       {
         q: 'We were Approved and now we’re not. What happened?',
@@ -176,7 +222,9 @@ export const FAQ_PARTS: FaqPart[] = [
       },
       {
         q: 'Is it fair that one bad visit can undo several good ones?',
-        a: ['It is not fair. It is <em>correct</em>. A venue is only as good as its worst Tuesday.'],
+        a: [
+          'It is not fair. It is <em>correct</em>. A venue is only as good as its worst Tuesday.',
+        ],
         quote: {
           text: 'Anyone can cook one great lunch. We wish to eat the hundredth lunch, on the day the head chef is off and the delivery’s late.',
           chair: 'The Chair of Consistency',
@@ -221,7 +269,10 @@ export const FAQ_PARTS: FaqPart[] = [
         a: [
           'Yes, but only through exceptional redemption. This does not mean a leaflet, a discount code, or a heartfelt email. It means changing what is on the plate, and keeping it changed.',
         ],
-        quote: { text: 'I have seen it happen precisely twice. Both times, the venue simply got better and said nothing. That is the only strategy that works.', chair: 'The Chair of Redemption' },
+        quote: {
+          text: 'I have seen it happen precisely twice. Both times, the venue simply got better and said nothing. That is the only strategy that works.',
+          chair: 'The Chair of Redemption',
+        },
       },
       {
         q: 'We’ve changed our chef, menu or owner. Do we get a fresh start?',
@@ -276,7 +327,9 @@ export const FAQ_PARTS: FaqPart[] = [
       },
       {
         q: 'Does a higher cost tier mean a lower verdict?',
-        a: ['Absolutely not. A £££ venue can be Approved. A £ venue can be Rejected. Price is a coordinate on the map, not a grade on the report.'],
+        a: [
+          'Absolutely not. A £££ venue can be Approved. A £ venue can be Rejected. Price is a coordinate on the map, not a grade on the report.',
+        ],
       },
     ],
   },
@@ -301,11 +354,15 @@ export const FAQ_PARTS: FaqPart[] = [
       },
       {
         q: 'What happens to venues that try?',
-        a: ['They are entered in the Register, and the attempt is weighed against them. In serious cases, it influences the verdict, not in the way the venue hoped.'],
+        a: [
+          'They are entered in the Register, and the attempt is weighed against them. In serious cases, it influences the verdict, not in the way the venue hoped.',
+        ],
       },
       {
         q: 'What is the Hall of Shame?',
-        a: ['It is where violations of Article V are recorded. Think of it as a trophy cabinet for the opposite of trophies. <a href="/hall-of-shame">Visit at your peril</a>.'],
+        a: [
+          'It is where violations of Article V are recorded. Think of it as a trophy cabinet for the opposite of trophies. <a href="/hall-of-shame">Visit at your peril</a>.',
+        ],
       },
       {
         q: 'Can we contact the Chairs directly?',
@@ -341,7 +398,9 @@ export const FAQ_PARTS: FaqPart[] = [
     items: [
       {
         q: 'Can we hang our sticker anywhere we like?',
-        a: ['The sticker may be displayed in a prominent place on your premises. It may not be photocopied, laminated into a larger sticker, tattooed on staff, or used as a hat.'],
+        a: [
+          'The sticker may be displayed in a prominent place on your premises. It may not be photocopied, laminated into a larger sticker, tattooed on staff, or used as a hat.',
+        ],
       },
       {
         q: 'We’ve been Approved! Can we put “Michelin-style” on our menu?',
@@ -349,8 +408,13 @@ export const FAQ_PARTS: FaqPart[] = [
       },
       {
         q: 'Our dog is a better judge than your Chairs. Can they swap?',
-        a: ['Your dog may be excellent. We do not doubt it. But your dog cannot assess value, and has been observed to approve of the floor.'],
-        quote: { text: 'I respect the dog. I do not respect the dog’s scoring system, which appears to rely on “did anything fall”.', chair: 'The Chair of Rulings' },
+        a: [
+          'Your dog may be excellent. We do not doubt it. But your dog cannot assess value, and has been observed to approve of the floor.',
+        ],
+        quote: {
+          text: 'I respect the dog. I do not respect the dog’s scoring system, which appears to rely on “did anything fall”.',
+          chair: 'The Chair of Rulings',
+        },
       },
       {
         q: 'Do you take dietary requirements into account?',
@@ -360,25 +424,41 @@ export const FAQ_PARTS: FaqPart[] = [
       },
       {
         q: 'Do you judge the toilets?',
-        a: ['Officially, no. Unofficially, the toilets are a short, unflinching summary of the entire establishment.'],
-        quote: { text: 'It is not in the Constitution. It is in the <em>spirit</em> of the Constitution.', chair: 'The Chair of Standards' },
+        a: [
+          'Officially, no. Unofficially, the toilets are a short, unflinching summary of the entire establishment.',
+        ],
+        quote: {
+          text: 'It is not in the Constitution. It is in the <em>spirit</em> of the Constitution.',
+          chair: 'The Chair of Standards',
+        },
       },
       {
         q: 'Do you judge the music, the decor, or the playlist?',
-        a: ['Only when they are loud enough to interfere with the lunch. If we cannot hear the person opposite us, the lunch has failed.'],
+        a: [
+          'Only when they are loud enough to interfere with the lunch. If we cannot hear the person opposite us, the lunch has failed.',
+        ],
       },
       {
         q: 'What if we’re closed on the day you visit?',
-        a: ['Then we will visit another day. We do not hold it against you. We do hold it against you if the sign says you’re open.'],
+        a: [
+          'Then we will visit another day. We do not hold it against you. We do hold it against you if the sign says you’re open.',
+        ],
       },
       {
         q: 'What if we close permanently?',
-        a: ['You will be entered as <strong>Gone But Not Forgotten</strong> (In Memoriam). No further judgment can be passed. We will, however, remember the lunches.'],
-        quote: { text: 'We do not pass verdicts on the dead. We simply stand, briefly, outside the shutters, and think about the pie.', chair: 'The Chair of Remembrance' },
+        a: [
+          'You will be entered as <strong>Gone But Not Forgotten</strong> (In Memoriam). No further judgment can be passed. We will, however, remember the lunches.',
+        ],
+        quote: {
+          text: 'We do not pass verdicts on the dead. We simply stand, briefly, outside the shutters, and think about the pie.',
+          chair: 'The Chair of Remembrance',
+        },
       },
       {
         q: 'Do you accept gift cards, vouchers, or loyalty cards?',
-        a: ['We accept them as <em>payment</em>, if they work. We do not accept them as <em>influence</em>.'],
+        a: [
+          'We accept them as <em>payment</em>, if they work. We do not accept them as <em>influence</em>.',
+        ],
       },
       {
         q: 'Can our staff meet the Chairs?',
@@ -386,11 +466,15 @@ export const FAQ_PARTS: FaqPart[] = [
       },
       {
         q: 'Can we guess who the Chairs are?',
-        a: ['You may. The Chairs will neither confirm nor deny. They will, however, sit very still while you do it.'],
+        a: [
+          'You may. The Chairs will neither confirm nor deny. They will, however, sit very still while you do it.',
+        ],
       },
       {
         q: 'Are the Chairs always right?',
-        a: ['The Chairs are <em>final</em>. This is not the same thing as always right, but in practice no one has found the difference.'],
+        a: [
+          'The Chairs are <em>final</em>. This is not the same thing as always right, but in practice no one has found the difference.',
+        ],
         quote: {
           text: 'Is the verdict correct? That is a question for philosophers. Is the verdict final? That is a question for the Constitution. We prefer the Constitution.',
           chair: 'The Chair of Finality',
@@ -402,7 +486,9 @@ export const FAQ_PARTS: FaqPart[] = [
       },
       {
         q: 'I think the Club is a joke.',
-        a: ['It is a joke told with a perfectly straight face, which is the only way a joke can be truly committed to. The sandwiches, however, are entirely serious.'],
+        a: [
+          'It is a joke told with a perfectly straight face, which is the only way a joke can be truly committed to. The sandwiches, however, are entirely serious.',
+        ],
       },
     ],
   },
@@ -420,8 +506,15 @@ export const FAQ_PARTS: FaqPart[] = [
       {
         q: 'Is there anything else we should know?',
         a: ['Three things.'],
-        steps: ['Be good, and be consistently good.', 'Do not try to influence us.', 'Serve lunch as though a Chair is at the next table. One may well be.'],
-        quote: { text: 'The best way to impress us is to have no idea we are there.', chair: 'The Chair of Discretion' },
+        steps: [
+          'Be good, and be consistently good.',
+          'Do not try to influence us.',
+          'Serve lunch as though a Chair is at the next table. One may well be.',
+        ],
+        quote: {
+          text: 'The best way to impress us is to have no idea we are there.',
+          chair: 'The Chair of Discretion',
+        },
       },
     ],
   },

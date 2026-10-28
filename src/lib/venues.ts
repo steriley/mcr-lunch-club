@@ -4,7 +4,12 @@ import type { Database, Tx } from '@/lib/db-client';
 import type { WalkingRoute, LatLng } from '@/lib/ors';
 import type { Actor } from '@/lib/venue-events';
 import type { VenueInput } from '@/lib/venue-schema';
-import { computeRoute, resolveRoute, type ResolvedRoute, type RouteValues } from '@/lib/walking-route';
+import {
+  computeRoute,
+  resolveRoute,
+  type ResolvedRoute,
+  type RouteValues,
+} from '@/lib/walking-route';
 
 /**
  * The Venue store: every change to a venue row goes through updateVenue()
@@ -46,14 +51,24 @@ export function venueValues(input: VenueInput, userId: string | null, route: Rou
   };
 }
 
-export async function isSlugTaken(db: Database, slug: string, excludeId?: string): Promise<boolean> {
-  const condition = excludeId ? and(eq(venues.slug, slug), ne(venues.id, excludeId)) : eq(venues.slug, slug);
+export async function isSlugTaken(
+  db: Database,
+  slug: string,
+  excludeId?: string
+): Promise<boolean> {
+  const condition = excludeId
+    ? and(eq(venues.slug, slug), ne(venues.id, excludeId))
+    : eq(venues.slug, slug);
   const [row] = await db.select({ id: venues.id }).from(venues).where(condition).limit(1);
   return Boolean(row);
 }
 
 /** Audit trail: store a full snapshot of the venue as saved. */
-export async function recordVenueRevision(db: Pick<Database, 'insert'>, venue: VenueRow, changedBy: string | null): Promise<void> {
+export async function recordVenueRevision(
+  db: Pick<Database, 'insert'>,
+  venue: VenueRow,
+  changedBy: string | null
+): Promise<void> {
   await db.insert(venueRevisions).values({
     venueId: venue.id,
     changedBy,
@@ -85,10 +100,18 @@ export function updateVenue(
   });
 }
 
-export type SaveVenueResult = { ok: true; venue: VenueRow; route: ResolvedRoute } | { ok: false; error: 'not_found' | 'slug_taken' };
+export type SaveVenueResult =
+  | { ok: true; venue: VenueRow; route: ResolvedRoute }
+  | { ok: false; error: 'not_found' | 'slug_taken' };
 
 /** Saves the admin venue form: slug check, walking route (ORS only when the location needs it), then the row. */
-export async function saveVenue(db: Database, id: string, input: VenueInput, actor: Actor, lookup?: RouteLookup): Promise<SaveVenueResult> {
+export async function saveVenue(
+  db: Database,
+  id: string,
+  input: VenueInput,
+  actor: Actor,
+  lookup?: RouteLookup
+): Promise<SaveVenueResult> {
   if (await isSlugTaken(db, input.slug, id)) return { ok: false, error: 'slug_taken' };
 
   const [existing] = await db
@@ -117,12 +140,25 @@ export type RerouteResult =
   | { ok: false; error: 'route_failed'; route: ResolvedRoute };
 
 /** Retries the ORS walking route from HQ. A failed lookup changes nothing. */
-export async function rerouteVenue(db: Database, id: string, actor: Actor, lookup?: RouteLookup): Promise<RerouteResult> {
-  const [venue] = await db.select({ latitude: venues.latitude, longitude: venues.longitude }).from(venues).where(eq(venues.id, id)).limit(1);
+export async function rerouteVenue(
+  db: Database,
+  id: string,
+  actor: Actor,
+  lookup?: RouteLookup
+): Promise<RerouteResult> {
+  const [venue] = await db
+    .select({ latitude: venues.latitude, longitude: venues.longitude })
+    .from(venues)
+    .where(eq(venues.id, id))
+    .limit(1);
   if (!venue) return { ok: false, error: 'not_found' };
-  if (venue.latitude === null || venue.longitude === null) return { ok: false, error: 'needs_location' };
+  if (venue.latitude === null || venue.longitude === null)
+    return { ok: false, error: 'needs_location' };
 
-  const route = await computeRoute({ lat: Number(venue.latitude), lng: Number(venue.longitude) }, lookup);
+  const route = await computeRoute(
+    { lat: Number(venue.latitude), lng: Number(venue.longitude) },
+    lookup
+  );
   if (route.error) return { ok: false, error: 'route_failed', route };
 
   const row = await updateVenue(db, id, routeColumns(route), actor);

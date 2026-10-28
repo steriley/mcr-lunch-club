@@ -5,10 +5,11 @@ import { formatDateTime } from '@/lib/dates';
 import { apiFetch, type ApiFetchOptions } from '@/lib/api-fetch';
 import type { SerializedSuggestion } from '@/lib/suggestions';
 
-
 const props = defineProps<{ suggestions: SerializedSuggestion[] }>();
 
-const rows = ref<SerializedSuggestion[]>(props.suggestions.map((suggestion) => ({ ...suggestion })));
+const rows = ref<SerializedSuggestion[]>(
+  props.suggestions.map((suggestion) => ({ ...suggestion }))
+);
 const busy = ref<Record<string, boolean>>({});
 const pendingDelete = ref<SerializedSuggestion | null>(null);
 const message = ref('');
@@ -25,16 +26,27 @@ async function run(suggestion: SerializedSuggestion, options: ApiFetchOptions): 
 }
 
 async function setStatus(suggestion: SerializedSuggestion, status: 'new' | 'dismissed') {
-  if (!(await run(suggestion, { method: 'PATCH', body: { status }, fallback: 'Could not update the suggestion.' }))) return;
+  if (
+    !(await run(suggestion, {
+      method: 'PATCH',
+      body: { status },
+      fallback: 'Could not update the suggestion.',
+    }))
+  )
+    return;
   rows.value = rows.value.filter((row) => row.id !== suggestion.id);
-  message.value = status === 'dismissed' ? `“${suggestion.name}” dismissed.` : `“${suggestion.name}” moved back to the inbox.`;
+  message.value =
+    status === 'dismissed'
+      ? `“${suggestion.name}” dismissed.`
+      : `“${suggestion.name}” moved back to the inbox.`;
 }
 
 async function performDelete() {
   const suggestion = pendingDelete.value;
   pendingDelete.value = null;
   if (!suggestion) return;
-  if (!(await run(suggestion, { method: 'DELETE', fallback: 'Could not delete the suggestion.' }))) return;
+  if (!(await run(suggestion, { method: 'DELETE', fallback: 'Could not delete the suggestion.' })))
+    return;
   rows.value = rows.value.filter((row) => row.id !== suggestion.id);
   message.value = 'Suggestion deleted.';
 }
@@ -42,15 +54,34 @@ async function performDelete() {
 
 <template>
   <div class="space-y-4">
-    <p v-if="message" role="status" class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{{ message }}</p>
-    <p v-if="errorMessage" role="alert" class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
+    <p
+      v-if="message"
+      role="status"
+      class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+    >
+      {{ message }}
+    </p>
+    <p
+      v-if="errorMessage"
+      role="alert"
+      class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+    >
+      {{ errorMessage }}
+    </p>
 
-    <p v-if="!rows.length" class="rounded-2xl border border-hairline bg-parchment px-4 py-10 text-center text-sm text-soot">
+    <p
+      v-if="!rows.length"
+      class="rounded-2xl border border-hairline bg-parchment px-4 py-10 text-center text-sm text-soot"
+    >
       Nothing here. The petition box is empty.
     </p>
 
     <ul v-else class="space-y-4">
-      <li v-for="suggestion in rows" :key="suggestion.id" class="rounded-2xl border border-hairline bg-parchment p-5 shadow-sm">
+      <li
+        v-for="suggestion in rows"
+        :key="suggestion.id"
+        class="rounded-2xl border border-hairline bg-parchment p-5 shadow-sm"
+      >
         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div class="min-w-0">
             <h2 class="text-xl font-bold text-ink">{{ suggestion.name }}</h2>
@@ -60,7 +91,8 @@ async function performDelete() {
               <template v-if="suggestion.cost"> · {{ suggestion.cost }}</template>
             </p>
             <p class="mt-1 text-xs text-graphite">
-              {{ suggestion.submitterName || 'Anonymous member' }} · {{ formatDateTime(suggestion.createdAt) }}
+              {{ suggestion.submitterName || 'Anonymous member' }} ·
+              {{ formatDateTime(suggestion.createdAt) }}
             </p>
           </div>
           <div class="flex shrink-0 flex-wrap gap-2">
@@ -85,7 +117,9 @@ async function performDelete() {
                 type="button"
                 class="rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60"
                 :disabled="busy[suggestion.id]"
-                @click="setStatus(suggestion, suggestion.status === 'dismissed' ? 'new' : 'dismissed')"
+                @click="
+                  setStatus(suggestion, suggestion.status === 'dismissed' ? 'new' : 'dismissed')
+                "
               >
                 {{ suggestion.status === 'dismissed' ? 'Restore' : 'Dismiss' }}
               </button>
@@ -103,7 +137,9 @@ async function performDelete() {
 
         <dl class="mt-4 space-y-2 text-sm text-coal">
           <div v-if="suggestion.recommendedOrder">
-            <dt class="text-xs font-bold uppercase tracking-[0.14em] text-ochre">Recommended order</dt>
+            <dt class="text-xs font-bold uppercase tracking-[0.14em] text-ochre">
+              Recommended order
+            </dt>
             <dd class="mt-0.5">{{ suggestion.recommendedOrder }}</dd>
           </div>
           <div>

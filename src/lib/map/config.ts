@@ -87,7 +87,13 @@ export const WALKING_ISOCHRONES: IsochroneRing[] = [
   walkRing(15),
   walkRing(20),
   walkRing(25),
-  { radius: 4023, label: '2.5-Mile Central Boundary', shortLabel: '2.5 mi', dash: '8, 8', weight: BOUNDARY_WEIGHT },
+  {
+    radius: 4023,
+    label: '2.5-Mile Central Boundary',
+    shortLabel: '2.5 mi',
+    dash: '8, 8',
+    weight: BOUNDARY_WEIGHT,
+  },
 ];
 
 /**
@@ -100,7 +106,9 @@ export function createTileLayer(L: any, apiKey?: string): any {
     subdomains: CARTO_VOYAGER_TILE_CONFIG.subdomains,
     maxZoom: CARTO_VOYAGER_TILE_CONFIG.maxZoom,
   });
-  const unsubscribe = onThemeChange((theme) => layer.setUrl(CARTO_VOYAGER_TILE_CONFIG.getUrl(apiKey, theme)));
+  const unsubscribe = onThemeChange((theme) =>
+    layer.setUrl(CARTO_VOYAGER_TILE_CONFIG.getUrl(apiKey, theme))
+  );
   layer.on?.('remove', unsubscribe);
   return layer;
 }

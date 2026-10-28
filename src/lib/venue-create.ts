@@ -34,7 +34,10 @@ export async function createVenueWithProposal(
   afterCreate?: (tx: Tx, venue: VenueRow) => Promise<void>
 ): Promise<{ venue: VenueRow; proposal: TierProposalRow | null }> {
   return db.transaction(async (tx) => {
-    const [venue] = await tx.insert(venues).values(venueValues(input, actor.id, route)).returning();
+    const [venue] = await tx
+      .insert(venues)
+      .values(venueValues(input, actor.id, route))
+      .returning();
     await recordVenueRevision(tx, venue, actor.id);
 
     let proposal: TierProposalRow | null = null;

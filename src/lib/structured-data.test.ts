@@ -33,24 +33,51 @@ describe('venueStructuredData', () => {
       url,
       priceRange: '££',
       servesCuisine: 'Asian',
-      address: { '@type': 'PostalAddress', streetAddress: '59 Faulkner Street, M1 4FF', addressLocality: 'Manchester', addressCountry: 'GB' },
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: '59 Faulkner Street, M1 4FF',
+        addressLocality: 'Manchester',
+        addressCountry: 'GB',
+      },
       geo: { '@type': 'GeoCoordinates', latitude: 53.4781, longitude: -2.2405 },
       hasMap: venue.mapSearchLink,
     });
   });
 
   it('includes the photo when there is one', () => {
-    const image = { url: 'https://abc.public.blob.vercel-storage.com/a.webp', thumbUrl: '', width: 800, height: 600, alt: '', focalX: null, focalY: null };
+    const image = {
+      url: 'https://abc.public.blob.vercel-storage.com/a.webp',
+      thumbUrl: '',
+      width: 800,
+      height: 600,
+      alt: '',
+      focalX: null,
+      focalY: null,
+    };
     assert.equal(venueStructuredData({ ...venue, image }, url)?.image, image.url);
   });
 
   it('makes a site-relative photo absolute', () => {
-    const image = { url: '/venues/flat-iron.jpg', thumbUrl: '', width: null, height: null, alt: '', focalX: null, focalY: null };
-    assert.equal(venueStructuredData({ ...venue, image }, url)?.image, 'https://mcrlunchclub.com/venues/flat-iron.jpg');
+    const image = {
+      url: '/venues/flat-iron.jpg',
+      thumbUrl: '',
+      width: null,
+      height: null,
+      alt: '',
+      focalX: null,
+      focalY: null,
+    };
+    assert.equal(
+      venueStructuredData({ ...venue, image }, url)?.image,
+      'https://mcrlunchclub.com/venues/flat-iron.jpg'
+    );
   });
 
   it('links the venue website as sameAs when it is http(s)', () => {
-    assert.equal(venueStructuredData({ ...venue, websiteUrl: 'https://happyseasons.example' }, url)?.sameAs, 'https://happyseasons.example/');
+    assert.equal(
+      venueStructuredData({ ...venue, websiteUrl: 'https://happyseasons.example' }, url)?.sameAs,
+      'https://happyseasons.example/'
+    );
     for (const websiteUrl of [null, 'javascript:alert(1)']) {
       assert.equal('sameAs' in venueStructuredData({ ...venue, websiteUrl }, url)!, false);
     }
@@ -68,7 +95,9 @@ describe('venueStructuredData', () => {
   });
 
   it('cannot close its script tag when a name contains markup', () => {
-    const json = serializeForScript(venueStructuredData({ ...venue, name: '</script><script>alert(1)</script>' }, url));
+    const json = serializeForScript(
+      venueStructuredData({ ...venue, name: '</script><script>alert(1)</script>' }, url)
+    );
     assert.equal(json.includes('</script>'), false);
   });
 });
@@ -87,15 +116,32 @@ describe('breadcrumbStructuredData', () => {
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Map', item: 'https://mcrlunchclub.com/' },
-        { '@type': 'ListItem', position: 2, name: 'Verdicts', item: 'https://mcrlunchclub.com/verdicts/approved' },
-        { '@type': 'ListItem', position: 3, name: 'Approved', item: 'https://mcrlunchclub.com/verdicts/approved' },
-        { '@type': 'ListItem', position: 4, name: 'Happy Seasons', item: 'https://mcrlunchclub.com/venues/happy-seasons' },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Verdicts',
+          item: 'https://mcrlunchclub.com/verdicts/approved',
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: 'Approved',
+          item: 'https://mcrlunchclub.com/verdicts/approved',
+        },
+        {
+          '@type': 'ListItem',
+          position: 4,
+          name: 'Happy Seasons',
+          item: 'https://mcrlunchclub.com/venues/happy-seasons',
+        },
       ],
     });
   });
 
   it('cannot close its script tag when a name contains markup', () => {
-    const json = serializeForScript(breadcrumbStructuredData([{ name: '</script><script>alert(1)</script>', href: '/' }], url));
+    const json = serializeForScript(
+      breadcrumbStructuredData([{ name: '</script><script>alert(1)</script>', href: '/' }], url)
+    );
     assert.equal(json.includes('</script>'), false);
   });
 });

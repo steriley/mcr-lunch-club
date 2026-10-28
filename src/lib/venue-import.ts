@@ -37,7 +37,9 @@ export function toImportableVenue(venue: LegacyVenue): ImportableVenue {
   });
 
   if (!parsed.success) {
-    const problems = parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ');
+    const problems = parsed.error.issues
+      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
+      .join('; ');
     throw new Error(`${venue.slug}: ${problems}`);
   }
   return { input: parsed.data, tier };
@@ -57,9 +59,18 @@ export interface VenueImportResult {
   skipped: number;
 }
 
-export async function importVenues(db: Database, items: ImportableVenue[], options: VenueImportOptions = {}): Promise<VenueImportResult> {
+export async function importVenues(
+  db: Database,
+  items: ImportableVenue[],
+  options: VenueImportOptions = {}
+): Promise<VenueImportResult> {
   const { dryRun = false, update = false, updateTiers = false } = options;
-  const existing = new Map((await db.select({ id: venues.id, slug: venues.slug }).from(venues)).map((row) => [row.slug, row.id]));
+  const existing = new Map(
+    (await db.select({ id: venues.id, slug: venues.slug }).from(venues)).map((row) => [
+      row.slug,
+      row.id,
+    ])
+  );
   const result: VenueImportResult = { inserted: 0, updated: 0, skipped: 0 };
 
   for (const { input, tier } of items) {
@@ -83,7 +94,10 @@ export async function importVenues(db: Database, items: ImportableVenue[], optio
     } else {
       // Deliberately outside venueValues/venueInputSchema: this is the bootstrap path that fills an empty
       // database from the legacy file, not a Chair edit. Without a tier a venue stays hidden (see visibility.ts).
-      const [row] = await db.insert(venues).values({ ...values, tier }).returning();
+      const [row] = await db
+        .insert(venues)
+        .values({ ...values, tier })
+        .returning();
       await recordVenueRevision(db, row, null);
       result.inserted += 1;
     }

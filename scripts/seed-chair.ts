@@ -42,12 +42,15 @@ if (existing) {
   console.log(`No user created; existing Chair ensured: ${email}`);
 } else {
   const hashedPassword = await context.password.hash(password);
-  const createdUser = await context.internalAdapter.createUser({
-    email,
-    name,
-    role: 'admin',
-    emailVerified: true,
-  }, { method: 'admin' });
+  const createdUser = await context.internalAdapter.createUser(
+    {
+      email,
+      name,
+      role: 'admin',
+      emailVerified: true,
+    },
+    { method: 'admin' }
+  );
 
   await context.internalAdapter.linkAccount({
     userId: createdUser.id,

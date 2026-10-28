@@ -13,7 +13,10 @@ const [inspections, venues] = await Promise.all([getPublicInspections(), getPubl
 const venuesBySlug = new Map(venues.map((venue) => [venue.slug, venue]));
 ---
 
-<Layout title="The Inspection Audits — Chronological Ledger | MCR Lunch Club" description="Every confirmed MCR Lunch Club inspection of a Manchester lunch venue, newest first.">
+<Layout
+  title="The Inspection Audits — Chronological Ledger | MCR Lunch Club"
+  description="Every confirmed MCR Lunch Club inspection of a Manchester lunch venue, newest first."
+>
   <PageRibbon
     icon="clipboard"
     kicker="Operational Field Ledger"
@@ -39,13 +42,16 @@ const venuesBySlug = new Map(venues.map((venue) => [venue.slug, venue]));
 
       {inspections.length === 0 ? (
         <div class="p-6 text-center bg-stone-50 rounded-xl border border-dashed border-stone-300 text-base text-stone-500">
-          No inspections are on record yet. An inspection is entered here once two Chairs confirm the same day's visit.
+          No inspections are on record yet. An inspection is entered here once two Chairs confirm
+          the same day's visit.
         </div>
       ) : (
         <div class="bench-pillars inspection-rows">
           {inspections.map((insp) => {
             const venue = venuesBySlug.get(insp.venueSlug);
-            return venue && <BenchPillar pillar={toCard({ venue }, inspections)} inspection={insp} />;
+            return (
+              venue && <BenchPillar pillar={toCard({ venue }, inspections)} inspection={insp} />
+            );
           })}
         </div>
       )}

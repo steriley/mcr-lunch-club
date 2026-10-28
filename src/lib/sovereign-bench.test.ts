@@ -26,22 +26,45 @@ function venue(slug: string, overrides: Partial<PublicVenue> = {}): PublicVenue 
   };
 }
 
-function pick(slug: string, overrides: Partial<GoldenCutVenue> = {}, venueOverrides: Partial<PublicVenue> = {}): GoldenCutVenue {
+function pick(
+  slug: string,
+  overrides: Partial<GoldenCutVenue> = {},
+  venueOverrides: Partial<PublicVenue> = {}
+): GoldenCutVenue {
   return { venue: venue(slug, venueOverrides), puffPiece: null, anchorDish: null, ...overrides };
 }
 
-function inspection(venueSlug: string, date: string, kind: Inspection['kind'] = 'verified'): Inspection {
-  return { id: `${venueSlug}-${date}-${kind}`, venueSlug, venueName: venueSlug, date, kind, outcome: null, chairs: [] };
+function inspection(
+  venueSlug: string,
+  date: string,
+  kind: Inspection['kind'] = 'verified'
+): Inspection {
+  return {
+    id: `${venueSlug}-${date}-${kind}`,
+    venueSlug,
+    venueName: venueSlug,
+    date,
+    kind,
+    outcome: null,
+    chairs: [],
+  };
 }
 
 const slugs = ['a', 'b', 'c', 'd', 'e', 'f'];
 
 describe('buildSovereignBench: Golden Cut mode', () => {
   it('uses the first five picks in order: hero, then four pillars', () => {
-    const bench = buildSovereignBench(slugs.map((slug) => pick(slug)), [venue('nearby')], []);
+    const bench = buildSovereignBench(
+      slugs.map((slug) => pick(slug)),
+      [venue('nearby')],
+      []
+    );
     assert.equal(bench.mode, 'golden-cut');
     assert.equal(bench.hero?.slug, 'a');
-    assert.deepEqual(bench.pillars.map((card) => card.slug), ['b', 'c', 'd', 'e']);
+    assert.deepEqual(
+      bench.pillars.map((card) => card.slug),
+      ['b', 'c', 'd', 'e']
+    );
     assert.equal(bench.hero?.href, '/venues/a');
   });
 
@@ -50,7 +73,10 @@ describe('buildSovereignBench: Golden Cut mode', () => {
     const two = buildSovereignBench([pick('a'), pick('b')], nearby, []);
     assert.equal(two.mode, 'golden-cut');
     assert.equal(two.hero?.slug, 'a');
-    assert.deepEqual(two.pillars.map((card) => card.slug), ['b']);
+    assert.deepEqual(
+      two.pillars.map((card) => card.slug),
+      ['b']
+    );
 
     const one = buildSovereignBench([pick('a')], nearby, []);
     assert.equal(one.hero?.slug, 'a');
@@ -73,13 +99,23 @@ describe('buildSovereignBench: fallback mode', () => {
     const bench = buildSovereignBench([], venues, []);
     assert.equal(bench.mode, 'nearest');
     assert.equal(bench.hero?.slug, 'a');
-    assert.deepEqual(bench.pillars.map((card) => card.slug), ['b', 'c', 'd', 'e']);
+    assert.deepEqual(
+      bench.pillars.map((card) => card.slug),
+      ['b', 'c', 'd', 'e']
+    );
   });
 
   it('shows only what there is when fewer than five are Approved', () => {
-    const bench = buildSovereignBench([], [venue('a'), venue('x', { tier: 'rejected' }), venue('b')], []);
+    const bench = buildSovereignBench(
+      [],
+      [venue('a'), venue('x', { tier: 'rejected' }), venue('b')],
+      []
+    );
     assert.equal(bench.hero?.slug, 'a');
-    assert.deepEqual(bench.pillars.map((card) => card.slug), ['b']);
+    assert.deepEqual(
+      bench.pillars.map((card) => card.slug),
+      ['b']
+    );
   });
 
   it('has no hero and no pillars, and does not throw, when nothing is Approved', () => {
@@ -97,7 +133,12 @@ describe('buildSovereignBench: inspections', () => {
     const bench = buildSovereignBench(
       [pick('a'), pick('b')],
       [],
-      [inspection('a', '2026-03-01'), inspection('a', '2025-01-01', 'legacy'), inspection('b', '2026-02-02'), inspection('other', '2026-04-04')]
+      [
+        inspection('a', '2026-03-01'),
+        inspection('a', '2025-01-01', 'legacy'),
+        inspection('b', '2026-02-02'),
+        inspection('other', '2026-04-04'),
+      ]
     );
     assert.equal(bench.hero?.inspectionCount, 2);
     assert.equal(bench.pillars[0].inspectionCount, 1);
@@ -107,13 +148,21 @@ describe('buildSovereignBench: inspections', () => {
     const bench = buildSovereignBench(
       [pick('a')],
       [],
-      [inspection('a', '2025-12-02', 'legacy'), inspection('a', '2026-03-31'), inspection('a', '2026-01-15')]
+      [
+        inspection('a', '2025-12-02', 'legacy'),
+        inspection('a', '2026-03-31'),
+        inspection('a', '2026-01-15'),
+      ]
     );
     assert.equal(bench.hero?.lastInspection, '31st Mar 26');
   });
 
   it('does not use the venue lastInspectionDate, and has no date or count without inspections', () => {
-    const bench = buildSovereignBench([pick('a', {}, { lastInspectionDate: '2026-06-01' })], [], []);
+    const bench = buildSovereignBench(
+      [pick('a', {}, { lastInspectionDate: '2026-06-01' })],
+      [],
+      []
+    );
     assert.equal(bench.hero?.inspectionCount, 0);
     assert.equal(bench.hero?.lastInspection, null);
   });
@@ -122,7 +171,11 @@ describe('buildSovereignBench: inspections', () => {
 describe('buildSovereignBench: text', () => {
   it('trims the quote and turns a blank one into null', () => {
     const bench = buildSovereignBench(
-      [pick('a', { puffPiece: '  Lovely.  ' }), pick('b', { puffPiece: '   ' }), pick('c', { puffPiece: null })],
+      [
+        pick('a', { puffPiece: '  Lovely.  ' }),
+        pick('b', { puffPiece: '   ' }),
+        pick('c', { puffPiece: null }),
+      ],
       [],
       []
     );
@@ -147,9 +200,23 @@ describe('buildSovereignBench: text', () => {
   });
 
   it('only gives Approved venues an Eat Like Us order', () => {
-    const verdicts = ['approved', 'under_consideration', 'to_be_assessed', 'if_we_must', 'rejected', 'gone_but_not_forgotten'] as const;
+    const verdicts = [
+      'approved',
+      'under_consideration',
+      'to_be_assessed',
+      'if_we_must',
+      'rejected',
+      'gone_but_not_forgotten',
+    ] as const;
     for (const tier of verdicts) {
-      const card = toCard({ venue: venue('x', { tier, eatLikeUs: 'Pie' }), puffPiece: null, anchorDish: 'Chef special' }, []);
+      const card = toCard(
+        {
+          venue: venue('x', { tier, eatLikeUs: 'Pie' }),
+          puffPiece: null,
+          anchorDish: 'Chef special',
+        },
+        []
+      );
       assert.equal(card.eatLikeUs, tier === 'approved' ? 'Chef special' : null, tier);
     }
   });
@@ -163,15 +230,26 @@ describe('buildSovereignBench: text', () => {
 
 describe('buildSovereignBench: walk', () => {
   it('links to Google walking directions at the venue coordinates', () => {
-    const walk = buildSovereignBench([pick('a', {}, { lat: 53.4808, lng: -2.2426, walkingTimeMin: 12, distanceMiles: 0.6 })], [], []).hero!.walk!;
+    const walk = buildSovereignBench(
+      [pick('a', {}, { lat: 53.4808, lng: -2.2426, walkingTimeMin: 12, distanceMiles: 0.6 })],
+      [],
+      []
+    ).hero!.walk!;
     assert.equal(walk.label, '12 min walk (0.60 mi)');
     assert.equal(walk.lat, 53.4808);
     assert.equal(walk.lng, -2.2426);
-    assert.equal(walk.directionsUrl, 'https://www.google.com/maps/dir/?api=1&destination=53.4808,-2.2426&travelmode=walking');
+    assert.equal(
+      walk.directionsUrl,
+      'https://www.google.com/maps/dir/?api=1&destination=53.4808,-2.2426&travelmode=walking'
+    );
   });
 
   it('has no walk at all when the walking time is null', () => {
-    const { walk } = buildSovereignBench([pick('a', {}, { walkingTimeMin: null, distanceMiles: null })], [], []).hero!;
+    const { walk } = buildSovereignBench(
+      [pick('a', {}, { walkingTimeMin: null, distanceMiles: null })],
+      [],
+      []
+    ).hero!;
     assert.equal(walk, null);
   });
 
@@ -184,7 +262,15 @@ describe('buildSovereignBench: walk', () => {
 
 describe('buildSovereignBench: images and cost', () => {
   it('carries the primary photo, or null when the venue has none', () => {
-    const image = { url: 'https://img.example/a.jpg', thumbUrl: 'https://img.example/a-t.jpg', width: 1600, height: 1200, alt: 'A', focalX: null, focalY: null };
+    const image = {
+      url: 'https://img.example/a.jpg',
+      thumbUrl: 'https://img.example/a-t.jpg',
+      width: 1600,
+      height: 1200,
+      alt: 'A',
+      focalX: null,
+      focalY: null,
+    };
     const bench = buildSovereignBench([pick('a', {}, { image }), pick('b')], [], []);
     assert.deepEqual(bench.hero?.image, image);
     assert.equal(bench.pillars[0].image, null);

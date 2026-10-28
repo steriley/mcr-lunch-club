@@ -5,13 +5,34 @@ import { POST as propose } from '@/pages/api/admin/venues/[id]/proposals';
 import { POST as approve } from '@/pages/api/admin/proposals/[id]/approve';
 import { POST as decline } from '@/pages/api/admin/proposals/[id]/decline';
 import { POST as withdraw } from '@/pages/api/admin/proposals/[id]/withdraw';
-import { ADMIN, VENUE_ID, adminRequest, quietly, restoreStubs, run, signInAs, stubDb, stubDbSequence, stubTransactions } from '../route-helpers';
+import {
+  ADMIN,
+  VENUE_ID,
+  adminRequest,
+  quietly,
+  restoreStubs,
+  run,
+  signInAs,
+  stubDb,
+  stubDbSequence,
+  stubTransactions,
+} from '../route-helpers';
 
 afterEach(restoreStubs);
 
 const PROPOSAL_ID = '9a1b2c3d-4e5f-4a6b-8c7d-0e1f2a3b4c5d';
-const pending = { id: PROPOSAL_ID, venueId: VENUE_ID, fromTier: 'to_be_assessed', proposedTier: 'rejected', proposedBy: 'other-admin', status: 'pending' };
-const ctx = (id: string, body?: unknown, origin?: string) => ({ request: adminRequest('POST', body ?? {}, { origin }), params: { id } });
+const pending = {
+  id: PROPOSAL_ID,
+  venueId: VENUE_ID,
+  fromTier: 'to_be_assessed',
+  proposedTier: 'rejected',
+  proposedBy: 'other-admin',
+  status: 'pending',
+};
+const ctx = (id: string, body?: unknown, origin?: string) => ({
+  request: adminRequest('POST', body ?? {}, { origin }),
+  params: { id },
+});
 
 describe('tier proposal endpoints', () => {
   it('propose validates the tier', async () => {
@@ -45,7 +66,21 @@ describe('tier proposal endpoints', () => {
     signInAs({ ...ADMIN, name: 'Alex' });
     stubTransactions();
     stubDb('select', [pending]);
-    const updates = stubDbSequence('update', [[{ ...pending, status: 'approved' }], [{ id: VENUE_ID, tier: 'rejected', createdAt: new Date(), updatedAt: new Date(), latitude: null, longitude: null, distanceMiles: null, closedAt: null }]]);
+    const updates = stubDbSequence('update', [
+      [{ ...pending, status: 'approved' }],
+      [
+        {
+          id: VENUE_ID,
+          tier: 'rejected',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          latitude: null,
+          longitude: null,
+          distanceMiles: null,
+          closedAt: null,
+        },
+      ],
+    ]);
     stubDb('insert', []);
     const response = await run(approve, ctx(PROPOSAL_ID));
     assert.equal(response.status, 200);
@@ -69,7 +104,10 @@ describe('tier proposal endpoints', () => {
     stubDb('select', [pending]);
     const updates = stubDb('update', [{ ...pending, status: 'declined' }]);
     assert.equal((await run(decline, ctx(PROPOSAL_ID, { reason: '  Not yet.  ' }))).status, 200);
-    assert.equal((updates.find((call) => call.method === 'set')!.args[0] as any).declineReason, 'Not yet.');
+    assert.equal(
+      (updates.find((call) => call.method === 'set')!.args[0] as any).declineReason,
+      'Not yet.'
+    );
   });
 
   it('only the proposer can withdraw', async () => {

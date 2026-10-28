@@ -2,7 +2,13 @@
 import DossierIcon, { type IconName } from './DossierIcon.vue';
 
 /** A dossier section: serif title with an icon, a tracked tag on the right, then the body. */
-defineProps<{ id: string; title: string; tag?: string; icon: IconName; tone?: 'accent' | 'danger' }>();
+defineProps<{
+  id: string;
+  title: string;
+  tag?: string;
+  icon: IconName;
+  tone?: 'accent' | 'danger';
+}>();
 </script>
 
 <template>

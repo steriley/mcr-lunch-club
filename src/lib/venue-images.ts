@@ -17,8 +17,8 @@ import { recordVenueEvent, type Actor } from '@/lib/venue-events';
  * logged). Blob writes and deletes are the routes' job.
  */
 
-
-export type VenueImageError = 'venue_not_found' | 'image_not_found' | 'too_many_images' | 'caption_too_long' | 'invalid_focal';
+export type VenueImageError =
+  'venue_not_found' | 'image_not_found' | 'too_many_images' | 'caption_too_long' | 'invalid_focal';
 
 export const VENUE_IMAGE_ERROR_MESSAGES: Record<VenueImageError, string> = {
   venue_not_found: 'Venue not found.',
@@ -41,12 +41,19 @@ export type VenueImageResult<T> = { ok: true; value: T } | { ok: false; error: V
 const fail = (error: VenueImageError) => ({ ok: false as const, error });
 
 async function lockVenue(tx: Tx, venueId: string): Promise<boolean> {
-  const [venue] = await tx.select({ id: venues.id }).from(venues).where(eq(venues.id, venueId)).for('update').limit(1);
+  const [venue] = await tx
+    .select({ id: venues.id })
+    .from(venues)
+    .where(eq(venues.id, venueId))
+    .for('update')
+    .limit(1);
   return Boolean(venue);
 }
 
 /** Trimmed caption, null when blank, or an error when too long. */
-export function normaliseCaption(caption: string | null | undefined): VenueImageResult<string | null> {
+export function normaliseCaption(
+  caption: string | null | undefined
+): VenueImageResult<string | null> {
   const trimmed = caption?.trim() ?? '';
   if (trimmed.length > CAPTION_MAX) return fail('caption_too_long');
   return { ok: true, value: trimmed || null };
@@ -60,19 +67,32 @@ export interface Focal {
 /** Both null (centre) or both whole numbers from 0 to 100. */
 export function isValidFocal(focal: Focal): boolean {
   if (focal.focalX === null && focal.focalY === null) return true;
-  return [focal.focalX, focal.focalY].every((value) => Number.isInteger(value) && (value as number) >= 0 && (value as number) <= 100);
+  return [focal.focalX, focal.focalY].every(
+    (value) => Number.isInteger(value) && (value as number) >= 0 && (value as number) <= 100
+  );
 }
 
 /** How many photos the venue has, or null when the venue does not exist. Unlocked: a pre-check only. */
 export async function countVenueImages(db: Database, venueId: string): Promise<number | null> {
-  const [venue] = await db.select({ id: venues.id }).from(venues).where(eq(venues.id, venueId)).limit(1);
+  const [venue] = await db
+    .select({ id: venues.id })
+    .from(venues)
+    .where(eq(venues.id, venueId))
+    .limit(1);
   if (!venue) return null;
-  const [{ total }] = await db.select({ total: count() }).from(venueImages).where(eq(venueImages.venueId, venueId));
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(venueImages)
+    .where(eq(venueImages.venueId, venueId));
   return total;
 }
 
 /** What venue_events keeps about a photo: never enough to render a removed one, just which it was. */
-const eventDetail = (image: VenueImageRow, extra: Record<string, unknown> = {}) => ({ imageId: image.id, thumbUrl: image.thumbUrl, ...extra });
+const eventDetail = (image: VenueImageRow, extra: Record<string, unknown> = {}) => ({
+  imageId: image.id,
+  thumbUrl: image.thumbUrl,
+  ...extra,
+});
 
 /** Oldest first, matching the order photos were added. */
 export async function listVenueImages(db: Database, venueId: string): Promise<VenueImageRow[]> {
@@ -96,14 +116,22 @@ export interface NewVenueImage {
 }
 
 /** Adds a photo under the cap. The venue's first photo becomes primary. */
-export function addVenueImage(db: Database, image: NewVenueImage, now: Date = new Date(), actor?: Actor): Promise<VenueImageResult<VenueImageRow>> {
+export function addVenueImage(
+  db: Database,
+  image: NewVenueImage,
+  now: Date = new Date(),
+  actor?: Actor
+): Promise<VenueImageResult<VenueImageRow>> {
   const caption = normaliseCaption(image.caption);
   if (!caption.ok) return Promise.resolve(caption);
 
   return db.transaction(async (tx) => {
     if (!(await lockVenue(tx, image.venueId))) return fail('venue_not_found');
 
-    const [{ total }] = await tx.select({ total: count() }).from(venueImages).where(eq(venueImages.venueId, image.venueId));
+    const [{ total }] = await tx
+      .select({ total: count() })
+      .from(venueImages)
+      .where(eq(venueImages.venueId, image.venueId));
     if (total >= MAX_IMAGES_PER_VENUE) return fail('too_many_images');
     const [primary] = await tx
       .select({ id: venueImages.id })
@@ -139,7 +167,12 @@ export interface PrimaryChange {
 }
 
 /** Makes one of the venue's photos primary. A no-op when it already is. */
-export function setPrimary(db: Database, venueId: string, imageId: string, actor?: Actor): Promise<VenueImageResult<PrimaryChange>> {
+export function setPrimary(
+  db: Database,
+  venueId: string,
+  imageId: string,
+  actor?: Actor
+): Promise<VenueImageResult<PrimaryChange>> {
   return db.transaction(async (tx) => {
     if (!(await lockVenue(tx, venueId))) return fail('venue_not_found');
 
@@ -149,7 +182,8 @@ export function setPrimary(db: Database, venueId: string, imageId: string, actor
       .where(and(eq(venueImages.id, imageId), eq(venueImages.venueId, venueId)))
       .limit(1);
     if (!image) return fail('image_not_found');
-    if (image.isPrimary) return { ok: true, value: { image, previousPrimaryId: null, changed: false } };
+    if (image.isPrimary)
+      return { ok: true, value: { image, previousPrimaryId: null, changed: false } };
 
     // Clear the old primary before setting the new one: a single
     // `set is_primary = (id = $1)` can trip the partial unique index mid-statement.
@@ -158,9 +192,17 @@ export function setPrimary(db: Database, venueId: string, imageId: string, actor
       .set({ isPrimary: false })
       .where(and(eq(venueImages.venueId, venueId), eq(venueImages.isPrimary, true)))
       .returning({ id: venueImages.id });
-    const [updated] = await tx.update(venueImages).set({ isPrimary: true }).where(eq(venueImages.id, imageId)).returning();
-    if (actor) await recordVenueEvent(tx, venueId, 'image_primary_changed', actor, eventDetail(updated));
-    return { ok: true, value: { image: updated, previousPrimaryId: cleared[0]?.id ?? null, changed: true } };
+    const [updated] = await tx
+      .update(venueImages)
+      .set({ isPrimary: true })
+      .where(eq(venueImages.id, imageId))
+      .returning();
+    if (actor)
+      await recordVenueEvent(tx, venueId, 'image_primary_changed', actor, eventDetail(updated));
+    return {
+      ok: true,
+      value: { image: updated, previousPrimaryId: cleared[0]?.id ?? null, changed: true },
+    };
   });
 }
 
@@ -204,7 +246,12 @@ export interface DeletedImage {
 }
 
 /** Removes the row. If it was primary, the oldest remaining photo becomes primary. Blobs are the caller's job. */
-export function deleteVenueImage(db: Database, venueId: string, imageId: string, actor?: Actor): Promise<VenueImageResult<DeletedImage>> {
+export function deleteVenueImage(
+  db: Database,
+  venueId: string,
+  imageId: string,
+  actor?: Actor
+): Promise<VenueImageResult<DeletedImage>> {
   return db.transaction(async (tx) => {
     if (!(await lockVenue(tx, venueId))) return fail('venue_not_found');
 
@@ -223,12 +270,23 @@ export function deleteVenueImage(db: Database, venueId: string, imageId: string,
         .orderBy(asc(venueImages.createdAt), asc(venueImages.id))
         .limit(1);
       if (oldest) {
-        [promoted] = await tx.update(venueImages).set({ isPrimary: true }).where(eq(venueImages.id, oldest.id)).returning();
+        [promoted] = await tx
+          .update(venueImages)
+          .set({ isPrimary: true })
+          .where(eq(venueImages.id, oldest.id))
+          .returning();
       }
     }
     if (actor) {
       await recordVenueEvent(tx, venueId, 'image_removed', actor, eventDetail(deleted));
-      if (promoted) await recordVenueEvent(tx, venueId, 'image_primary_changed', actor, eventDetail(promoted, { reason: 'promoted_after_delete' }));
+      if (promoted)
+        await recordVenueEvent(
+          tx,
+          venueId,
+          'image_primary_changed',
+          actor,
+          eventDetail(promoted, { reason: 'promoted_after_delete' })
+        );
     }
     return { ok: true, value: { deleted, promoted } };
   });
@@ -261,7 +319,9 @@ export function isOwnedBlobUrl(url: string | null | undefined): boolean {
   if (!url) return false;
   try {
     const parsed = new URL(url);
-    return parsed.protocol === 'https:' && parsed.hostname.toLowerCase().endsWith(OWNED_BLOB_HOST_SUFFIX);
+    return (
+      parsed.protocol === 'https:' && parsed.hostname.toLowerCase().endsWith(OWNED_BLOB_HOST_SUFFIX)
+    );
   } catch {
     return false;
   }
@@ -274,10 +334,13 @@ export interface WebpInfo {
   height: number;
 }
 
-const ascii = (bytes: Uint8Array, offset: number, length: number) => String.fromCharCode(...bytes.subarray(offset, offset + length));
+const ascii = (bytes: Uint8Array, offset: number, length: number) =>
+  String.fromCharCode(...bytes.subarray(offset, offset + length));
 const u16 = (bytes: Uint8Array, offset: number) => bytes[offset] | (bytes[offset + 1] << 8);
-const u24 = (bytes: Uint8Array, offset: number) => bytes[offset] | (bytes[offset + 1] << 8) | (bytes[offset + 2] << 16);
-const u32 = (bytes: Uint8Array, offset: number) => (u24(bytes, offset) | (bytes[offset + 3] << 24)) >>> 0;
+const u24 = (bytes: Uint8Array, offset: number) =>
+  bytes[offset] | (bytes[offset + 1] << 8) | (bytes[offset + 2] << 16);
+const u32 = (bytes: Uint8Array, offset: number) =>
+  (u24(bytes, offset) | (bytes[offset + 3] << 24)) >>> 0;
 
 /**
  * Reads a WebP's real format and pixel size from its bytes, ignoring any
@@ -286,7 +349,8 @@ const u32 = (bytes: Uint8Array, offset: number) => (u24(bytes, offset) | (bytes[
  */
 export function readWebpInfo(bytes: Uint8Array): WebpInfo | null {
   // RIFF header (12) + chunk header (8).
-  if (bytes.length < 20 || ascii(bytes, 0, 4) !== 'RIFF' || ascii(bytes, 8, 4) !== 'WEBP') return null;
+  if (bytes.length < 20 || ascii(bytes, 0, 4) !== 'RIFF' || ascii(bytes, 8, 4) !== 'WEBP')
+    return null;
   // The RIFF size covers everything after its own 8 bytes; a shorter file is truncated.
   if (u32(bytes, 4) + 8 > bytes.length) return null;
 
@@ -297,7 +361,13 @@ export function readWebpInfo(bytes: Uint8Array): WebpInfo | null {
 
   if (chunk === 'VP8 ') {
     // Frame tag (3), start code 9d 01 2a (3), then 14-bit width and height.
-    if (size < 10 || bytes[data + 3] !== 0x9d || bytes[data + 4] !== 0x01 || bytes[data + 5] !== 0x2a) return null;
+    if (
+      size < 10 ||
+      bytes[data + 3] !== 0x9d ||
+      bytes[data + 4] !== 0x01 ||
+      bytes[data + 5] !== 0x2a
+    )
+      return null;
     const width = u16(bytes, data + 6) & 0x3fff;
     const height = u16(bytes, data + 8) & 0x3fff;
     return width && height ? { format: 'VP8', width, height } : null;

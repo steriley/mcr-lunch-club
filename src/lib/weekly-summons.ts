@@ -63,9 +63,13 @@ function seededRandom(seed: string): () => number {
  */
 export function pickOldest(pool: Ranked[], seed: string): PublicVenue | null {
   if (pool.length === 0) return null;
-  const undated = pool.filter((entry) => entry.days === null).sort((a, b) => a.venue.slug.localeCompare(b.venue.slug));
+  const undated = pool
+    .filter((entry) => entry.days === null)
+    .sort((a, b) => a.venue.slug.localeCompare(b.venue.slug));
   if (undated.length > 0) return undated[Math.floor(seededRandom(seed)() * undated.length)].venue;
-  const [oldest] = [...pool].sort((a, b) => b.days! - a.days! || a.venue.slug.localeCompare(b.venue.slug));
+  const [oldest] = [...pool].sort(
+    (a, b) => b.days! - a.days! || a.venue.slug.localeCompare(b.venue.slug)
+  );
   return oldest.venue;
 }
 
@@ -106,7 +110,11 @@ export function pickSummons(
   const seed = `${issue.yy}-${issue.week}`;
 
   const tuesdayPool: Ranked[] = venues
-    .filter((venue) => (venue.tier === 'approved' || venue.tier === 'under_consideration') && !exclude.has(venue.slug))
+    .filter(
+      (venue) =>
+        (venue.tier === 'approved' || venue.tier === 'under_consideration') &&
+        !exclude.has(venue.slug)
+    )
     .map((venue) => {
       const last = inspected.get(venue.slug);
       const bonus = venue.tier === 'under_consideration' ? UNDER_CONSIDERATION_BONUS_DAYS : 0;
@@ -120,7 +128,10 @@ export function pickSummons(
       return { venue, days: since === undefined ? null : daysBetween(londonDate(since), today) };
     });
 
-  return { tuesday: pickOldest(tuesdayPool, `${seed}-tuesday`), wednesday: pickOldest(wednesdayPool, `${seed}-wednesday`) };
+  return {
+    tuesday: pickOldest(tuesdayPool, `${seed}-tuesday`),
+    wednesday: pickOldest(wednesdayPool, `${seed}-wednesday`),
+  };
 }
 
 /**
@@ -140,12 +151,21 @@ export const FIRST_SUMMONS_ISSUE = new Date('2026-10-28T23:59:00Z');
  * `venues` are the public, mappable venues; `inspections` are confirmed ones;
  * `entries` are tier-entry dates (src/lib/tier-entry-dates.ts).
  */
-export function summonsFor(venues: PublicVenue[], inspections: Inspection[], entries: TierEntry[], issue: BulletinIssue): Summons {
+export function summonsFor(
+  venues: PublicVenue[],
+  inspections: Inspection[],
+  entries: TierEntry[],
+  issue: BulletinIssue
+): Summons {
   let current = bulletinIssue(FIRST_SUMMONS_ISSUE);
   let summons = pickSummons(venues, inspections, entries, current, new Set());
   while (current.publishedAt < issue.publishedAt) {
     current = nextBulletinIssue(current);
-    const exclude = new Set([summons.tuesday?.slug, summons.wednesday?.slug].filter((slug): slug is string => Boolean(slug)));
+    const exclude = new Set(
+      [summons.tuesday?.slug, summons.wednesday?.slug].filter((slug): slug is string =>
+        Boolean(slug)
+      )
+    );
     summons = pickSummons(venues, inspections, entries, current, exclude);
   }
   return summons;

@@ -36,13 +36,16 @@ const FONT_FILES = [
   { name: 'Plus Jakarta Sans', file: 'plus-jakarta-sans-latin-700-normal', weight: 700 },
 ] as const;
 
-let fonts: Promise<{ name: string; data: Buffer; weight: 600 | 700; style: 'normal' }[]> | undefined;
+let fonts:
+  Promise<{ name: string; data: Buffer; weight: 600 | 700; style: 'normal' }[]> | undefined;
 
 async function decodeFonts() {
   const decoded = [];
   // One at a time: wawoff2's decoder shares memory between calls.
   for (const { name, file, weight } of FONT_FILES) {
-    const data = Buffer.from(await wawoff2.decompress(readFileSync(fromRoot('public', 'fonts', `${file}.woff2`))));
+    const data = Buffer.from(
+      await wawoff2.decompress(readFileSync(fromRoot('public', 'fonts', `${file}.woff2`)))
+    );
     decoded.push({ name, weight, style: 'normal' as const, data });
   }
   return decoded;
@@ -65,8 +68,16 @@ function crestDataUri(): string {
   return crest;
 }
 
-type Node = { type: string; props: { style?: Record<string, unknown>; children?: unknown; [key: string]: unknown } };
-const h = (type: string, style: Record<string, unknown>, children?: unknown, props: Record<string, unknown> = {}): Node => ({
+type Node = {
+  type: string;
+  props: { style?: Record<string, unknown>; children?: unknown; [key: string]: unknown };
+};
+const h = (
+  type: string,
+  style: Record<string, unknown>,
+  children?: unknown,
+  props: Record<string, unknown> = {}
+): Node => ({
   type,
   props: { ...props, style, children },
 });
@@ -82,38 +93,101 @@ function card({ name, tier, cost, walkingTimeMin }: OgCardVenue): Node {
   const info = tierInfo(tier);
   const slug = info.slug;
   const accent = themeColor(`tier-${slug}`);
-  const facts = [`${cost} · ${COST_LABELS[cost]}`, walkingTimeMin === null ? null : `${walkText(walkingTimeMin)} from Spinningfields`].filter(Boolean);
+  const facts = [
+    `${cost} · ${COST_LABELS[cost]}`,
+    walkingTimeMin === null ? null : `${walkText(walkingTimeMin)} from Spinningfields`,
+  ].filter(Boolean);
   const parchment = themeColor('parchment-fixed');
 
   return h(
     'div',
-    { width: OG_WIDTH, height: OG_HEIGHT, display: 'flex', background: themeColor('deep'), fontFamily: 'Plus Jakarta Sans', color: parchment },
+    {
+      width: OG_WIDTH,
+      height: OG_HEIGHT,
+      display: 'flex',
+      background: themeColor('deep'),
+      fontFamily: 'Plus Jakarta Sans',
+      color: parchment,
+    },
     [
       h('div', { width: 28, height: OG_HEIGHT, background: accent }),
-      h('div', { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, padding: '56px 64px' }, [
-        h('div', { display: 'flex', alignItems: 'center' }, [
-          h('img', { width: 96, height: 96, marginRight: 24 }, undefined, { src: crestDataUri(), width: 96, height: 96 }),
-          h('div', { display: 'flex', flexDirection: 'column' }, [
-            h('div', { fontSize: 26, fontWeight: 700, letterSpacing: 4, color: themeColor('gold') }, 'MCR LUNCH CLUB'),
-            h('div', { fontSize: 22, color: parchment, opacity: 0.75 }, 'We return only where deserved'),
+      h(
+        'div',
+        {
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          flex: 1,
+          padding: '56px 64px',
+        },
+        [
+          h('div', { display: 'flex', alignItems: 'center' }, [
+            h('img', { width: 96, height: 96, marginRight: 24 }, undefined, {
+              src: crestDataUri(),
+              width: 96,
+              height: 96,
+            }),
+            h('div', { display: 'flex', flexDirection: 'column' }, [
+              h(
+                'div',
+                { fontSize: 26, fontWeight: 700, letterSpacing: 4, color: themeColor('gold') },
+                'MCR LUNCH CLUB'
+              ),
+              h(
+                'div',
+                { fontSize: 22, color: parchment, opacity: 0.75 },
+                'We return only where deserved'
+              ),
+            ]),
           ]),
-        ]),
-        h('div', { display: 'flex', flexDirection: 'column' }, [
+          h('div', { display: 'flex', flexDirection: 'column' }, [
+            h(
+              'div',
+              {
+                display: 'flex',
+                alignSelf: 'flex-start',
+                background: accent,
+                color: parchment,
+                fontSize: 32,
+                fontWeight: 700,
+                letterSpacing: 3,
+                padding: '10px 28px',
+                borderRadius: 8,
+                textTransform: 'uppercase',
+              },
+              info.label
+            ),
+            h(
+              'div',
+              {
+                display: 'flex',
+                marginTop: 28,
+                fontFamily: 'Playfair Display',
+                fontWeight: 700,
+                fontSize: nameSize(name),
+                lineHeight: 1.1,
+                lineClamp: 2,
+              },
+              name
+            ),
+          ]),
           h(
             'div',
-            { display: 'flex', alignSelf: 'flex-start', background: accent, color: parchment, fontSize: 32, fontWeight: 700, letterSpacing: 3, padding: '10px 28px', borderRadius: 8, textTransform: 'uppercase' },
-            info.label,
+            { display: 'flex', fontSize: 34, fontWeight: 600, color: parchment },
+            facts.join('   ·   ')
           ),
-          h('div', { display: 'flex', marginTop: 28, fontFamily: 'Playfair Display', fontWeight: 700, fontSize: nameSize(name), lineHeight: 1.1, lineClamp: 2 }, name),
-        ]),
-        h('div', { display: 'flex', fontSize: 34, fontWeight: 600, color: parchment }, facts.join('   ·   ')),
-      ]),
-    ],
+        ]
+      ),
+    ]
   );
 }
 
 /** The card as PNG bytes. */
 export async function renderOgCard(venue: OgCardVenue): Promise<Uint8Array> {
-  const svg = await satori(card(venue) as never, { width: OG_WIDTH, height: OG_HEIGHT, fonts: await loadFonts() });
+  const svg = await satori(card(venue) as never, {
+    width: OG_WIDTH,
+    height: OG_HEIGHT,
+    fonts: await loadFonts(),
+  });
   return new Resvg(svg, { fitTo: { mode: 'width', value: OG_WIDTH } }).render().asPng();
 }

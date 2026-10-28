@@ -7,7 +7,11 @@ export const LEDGER_CANON_ELEMENT_ID = 'ledger-canon';
 export const LEDGER_INSPECTIONS_ELEMENT_ID = 'ledger-inspections';
 
 // Keys from the retired in-browser editing features; cleared so stale local edits never linger.
-const RETIRED_STORAGE_KEYS = ['mcr_lunch_club_venues_v1', 'mcr_lunch_club_venues_v2', 'mcr_lunch_club_inspections_v1'];
+const RETIRED_STORAGE_KEYS = [
+  'mcr_lunch_club_venues_v1',
+  'mcr_lunch_club_venues_v2',
+  'mcr_lunch_club_inspections_v1',
+];
 
 function readListFromPage<T>(elementId: string, what: string): T[] {
   if (typeof document === 'undefined') return [];

@@ -29,13 +29,20 @@ function venue(slug: string): Venue {
   };
 }
 
-function fakeBrowser(options: { canon?: string | null; inspections?: string; storage?: Record<string, string>; throwOnRemove?: boolean }) {
+function fakeBrowser(options: {
+  canon?: string | null;
+  inspections?: string;
+  storage?: Record<string, string>;
+  throwOnRemove?: boolean;
+}) {
   const store = new Map(Object.entries(options.storage ?? {}));
   globals.window = {};
   globals.document = {
     getElementById: (id: string) => {
-      if (id === 'ledger-canon' && options.canon !== undefined) return { textContent: options.canon };
-      if (id === 'ledger-inspections' && options.inspections !== undefined) return { textContent: options.inspections };
+      if (id === 'ledger-canon' && options.canon !== undefined)
+        return { textContent: options.canon };
+      if (id === 'ledger-inspections' && options.inspections !== undefined)
+        return { textContent: options.inspections };
       return null;
     },
   };
@@ -107,7 +114,9 @@ describe('ledger in the browser', () => {
   });
 
   it('reads the inspections embedded in the page, or starts empty without them', () => {
-    const log = [{ id: 'i1', venueSlug: 'a', venueName: 'a', date: '2026-10-01', kind: 'legacy', chairs: [] }];
+    const log = [
+      { id: 'i1', venueSlug: 'a', venueName: 'a', date: '2026-10-01', kind: 'legacy', chairs: [] },
+    ];
     fakeBrowser({ inspections: JSON.stringify(log) });
     assert.deepEqual(getInitialInspections(), log);
 

@@ -1,5 +1,11 @@
 import { defineMiddleware } from 'astro:middleware';
-import { hasAdminRole, hasTrustedOrigin, isBanned, isMutatingMethod, jsonError } from '@/lib/admin-api';
+import {
+  hasAdminRole,
+  hasTrustedOrigin,
+  isBanned,
+  isMutatingMethod,
+  jsonError,
+} from '@/lib/admin-api';
 import { auth } from '@/lib/auth';
 
 const ADMIN_PAGE_HEADERS = {
@@ -8,7 +14,10 @@ const ADMIN_PAGE_HEADERS = {
 };
 
 function redirect(location: string): Response {
-  return new Response(null, { status: 302, headers: { Location: location, ...ADMIN_PAGE_HEADERS } });
+  return new Response(null, {
+    status: 302,
+    headers: { Location: location, ...ADMIN_PAGE_HEADERS },
+  });
 }
 
 function withAdminPageHeaders(response: Response): Response {

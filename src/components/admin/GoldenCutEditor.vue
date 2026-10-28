@@ -20,13 +20,19 @@ interface ApprovedVenue {
 /** Drag, or use the move buttons, to order the list; position 1 is the home page hero. */
 const props = defineProps<{ entries: Entry[]; approvedVenues: ApprovedVenue[] }>();
 
-const toRow = (entry: Entry) => ({ ...entry, puffPiece: entry.puffPiece ?? '', anchorDish: entry.anchorDish ?? '' });
+const toRow = (entry: Entry) => ({
+  ...entry,
+  puffPiece: entry.puffPiece ?? '',
+  anchorDish: entry.anchorDish ?? '',
+});
 const rows = ref(props.entries.map(toRow));
 const savedSnapshot = ref(JSON.stringify(rows.value));
 const isDirty = computed(() => JSON.stringify(rows.value) !== savedSnapshot.value);
 
 const addVenueId = ref('');
-const available = computed(() => props.approvedVenues.filter((venue) => !rows.value.some((row) => row.venueId === venue.id)));
+const available = computed(() =>
+  props.approvedVenues.filter((venue) => !rows.value.some((row) => row.venueId === venue.id))
+);
 const isFull = computed(() => rows.value.length >= GOLDEN_CUT_SIZE);
 
 const busy = ref(false);
@@ -40,7 +46,13 @@ const position = (index: number) => `#${String(index + 1).padStart(2, '0')}`;
 function add() {
   const venue = props.approvedVenues.find((candidate) => candidate.id === addVenueId.value);
   if (!venue || isFull.value) return;
-  rows.value.push({ venueId: venue.id, venueName: venue.name, puffPiece: '', anchorDish: '', notShownReason: venue.notShownReason });
+  rows.value.push({
+    venueId: venue.id,
+    venueName: venue.name,
+    puffPiece: '',
+    anchorDish: '',
+    notShownReason: venue.notShownReason,
+  });
   addVenueId.value = '';
   message.value = '';
 }
@@ -75,7 +87,13 @@ async function save() {
   busy.value = true;
   const result = await apiFetch<{ entries: Entry[] }>('/api/admin/golden-cut', {
     method: 'PUT',
-    body: { entries: rows.value.map(({ venueId, puffPiece, anchorDish }) => ({ venueId, puffPiece, anchorDish })) },
+    body: {
+      entries: rows.value.map(({ venueId, puffPiece, anchorDish }) => ({
+        venueId,
+        puffPiece,
+        anchorDish,
+      })),
+    },
     fallback: 'That did not save. Try again.',
   });
   busy.value = false;
@@ -103,18 +121,36 @@ function onBeforeUnload(event: BeforeUnloadEvent) {
 onMounted(() => window.addEventListener('beforeunload', onBeforeUnload));
 onBeforeUnmount(() => window.removeEventListener('beforeunload', onBeforeUnload));
 
-const inputClass = 'w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none focus:border-navy focus-visible:ring-2 focus-visible:ring-navy/30';
+const inputClass =
+  'w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none focus:border-navy focus-visible:ring-2 focus-visible:ring-navy/30';
 const labelClass = 'block text-sm font-semibold text-ink';
-const smallButton = 'rounded-lg border border-hairline bg-parchment px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:cursor-not-allowed disabled:opacity-50';
+const smallButton =
+  'rounded-lg border border-hairline bg-parchment px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:cursor-not-allowed disabled:opacity-50';
 </script>
 
 <template>
   <div class="space-y-5">
-    <p v-if="message" role="status" class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{{ message }}</p>
-    <p v-if="errorMessage" role="alert" class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{{ errorMessage }}</p>
+    <p
+      v-if="message"
+      role="status"
+      class="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
+    >
+      {{ message }}
+    </p>
+    <p
+      v-if="errorMessage"
+      role="alert"
+      class="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+    >
+      {{ errorMessage }}
+    </p>
 
-    <p v-if="rows.length === 0" class="rounded-2xl border border-dashed border-hairline bg-parchment p-6 text-sm text-soot">
-      The Golden Cut is empty, so the home page shows the nearest Approved venues instead. Add up to {{ GOLDEN_CUT_SIZE }} below.
+    <p
+      v-if="rows.length === 0"
+      class="rounded-2xl border border-dashed border-hairline bg-parchment p-6 text-sm text-soot"
+    >
+      The Golden Cut is empty, so the home page shows the nearest Approved venues instead. Add up to
+      {{ GOLDEN_CUT_SIZE }} below.
     </p>
 
     <ol v-else class="space-y-4" aria-label="The Golden Cut, in order">
@@ -138,30 +174,83 @@ const smallButton = 'rounded-lg border border-hairline bg-parchment px-3 py-1.5 
             title="Drag to reorder"
             aria-hidden="true"
             @dragstart="onDragStart(index, $event)"
-            @dragend="dragIndex = null; dropIndex = null"
-          >⠿</span>
-          <span class="rounded-md bg-deep px-2 py-1 font-sans tabular-nums text-xs font-bold text-saffron">{{ position(index) }}</span>
+            @dragend="
+              dragIndex = null;
+              dropIndex = null;
+            "
+            >⠿</span
+          >
+          <span
+            class="rounded-md bg-deep px-2 py-1 font-sans tabular-nums text-xs font-bold text-saffron"
+            >{{ position(index) }}</span
+          >
           <span class="text-base font-semibold text-ink">{{ row.venueName }}</span>
-          <span v-if="index === 0" class="rounded-full border border-gold bg-warning-tint px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-ochre">Hero</span>
-          <span v-if="row.notShownReason" class="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800">
+          <span
+            v-if="index === 0"
+            class="rounded-full border border-gold bg-warning-tint px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-ochre"
+            >Hero</span
+          >
+          <span
+            v-if="row.notShownReason"
+            class="rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800"
+          >
             Not on the home page: {{ row.notShownReason }}
           </span>
           <span class="ml-auto flex gap-2">
-            <button type="button" :class="smallButton" :disabled="index === 0" :aria-label="`Move ${row.venueName} up`" @click="move(index, index - 1)">↑ Up</button>
-            <button type="button" :class="smallButton" :disabled="index === rows.length - 1" :aria-label="`Move ${row.venueName} down`" @click="move(index, index + 1)">↓ Down</button>
-            <button type="button" class="rounded-lg border border-red-200 bg-surface px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" :aria-label="`Remove ${row.venueName}`" @click="remove(index)">Remove</button>
+            <button
+              type="button"
+              :class="smallButton"
+              :disabled="index === 0"
+              :aria-label="`Move ${row.venueName} up`"
+              @click="move(index, index - 1)"
+            >
+              ↑ Up
+            </button>
+            <button
+              type="button"
+              :class="smallButton"
+              :disabled="index === rows.length - 1"
+              :aria-label="`Move ${row.venueName} down`"
+              @click="move(index, index + 1)"
+            >
+              ↓ Down
+            </button>
+            <button
+              type="button"
+              class="rounded-lg border border-red-200 bg-surface px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50"
+              :aria-label="`Remove ${row.venueName}`"
+              @click="remove(index)"
+            >
+              Remove
+            </button>
           </span>
         </div>
 
         <div class="mt-4 grid gap-4 md:grid-cols-[2fr_1fr]">
           <label :class="labelClass">
-            <span class="mb-2 block">{{ index === 0 ? 'Puff piece (shown in full on the hero)' : 'Hook (one punchy sentence)' }}</span>
-            <textarea v-model="row.puffPiece" :rows="index === 0 ? 4 : 2" :maxlength="PUFF_PIECE_MAX" :class="inputClass" placeholder="Leave blank to use the venue's pull quote" />
-            <span class="mt-1 block text-xs font-normal text-graphite">{{ row.puffPiece.length }} / {{ PUFF_PIECE_MAX }}</span>
+            <span class="mb-2 block">{{
+              index === 0 ? 'Puff piece (shown in full on the hero)' : 'Hook (one punchy sentence)'
+            }}</span>
+            <textarea
+              v-model="row.puffPiece"
+              :rows="index === 0 ? 4 : 2"
+              :maxlength="PUFF_PIECE_MAX"
+              :class="inputClass"
+              placeholder="Leave blank to use the venue's pull quote"
+            />
+            <span class="mt-1 block text-xs font-normal text-graphite"
+              >{{ row.puffPiece.length }} / {{ PUFF_PIECE_MAX }}</span
+            >
           </label>
           <label :class="labelClass">
             <span class="mb-2 block">Anchor dish</span>
-            <input v-model="row.anchorDish" type="text" :maxlength="ANCHOR_DISH_MAX" :class="inputClass" placeholder="Leave blank to use the lunch special" />
+            <input
+              v-model="row.anchorDish"
+              type="text"
+              :maxlength="ANCHOR_DISH_MAX"
+              :class="inputClass"
+              placeholder="Leave blank to use the lunch special"
+            />
           </label>
         </div>
       </li>
@@ -170,14 +259,35 @@ const smallButton = 'rounded-lg border border-hairline bg-parchment px-3 py-1.5 
     <div class="flex flex-wrap items-end gap-3 rounded-2xl border border-hairline bg-parchment p-5">
       <label :class="[labelClass, 'min-w-64 flex-1']">
         <span class="mb-2 block">Add an Approved venue</span>
-        <select v-model="addVenueId" :class="inputClass" :disabled="isFull || available.length === 0">
-          <option value="">{{ isFull ? `Full: remove a venue to add another` : available.length ? 'Choose a venue' : 'Every Approved venue is already in' }}</option>
+        <select
+          v-model="addVenueId"
+          :class="inputClass"
+          :disabled="isFull || available.length === 0"
+        >
+          <option value="">
+            {{
+              isFull
+                ? `Full: remove a venue to add another`
+                : available.length
+                  ? 'Choose a venue'
+                  : 'Every Approved venue is already in'
+            }}
+          </option>
           <option v-for="venue in available" :key="venue.id" :value="venue.id">
-            {{ venue.name }}{{ venue.notShownReason ? ` (${venue.notShownReason.toLowerCase()})` : '' }}
+            {{ venue.name
+            }}{{ venue.notShownReason ? ` (${venue.notShownReason.toLowerCase()})` : '' }}
           </option>
         </select>
       </label>
-      <button type="button" :class="smallButton" class="py-2.5 text-sm" :disabled="!addVenueId || isFull" @click="add">Add to The Golden Cut</button>
+      <button
+        type="button"
+        :class="smallButton"
+        class="py-2.5 text-sm"
+        :disabled="!addVenueId || isFull"
+        @click="add"
+      >
+        Add to The Golden Cut
+      </button>
     </div>
 
     <div class="flex flex-wrap items-center gap-3">
@@ -189,7 +299,16 @@ const smallButton = 'rounded-lg border border-hairline bg-parchment px-3 py-1.5 
       >
         {{ busy ? 'Saving…' : 'Save The Golden Cut' }}
       </button>
-      <button v-if="isDirty" type="button" :disabled="busy" :class="smallButton" class="py-2.5 text-sm" @click="discard">Discard changes</button>
+      <button
+        v-if="isDirty"
+        type="button"
+        :disabled="busy"
+        :class="smallButton"
+        class="py-2.5 text-sm"
+        @click="discard"
+      >
+        Discard changes
+      </button>
       <span v-if="isDirty" class="text-sm text-amber-800">Unsaved changes</span>
     </div>
   </div>
