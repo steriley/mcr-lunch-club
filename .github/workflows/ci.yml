@@ -58,7 +58,11 @@ jobs:
       - run: pnpm db:migrate
       - run: pnpm db:import
       - run: pnpm db:seed
-      - run: pnpm build
+      - name: Build, failing on CSP warnings
+        run: |
+          set -o pipefail
+          pnpm build 2>&1 | tee build.log
+          ! grep -F '[WARN] [csp]' build.log
       - run: pnpm check:bundle
       - name: Get the Playwright version
         id: playwright
