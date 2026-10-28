@@ -1,0 +1,42 @@
+---
+import Icon from '@/components/Icon.astro';
+import { APPROVED_STICKER } from '@/lib/tiers';
+
+interface Props {
+  /** `full` explains the sticker (verdict page); `compact` is one line beside the sticker (venue page). */
+  variant?: 'full' | 'compact';
+}
+
+const { variant = 'full' } = Astro.props;
+const compact = variant === 'compact';
+---
+
+<div
+  class:list={[
+    'text-parchment-fixed rounded-2xl shadow-xl flex items-center relative overflow-hidden',
+    compact
+      ? 'bg-gradient-to-r from-charcoal-fixed via-charcoal-soft to-charcoal-fixed p-4 gap-4'
+      : 'bg-deep p-6 sm:p-7 flex-col sm:flex-row gap-6',
+  ]}
+>
+  <div class="relative z-10 shrink-0">
+    <img
+      src="/brand/approved-sticker-256.webp" width="256" height="256"
+      alt={APPROVED_STICKER.alt}
+      class:list={[
+        'object-contain drop-shadow-[0_0_20px_rgba(197,155,39,0.4)] select-none',
+        compact ? 'w-14 h-14' : 'w-28 h-28 sm:w-32 sm:h-32 hover:scale-105 transition-transform',
+      ]}
+    />
+  </div>
+  {compact ? (
+    <p class="text-sm text-ash leading-snug relative z-10">{APPROVED_STICKER.short}</p>
+  ) : (
+    <div class="space-y-2 text-center sm:text-left relative z-10">
+      <span class="block text-xs uppercase tracking-widest text-gold font-sans tabular-nums font-bold">{APPROVED_STICKER.kicker}</span>
+      <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">{APPROVED_STICKER.heading}</h2>
+      <p class="text-xs sm:text-sm text-ash leading-relaxed">{APPROVED_STICKER.blurb}</p>
+    </div>
+  )}
+  <Icon name="star" class="absolute -right-8 -bottom-10 text-white/5 pointer-events-none icon-watermark" />
+</div>

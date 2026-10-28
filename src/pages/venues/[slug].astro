@@ -1,5 +1,6 @@
 ---
 import Icon from '@/components/Icon.astro';
+import ApprovedSticker from '@/components/ApprovedSticker.astro';
 import Layout from '@/layouts/Layout.astro';
 import BenchPillar from '@/components/BenchPillar.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
@@ -188,27 +189,7 @@ function truncate(text: string, max: number): string {
           </blockquote>
         )}
 
-        <!-- Official Approved Sticker Award Plaque (Manchester Michelin Star) -->
-        {venue.tier === 'approved' && (
-          <div class="bg-gradient-to-r from-charcoal-fixed via-charcoal-soft to-charcoal-fixed text-parchment-fixed p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-5 relative overflow-hidden">
-            <div class="shrink-0 relative z-10">
-              <img
-                src="/brand/approved-sticker-256.webp" width="256" height="256"
-                alt="Official MCR Lunch Club Approved Sticker"
-                class="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-[0_0_20px_rgba(197,155,39,0.45)] select-none hover:scale-105 transition-transform"
-              />
-            </div>
-            <div class="space-y-1.5 text-center sm:text-left relative z-10">
-              <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                MCR Lunch Club Approved Venue
-              </h2>
-              <p class="text-xs sm:text-sm text-ash leading-relaxed">
-                This establishment has been awarded the official <strong>MCR Lunch Club Approved sticker</strong>. Handed out as prizes by the Chairs to venues that meet our strict standards across at least two independent satisfactory audits — treated with the prestige of a Manchester lunching Michelin star.
-              </p>
-            </div>
-            <Icon name="star" class="absolute -right-8 -bottom-10 text-white/5 pointer-events-none icon-watermark" />
-          </div>
-        )}
+        {venue.tier === 'approved' && <ApprovedSticker variant="compact" />}
 
         <!-- Geographic & Walking Specifications -->
         <div class={`grid ${stats.combined ? 'grid-cols-2' : 'grid-cols-3'} gap-2 sm:gap-4 bg-paper p-2 sm:p-4 rounded-xl border border-hairline text-center`}>
@@ -255,13 +236,10 @@ function truncate(text: string, max: number): string {
         <div class="relative bg-ochre-wash/90 border-2 border-gold p-6 rounded-xl shadow-md">
           <div class="flex items-center gap-2 text-xs font-bold text-navy uppercase tracking-wider">
             <Icon name="shield" class="icon-md" />
-            <span>Eat Like Us — Sovereign Order Mandate</span>
+            <span>Eat like us — what to order</span>
           </div>
           <p class="text-lg italic text-ink mt-2 leading-relaxed">
             “{venue.eatLikeUs}”
-          </p>
-          <p class="text-xs text-dim font-sans mt-2">
-            Deviation from the recommended order during official club outings requires advance written sanction from the presiding Chair.
           </p>
         </div>
         )}

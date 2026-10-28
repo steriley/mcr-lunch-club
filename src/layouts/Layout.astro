@@ -145,8 +145,8 @@ const navigation: { href: string; label: string; icon: IconName; opensWhereToday
           </p>
         </div>
 
-        <div class="footer-column footer-jurisdiction">
-          <span class="footer-section-title">Jurisdictional Scope &amp; Currency Key</span>
+        <details class="footer-column footer-jurisdiction footer-about">
+          <summary class="footer-section-title">About the ledger</summary>
           <div class="footer-fact">
             <Icon name="target" class="footer-fact-icon" />
             <span>Jurisdiction: Central Manchester · 2.5 Miles from Base at Spinningfields Crown Square.</span>
@@ -157,9 +157,9 @@ const navigation: { href: string; label: string; icon: IconName; opensWhereToday
           </div>
           <div class="footer-fact">
             <Icon name="check" class="footer-fact-icon" />
-            <span>No right of appeal is recognized. All decisions of the Chairs are final.</span>
+            <span>All decisions of the Chairs are final.</span>
           </div>
-        </div>
+        </details>
 
         <div class="footer-column footer-codex">
           <span class="footer-section-title">Tribunal Codex</span>
@@ -172,8 +172,8 @@ const navigation: { href: string; label: string; icon: IconName; opensWhereToday
         </div>
 
         <div class="footer-legal">
-          <span>© {currentYear} The High Tribunal of MCR Lunch Club. Recorded at Spinningfields, Manchester. All official decrees gazetted. v1.0</span>
-          <span>Transcripts entered in perpetuity under the Crown Square Accord.</span>
+          <span>© {currentYear} The High Tribunal of MCR Lunch Club.<span class="footer-legal-extra"> Recorded at Spinningfields, Manchester. All official decrees gazetted. v1.0</span></span>
+          <span class="footer-legal-extra">Transcripts entered in perpetuity under the Crown Square Accord.</span>
           <span>
             Walking times and distances from Base:
             © <a href="https://openrouteservice.org/" rel="noopener noreferrer">openrouteservice.org</a> by HeiGIT |
@@ -191,6 +191,15 @@ const navigation: { href: string; label: string; icon: IconName; opensWhereToday
         const lng = Number(link.dataset.lng);
         if (Number.isFinite(lat) && Number.isFinite(lng)) link.href = getWalkingDirectionsUrl(lat, lng);
       });
+    </script>
+    <script>
+      // "About the ledger" is a disclosure on phones and always open from 640px up.
+      const wide = window.matchMedia('(min-width: 640px)');
+      const syncAbout = () => {
+        document.querySelectorAll<HTMLDetailsElement>('.footer-about').forEach((about) => { about.open = wide.matches; });
+      };
+      syncAbout();
+      wide.addEventListener('change', syncAbout);
     </script>
     <script>
       // <details> flips to display:none the moment it closes, so keep it [open] while the

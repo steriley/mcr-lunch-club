@@ -413,6 +413,14 @@
   line-height: 1.6;
 }
 
+.footer-about > summary {
+  cursor: pointer;
+}
+
+.footer-about > .footer-fact {
+  margin-top: 10px;
+}
+
 .footer-fact-icon {
   flex: 0 0 15px;
   margin-top: 2px;
@@ -781,10 +789,64 @@
   }
 }
 
+/* Wide screens show the ledger notes without a toggle, even before the script opens the <details>. */
+@media (min-width: 640px) {
+  .footer-about > summary {
+    pointer-events: none;
+    list-style: none;
+  }
+
+  .footer-about > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .footer-about::details-content {
+    content-visibility: visible;
+  }
+}
+
+/* Phones: creed, links, theme toggle and one legal line; the rest sits behind "About the ledger". */
+@media (max-width: 639px) {
+  .site-footer {
+    padding-block: 20px;
+  }
+
+  .footer-column-title,
+  .footer-detail,
+  .footer-legal-extra {
+    display: none;
+  }
+
+  .footer-column {
+    gap: 4px;
+  }
+
+  .footer-codex .footer-section-title {
+    display: none;
+  }
+
+  .footer-codex .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 20px;
+  }
+
+  .footer-theme-toggle {
+    margin-top: 4px;
+  }
+
+  .footer-about > summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+  }
+}
+
 @media (max-width: 480px) {
 
   .site-footer-inner {
     grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
   }
 
   .footer-editorial,

@@ -155,6 +155,16 @@ export const TIERS: readonly Tier[] = [
   },
 ];
 
+/** The Approved sticker's copy, defined once and rendered by `ApprovedSticker.astro` on the verdict and venue pages. */
+export const APPROVED_STICKER = {
+  alt: 'Official MCR Lunch Club Approved Sticker',
+  kicker: 'The Official Prize of Excellence',
+  heading: 'The MCR Lunch Club Approved Sticker',
+  blurb:
+    'Venues that pass the Chairs’ inspection on at least two separate visits get a physical sticker to display, like a Michelin star for Manchester lunches.',
+  short: 'Awarded the MCR Lunch Club Approved sticker after two satisfactory inspections.',
+} as const;
+
 /** Tiers selected on the homepage by default (and after Reset Filters) for the widest view of lunching options. */
 export const DEFAULT_HOME_TIERS: readonly TierValue[] = ['approved', 'under_consideration', 'to_be_assessed'];
 
