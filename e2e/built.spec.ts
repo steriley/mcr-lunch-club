@@ -47,6 +47,55 @@ test.describe('public pages', () => {
     expect(monitor.errors).toEqual([]);
   });
 
+  test('weather card: one request per page view, with sunny, night, stale and error states', async ({ page, monitor }) => {
+    const point = (time: string, weatherCode: number, temperatureC: number, icon: string, condition: string) => ({
+      time, temperatureC, minimumTemperatureC: null, feelsLikeC: temperatureC - 2, precipitationProbability: 10,
+      windSpeedMph: 7, weatherCode, condition, icon,
+    });
+    // The stub stands in for the Met Office, which a Preview would otherwise answer with a real forecast.
+    const summary = (now: ReturnType<typeof point>, stale = false) => ({ stale, now, hours: [now], days: [now] });
+    const requests: string[] = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).pathname.startsWith('/api/weather')) requests.push(request.url());
+    });
+
+    const card = page.locator('.weather-card');
+    const showCard = async (response: { status?: number; body: unknown }) => {
+      requests.length = 0;
+      await page.route('**/api/weather', (route) => route.fulfill({
+        status: response.status ?? 200,
+        contentType: 'application/json',
+        body: JSON.stringify(response.body),
+      }));
+      await visit(page, '/');
+      await card.scrollIntoViewIfNeeded();
+    };
+
+    await showCard({ body: summary(point('2026-10-28T12:00Z', 1, 14, 'sunny', 'Sunny')) });
+    await expect(card).toHaveClass(/theme-sunny/);
+    await expect(card).toContainText('Solar Anomaly: Direct Glare');
+    await expect(card).toContainText('14°C');
+    await expect(card).toContainText('Wind: 7 mph');
+    await expect(card).toContainText('Rain 10%');
+    expect(requests).toHaveLength(1);
+
+    await page.unroute('**/api/weather');
+    await showCard({ body: summary(point('2026-10-28T22:00Z', 0, 6, 'clear-night', 'Clear night')) });
+    await expect(card).toHaveClass(/theme-night/);
+    await expect(card).toContainText('Nocturnal Vault: Cloudless');
+
+    await page.unroute('**/api/weather');
+    await showCard({ body: summary(point('2026-10-28T12:00Z', 1, 14, 'sunny', 'Sunny'), true) });
+    await expect(card).toContainText('Forecast out of date');
+
+    // No key, or an upstream outage with nothing cached: the route answers 503/502 and the card says so.
+    await page.unroute('**/api/weather');
+    await showCard({ status: 503, body: { error: 'Weather is currently unavailable.' } });
+    await expect(card).toContainText('Forecast unavailable');
+    expect(requests).toHaveLength(1);
+    expect(monitor.errors).toEqual([]);
+  });
+
   test('home at phone width: Where to today? and search are on the page, the Bench follows the map', async ({ page, monitor }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await visit(page, '/');

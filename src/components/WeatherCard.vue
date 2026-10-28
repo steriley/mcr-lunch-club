@@ -81,7 +81,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import FieldPanel from '@/components/FieldPanel.vue';
-import { normalizeWeather, type NormalizedWeather, type WeatherIcon, type WeatherPoint } from '@/lib/weather';
+import type { WeatherIcon, WeatherPoint, WeatherSummary } from '@/lib/weather';
 
 type WeatherShape =
   | { kind: 'path'; d: string }
@@ -90,7 +90,7 @@ type WeatherShape =
 const loading = ref(true);
 const error = ref(false);
 const stale = ref(false);
-const weather = ref<NormalizedWeather | null>(null);
+const weather = ref<WeatherSummary | null>(null);
 
 const weatherIcons: Record<WeatherIcon, WeatherShape[]> = {
   sunny: [
@@ -384,22 +384,13 @@ function formatPercent(value: number | null): string {
 
 onMounted(async () => {
   try {
-    const [hourlyResponse, dailyResponse] = await Promise.all([
-      fetch('/api/weather/hourly'),
-      fetch('/api/weather/daily'),
-    ]);
-    if (!hourlyResponse.ok || !dailyResponse.ok) {
+    const response = await fetch('/api/weather');
+    if (!response.ok) {
       throw new Error('Weather service is unavailable.');
     }
-    stale.value = hourlyResponse.headers.has('Warning') || dailyResponse.headers.has('Warning');
-    const [hourlyData, dailyData]: [unknown, unknown] = await Promise.all([
-      hourlyResponse.json(),
-      dailyResponse.json(),
-    ]);
-    weather.value = normalizeWeather(hourlyData, dailyData);
-    if (weather.value.hours.length === 0 && weather.value.days.length === 0) {
-      weather.value = null;
-    }
+    const summary: WeatherSummary = await response.json();
+    stale.value = summary.stale;
+    weather.value = summary.hours.length === 0 && summary.days.length === 0 ? null : summary;
   } catch {
     error.value = true;
   } finally {

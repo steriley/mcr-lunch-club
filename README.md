@@ -35,7 +35,7 @@ Every public page carries a canonical URL and Open Graph / Twitter card tags (`s
   - `/manifesto` — The Constitutional Articles of Governance
   - `/inspections` — The Complete Chronological Audit Log: every confirmed inspection (dual-verified or legacy) of a public venue
   - `/api/suggestions` — Public "Suggest a Venue" endpoint (same-origin only, rate limited)
-  - `/api/weather/[step]` — Weather forecast for the home page card
+  - `/api/weather` — Compact Manchester forecast for the home page card (fetches the Met Office hourly and daily forecasts, normalises them in `src/lib/weather.ts`)
   - `/api/cron/weekly-bulletin` — Vercel Cron: rebuilds the site when the Wednesday bulletin goes out
   - `/admin/*` — The Chairs' Area (sign-in required; see below)
 - **Styles**: the public site and the Chairs' Area each have their own stylesheet (`src/styles/global.css`, `src/styles/admin.css`), and Tailwind scans only that side's files, so visitors never download admin styles. Both import `theme.css` (the colour tokens) and `map.css`. A new admin component goes in `src/components/admin/`; a new public page directory is picked up by `global.css` automatically.
