@@ -6,7 +6,7 @@ import { focalStyle } from '@/lib/image-upload';
 import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import { getPublicInspections, getPublicVenueDetails, serializeForScript, type PublicVenueDetail } from '@/lib/public-data';
 import { getWalkingDirectionsUrl } from '@/lib/map/directions';
-import { milesText, walkText } from '@/lib/route-display';
+import { NOT_INSPECTED_LABEL, ROUTE_PENDING_LABEL, routeStats, walkText } from '@/lib/route-display';
 import { COST_LABELS } from '@/lib/cost-display';
 import { nearbyAlternatives } from '@/lib/nearby-venues';
 import { toCard, type BenchCard } from '@/lib/sovereign-bench';
@@ -50,6 +50,7 @@ const websiteHost = websiteHostname(venue.websiteUrl);
 const cuisine = venue.cuisine && venue.cuisine !== 'Other' ? venue.cuisine : null;
 const showActions = (hasLocation && !venue.closed) || websiteHref !== null;
 // The link preview when someone drops this page into the lunch chat.
+const stats = routeStats(venue.walkingTimeMin, venue.distanceMiles);
 const walk = venue.walkingTimeMin == null ? null : `${walkText(venue.walkingTimeMin)} from Spinningfields`;
 const pageDescription = truncate(
   [`${tier.label} by the MCR Lunch Club.`, [venue.cuisine, venue.cost, walk].filter(Boolean).join(' · ') + '.', venue.tier === 'approved' && venue.eatLikeUs && `Eat like us: ${venue.eatLikeUs}`]
@@ -189,23 +190,42 @@ function truncate(text: string, max: number): string {
         )}
 
         <!-- Geographic & Walking Specifications -->
-        <div class="grid grid-cols-3 gap-2 sm:gap-4 bg-paper p-2 sm:p-4 rounded-xl border border-hairline text-center">
-          <div class="p-1 sm:p-2">
-            <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Walk</span>
-            <span class="text-xl sm:text-2xl font-bold text-navy">{walkText(venue.walkingTimeMin, 'mins')}</span>
-            <span class="text-xs text-stone-500 block font-sans">from Spinningfields Base</span>
-          </div>
+        <div class={`grid ${stats.combined ? 'grid-cols-2' : 'grid-cols-3'} gap-2 sm:gap-4 bg-paper p-2 sm:p-4 rounded-xl border border-hairline text-center`}>
+          {stats.combined ? (
+            <div class="p-1 sm:p-2">
+              <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Walk</span>
+              <span class="text-xl sm:text-2xl font-bold text-stone-400" aria-label="Not available">—</span>
+              <span class="text-xs text-stone-500 block font-sans">{ROUTE_PENDING_LABEL}</span>
+            </div>
+          ) : (
+            <>
+              <div class="p-1 sm:p-2">
+                <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Walk</span>
+                <span class={`text-xl sm:text-2xl font-bold ${stats.walk.value === null ? 'text-stone-400' : 'text-navy'}`} aria-label={stats.walk.value === null ? 'Not available' : undefined}>{stats.walk.value ?? '—'}</span>
+                <span class="text-xs text-stone-500 block font-sans">{stats.walk.caption}</span>
+              </div>
 
-          <div class="p-1 sm:p-2 border-l border-hairline">
-            <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Distance</span>
-            <span class="text-xl sm:text-2xl font-bold text-stone-900">{milesText(venue.distanceMiles)}</span>
-            <span class="text-xs text-stone-500 block font-sans">walking route</span>
-          </div>
+              <div class="p-1 sm:p-2 border-l border-hairline">
+                <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Distance</span>
+                <span class={`text-xl sm:text-2xl font-bold ${stats.distance.value === null ? 'text-stone-400' : 'text-stone-900'}`} aria-label={stats.distance.value === null ? 'Not available' : undefined}>{stats.distance.value ?? '—'}</span>
+                <span class="text-xs text-stone-500 block font-sans">{stats.distance.caption}</span>
+              </div>
+            </>
+          )}
 
           <div class="p-1 sm:p-2 border-l border-hairline">
             <span class="text-xs text-stone-600 uppercase tracking-wider block font-sans">Last inspected</span>
-            <span class="text-sm sm:text-lg font-bold text-stone-800 font-sans tabular-nums sm:mt-1 block">{formatDate(venue.lastInspectionDate, { fallback: 'Awaiting Assessment' })}</span>
-            <span class="text-xs text-stone-500 block font-sans">by the Chairs</span>
+            {venue.lastInspectionDate ? (
+              <>
+                <span class="text-sm sm:text-lg font-bold text-stone-800 font-sans tabular-nums sm:mt-1 block">{formatDate(venue.lastInspectionDate)}</span>
+                <span class="text-xs text-stone-500 block font-sans">by the Chairs</span>
+              </>
+            ) : (
+              <>
+                <span class="text-sm sm:text-lg font-bold text-stone-400 font-sans sm:mt-1 block" aria-label="Not available">—</span>
+                <span class="text-xs text-stone-500 block font-sans">{NOT_INSPECTED_LABEL}</span>
+              </>
+            )}
           </div>
         </div>
 
@@ -238,7 +258,7 @@ function truncate(text: string, max: number): string {
           </div>
 
           {venueInspections.length === 0 ? (
-            <div class="p-6 text-center bg-stone-50 rounded-xl border border-dashed border-stone-300 text-base text-stone-500 font-sans">
+            <div class="p-6 text-center bg-stone-50 rounded-xl border border-dashed border-stone-300 text-sm text-stone-500 font-sans">
               No inspections on record for this venue yet. One is entered once two Chairs confirm the same day's visit.
             </div>
           ) : (

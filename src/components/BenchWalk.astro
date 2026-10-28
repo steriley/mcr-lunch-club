@@ -2,7 +2,7 @@
 import type { BenchWalk } from '@/lib/sovereign-bench';
 
 interface Props {
-  walk: BenchWalk;
+  walk: BenchWalk | null;
   venueName: string;
 }
 
@@ -10,7 +10,7 @@ const { walk, venueName } = Astro.props;
 ---
 
 {
-  walk.directionsUrl ? (
+  walk === null ? null : walk.directionsUrl ? (
     <a
       class="bench-walk is-link"
       href={walk.directionsUrl}

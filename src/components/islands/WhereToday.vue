@@ -178,6 +178,7 @@ const pickedWalk = computed(() => {
   const venue = pickedVenue.value;
   if (!venue) return null;
   const { walk } = toCard({ venue: { ...venue, image: venue.image ?? null, closed: false } as PublicVenue }, []);
+  if (walk === null) return null; // route pending: no walk row, as on the other cards
   return {
     label: walk.label,
     url: venue.lat != null && venue.lng != null ? getWalkingDirectionsUrl(venue.lat, venue.lng) : null,

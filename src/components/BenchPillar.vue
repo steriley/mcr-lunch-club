@@ -42,10 +42,12 @@ const card = computed(() =>
 const tier = computed(() => tierInfo(props.venue.tier));
 // "Other" is the catch-all, not a cuisine worth saying.
 const cuisine = computed(() => (props.venue.cuisine && props.venue.cuisine !== cuisineLabel(DEFAULT_CUISINE) ? props.venue.cuisine : ''));
-const walk = computed(() => ({
-  label: props.walkLabel ?? card.value.walk.label,
-  url: props.walkLabel === undefined ? card.value.walk.directionsUrl : (props.walkUrl ?? null),
-}));
+// Null while the route is pending: no walk row, rather than a "pending" label on every card.
+const walk = computed(() => {
+  if (props.walkLabel !== undefined) return { label: props.walkLabel, url: props.walkUrl ?? null };
+  const { walk: own } = card.value;
+  return own === null ? null : { label: own.label, url: own.directionsUrl };
+});
 
 function markBroken(event: Event) {
   (event.target as HTMLElement).parentElement?.classList.add('is-placeholder');
@@ -94,7 +96,7 @@ function markBroken(event: Event) {
     </div>
     <div class="bench-telemetry">
       <a
-        v-if="walk.url"
+        v-if="walk && walk.url"
         class="bench-walk is-link"
         :href="walk.url"
         target="_blank"
@@ -104,7 +106,7 @@ function markBroken(event: Event) {
         <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
         {{ walk.label }}
       </a>
-      <span v-else class="bench-walk">
+      <span v-else-if="walk" class="bench-walk">
         <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
         {{ walk.label }}
       </span>
