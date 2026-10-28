@@ -1,0 +1,1127 @@
+/*
+ * Homepage-only styles: the workspace grid, the map stage, the bench, the venue
+ * list, the field dispatch and the weekly summons. Imported by src/pages/index.astro
+ * so the venue, verdict, Manifesto, Inspections and Hall of Shame pages don't
+ * download them. The pillar card (BenchPillar.astro) is shared, so its rules stay
+ * in global.css. Tailwind's @source scan lives in global.css; these rules use none.
+ */
+
+
+.home-workspace {
+  width: min(100% - 40px, 1440px);
+  margin: 0 auto;
+  padding: 18px 0 28px;
+}
+
+.home-workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(320px, 1fr);
+  align-items: start;
+  gap: 18px;
+}
+
+/* One column on a phone, in DOM order. From 1001px the map, list, dispatch and summons stack in the left column, the bench spans the right. */
+
+.home-workspace-grid > * {
+  min-width: 0;
+}
+
+.where-today-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--color-deep);
+  color: var(--color-parchment-fixed);
+  font: 700 16px/1.3 "Playfair Display", Georgia, serif;
+  box-shadow: 0 2px 6px rgb(17 30 71 / 30%);
+  text-decoration: none;
+}
+
+.where-today-cta:hover {
+  background: var(--color-navy-fixed);
+}
+
+.where-today-cta:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.where-today-cta .material-symbols-outlined {
+  font-size: 22px;
+}
+
+@media (min-width: 1001px) {
+
+.home-workspace-grid {
+    grid-template-rows: auto auto auto 1fr;
+    row-gap: 0;
+  }
+
+.home-map-stage { grid-column: 1; grid-row: 1; }
+
+.where-today-cta { display: none; }
+
+.field-dispatch { grid-column: 1; grid-row: 2; margin-top: 12px; }
+
+.weekly-summons { grid-column: 1; grid-row: 3; margin-top: 12px; }
+
+.bench { grid-column: 2; grid-row: 1 / -1; }
+}
+
+.home-map-stage {
+  aspect-ratio: 1;
+  max-height: 900px;
+  min-height: 520px;
+}
+
+.map-header {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ochre) 30%, transparent);
+  background: var(--color-midnight);
+  color: var(--color-white);
+}
+
+.map-header-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.map-header-icon {
+  flex: none;
+  overflow: hidden;
+  width: 22px;
+  color: var(--color-peach);
+  font-size: 22px;
+  user-select: none;
+}
+
+.near-me-icon {
+  flex: none;
+  overflow: hidden;
+  width: 22px;
+  color: var(--color-brass);
+  font-size: 22px;
+  user-select: none;
+}
+
+.map-header-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.map-header-kicker {
+  color: var(--color-peach);
+  font: 700 11px/1.3 "Plus Jakarta Sans", sans-serif;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.map-header-subtitle {
+  overflow: hidden;
+  color: var(--color-on-dark);
+  font: 600 12px/1.4 "Playfair Display", Georgia, serif;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.map-header-count {
+  flex: none;
+  padding: 4px 10px;
+  border: 1px solid color-mix(in srgb, var(--color-ochre) 20%, transparent);
+  border-radius: 4px;
+  background: rgb(37 49 91 / 80%);
+  color: var(--color-peach);
+  font: 700 13px/1.4 "Plus Jakarta Sans", sans-serif;
+  white-space: nowrap;
+}
+
+/*
+ * The Sovereign Bench: the homepage aside. A navy panel with one hero card
+ * (photo across the top, copy below) and up to four pillars, all in one column.
+ */
+
+.bench {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--color-hairline) 40%, transparent);
+  border-radius: 16px;
+  background: var(--bench-navy);
+  color: var(--color-white);
+}
+
+.bench .material-symbols-outlined {
+  flex: none;
+  overflow: hidden;
+  user-select: none;
+}
+
+.bench-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ochre) 30%, transparent);
+}
+
+/* With no badge beside it, the kicker and title run the full width of the section. */
+
+.bench-header-copy {
+  flex: 1 1 100%;
+}
+
+.bench-kicker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: var(--bench-peach);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.bench-kicker .material-symbols-outlined {
+  width: 22px;
+  font-size: 22px;
+}
+
+.bench-title {
+  margin: 2px 0 0;
+  color: var(--color-on-dark);
+  font: 700 clamp(20px, 4vw, 24px)/1.2 "Playfair Display", Georgia, serif;
+  letter-spacing: -.01em;
+}
+
+.bench-empty {
+  margin: 0;
+  color: var(--bench-peach);
+  font-size: 14px;
+}
+
+.bench-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ledger-border);
+  border-radius: 12px;
+  color: var(--ledger-ink);
+}
+
+.bench-hero {
+  background: var(--ledger-card);
+}
+
+.bench-hero-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.bench-hero-link::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  content: "";
+}
+
+.bench-hero:hover .bench-hero-link {
+  color: var(--bench-amber);
+}
+
+.bench-hero-link:focus-visible {
+  outline: none;
+}
+
+.bench-hero-link:focus-visible::after {
+  outline: 2px solid var(--bench-peach);
+  outline-offset: 2px;
+}
+
+.bench-hero-media {
+  position: relative;
+  overflow: hidden;
+  background: var(--ledger-card);
+}
+
+.bench-hero-media {
+  height: 200px;
+  border-radius: 11px 11px 0 0;
+}
+
+.bench-seal {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 12px;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  filter: drop-shadow(0 3px 8px rgb(0 0 0 / 35%));
+}
+
+.bench-seal:focus-visible {
+  outline: 2px solid var(--bench-peach);
+  outline-offset: 2px;
+}
+
+.bench-seal img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 2px solid var(--bench-peach);
+  border-radius: 50%;
+  background: var(--ledger-paper);
+  object-fit: cover;
+}
+
+/* Hero copy */
+
+.bench-hero-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+}
+
+.bench-hero-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.bench-hero-name {
+  margin: 0;
+  color: var(--bench-primary);
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.bench-hero-name {
+  font-size: 22px;
+  line-height: 1.2;
+}
+
+.bench-eat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid color-mix(in srgb, var(--color-hairline) 60%, transparent);
+  border-radius: 8px;
+  background: var(--ledger-paper);
+}
+
+.bench-eat svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--bench-amber);
+}
+
+/* The label and the dish share one line ("EAT LIKE US  3 Meats & rice"), wrapping only if the dish is long. */
+
+.bench-eat > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+
+.bench-eat-label {
+  display: inline;
+  color: var(--bench-amber);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.bench-eat-dish {
+  display: inline;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.bench-quote {
+  margin: 0;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--color-hairline) 50%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+}
+
+.bench-quote p {
+  margin: 0;
+  font: italic 400 13px/1.6 "Playfair Display", Georgia, serif;
+}
+
+.bench-quote cite {
+  display: block;
+  margin-top: 4px;
+  color: var(--bench-amber);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+/* Pillars */
+
+.bench-pillars-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bench-pillars-label {
+  margin: 0;
+  color: var(--color-on-dark-warm);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.bench-hero-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.bench-hero-title-row {
+  align-self: stretch;
+}
+
+.bench-hero-title-row .bench-cost {
+  padding-top: 5px;
+  font-size: 14px;
+}
+
+/* Near Me: the pillar card as a selectable list row. */
+
+.bench-pillar.is-selected {
+  border-color: var(--ledger-gold);
+  box-shadow: 0 0 0 2px rgb(242 154 46 / 30%);
+}
+
+button.bench-pillar-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* The rank sits beside the name, so a long name wraps under itself rather than dropping the rank. */
+
+.bench-pillar-name.has-rank {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.bench-rank {
+  flex: none;
+  color: var(--bench-amber);
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.bench-tier {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* The tier's glyph on a disc, as on the map's pins. */
+
+.bench-tier-glyph {
+  display: inline-grid;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--color-white);
+}
+
+.bench-tier-glyph svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Cuisine and the cost key, under the tier on a detailed card. */
+
+.bench-meta {
+  margin: 0;
+  color: var(--color-graphite);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.bench-tier-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* Above the stretched link, like the walk link. */
+
+.bench-details {
+  position: relative;
+  z-index: 1;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 6px;
+  background: var(--ledger-card);
+  color: var(--color-deep-ink);
+  font: 700 12px "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+}
+
+.bench-details:hover {
+  border-color: var(--ledger-navy);
+}
+
+/* A Details link looks like the button beside it. */
+
+a.bench-details {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+/* ---- The bench's tabs, and the list of every venue the filters match ---- */
+
+.bench-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--color-on-dark-rule);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-black) 18%, transparent);
+}
+
+.bench-tab {
+  display: inline-flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-on-dark-soft);
+  font: 700 13px/1 "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.bench-tab:hover {
+  color: var(--color-on-dark);
+}
+
+.bench-tab.is-selected {
+  background: var(--color-parchment-fixed);
+  color: var(--color-deep);
+}
+
+.bench-tab:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.bench-tab-count {
+  min-width: 24px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.bench-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* The "All venues" view has no use for the Golden Cut's kicker. */
+
+.bench[data-tab="all"] [data-golden-only] {
+  display: none;
+}
+
+.venue-results {
+  min-width: 0;
+}
+
+.venue-results-body {
+  display: grid;
+  gap: 12px;
+}
+
+.venue-results-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.venue-results-title {
+  margin: 0;
+  color: var(--color-on-dark);
+  font: 700 18px/1.2 "Playfair Display", Georgia, serif;
+}
+
+.venue-results-title:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 4px;
+}
+
+.venue-results-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-on-dark-soft);
+  font: 600 12px/1 "Plus Jakarta Sans", sans-serif;
+}
+
+.venue-results-sort select {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid var(--color-on-dark-rule);
+  border-radius: 8px;
+  background: var(--color-midnight);
+  color: var(--color-on-dark);
+  font: 600 13px "Plus Jakarta Sans", sans-serif;
+}
+
+.venue-results-sort select:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.venue-results-rows {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Beside the map, a long list scrolls inside the panel rather than stretching the page. */
+
+.venue-results.is-rail .venue-results-rows {
+  max-height: min(78vh, 880px);
+  padding-right: 4px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.venue-results-empty {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 18px 12px;
+  color: var(--color-on-dark);
+  text-align: center;
+}
+
+.venue-results-empty p {
+  margin: 0;
+  font: 700 15px/1.3 "Playfair Display", Georgia, serif;
+}
+
+.venue-results-empty button {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-parchment-fixed);
+  color: var(--color-deep);
+  font: 700 13px/1 "Plus Jakarta Sans", sans-serif;
+  cursor: pointer;
+}
+
+.venue-results-empty button:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* On a phone the list folds under the map, on the page's own surface. */
+
+.venue-results.is-inline {
+  margin-top: 12px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 14px;
+  background: var(--color-card);
+}
+
+.venue-results.is-inline .venue-results-heading {
+  margin: 0;
+}
+
+.venue-results-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--color-ink);
+  font: 700 14px/1.2 "Plus Jakarta Sans", sans-serif;
+  text-align: left;
+  cursor: pointer;
+}
+
+.venue-results-toggle:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: -2px;
+}
+
+.venue-results-chevron {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  transition: transform 160ms ease;
+}
+
+.venue-results-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.venue-results.is-inline .venue-results-body {
+  padding: 0 12px 12px;
+}
+
+.venue-results.is-inline .venue-results-title,
+.venue-results.is-inline .venue-results-sort,
+.venue-results.is-inline .venue-results-empty {
+  color: var(--color-ink);
+}
+
+.venue-results.is-inline .venue-results-sort select {
+  border-color: var(--color-hairline);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.venue-results.is-inline .venue-results-empty button {
+  background: var(--color-deep);
+  color: var(--color-parchment-fixed);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+.bench-tab,
+  .venue-results-chevron {
+    transition: none;
+  }
+}
+
+@media (max-width: 1000px) {
+
+.bench-tabs,
+  #bench-panel-all {
+    display: none !important;
+  }
+
+#bench-panel-golden[hidden] {
+    display: flex;
+  }
+}
+
+.field-dispatch {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.weekly-bulletin {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 12px;
+  background: var(--ledger-parchment);
+  color: var(--ledger-ink);
+  box-shadow: 0 1px 3px rgb(22 19 15 / 5%);
+}
+
+.bulletin-icon {
+  display: grid;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid var(--ledger-border);
+  border-radius: 50%;
+  background: var(--color-peach-pale);
+  /* A -fixed colour: the peach circle stays pale in dark mode, so the icon must stay dark
+     (the plain ochre token lightens in dark mode and fell to 1.45:1 here). */
+  color: var(--color-ochre-fixed);
+}
+
+.bulletin-icon .material-symbols-outlined {
+  overflow: hidden;
+  width: 24px;
+  font-size: 24px;
+  user-select: none;
+}
+
+.bulletin-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.weekly-bulletin strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--color-ochre);
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.bulletin-copy p {
+  margin: 0;
+  color: var(--ledger-ink);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.weekly-bulletin a {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 6px;
+  color: var(--color-deep-ink);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.weekly-bulletin a:hover,
+.weekly-bulletin a:focus-visible {
+  background: var(--ledger-deep);
+  color: white;
+}
+
+.field-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field-panel,
+.weekly-summons {
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid var(--ledger-border);
+  border-radius: 12px;
+  background: var(--ledger-card);
+  box-shadow: 0 1px 3px rgb(22 19 15 / 5%);
+}
+
+.field-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.field-panel-heading,
+.weekly-summons-heading {
+  display: flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgb(213 204 183 / 65%);
+}
+
+.field-panel-heading h2,
+.weekly-summons-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  margin: 0;
+  color: var(--color-deep-ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .055em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.field-panel-heading h2 {
+  color: var(--color-ochre);
+}
+
+.field-icon {
+  flex: 0 0 17px;
+  width: 17px;
+  height: 17px;
+}
+
+.field-icon.is-gold {
+  color: var(--color-bronze);
+}
+
+.field-icon.is-green {
+  color: var(--color-success-ink);
+}
+
+.decree-badge {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  line-height: 1.3;
+  border-radius: 4px;
+  background: var(--color-peach-pale);
+  color: var(--color-umber);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.deliberation-quote {
+  flex: 1;
+  margin: 0;
+  color: var(--color-ink-soft);
+  font: italic 14px/1.4 "Playfair Display", Georgia, serif;
+}
+
+.field-panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 7px;
+  border-top: 1px solid rgb(213 204 183 / 45%);
+  color: var(--color-dim);
+  font-size: 12px;
+}
+
+.field-panel-footer a {
+  flex: 0 0 auto;
+  color: var(--color-deep-ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.field-panel-footer a:hover,
+.field-panel-footer a:focus-visible {
+  text-decoration: underline;
+  text-decoration-color: var(--ledger-gold);
+  text-underline-offset: 3px;
+}
+
+.field-panel-time {
+  flex: 0 0 auto;
+  color: var(--color-subtle);
+  font-size: 12px;
+}
+
+.weekly-summons {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  background: var(--ledger-parchment);
+}
+
+.weekly-summons-heading {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.weekly-summons-heading h2 {
+  color: var(--color-ochre);
+}
+
+.weekly-summons-heading > span {
+  flex: 0 0 auto;
+  color: var(--color-subtle);
+  font-size: 12px;
+}
+
+.weekly-summons-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.weekly-summons-column {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.weekly-summons-day {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 8px;
+  margin: 0;
+  color: var(--color-success-ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+
+.weekly-summons-tier {
+  padding: 1px 8px;
+  border: 1px solid var(--summons-tier);
+  border-radius: 999px;
+  color: var(--color-deep-ink);
+  font-size: 11px;
+  letter-spacing: .03em;
+}
+
+.weekly-summons-empty {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed var(--ledger-border);
+  border-radius: 12px;
+  color: var(--color-muted-soft);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+@media (max-width: 1000px) {
+
+.home-workspace-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+
+.home-workspace {
+    width: min(100% - 24px, 1440px);
+    padding-top: 12px;
+  }
+
+.home-workspace-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+.home-map-stage {
+    aspect-ratio: auto;
+    height: 58vh;
+    min-height: 420px;
+  }
+
+.weekly-bulletin {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 8px 10px;
+    padding: 11px;
+  }
+
+.bulletin-icon {
+    grid-row: 1 / 3;
+  }
+
+.weekly-bulletin a {
+    justify-self: start;
+    grid-column: 2;
+  }
+
+.field-panel-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+
+.weekly-summons-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+.weekly-summons-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Chairs' Deliberation: the decrees share one grid cell and fade between each other. */
+
+.deliberation-stack {
+  display: grid;
+  flex: 1;
+}
+
+.deliberation-stack .deliberation-quote {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .5s ease, visibility 0s linear .5s;
+}
+
+.deliberation-stack .deliberation-quote.is-active {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .5s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+.deliberation-stack .deliberation-quote,
+  .deliberation-stack .deliberation-quote.is-active {
+    transition: none;
+  }
+}
+
+/* Until the opening decree is picked, hold the badge's space without showing a number. */
+
+.decree-badge.is-pending {
+  visibility: hidden;
+}
