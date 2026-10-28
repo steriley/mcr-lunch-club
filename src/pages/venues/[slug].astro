@@ -2,6 +2,7 @@
 import Icon from '@/components/Icon.astro';
 import Layout from '@/layouts/Layout.astro';
 import BenchPillar from '@/components/BenchPillar.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import { formatDate } from '@/lib/dates';
 import { focalStyle, imageSrcset } from '@/lib/image-upload';
 import { INSPECTION_KIND_LABELS, INSPECTION_OUTCOME_BADGE_CLASSES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
@@ -12,7 +13,7 @@ import { COST_LABELS } from '@/lib/cost-display';
 import { nearbyAlternatives } from '@/lib/nearby-venues';
 import { toCard, type BenchCard } from '@/lib/sovereign-bench';
 import { tierInfo } from '@/lib/tiers';
-import { venueStructuredData } from '@/lib/structured-data';
+import { breadcrumbStructuredData, venueStructuredData } from '@/lib/structured-data';
 import { safeWebsiteUrl, websiteHostname } from '@/lib/website';
 import type { Inspection } from '@/types';
 
@@ -66,6 +67,16 @@ const photoSrcset = venue.image ? imageSrcset(venue.image) : undefined;
 const PHOTO_SIZES = '(min-width: 896px) 864px, calc(100vw - 2rem)';
 
 const structuredData = venueStructuredData(venue, new URL(`/venues/${venue.slug}`, Astro.site ?? Astro.url).href);
+const breadcrumbs = [
+  { label: 'Map', href: '/' },
+  { label: 'Verdicts', href: '/verdicts/approved' },
+  { label: tier.label, href: `/verdicts/${tier.slug}` },
+  { label: venue.name },
+];
+const breadcrumbData = breadcrumbStructuredData(
+  breadcrumbs.map(({ label, href }) => ({ name: label, href: href ?? `/venues/${venue.slug}` })),
+  new URL(`/venues/${venue.slug}`, Astro.site ?? Astro.url).href,
+);
 
 function truncate(text: string, max: number): string {
   return text.length <= max ? text : `${text.slice(0, max - 1).trimEnd()}…`;
@@ -77,6 +88,7 @@ function truncate(text: string, max: number): string {
     <link slot="head" rel="preload" as="image" href={venue.image.url} imagesrcset={photoSrcset} imagesizes={photoSrcset ? PHOTO_SIZES : undefined} fetchpriority="high" />
   )}
   {structuredData && <script slot="head" is:inline type="application/ld+json" set:html={serializeForScript(structuredData)} />}
+  <script slot="head" is:inline type="application/ld+json" set:html={serializeForScript(breadcrumbData)} />
   <article class="w-full">
       <!-- Status Banner: runs edge to edge, content stays within the page width -->
       <div class={`${tier.bannerClass} tier-header-gradient text-white`}>
@@ -106,6 +118,7 @@ function truncate(text: string, max: number): string {
 
       <!-- Dossier Body Content -->
       <div class="max-w-4xl mx-auto px-4 pt-4 pb-8 sm:pt-5 sm:pb-12 space-y-6 text-ink">
+        <Breadcrumbs items={breadcrumbs} />
         {venue.closed && (
           <p class="rounded-xl border-2 border-stone-400 bg-stone-100 px-4 py-3 font-sans text-sm font-bold uppercase tracking-wider text-stone-700">
             Permanently closed

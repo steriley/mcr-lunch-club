@@ -33,3 +33,26 @@ export function venueStructuredData(venue: PublicVenue & { websiteUrl?: string |
     ...(website && { sameAs: website }),
   };
 }
+
+export interface BreadcrumbTrailItem {
+  name: string;
+  /** Site-relative path or absolute URL. */
+  href: string;
+}
+
+/**
+ * schema.org BreadcrumbList for a page, so search engines can show its place in the
+ * site. Paths are resolved against pageUrl. The page embeds it with serializeForScript.
+ */
+export function breadcrumbStructuredData(trail: BreadcrumbTrailItem[], pageUrl: string): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: trail.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: new URL(item.href, pageUrl).href,
+    })),
+  };
+}

@@ -1,0 +1,48 @@
+---
+export interface Crumb {
+  label: string;
+  /** Leave off for the current page, which is not a link. */
+  href?: string;
+}
+
+interface Props {
+  /** In order from the map; the last is the current page. */
+  items: Crumb[];
+}
+
+const { items } = Astro.props;
+---
+
+<nav aria-label="Breadcrumb" class="text-xs font-sans">
+  <ol class="flex flex-wrap items-center gap-x-2 gap-y-1">
+    {items.map((item, index) => {
+      const last = index === items.length - 1;
+      return (
+        <li class="flex min-w-0 items-center gap-2">
+          {last || !item.href ? (
+            <span aria-current={last ? 'page' : undefined} class="min-w-0 break-words text-stone-600">{item.label}</span>
+          ) : (
+            <a href={item.href} class="breadcrumb-link text-navy hover:underline font-bold">{item.label}</a>
+          )}
+          {!last && <span aria-hidden="true" class="text-stone-400">›</span>}
+        </li>
+      );
+    })}
+  </ol>
+</nav>
+
+<style>
+  /* Touch: 44px hit areas (see global.css); rows sit flush so wrapped links never overlap. */
+  @media (pointer: coarse) {
+    ol {
+      row-gap: 0;
+    }
+
+    .breadcrumb-link {
+      display: inline-flex;
+      align-items: center;
+      min-width: 44px;
+      min-height: 44px;
+    }
+  }
+</style>

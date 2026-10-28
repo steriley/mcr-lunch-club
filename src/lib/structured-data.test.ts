@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import type { PublicVenue } from './public-data';
 import { serializeForScript } from './public-data';
-import { venueStructuredData } from './structured-data';
+import { breadcrumbStructuredData, venueStructuredData } from './structured-data';
 
 const venue: PublicVenue = {
   id: 'happy-seasons',
@@ -69,6 +69,33 @@ describe('venueStructuredData', () => {
 
   it('cannot close its script tag when a name contains markup', () => {
     const json = serializeForScript(venueStructuredData({ ...venue, name: '</script><script>alert(1)</script>' }, url));
+    assert.equal(json.includes('</script>'), false);
+  });
+});
+
+describe('breadcrumbStructuredData', () => {
+  const trail = [
+    { name: 'Map', href: '/' },
+    { name: 'Verdicts', href: '/verdicts/approved' },
+    { name: 'Approved', href: '/verdicts/approved' },
+    { name: 'Happy Seasons', href: '/venues/happy-seasons' },
+  ];
+
+  it('lists each step as a positioned ListItem with an absolute URL', () => {
+    assert.deepEqual(breadcrumbStructuredData(trail, url), {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Map', item: 'https://mcrlunchclub.com/' },
+        { '@type': 'ListItem', position: 2, name: 'Verdicts', item: 'https://mcrlunchclub.com/verdicts/approved' },
+        { '@type': 'ListItem', position: 3, name: 'Approved', item: 'https://mcrlunchclub.com/verdicts/approved' },
+        { '@type': 'ListItem', position: 4, name: 'Happy Seasons', item: 'https://mcrlunchclub.com/venues/happy-seasons' },
+      ],
+    });
+  });
+
+  it('cannot close its script tag when a name contains markup', () => {
+    const json = serializeForScript(breadcrumbStructuredData([{ name: '</script><script>alert(1)</script>', href: '/' }], url));
     assert.equal(json.includes('</script>'), false);
   });
 });

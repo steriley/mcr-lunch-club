@@ -4,9 +4,12 @@ import TierChip from '@/components/TierChip.vue';
 import BenchPillar from '@/components/BenchPillar.astro';
 import PageRibbon from '@/components/PageRibbon.astro';
 import Icon from '@/components/Icon.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import { getPublicInspections, getPublicVenues, type PublicVenue } from '@/lib/public-data';
 import { toCard } from '@/lib/sovereign-bench';
 import { sortByRecentInspection } from '@/lib/venue-order';
+import { breadcrumbStructuredData } from '@/lib/structured-data';
+import { serializeForScript } from '@/lib/public-data';
 import { TIERS, countVenuesByTier, type Tier } from '@/lib/tiers';
 import type { Inspection } from '@/types';
 
@@ -30,9 +33,15 @@ const { tier, publicVenues, inspections } = Astro.props;
 const venues = sortByRecentInspection(publicVenues.filter((venue) => venue.tier === tier.value), inspections);
 const cards = venues.map((venue) => toCard({ venue }, inspections));
 const tierCounts = countVenuesByTier(publicVenues);
+const breadcrumbs = [{ label: 'Map', href: '/' }, { label: 'Verdicts', href: '/verdicts/approved' }, { label: tier.label }];
+const breadcrumbData = breadcrumbStructuredData(
+  breadcrumbs.map(({ label, href }) => ({ name: label, href: href ?? `/verdicts/${tier.slug}` })),
+  new URL(`/verdicts/${tier.slug}`, Astro.site ?? Astro.url).href,
+);
 ---
 
 <Layout title={`${tier.label} Verdict — The Official Ledger Registry`} description={`${tier.label}: ${tier.description}`}>
+  <script slot="head" is:inline type="application/ld+json" set:html={serializeForScript(breadcrumbData)} />
   <PageRibbon
     icon={tier.icon}
     kicker="Official Verdict Classification"
@@ -61,6 +70,8 @@ const tierCounts = countVenuesByTier(publicVenues);
   </div>
 
   <div class="max-w-6xl mx-auto px-4 pt-8 pb-8 sm:pt-10 sm:pb-12 w-full space-y-8">
+    <Breadcrumbs items={breadcrumbs} />
+
     <!-- Approved Verdict Michelin Star Style Prize Banner -->
     {tier.value === 'approved' && (
       <div class="bg-deep text-parchment-fixed p-6 sm:p-7 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center gap-6 relative overflow-hidden">
