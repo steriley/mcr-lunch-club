@@ -164,7 +164,20 @@ describe('buildSovereignBench: inspections', () => {
       []
     );
     assert.equal(bench.hero?.inspectionCount, 0);
-    assert.equal(bench.hero?.lastInspection, null);
+    assert.notEqual(bench.hero?.lastInspection, '1st Jun 26');
+  });
+
+  it('says what a venue with no inspection is waiting on, by tier', () => {
+    const expected = {
+      approved: 'Legacy',
+      under_consideration: 'Legacy',
+      to_be_assessed: 'Awaiting',
+      rejected: null,
+    } as const;
+    for (const [tier, label] of Object.entries(expected)) {
+      const bench = buildSovereignBench([pick('a', {}, { tier: tier as 'approved' })], [], []);
+      assert.equal(bench.hero?.lastInspection, label, tier);
+    }
   });
 });
 

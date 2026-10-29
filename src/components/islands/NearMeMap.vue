@@ -200,6 +200,8 @@ const nearMeHistory = useNearMeHistory(isOpen);
 const isFollowingUser = ref<boolean>(true);
 const isPickingLocation = ref<boolean>(false);
 const selectedVenueId = ref<string | null>(null);
+// Where the selection came from: a pin shows it as "Your selection"; a list row is highlighted where it sits.
+const selectedFromPin = ref(false);
 const hasFittedFirstFix = ref<boolean>(false);
 const isInteractingWithList = ref<boolean>(false);
 let interactionTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -250,8 +252,10 @@ const nearestVenue = computed(() => (rankedVenues.value.length > 0 ? rankedVenue
 // The nearest venue is the hero card, so the list carries the rest.
 const listVenues = computed(() => rankedVenues.value.slice(1));
 
-// The selected venue, with its place in the ranking (null while nothing is selected).
+// The venue picked on the map, with its place in the ranking (null while nothing is selected, or when
+// the pick was a list row, which is highlighted in place instead).
 const selection = computed(() => {
+  if (!selectedFromPin.value) return null;
   const index = rankedVenues.value.findIndex((rv) => rv.venue.id === selectedVenueId.value);
   if (index >= 0)
     return {
@@ -367,6 +371,7 @@ function clearSelection() {
 // Select a venue item from list or pin click
 function selectVenueItem(venue: Venue, fromPinClick = false) {
   selectedVenueId.value = venue.id;
+  selectedFromPin.value = fromPinClick;
   // Choosing a venue overrides following the user, so a position update doesn't pull the
   // map back. Recentre on me (or a manual pick) switches following back on.
   isFollowingUser.value = false;

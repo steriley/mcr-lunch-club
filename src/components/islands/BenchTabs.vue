@@ -20,9 +20,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $filteredVenues } from '@/stores/filters';
+import { $mapSelection } from '@/stores/results';
 
 /**
  * The bench panel's two views: the Chairs' Golden Cut (the page's default) and every venue the
@@ -56,6 +57,7 @@ function apply(id: TabId) {
 }
 
 function select(id: TabId, focus = false) {
+  switchedByMap = false;
   apply(id);
   if (focus) document.getElementById(`bench-tab-${id}`)?.focus();
 }
@@ -77,6 +79,21 @@ function onKeydown(event: KeyboardEvent) {
   event.preventDefault();
   select(tabs[target].id, true);
 }
+
+// Picking a pin on the map opens the list; clearing it returns to the Golden Cut, but only if the pin is what
+// moved us there (someone browsing "All venues" by choice stays put).
+let switchedByMap = false;
+const mapSelection = useStore($mapSelection);
+watch(mapSelection, (current) => {
+  if (current) {
+    if (current.source !== 'map' || selected.value === 'all') return;
+    apply('all');
+    switchedByMap = true;
+  } else if (switchedByMap) {
+    apply('golden');
+    switchedByMap = false;
+  }
+});
 
 // The skip link on the map asks for the list.
 const onShowResults = () => select('all');

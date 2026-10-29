@@ -67,7 +67,7 @@
             :inspections="inspections"
             selectable
             show-tier
-            :details-href="`/venues/${venue.slug}`"
+            :show-details="false"
             :selected="selection?.id === venue.id"
             @select="selectMapVenue(venue.id, 'list')"
             @mouseenter="setHoveredVenue(venue.id)"
