@@ -1,5 +1,6 @@
 <template>
   <FieldPanel
+    class="is-link"
     title="Chairs' Deliberation"
     @mouseenter="paused = true"
     @mouseleave="paused = false"

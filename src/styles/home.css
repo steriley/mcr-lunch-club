@@ -848,6 +848,7 @@ a.bench-details {
 @media (prefers-reduced-motion: reduce) {
   .bench-hero,
   .bench-hero-link,
+  .field-panel.is-link,
   .bench-tab,
   .venue-results-chevron {
     transition: none;
@@ -1056,6 +1057,38 @@ a.bench-details {
   text-decoration: underline;
   text-decoration-color: var(--ledger-gold);
   text-underline-offset: 3px;
+}
+
+/* Chairs' Deliberation: the whole card is the Codex link, with the venue cards' hover and focus ring. */
+.field-panel.is-link {
+  position: relative;
+  transition: border-color 160ms ease;
+}
+
+.field-panel.is-link:hover {
+  border-color: color-mix(in srgb, var(--color-navy) 45%, var(--ledger-border));
+}
+
+.field-panel.is-link .field-panel-footer a::after {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  content: '';
+}
+
+.field-panel.is-link:hover .field-panel-footer a {
+  text-decoration: underline;
+  text-decoration-color: var(--ledger-gold);
+  text-underline-offset: 3px;
+}
+
+.field-panel.is-link .field-panel-footer a:focus-visible {
+  outline: none;
+}
+
+.field-panel.is-link .field-panel-footer a:focus-visible::after {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
 }
 
 .field-panel-time {

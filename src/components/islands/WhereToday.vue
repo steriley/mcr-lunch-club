@@ -105,6 +105,11 @@
 
         <!-- The Result Card: the whole card links to the venue's page -->
         <div v-if="pickedVenue" class="oracle-result animate-in zoom-in-95 duration-200">
+          <span
+            v-if="pickedVenue.tier === 'approved'"
+            class="oracle-sticker"
+            aria-hidden="true"
+          ></span>
           <div class="flex items-center justify-between border-b border-hairline pb-2 mb-3">
             <span class="oracle-label !mb-0">The Oracle Decrees</span>
             <span class="text-sm font-bold text-ochre">{{ pickedVenue.cost }}</span>
@@ -118,16 +123,10 @@
                 >{{ pickedVenue.name }}</a
               >
             </h3>
-            <img
-              v-if="pickedVenue.tier === 'approved'"
-              src="/brand/approved-sticker-256.webp"
-              width="256"
-              height="256"
-              alt="MCR Lunch Club Approved"
-              class="w-6 h-6 object-contain inline-block shrink-0"
-              title="Official MCR Lunch Club Approved Prize Winner"
-            />
           </div>
+          <p v-if="pickedCard?.lastInspection" class="bench-last mt-1">
+            Last Inspection: {{ pickedCard.lastInspection }}
+          </p>
           <div class="mt-2">
             <span
               class="venue-tier-badge"
@@ -136,9 +135,9 @@
             >
           </div>
 
-          <div v-if="pickedWalk" class="bench-telemetry mt-3">
+          <div v-if="pickedCard" class="bench-telemetry mt-3">
             <a
-              v-if="pickedWalk.url"
+              v-if="pickedWalk?.url"
               class="bench-walk is-link"
               :href="pickedWalk.url"
               target="_blank"
@@ -148,10 +147,11 @@
               <Icon name="directions_walk" />
               {{ pickedWalk.label }}
             </a>
-            <span v-else class="bench-walk">
+            <span v-else-if="pickedWalk" class="bench-walk">
               <Icon name="directions_walk" />
               {{ pickedWalk.label }}
             </span>
+            <span class="bench-count ml-auto">{{ inspectionCountLabel(pickedCard) }}</span>
           </div>
         </div>
 
@@ -168,17 +168,18 @@ import Icon from '@/components/Icon.vue';
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $isWhereTodayOpen, closeWhereToday } from '@/stores/filters';
-import { $venuesList } from '@/stores/ledger';
+import { $inspectionsList, $venuesList } from '@/stores/ledger';
 import { formatDate } from '@/lib/dates';
 import { getWalkingDirectionsUrl } from '@/lib/map/directions';
 import { oraclePool, type OracleBudget } from '@/lib/oracle';
 import type { PublicVenue } from '@/lib/public-data';
-import { toCard } from '@/lib/sovereign-bench';
+import { inspectionCountLabel, toCard } from '@/lib/sovereign-bench';
 import { tierInfo } from '@/lib/tiers';
-import type { Venue } from '@/types';
+import type { Inspection, Venue } from '@/types';
 
 const isOpen = useStore($isWhereTodayOpen);
 const venuesList = useStore($venuesList);
+const inspectionsList = useStore($inspectionsList);
 
 // Starts on the full expedition (the longest walk), so the Oracle draws from the widest field.
 const selectedTime = ref<number>(25);
@@ -188,15 +189,20 @@ const hasRolled = ref<boolean>(false);
 const pickedVenue = ref<Venue | null>(null);
 const closeButton = ref<HTMLButtonElement | null>(null);
 
-// The same walk line the venue cards use: icon, time and distance from HQ, linking to directions.
-const pickedWalk = computed(() => {
+// The same card model the venue cards use: last inspection, inspection count and walk line.
+const pickedCard = computed(() => {
   const venue = pickedVenue.value;
   if (!venue) return null;
-  const { walk } = toCard(
+  return toCard(
     { venue: { ...venue, image: venue.image ?? null, closed: false } as PublicVenue },
-    []
+    inspectionsList.value as Inspection[]
   );
-  if (walk === null) return null; // route pending: no walk row, as on the other cards
+});
+
+const pickedWalk = computed(() => {
+  const venue = pickedVenue.value;
+  const walk = pickedCard.value?.walk;
+  if (!venue || !walk) return null; // route pending: no walk row, as on the other cards
   return {
     label: walk.label,
     url:
@@ -379,6 +385,7 @@ function consultOracle() {
 /* The result card: the venue name is a stretched link, so the whole card opens the dossier. */
 .oracle-result {
   position: relative;
+  isolation: isolate;
   padding: 16px;
   border: 1px solid var(--color-hairline);
   border-radius: 12px;
@@ -387,6 +394,28 @@ function consultOracle() {
   transition:
     border-color 140ms ease,
     box-shadow 140ms ease;
+}
+
+/* Approved: the sticker sits tilted and faint behind the card's right side, clipped by its edge. */
+.oracle-sticker {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: 11px;
+  pointer-events: none;
+}
+
+.oracle-sticker::before {
+  position: absolute;
+  top: 50%;
+  right: -48px;
+  width: 190px;
+  height: 190px;
+  background: url('/brand/approved-sticker-256.webp') center / contain no-repeat;
+  content: '';
+  opacity: 0.05;
+  transform: translateY(-50%) rotate(-25deg);
 }
 
 .oracle-result:hover {
