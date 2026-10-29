@@ -23,7 +23,10 @@ export interface BenchCard {
   cost: CostTier;
   /** The venue's primary photo; null when it has none (the card shows the crest placeholder). */
   image: PublicImage | null;
-  /** The newest confirmed inspection, formatted; null when there is none. */
+  /**
+   * The newest confirmed inspection, formatted. With none: "Awaiting" for To Be Assessed, "Legacy" for
+   * Approved and Under Consideration, and null for every other tier.
+   */
   lastInspection: string | null;
   /** Confirmed inspections (verified + legacy). */
   inspectionCount: number;
@@ -67,6 +70,12 @@ function walkFor(venue: PublicVenue): BenchWalk | null {
   return { label, lat, lng, directionsUrl: getWalkingDirectionsUrl(lat, lng, 'server') };
 }
 
+function lastInspectionFor(tier: PublicVenue['tier'], newest: string | null): string | null {
+  if (newest !== null) return formatDate(newest);
+  if (tier === 'to_be_assessed') return 'Awaiting';
+  return tier === 'approved' || tier === 'under_consideration' ? 'Legacy' : null;
+}
+
 export function toCard(pick: Pick, inspections: Inspection[]): BenchCard {
   const { venue } = pick;
   const own = inspections.filter((inspection) => inspection.venueSlug === venue.slug);
@@ -81,7 +90,7 @@ export function toCard(pick: Pick, inspections: Inspection[]): BenchCard {
     href: `/venues/${venue.slug}`,
     cost: venue.cost,
     image: venue.image ?? null,
-    lastInspection: newest === null ? null : formatDate(newest),
+    lastInspection: lastInspectionFor(venue.tier, newest),
     inspectionCount: own.length,
     walk: walkFor(venue),
     quote: clean(pick.puffPiece),
@@ -101,10 +110,10 @@ export function cardBlurb(card: {
   return null;
 }
 
-/** "1 Inspection" / "3 Inspections"; null when the venue has none. */
-export function inspectionCountLabel(card: { inspectionCount: number }): string | null {
+/** "0 Inspections" / "1 Inspection" / "3 Inspections". */
+export function inspectionCountLabel(card: { inspectionCount: number }): string {
   const { inspectionCount: n } = card;
-  return n > 0 ? `${n} ${n === 1 ? 'Inspection' : 'Inspections'}` : null;
+  return `${n} ${n === 1 ? 'Inspection' : 'Inspections'}`;
 }
 
 /**

@@ -14,6 +14,7 @@
       :walk-label="selection.rv ? rowWalkLabel(selection.rv) : undefined"
       :walk-url="selection.rv ? rowWalkUrl(selection.rv) : undefined"
       show-tier
+      selected
     />
   </div>
 
@@ -41,7 +42,8 @@
       :walk-url="rowWalkUrl(nearest)"
       selectable
       show-tier
-      :selected="selectedVenueId === nearest.venue.id"
+      :show-details="false"
+      :selected="!selection && selectedVenueId === nearest.venue.id"
       @select="emit('select', nearest.venue)"
       @details="emit('details', nearest.venue)"
     />
@@ -81,7 +83,8 @@
         :walk-url="rowWalkUrl(rv)"
         selectable
         show-tier
-        :selected="selectedVenueId === rv.venue.id"
+        :show-details="false"
+        :selected="!selection && selectedVenueId === rv.venue.id"
         @select="emit('select', rv.venue)"
         @details="emit('details', rv.venue)"
       />

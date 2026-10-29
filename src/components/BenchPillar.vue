@@ -165,7 +165,7 @@ function markBroken(event: Event) {
       >
         Details
       </button>
-      <span v-else-if="countLabel" class="bench-count">{{ countLabel }}</span>
+      <span v-else class="bench-count">{{ countLabel }}</span>
     </div>
   </article>
 </template>
