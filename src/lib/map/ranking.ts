@@ -25,7 +25,7 @@ export interface RankVenuesOptions {
 /**
  * Official Central Manchester 2.5-Mile jurisdictional perimeter in metres.
  */
-export const DEFAULT_NEARBY_THRESHOLD_METRES = 4023; // 2.5 miles
+const DEFAULT_NEARBY_THRESHOLD_METRES = 4023; // 2.5 miles
 
 /**
  * Threshold for origin movement before recomputing ranking (anti-flicker).

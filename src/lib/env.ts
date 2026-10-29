@@ -85,7 +85,7 @@ export function getDatabaseDriver(): DatabaseDriver {
 }
 
 /** True on a Vercel Preview Deployment (VERCEL_ENV is a Vercel system variable). */
-export function isVercelPreview(): boolean {
+function isVercelPreview(): boolean {
   return env.VERCEL_ENV === 'preview';
 }
 

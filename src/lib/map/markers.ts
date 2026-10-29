@@ -65,7 +65,7 @@ export function createVenueIcon(L: any, venue: Venue, rank?: number): any {
 }
 
 /** Width and height of a cluster marker, in px. */
-export const CLUSTER_ICON_SIZE = 44;
+const CLUSTER_ICON_SIZE = 44;
 
 /**
  * The HTML for a cluster marker: the venue count inside a ring split by tier

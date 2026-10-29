@@ -17,7 +17,7 @@ export interface LegacyEntry {
 }
 
 /** Names that differ between the Chairs' list and the database: normalised list name -> normalised database name. */
-export const LEGACY_NAME_ALIASES: Record<string, string> = {
+const LEGACY_NAME_ALIASES: Record<string, string> = {
   wingstop: 'wing stop',
 };
 

@@ -6,7 +6,7 @@
  */
 
 /** The roles allowed into the Chairs' Area. */
-export const ADMIN_ROLES = ['admin'];
+const ADMIN_ROLES = ['admin'];
 
 export function hasAdminRole(role: string | null | undefined): boolean {
   return String(role ?? '')

@@ -7,7 +7,7 @@ import { requestRebuild } from '@/lib/rebuild';
 import { hasAdminRole, isBanned } from '@/lib/roles';
 import type { Actor } from '@/lib/venue-events';
 
-export { ADMIN_ROLES, hasAdminRole, isBanned } from '@/lib/roles';
+export { hasAdminRole, isBanned } from '@/lib/roles';
 export { isUniqueViolation } from '@/lib/db-errors';
 
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);

@@ -16,7 +16,7 @@ const optionalText = (max: number, label: string) =>
     z.string().trim().max(max, `${label} must be ${max} characters or fewer.`).nullable()
   );
 
-export const goldenCutEntrySchema = z.object({
+const goldenCutEntrySchema = z.object({
   venueId: z.uuid('Choose a venue.'),
   puffPiece: optionalText(PUFF_PIECE_MAX, 'Puff piece'),
   anchorDish: optionalText(ANCHOR_DISH_MAX, 'Anchor dish'),

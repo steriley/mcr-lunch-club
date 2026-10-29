@@ -10,5 +10,3 @@ const client = createDatabase({
 });
 
 export const db = client.db;
-
-export default db;

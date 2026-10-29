@@ -20,11 +20,11 @@ import type { LatLng } from '@/lib/map/ranking';
  * quota is spent, so callers stop rather than retry in a loop.
  */
 
-export const ORS_BASE_URL = 'https://api.openrouteservice.org';
-export const ORS_TIMEOUT_MS = 8000;
-export const MAX_PLACE_RESULTS = 5;
+const ORS_BASE_URL = 'https://api.openrouteservice.org';
+const ORS_TIMEOUT_MS = 8000;
+const MAX_PLACE_RESULTS = 5;
 /** Search radius around HQ that covers Greater Manchester. */
-export const SEARCH_RADIUS_KM = 25;
+const SEARCH_RADIUS_KM = 25;
 
 const METRES_PER_MILE = 1609.344;
 

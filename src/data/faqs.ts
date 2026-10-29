@@ -3,18 +3,18 @@
  * strings that may carry <strong>, <em> and <a>; the page renders them with set:html.
  */
 
-export interface FaqQuote {
+interface FaqQuote {
   text: string;
   /** The Chair it is credited to, e.g. "The Chair of Finality". */
   chair: string;
 }
 
-export interface FaqTable {
+interface FaqTable {
   head: string[];
   rows: string[][];
 }
 
-export interface FaqItem {
+interface FaqItem {
   q: string;
   /** Paragraphs of the answer. */
   a: string[];
