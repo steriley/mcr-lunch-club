@@ -219,7 +219,7 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
       });
     </script>
     <script>
-      // "About the ledger" is a disclosure on phones and always open from 640px up.
+      // "About the ledger" is hidden on phones and always open from 640px up.
       const wide = window.matchMedia('(min-width: 640px)');
       const syncAbout = () => {
         document.querySelectorAll<HTMLDetailsElement>('.footer-about').forEach((about) => {
