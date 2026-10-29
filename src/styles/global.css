@@ -849,7 +849,7 @@
   }
 }
 
-/* Phones: creed, links, theme toggle and one legal line; the rest sits behind "About the ledger". */
+/* Phones: creed, links, theme toggle and one legal line; "About the ledger" is left out. */
 @media (max-width: 639px) {
   .site-footer {
     padding-block: 20px;
@@ -879,10 +879,8 @@
     margin-top: 4px;
   }
 
-  .footer-about > summary {
-    display: flex;
-    align-items: center;
-    min-height: 44px;
+  .footer-about {
+    display: none;
   }
 }
 
