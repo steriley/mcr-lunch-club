@@ -345,10 +345,10 @@ function truncate(text: string, max: number): string {
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-bold tracking-tight text-ink flex items-center gap-2">
             <Icon name="clipboard" class="icon-md" />
-            <span>Chronological Inspection Ledger</span>
+            <span>Inspection Ledger</span>
           </h2>
-          <span class="text-xs font-sans tabular-nums text-dim bg-neutral-wash px-2 py-0.5 rounded">
-            {venueInspections.length} recorded visits
+          <span class="bench-count shrink-0 whitespace-nowrap">
+            {venueInspections.length} {venueInspections.length === 1 ? 'Inspection' : 'Inspections'}
           </span>
         </div>
 
@@ -362,7 +362,7 @@ function truncate(text: string, max: number): string {
             {venueInspections.map((insp) => (
               <div class="px-4 py-2.5 rounded-xl bg-surface border border-hairline shadow-xs">
                 <div class="flex items-center justify-between gap-2">
-                  <span class="font-sans tabular-nums text-xs font-bold text-ink-soft">
+                  <span class="font-sans tabular-nums text-xs font-bold text-ink-soft whitespace-nowrap">
                     {formatDate(insp.date)}
                   </span>
                   <div class="flex items-center gap-1.5">
@@ -373,11 +373,11 @@ function truncate(text: string, max: number): string {
                         {INSPECTION_OUTCOME_LABELS[insp.outcome]}
                       </span>
                     )}
-                    <span
-                      class={`px-2 py-0.5 rounded text-xs font-bold uppercase font-sans tabular-nums ${insp.kind === 'verified' ? 'bg-success-wash text-success-ink border border-success/40' : 'bg-neutral-wash text-graphite border border-neutral-edge'}`}
-                    >
-                      {INSPECTION_KIND_LABELS[insp.kind]}
-                    </span>
+                    {insp.kind === 'legacy' && (
+                      <span class="px-2 py-0.5 rounded text-xs font-bold uppercase font-sans tabular-nums bg-neutral-wash text-graphite border border-neutral-edge">
+                        {INSPECTION_KIND_LABELS[insp.kind]}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
