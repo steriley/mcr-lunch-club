@@ -97,7 +97,7 @@ export const TIERS: readonly Tier[] = [
     border: 'var(--color-tier-to-be-assessed-edge)',
     tint: 'var(--color-tier-to-be-assessed-tint)',
     bannerClass: 'bg-tier-to-be-assessed',
-    icon: 'scroll',
+    icon: 'help',
     glyph: 'M9.3 9.2a2.9 2.9 0 1 1 4.1 2.6c-.9.5-1.4 1.1-1.4 2.2M12 17.6h.01',
     quote: 'Entered the Field of Vision — Fate remains undecided pending inspection',
     motto: 'Entered the Lunch Club’s Field of Vision',
@@ -129,7 +129,7 @@ export const TIERS: readonly Tier[] = [
     border: 'var(--color-tier-rejected-edge)',
     tint: 'var(--color-tier-rejected-tint)',
     bannerClass: 'bg-tier-rejected',
-    icon: 'ban',
+    icon: 'cancel',
     glyph: 'M7 7l10 10M17 7L7 17',
     quote:
       'Removed from the Sacred Lunch Rotation — Returnable only through exceptional redemption',

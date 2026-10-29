@@ -4,9 +4,11 @@ import { iconShape, STROKE_ICON_PATHS, type IconName } from './icons';
 
 const FILLED: IconName[] = [
   'award_star',
+  'cancel',
   'directions_walk',
   'explore',
   'fact_check',
+  'help',
   'history_edu',
   'military_tech',
   'my_location',
