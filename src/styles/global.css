@@ -193,6 +193,15 @@
     font-size: 40px;
   }
 }
+/* A verdict's own icon in its banner: twice the size of the page banners' icon. */
+.icon-banner-tier {
+  font-size: 64px;
+}
+@media (min-width: 640px) {
+  .icon-banner-tier {
+    font-size: 80px;
+  }
+}
 
 .nav-icon {
   flex: none;

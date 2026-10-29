@@ -6,6 +6,8 @@ type QuoteLine = string | { text: string; /** Set in the brand orange. */ accent
 
 interface Props {
   icon: IconName;
+  /** Size class for the icon. */
+  iconClass?: string;
   /** Small uppercase label above the title. */
   kicker: string;
   title: string;
@@ -21,6 +23,7 @@ interface Props {
 
 const {
   icon,
+  iconClass = 'icon-banner',
   kicker,
   title,
   quote,
@@ -44,7 +47,7 @@ const onTier = bannerClass !== 'bg-deep';
   <div class={`${width} mx-auto px-4 w-full`}>
     <div class="p-6 sm:p-8 space-y-4">
       <div class="flex items-center gap-3">
-        <Icon name={icon} class="icon-banner" />
+        <Icon name={icon} class={iconClass} />
         <div>
           <span
             class={`text-xs uppercase tracking-widest font-bold ${onTier ? 'text-parchment-fixed' : 'text-gold'}`}
