@@ -354,7 +354,9 @@
 @media (prefers-reduced-motion: reduce) {
   .mobile-menu-panel,
   .mobile-menu-trigger,
-  .mobile-menu-bars {
+  .mobile-menu-bars,
+  .bench-pillar,
+  .bench-pillar-link {
     transition: none;
   }
 }
@@ -539,6 +541,7 @@
   border: 1px solid var(--ledger-border);
   border-radius: 12px;
   color: var(--ledger-ink);
+  transition: border-color 160ms ease;
 }
 
 .bench-pillar {
@@ -548,13 +551,14 @@
 }
 
 .bench-pillar:hover {
-  border-color: var(--color-navy);
+  border-color: color-mix(in srgb, var(--color-navy) 35%, var(--ledger-border));
 }
 
 /* The overlay makes the whole card the click target; the walk link and seal sit above it. */
 .bench-pillar-link {
   color: inherit;
   text-decoration: none;
+  transition: color 160ms ease;
 }
 
 .bench-pillar-link::after {
