@@ -13,7 +13,7 @@ interface Props {
 const { items } = Astro.props;
 ---
 
-<nav aria-label="Breadcrumb" class="text-xs font-sans">
+<nav aria-label="Breadcrumb" class="mb-3 text-xs font-sans">
   <ol class="flex flex-wrap items-center gap-x-2 gap-y-1">
     {items.map((item, index) => {
       const last = index === items.length - 1;
