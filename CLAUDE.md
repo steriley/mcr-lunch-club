@@ -32,7 +32,7 @@ pnpm check:built     # browser smoke test of the real build output
 ## Before you push
 
 ```bash
-pnpm lint && pnpm format:check && pnpm test && pnpm typecheck && pnpm test:db     # test:db reads TEST_DATABASE_URL from .env.local
+pnpm lint && pnpm format:check && pnpm knip && pnpm test && pnpm typecheck && pnpm test:db     # test:db reads TEST_DATABASE_URL from .env.local
 pnpm build && pnpm check:bundle && pnpm check:built
 ```
 

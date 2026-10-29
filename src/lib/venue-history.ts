@@ -16,9 +16,9 @@ import { listVenueRevisions } from '@/lib/venues';
  * drawer. Admin-only: motions carry decline reasons.
  */
 
-export type TimelineKind = 'amendment' | 'motion' | 'inspection' | 'event';
+type TimelineKind = 'amendment' | 'motion' | 'inspection' | 'event';
 
-export interface FieldChange {
+interface FieldChange {
   field: string;
   from: string;
   to: string;

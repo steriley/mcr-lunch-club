@@ -15,5 +15,3 @@ const client = createDatabase({
 export const db = client.db;
 export const driver = client.driver;
 export const closeDatabase = client.close;
-
-export default db;

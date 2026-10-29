@@ -158,7 +158,7 @@ export function nameLabelText(venue: Pick<Venue, 'name' | 'cost'>): string {
 }
 
 /** The widest a name label grows before it is cut short with an ellipsis. */
-export const NAME_MAX_WIDTH_PX = 176;
+const NAME_MAX_WIDTH_PX = 176;
 const LABEL_SIDE_PADDING_PX = 6;
 const FALLBACK_CHAR_PX = 6.6;
 

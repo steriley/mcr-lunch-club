@@ -44,7 +44,7 @@ const optionalUrl = (label: string) =>
       .nullable()
   );
 
-export const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const venueFields = z.object({
   name: z

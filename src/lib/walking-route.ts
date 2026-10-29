@@ -39,7 +39,7 @@ type RouteLookup = (to: LatLng) => Promise<WalkingRoute>;
 const NO_ROUTE: RouteValues = { distanceMiles: null, walkingTimeMin: null, routeUpdatedAt: null };
 
 /** Coordinates as stored (numeric(9,6)), so edits compare like for like. */
-export function storedCoordinate(value: number): string {
+function storedCoordinate(value: number): string {
   return value.toFixed(6);
 }
 

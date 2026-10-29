@@ -15,7 +15,7 @@ import type { Inspection } from '@/types';
 const DAY_MS = 86_400_000;
 
 /** A Tuesday-pool venue that has been inspected is treated as this many days staler when it is Under Consideration. */
-export const UNDER_CONSIDERATION_BONUS_DAYS = 60;
+const UNDER_CONSIDERATION_BONUS_DAYS = 60;
 
 /** When a venue last entered a tier, from its latest approved tier proposal. */
 export interface TierEntry {
@@ -61,7 +61,7 @@ function seededRandom(seed: string): () => number {
  * Oldest first. Undated venues are all "oldest": one of them is chosen at
  * random (seeded), ahead of every dated venue. Ties go to the earlier slug.
  */
-export function pickOldest(pool: Ranked[], seed: string): PublicVenue | null {
+function pickOldest(pool: Ranked[], seed: string): PublicVenue | null {
   if (pool.length === 0) return null;
   const undated = pool
     .filter((entry) => entry.days === null)
@@ -139,7 +139,7 @@ export function pickSummons(
  * Earlier issues have no picks, so the replay in `summonsFor` starts here: a
  * fixed start keeps every week's derivation consistent with the week before.
  */
-export const FIRST_SUMMONS_ISSUE = new Date('2026-10-28T23:59:00Z');
+const FIRST_SUMMONS_ISSUE = new Date('2026-10-28T23:59:00Z');
 
 /**
  * The picks for `issue`. A venue picked in the previous issue is skipped.

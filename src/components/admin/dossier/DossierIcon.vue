@@ -1,6 +1,6 @@
 <script lang="ts">
 /** Line icons for the venue dossier (Lucide-style, 24px grid), inlined so no icon font loads. */
-export const PATHS = {
+const PATHS = {
   building: [
     'M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z',
     'M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2',

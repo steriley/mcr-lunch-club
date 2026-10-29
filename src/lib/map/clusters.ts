@@ -24,7 +24,7 @@ const PIN_LIFT_PX = 16;
 
 const TILE_PX = 256;
 
-export interface VenueItem {
+interface VenueItem {
   kind: 'venue';
   venue: Venue;
 }

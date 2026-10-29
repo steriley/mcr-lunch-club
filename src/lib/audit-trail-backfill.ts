@@ -23,7 +23,7 @@ import type { InspectionOutcome } from '@/types';
  * nothing: an unknown venue or Chair aborts without writing.
  */
 
-export interface BackfillInspection {
+interface BackfillInspection {
   venue: string;
   date: string;
   outcome: InspectionOutcome;
@@ -31,12 +31,12 @@ export interface BackfillInspection {
   move?: string;
 }
 
-export interface BackfillAddedDate {
+interface BackfillAddedDate {
   venue: string;
   date: string;
 }
 
-export interface BackfillClosure {
+interface BackfillClosure {
   venue: string;
   date: string;
   fromTier: TierValue;

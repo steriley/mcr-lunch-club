@@ -9,10 +9,10 @@
 export type Theme = 'light' | 'dark';
 export type ThemePreference = Theme | 'system';
 
-export const THEME_STORAGE_KEY = 'mcr-theme';
+const THEME_STORAGE_KEY = 'mcr-theme';
 export const THEME_CHANGE_EVENT = 'mcr:themechange';
 
-export function isTheme(value: unknown): value is Theme {
+function isTheme(value: unknown): value is Theme {
   return value === 'light' || value === 'dark';
 }
 

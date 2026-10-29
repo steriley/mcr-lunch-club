@@ -1,6 +1,6 @@
 // Material Symbols Outlined (weight 400, 24px, Apache 2.0) paths for the icons the site uses.
 // Shared by Icon.astro and Icon.vue; every path is drawn on a 960x960 box with its origin at y=-960.
-export const ICON_PATHS = {
+const ICON_PATHS = {
   award_star:
     'm363-310 117-71 117 71-31-133 104-90-137-11-53-126-53 126-137 11 104 90-31 133ZM481-29 346-160H160v-186L26-480l134-134v-186h186l135-134 133 134h186v186l134 134-134 134v186H614L481-29Zm0-84 108-107h151v-151l109-109-109-109v-151H589L481-849 371-740H220v151L111-480l109 109v151h150l111 107Zm-1-368Z',
   directions_walk:
@@ -60,10 +60,10 @@ export const STROKE_ICON_PATHS = {
 
 export type IconName = keyof typeof ICON_PATHS | keyof typeof STROKE_ICON_PATHS;
 
-export const ICON_VIEWBOX = '0 -960 960 960';
-export const STROKE_ICON_VIEWBOX = '0 0 24 24';
+const ICON_VIEWBOX = '0 -960 960 960';
+const STROKE_ICON_VIEWBOX = '0 0 24 24';
 
-export function isStrokeIcon(name: IconName): name is keyof typeof STROKE_ICON_PATHS {
+function isStrokeIcon(name: IconName): name is keyof typeof STROKE_ICON_PATHS {
   return name in STROKE_ICON_PATHS;
 }
 

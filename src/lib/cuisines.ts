@@ -85,7 +85,7 @@ export const LEGACY_CUISINE_MAP: Readonly<Record<string, CuisineValue>> = {
 };
 
 /** Normalises a legacy cuisine for lookup: `&amp;` becomes `&`, curly quotes go straight, trimmed, lower case. */
-export function normaliseLegacyCuisine(raw: string): string {
+function normaliseLegacyCuisine(raw: string): string {
   return raw
     .replace(/&amp;/gi, '&')
     .replace(/[‘’]/g, "'")

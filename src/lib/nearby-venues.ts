@@ -3,13 +3,9 @@ import type { PublicVenue } from '@/lib/public-data';
 import type { TierValue } from '@/lib/tiers';
 
 /** Tiers worth suggesting as an alternative. */
-export const NEARBY_TIERS: readonly TierValue[] = [
-  'approved',
-  'under_consideration',
-  'to_be_assessed',
-];
+const NEARBY_TIERS: readonly TierValue[] = ['approved', 'under_consideration', 'to_be_assessed'];
 
-export const NEARBY_LIMIT = 3;
+const NEARBY_LIMIT = 3;
 
 /**
  * Up to `limit` other open venues in a suggestable tier, nearest first by

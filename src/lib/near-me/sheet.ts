@@ -5,7 +5,7 @@ export type SheetSnap = 'collapsed' | 'half' | 'full';
 export const DESKTOP_MIN_WIDTH = 1024;
 
 /** How far a swipe on the handle must travel to change the sheet's height. */
-export const SHEET_SWIPE_PX = 35;
+const SHEET_SWIPE_PX = 35;
 
 const COLLAPSED_PX = 140;
 // Shares of the viewport; sheetHeightCss spells the same heights as 54dvh and 86dvh.

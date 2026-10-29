@@ -7,7 +7,7 @@ import { getAuthEnvironment, isProduction } from '@/lib/env';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-policy';
 
 /** Session lifetime and sliding refresh, in seconds. Change here only. */
-export const SESSION_SETTINGS = {
+const SESSION_SETTINGS = {
   expiresIn: 60 * 60 * 24 * 7,
   updateAge: 60 * 60 * 24,
 };
