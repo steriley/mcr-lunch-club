@@ -4,10 +4,10 @@
  * tested on its own.
  */
 
-export interface LatLng {
-  lat: number;
-  lng: number;
-}
+import { WALKING_ISOCHRONES } from './config';
+import { haversineMetres, type LatLng } from './ranking';
+
+export type { LatLng };
 
 export interface FrameOptions {
   /** The map's size in px. */
@@ -85,4 +85,32 @@ export function anyOutsideView(points: readonly LatLng[], view: ViewBounds): boo
       point.lng < view.west ||
       point.lng > view.east
   );
+}
+
+/** A map narrower than this (its measured width, not a media query) frames the core of the venues, not all of them. */
+export const NARROW_MAP_MAX_WIDTH = 640;
+
+/** The outer walking ring: the venues inside it are the core of a narrow map's first view. */
+const CORE_RING_METRES = WALKING_ISOCHRONES.find((ring) => ring.shortLabel === '25 min')!.radius;
+/** Fewer matches than this inside the ring and the core is the nearest few instead. */
+const CORE_MIN_INSIDE_RING = 5;
+const CORE_NEAREST_COUNT = 8;
+
+/**
+ * The venues a narrow map frames: those within the 25-minute ring around `base`. When fewer than
+ * five are, the eight nearest instead, so outliers alone still get framed. Never empty for any venues.
+ */
+export function coreVenues<T extends LatLng>(venues: readonly T[], base: LatLng): T[] {
+  const byDistance = venues
+    .map((venue) => ({ venue, metres: haversineMetres(base, venue) }))
+    .sort((a, b) => a.metres - b.metres);
+  const inside = byDistance.filter((entry) => entry.metres <= CORE_RING_METRES);
+  const chosen =
+    inside.length >= CORE_MIN_INSIDE_RING ? inside : byDistance.slice(0, CORE_NEAREST_COUNT);
+  return chosen.map((entry) => entry.venue);
+}
+
+/** How many points lie outside the map's current view. */
+export function countOutsideView(points: readonly LatLng[], view: ViewBounds): number {
+  return points.filter((point) => anyOutsideView([point], view)).length;
 }

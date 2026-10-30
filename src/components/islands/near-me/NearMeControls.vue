@@ -116,7 +116,10 @@ const emit = defineEmits<{ recenter: []; home: []; pick: [] }>();
 
 @media (max-width: 1023px) {
   .near-me-controls-cluster {
-    bottom: calc(var(--sheet-current-height, 140px) + 14px);
+    /* The attribution line runs along the top of the sheet: keep the lowest button above it. */
+    bottom: calc(
+      var(--sheet-current-height, 140px) + 14px + var(--near-me-attribution-clearance, 26px)
+    );
   }
 
   .near-me-controls-cluster.is-hidden-on-mobile {

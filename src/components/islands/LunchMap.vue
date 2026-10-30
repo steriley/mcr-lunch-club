@@ -36,6 +36,16 @@
         <button type="button" class="map-empty-button" @click="resetFilters">Reset filters</button>
       </div>
 
+      <!-- Narrow maps frame the core of the matches; this says how many are further out, and shows them. -->
+      <button
+        v-if="mapReady && outsideCount > 0 && !pinVenue"
+        type="button"
+        class="map-outliers"
+        @click="frameEverything"
+      >
+        <strong>{{ outsideCount }} more further out</strong> · Show all
+      </button>
+
       <!-- Quick Map Controls (Floating top left) -->
       <div class="absolute top-3 left-3 z-[1000]">
         <button
@@ -118,7 +128,14 @@ import {
   type ClusterItem,
   type MapItem,
 } from '@/lib/map/clusters';
-import { anyOutsideView, frameFor } from '@/lib/map/framing';
+import {
+  NARROW_MAP_MAX_WIDTH,
+  anyOutsideView,
+  coreVenues,
+  countOutsideView,
+  frameFor,
+  type LatLng,
+} from '@/lib/map/framing';
 import {
   NAME_HEIGHT_PX,
   NAME_MIN_ZOOM,
@@ -215,6 +232,9 @@ let returnFocusTo: HTMLElement | null = null;
 let keepKeyboardInMapUntil = 0;
 const KEEP_FOCUS_MS = 2000;
 
+// How many matching venues are outside the view; the "further out" pill shows while it is above zero.
+const outsideCount = ref(0);
+
 const visibleVenuesCount = computed(() => filteredVenues.value.length);
 const totalVenuesCount = computed(() => venuesList.value.length);
 
@@ -294,7 +314,9 @@ async function startMap() {
   mapInstance.on('zoomend', renderMarkers);
   // Ring labels sit where they can be seen, so they follow the view; names don't depend on it.
   mapInstance.on('moveend resize', updateRingLabels);
+  mapInstance.on('moveend resize', updateOutsideCount);
   renderMarkers();
+  updateOutsideCount();
   mapReady.value = true;
 
   void focusLinkedVenue();
@@ -306,40 +328,73 @@ function leaflet() {
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/** Centre and zoom the map on every venue the filters match, plus Base. */
+const BASE_POINT = { lat: BASE_LAT, lng: BASE_LNG };
+
+const isNarrowMap = () => mapInstance.getSize().x < NARROW_MAP_MAX_WIDTH;
+
+const matchingPoints = () =>
+  filteredVenues.value.map((venue) => ({ lat: venue.lat!, lng: venue.lng! }));
+
+/** The points to frame: on a narrow map the core around Base, otherwise every match. */
+function framedPoints() {
+  const points = matchingPoints();
+  return isNarrowMap() ? coreVenues(points, BASE_POINT) : points;
+}
+
+/** Centre and zoom the map on the venues to frame (see framedVenues), plus Base. */
 function frameAll({ animate }: { animate: boolean }) {
   if (!mapInstance) return;
-  const venues = filteredVenues.value;
+  frameOn(framedPoints(), animate);
+}
+
+/** The reset control and the "further out" pill: every matching venue, on any width. */
+function frameEverything() {
+  if (!mapInstance) return;
+  frameOn(matchingPoints(), true);
+}
+
+function frameOn(points: readonly LatLng[], animate: boolean) {
   const options = { animate: animate && !prefersReducedMotion() };
-  if (venues.length === 0) {
+  if (points.length === 0) {
     mapInstance.setView([BASE_LAT, BASE_LNG], DEFAULT_ZOOM, options);
     return;
   }
   const size = mapInstance.getSize();
-  const frame = frameFor(
-    [
-      { lat: BASE_LAT, lng: BASE_LNG },
-      ...venues.map((venue) => ({ lat: venue.lat!, lng: venue.lng! })),
-    ],
-    {
-      width: size.x,
-      height: size.y,
-      padding: FRAME_PADDING,
-      minZoom: FRAME_MIN_ZOOM,
-      maxZoom: FRAME_MAX_ZOOM,
-    }
-  );
+  const frame = frameFor([BASE_POINT, ...points], {
+    width: size.x,
+    height: size.y,
+    padding: FRAME_PADDING,
+    minZoom: FRAME_MIN_ZOOM,
+    maxZoom: FRAME_MAX_ZOOM,
+  });
   if (frame) mapInstance.setView([frame.lat, frame.lng], frame.zoom, options);
 }
 
-/** After a filter change: reframe only if a matching venue is off screen, so a small tweak doesn't make the map jump. */
+/** Recount the matching venues outside the view (on pan, zoom, resize and filter changes). */
+function updateOutsideCount() {
+  if (!mapInstance) return;
+  const view = mapInstance.getBounds();
+  outsideCount.value = countOutsideView(matchingPoints(), {
+    south: view.getSouth(),
+    west: view.getWest(),
+    north: view.getNorth(),
+    east: view.getEast(),
+  });
+}
+
+/**
+ * After a filter change: reframe only if a venue we would frame is off screen, so a small tweak
+ * (and, on a narrow map, an outlier) doesn't make the map jump.
+ */
 function reframeIfNeeded() {
   if (!mapInstance || filteredVenues.value.length === 0) return;
   const view = mapInstance.getBounds();
-  const outside = anyOutsideView(
-    filteredVenues.value.map((venue) => ({ lat: venue.lat!, lng: venue.lng! })),
-    { south: view.getSouth(), west: view.getWest(), north: view.getNorth(), east: view.getEast() }
-  );
+  const outside = anyOutsideView(framedPoints(), {
+    south: view.getSouth(),
+    west: view.getWest(),
+    north: view.getNorth(),
+    east: view.getEast(),
+  });
   if (outside) frameAll({ animate: true });
 }
 
@@ -352,20 +407,20 @@ function addResetControl(L: any) {
       const button = L.DomUtil.create('a', '', container) as HTMLAnchorElement;
       button.href = '#';
       button.setAttribute('role', 'button');
-      button.setAttribute('aria-label', 'Reset map view');
-      button.title = 'Reset view';
+      button.setAttribute('aria-label', 'Show all matching venues');
+      button.title = 'Show all matching venues';
       button.innerHTML =
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
       L.DomEvent.disableClickPropagation(container);
       L.DomEvent.on(button, 'click', (event: Event) => {
         L.DomEvent.preventDefault(event);
-        frameAll({ animate: true });
+        frameEverything();
       });
       // Links activate on Enter by themselves; a button role should answer to Space too.
       L.DomEvent.on(button, 'keydown', (event: KeyboardEvent) => {
         if (event.key !== ' ') return;
         L.DomEvent.preventDefault(event);
-        frameAll({ animate: true });
+        frameEverything();
       });
       return container;
     },
@@ -416,6 +471,7 @@ watch(filteredVenues, () => {
   spiderfied = null;
   renderMarkers();
   if (!suppressReframe) reframeIfNeeded();
+  updateOutsideCount();
 });
 
 function drawBaseAndRings() {
@@ -1167,6 +1223,44 @@ function onMapKeydown(event: KeyboardEvent) {
 }
 
 .map-empty-button:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* "N more further out": over the bottom of the map, above the attribution line. */
+.map-outliers {
+  position: absolute;
+  z-index: 1000;
+  bottom: 28px;
+  left: 50%;
+  min-height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--color-hairline);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: 0 4px 14px rgb(17 30 71 / 22%);
+  font:
+    500 13px/1 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transform: translateX(-50%);
+}
+
+/* Touch: a 44px target. */
+@media (pointer: coarse) {
+  .map-outliers {
+    min-height: 44px;
+  }
+}
+
+.map-outliers:hover {
+  background: var(--color-parchment);
+}
+
+.map-outliers:focus-visible {
   outline: 2px solid var(--color-gold);
   outline-offset: 2px;
 }

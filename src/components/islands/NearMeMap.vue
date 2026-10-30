@@ -296,8 +296,50 @@ const map = useNearMeLeaflet({
   hasFittedFirstFix,
   isUserFarFromManchester,
   isLowAccuracy,
+  overlayInsets,
   onPinSelect: (venue) => selectVenueItem(venue, true),
 });
+
+/** What the close button and the control stack take from the map's top and right edges on a phone, measured. */
+function overlayInsets() {
+  const mapEl = mapContainerRef.value;
+  const controls = shellRef.value?.querySelector('.near-me-controls-cluster');
+  const close = closeButtonRef.value;
+  if (sheet.isDesktop.value || !mapEl || !controls || !close) return { top: 0, right: 0 };
+  const mapRect = mapEl.getBoundingClientRect();
+  return {
+    top: Math.max(close.getBoundingClientRect().bottom - mapRect.top, 0),
+    right: Math.max(mapRect.right - controls.getBoundingClientRect().left, 0),
+  };
+}
+
+/** The height the peek needs: the handle, the tier chips and the nearest card, with the body's padding. */
+function measurePeekContent() {
+  const panel = panelRef.value;
+  const body = listContainerRef.value;
+  const nearest = body?.querySelector<HTMLElement>('.near-me-list-section:not(.near-me-selection)');
+  if (!panel || !body || !nearest) return;
+  const handle = panel.querySelector<HTMLElement>('.near-me-sheet-handle-row');
+  const filters = panel.querySelector<HTMLElement>('.near-me-panel-filters');
+  const bodyStyle = getComputedStyle(body);
+  const panelStyle = getComputedStyle(panel);
+  sheet.peekContentPx.value =
+    (handle?.offsetHeight ?? 0) +
+    (filters?.offsetHeight ?? 0) +
+    nearest.offsetHeight +
+    parseFloat(bodyStyle.paddingTop) +
+    parseFloat(bodyStyle.paddingBottom) +
+    parseFloat(panelStyle.borderTopWidth);
+}
+
+// The peek is as tall as its content needs, so measure again whenever that content can change.
+watch(
+  [nearestVenue, selectedTiers, () => sheet.isDesktop.value, isOpen],
+  () => {
+    if (isOpen.value && !sheet.isDesktop.value) measurePeekContent();
+  },
+  { flush: 'post' }
+);
 
 let previousActiveElement: HTMLElement | null = null;
 let previousBodyOverflow: string | null = null;
@@ -525,7 +567,7 @@ async function onOpenChange(open: boolean) {
     isPickingLocation.value = false;
     hasFittedFirstFix.value = false;
     selectedVenueId.value = null;
-    sheet.snap.value = 'half';
+    sheet.snap.value = 'peek';
     isUserFarFromManchester.value = false;
     isLowAccuracy.value = false;
 
@@ -749,7 +791,7 @@ onUnmounted(() => {
   }
 }
 
-/* Mobile layout: Bottom sheet with 3 snap states */
+/* Mobile layout: Bottom sheet with 4 snap states */
 @media (max-width: 1023px) {
   .near-me-panel {
     position: absolute;
@@ -766,6 +808,11 @@ onUnmounted(() => {
 
   .near-me-panel.snap-collapsed {
     height: 140px;
+  }
+
+  /* The peek's height is max(38dvh, what its content measures): see useBottomSheet. */
+  .near-me-panel.snap-peek {
+    height: var(--sheet-current-height);
   }
 
   .near-me-panel.snap-half {
@@ -814,7 +861,8 @@ onUnmounted(() => {
 
 /* Tier Filter Chips within Panel (chip styling comes from the shared TierFilterChips) */
 .near-me-panel-filters {
-  padding: 8px 14px;
+  display: flex;
+  padding: 8px 0 8px 14px;
   border-bottom: 1px solid rgba(197, 155, 39, 0.25);
   flex-shrink: 0;
 }
