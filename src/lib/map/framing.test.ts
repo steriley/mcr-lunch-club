@@ -1,6 +1,14 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { anyOutsideView, frameFor, type Frame, type FrameOptions, type LatLng } from './framing';
+import {
+  anyOutsideView,
+  coreVenues,
+  countOutsideView,
+  frameFor,
+  type Frame,
+  type FrameOptions,
+  type LatLng,
+} from './framing';
 
 const BASE: LatLng = { lat: 53.479, lng: -2.252 };
 
@@ -131,5 +139,49 @@ describe('anyOutsideView', () => {
 
   it('has nothing outside for no points', () => {
     assert.equal(anyOutsideView([], view), false);
+  });
+});
+
+// A point `metres` due north of Base (a degree of latitude is about 111.2 km).
+const north = (metres: number): LatLng => ({ lat: BASE.lat + metres / 111_195, lng: BASE.lng });
+
+describe('coreVenues', () => {
+  it('keeps the venues inside the 25 minute ring and drops the outliers', () => {
+    const inside = [200, 500, 900, 1100, 1300].map(north);
+    const outliers = [2500, 3500].map(north);
+    assert.deepEqual(coreVenues([...outliers, ...inside], BASE), inside);
+  });
+
+  it('falls back to the eight nearest when fewer than five are inside the ring', () => {
+    const venues = [100, 800, 1500, 2000, 2200, 2400, 2600, 2800, 3000, 3200, 3400, 3600].map(
+      north
+    );
+    const core = coreVenues([...venues].reverse(), BASE);
+    assert.deepEqual(core, venues.slice(0, 8));
+  });
+
+  it('frames outliers when they are all that match', () => {
+    const outliers = [3000, 3500].map(north);
+    assert.deepEqual(coreVenues(outliers, BASE), outliers);
+  });
+
+  it('is empty only for no venues', () => {
+    assert.deepEqual(coreVenues([], BASE), []);
+    assert.equal(coreVenues([north(4000)], BASE).length, 1);
+  });
+});
+
+describe('countOutsideView', () => {
+  const view = { south: 53.47, west: -2.27, north: 53.49, east: -2.23 };
+
+  it('counts only the points off the view', () => {
+    const points = [
+      BASE,
+      { lat: 53.5, lng: -2.25 },
+      { lat: 53.48, lng: -2.2 },
+      { lat: 53.48, lng: -2.25 },
+    ];
+    assert.equal(countOutsideView(points, view), 2);
+    assert.equal(countOutsideView([], view), 0);
   });
 });

@@ -27,6 +27,17 @@ const SELECTED_PIN_VISIBLE_FRACTION = 0.5;
 /** Programmatic moves end before this, so they aren't mistaken for the user's own panning. */
 const MOVE_SETTLE_MS = 400;
 
+/** Room on a phone that the floating controls take from the map, in px from its top and right edges. */
+interface OverlayInsets {
+  top: number;
+  right: number;
+}
+
+/** Clear space kept beyond a control, so a pin (about 28px wide, 34px tall) never touches it. */
+const CONTROL_MARGIN_PX = 16;
+const PIN_HALF_WIDTH_PX = 14;
+const PIN_HEIGHT_PX = 34;
+
 interface NearMeLeafletOptions {
   mapApiKey?: string;
   container: Ref<HTMLElement | null>;
@@ -43,6 +54,8 @@ interface NearMeLeafletOptions {
   hasFittedFirstFix: Ref<boolean>;
   isUserFarFromManchester: Ref<boolean>;
   isLowAccuracy: Ref<boolean>;
+  /** Measures the close button and the control stack, for the phone's padding; zeros on desktop. */
+  overlayInsets: () => OverlayInsets;
   /** A pin was tapped. */
   onPinSelect: (venue: Venue) => void;
 }
@@ -152,7 +165,12 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
       // point lands in the middle of the part still showing.
       const mapHeight = mapInstance.getSize().y;
       const visibleHeight = Math.max(mapHeight - sheet.settledHeightPx(sheetState), 0);
-      point.y += mapHeight / 2 - visibleHeight * fraction;
+      // The controls and the close button take the right and top edges too.
+      const { top, right } = options.overlayInsets();
+      const visibleTop = Math.min(top, visibleHeight);
+      const visibleCentreY = visibleTop + (visibleHeight - visibleTop) * fraction;
+      point.y += mapHeight / 2 - visibleCentreY;
+      point.x += right / 2;
     }
     return mapInstance.unproject(point, zoom);
   }
@@ -187,11 +205,16 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
           animate: true,
         });
       } else {
-        // Fit into the part of the map the bottom sheet leaves showing.
+        // Fit into the part of the map the sheet, the close button and the controls leave showing.
+        // A pin extends up and to both sides of its point, so its size is kept clear as well.
+        const { top, right } = options.overlayInsets();
         const bottomPadding = Math.round(sheet.settledHeightPx()) + 24;
         mapInstance.fitBounds(bounds, {
-          paddingTopLeft: [30, 80],
-          paddingBottomRight: [30, bottomPadding],
+          paddingTopLeft: [30, Math.round(top) + CONTROL_MARGIN_PX + PIN_HEIGHT_PX],
+          paddingBottomRight: [
+            Math.round(right) + CONTROL_MARGIN_PX + PIN_HALF_WIDTH_PX,
+            bottomPadding,
+          ],
           maxZoom: 17,
           animate: true,
         });

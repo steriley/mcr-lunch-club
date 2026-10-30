@@ -10,12 +10,17 @@ import {
   type SheetSnap,
 } from '@/lib/near-me/sheet';
 
-/** The venue panel's layout: a floating panel on desktop, a three-height bottom sheet on a phone. */
+/** The venue panel's layout: a floating panel on desktop, a four-height bottom sheet on a phone. */
 export function useBottomSheet() {
   const isDesktop = ref(false);
-  const snap = ref<SheetSnap>('half');
+  // Opens at the peek: the handle, the tier chips and the nearest card, leaving most of the screen to the map.
+  const snap = ref<SheetSnap>('peek');
+  // What the peek's content measures, so the peek is never shorter than it (set by the panel).
+  const peekContentPx = ref(0);
   const isCollapsedMobile = computed(() => !isDesktop.value && snap.value === 'collapsed');
-  const heightCss = computed(() => sheetHeightCss(snap.value, isDesktop.value));
+  const heightCss = computed(() =>
+    sheetHeightCss(snap.value, isDesktop.value, peekContentPx.value)
+  );
 
   function checkScreenSize() {
     if (typeof window !== 'undefined') isDesktop.value = window.innerWidth >= DESKTOP_MIN_WIDTH;
@@ -23,7 +28,7 @@ export function useBottomSheet() {
 
   /** Settled height in px for `state` (default: the current one). */
   function settledHeightPx(state: SheetSnap = snap.value): number {
-    return sheetHeightPx(state, window.innerHeight);
+    return sheetHeightPx(state, window.innerHeight, peekContentPx.value);
   }
 
   const expand = () => {
@@ -60,6 +65,7 @@ export function useBottomSheet() {
   return {
     isDesktop,
     snap,
+    peekContentPx,
     isCollapsedMobile,
     heightCss,
     checkScreenSize,

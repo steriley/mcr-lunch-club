@@ -303,11 +303,42 @@ function rowWalkUrl(rv: RankedVenue): string | null {
   font-weight: 600;
 }
 
-/* Touch: 44px price chips. */
+/* Compact pills the height of the tier chips, on their own row under the heading on a phone. */
+@media (max-width: 1023px) {
+  .near-me-list-header:has(.near-me-cost-filter) {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .near-me-cost-filter {
+    flex-basis: 100%;
+    gap: 7px;
+  }
+
+  .near-me-cost-chip {
+    min-width: 40px;
+    min-height: 28px;
+    padding: 0 12px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Touch: keep the 28px look, but give each price chip a 44px hit area with a transparent extension above
+   and below (as the tier chips do), so neighbouring chips never share one. */
 @media (pointer: coarse) {
   .near-me-cost-chip {
+    position: relative;
     min-width: 44px;
-    min-height: 44px;
+  }
+
+  .near-me-cost-chip::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 44px;
+    transform: translateY(-50%);
   }
 }
 </style>
