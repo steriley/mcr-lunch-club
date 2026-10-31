@@ -35,9 +35,14 @@ test.describe('homepage map framing', () => {
 
     // Zoom in on Base: the matches that fall out of view are counted, and the pill brings them back.
     const zoomIn = page.locator('.leaflet-control-zoom-in');
-    for (let i = 0; i < 3; i++) await zoomIn.click();
+    for (let i = 0; i < 3; i++) {
+      await zoomIn.click();
+      // A click during a zoom animation is dropped, so let each one finish.
+      await expect(page.locator('.leaflet-zoom-anim')).toHaveCount(0);
+    }
     const pill = page.locator('.map-outliers');
     await expect(pill).toBeVisible();
+    await expect(page.locator('.leaflet-zoom-anim')).toHaveCount(0);
     await pill.click();
     await expect(pill).toBeHidden();
   });
