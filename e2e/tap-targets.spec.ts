@@ -257,7 +257,6 @@ test.describe('desktop (fine pointer)', () => {
           return { width: Math.round(rect.width), height: Math.round(rect.height) };
         });
     expect(await size('.leaflet-control-zoom-in')).toEqual({ width: 30, height: 30 });
-    expect(await size('.ledger-reset-control a')).toEqual({ width: 30, height: 30 });
     expect((await size('.ledger-tier-chip')).height, 'tier chip height').toBeLessThan(40);
     expect(monitor.errors).toEqual([]);
   });

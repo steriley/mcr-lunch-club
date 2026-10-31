@@ -213,19 +213,6 @@
   }
 }
 
-/* The map's own "Reset view" button sits under the zoom buttons. */
-.ledger-reset-control a {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-deep-ink);
-}
-
-.ledger-reset-control svg {
-  width: 16px;
-  height: 16px;
-}
-
 /* Leaflet gives its own container no focus style, but the keyboard lands there after a zoom. */
 .leaflet-container:focus-visible {
   outline: 2px solid var(--color-navy);
@@ -326,7 +313,7 @@
  * only the target grows. Fine pointers (mouse, trackpad) are untouched.
  */
 @media (pointer: coarse) {
-  /* Zoom +/−, Reset map view and Walking rings. Leaflet's own touch rule is 30px, so match its specificity. */
+  /* Zoom +/− and Walking rings. Leaflet's own touch rule is 30px, so match its specificity. */
   .leaflet-touch .leaflet-bar a,
   .leaflet-bar a {
     width: 44px;

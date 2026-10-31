@@ -36,7 +36,7 @@
         <button type="button" class="map-empty-button" @click="resetFilters">Reset filters</button>
       </div>
 
-      <!-- Narrow maps frame the core of the matches; this says how many are further out, and shows them. -->
+      <!-- Says how many matches are out of view (further out, or panned away from), and shows them all. -->
       <button
         v-if="mapReady && outsideCount > 0 && !pinVenue"
         type="button"
@@ -281,8 +281,6 @@ async function startMap() {
   // CartoDB Positron / Voyager Muted Archival Tile Layer
   createTileLayer(L, props.mapApiKey).addTo(mapInstance);
 
-  addResetControl(L);
-
   addRingsControl(L);
 
   // Layer groups
@@ -347,7 +345,7 @@ function frameAll({ animate }: { animate: boolean }) {
   frameOn(framedPoints(), animate);
 }
 
-/** The reset control and the "further out" pill: every matching venue, on any width. */
+/** The "further out" pill: every matching venue, on any width. */
 function frameEverything() {
   if (!mapInstance) return;
   frameOn(matchingPoints(), true);
@@ -396,36 +394,6 @@ function reframeIfNeeded() {
     east: view.getEast(),
   });
   if (outside) frameAll({ animate: true });
-}
-
-/** A button under the zoom buttons that returns to the framing on every matching venue. */
-function addResetControl(L: any) {
-  const ResetControl = L.Control.extend({
-    options: { position: 'topright' },
-    onAdd() {
-      const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control ledger-reset-control');
-      const button = L.DomUtil.create('a', '', container) as HTMLAnchorElement;
-      button.href = '#';
-      button.setAttribute('role', 'button');
-      button.setAttribute('aria-label', 'Show all matching venues');
-      button.title = 'Show all matching venues';
-      button.innerHTML =
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
-      L.DomEvent.disableClickPropagation(container);
-      L.DomEvent.on(button, 'click', (event: Event) => {
-        L.DomEvent.preventDefault(event);
-        frameEverything();
-      });
-      // Links activate on Enter by themselves; a button role should answer to Space too.
-      L.DomEvent.on(button, 'keydown', (event: KeyboardEvent) => {
-        if (event.key !== ' ') return;
-        L.DomEvent.preventDefault(event);
-        frameEverything();
-      });
-      return container;
-    },
-  });
-  new ResetControl().addTo(mapInstance);
 }
 
 /** `/?venue=<slug>` (from a dossier's "Locate on Ledger Map") centres on that venue and shows its card. */
