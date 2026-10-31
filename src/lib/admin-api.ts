@@ -1,9 +1,11 @@
 import type { APIRoute } from 'astro';
 import { isAPIError } from 'better-auth/api';
 import { z } from 'zod';
+import { waitUntil } from '@vercel/functions';
 import { auth, type AuthSession } from '@/lib/auth';
+import { db } from '@/lib/db';
 import { getAuthEnvironment } from '@/lib/env';
-import { requestRebuild } from '@/lib/rebuild';
+import { countPendingChanges, publishNow, recordPendingChange } from '@/lib/publishing';
 import { hasAdminRole, isBanned } from '@/lib/roles';
 import type { Actor } from '@/lib/venue-events';
 
@@ -121,11 +123,14 @@ export interface AdminRouteSpec<P extends string, S extends z.ZodType | undefine
   /** Names the action in the server log when it fails, e.g. "Update venue". */
   action: string;
   /**
-   * Whether a success can change what the public site shows. The public pages
-   * are prerendered, so a successful response then requests a rebuild
-   * (src/lib/rebuild.ts) before it is returned.
+   * Set when a success can change what the public site shows. The public pages
+   * are prerendered, so a success records a pending change (src/lib/publishing.ts)
+   * for the Chairs to publish in one go: `'queue'` records it and nothing more,
+   * `'now'` also asks Vercel for a build without holding up the response.
    */
-  publishes: boolean;
+  publish?: 'queue' | 'now';
+  /** With `publish`: the param that names the venue the change concerns. */
+  venueParam?: NoInfer<P>;
   /** Checked in order; the first invalid one answers 404 with its message. */
   params?: Record<P, ParamSpec>;
   /** Validates the JSON body; failures answer 400 with field errors. */
@@ -180,7 +185,45 @@ export function adminRoute<P extends string = never, S extends z.ZodType | undef
     } catch (error) {
       return spec.onError?.(error) ?? serverError(spec.action, error);
     }
-    if (spec.publishes && response.ok) await requestRebuild(spec.action);
+    if (spec.publish && response.ok) {
+      await recordPublish(
+        spec,
+        spec.venueParam ? params[spec.venueParam] : null,
+        actor.id,
+        response
+      );
+    }
     return response;
   };
+}
+
+/** The Chairs' bar reads this header to update without a reload (src/lib/api-fetch.ts). */
+const UNPUBLISHED_HEADER = 'X-Unpublished-Changes';
+
+/**
+ * Records the change a successful publishing route made. The change itself is
+ * already saved, so a failure here is logged and the response still goes out.
+ */
+async function recordPublish(
+  spec: { action: string; publish?: 'queue' | 'now' },
+  venueId: string | null,
+  actorId: string,
+  response: Response
+): Promise<void> {
+  try {
+    await recordPendingChange(db, { action: spec.action, venueId, actorId });
+    response.headers.set(UNPUBLISHED_HEADER, String(await countPendingChanges(db)));
+  } catch (error) {
+    console.error(
+      `[admin] ${spec.action}: could not record the pending change:`,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
+  }
+  if (spec.publish === 'now') {
+    waitUntil(
+      publishNow(db, { source: 'auto', requestedBy: actorId, reason: spec.action }).catch(
+        () => undefined
+      )
+    );
+  }
 }

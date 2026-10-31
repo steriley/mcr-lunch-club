@@ -1,7 +1,10 @@
 {
-  "buildCommand": "pnpm db:migrate:deploy && pnpm build",
+  "buildCommand": "pnpm publish:mark && pnpm db:migrate:deploy && pnpm build && pnpm publish:settle",
   "regions": ["lhr1"],
-  "crons": [{ "path": "/api/cron/weekly-bulletin", "schedule": "0 0 * * 4" }],
+  "crons": [
+    { "path": "/api/cron/weekly-bulletin", "schedule": "0 0 * * 4" },
+    { "path": "/api/cron/publish-pending", "schedule": "0 5 * * *" }
+  ],
   "headers": [
     {
       "source": "/(.*)",

@@ -7,7 +7,7 @@ export const prerender = false;
 export const POST = adminRoute(
   {
     action: 'Create user',
-    publishes: false,
+
     body: createUserSchema,
     onError: (error) => authApiError('Create user', error),
   },

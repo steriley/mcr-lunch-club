@@ -1,5 +1,5 @@
 import '../test/setup-env';
-import { describe, it } from 'node:test';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { z } from 'zod';
 import { APIError } from 'better-auth/api';
@@ -21,7 +21,7 @@ import {
   validationError,
 } from './admin-api';
 import { auth } from './auth';
-import { quietly } from '../test/route-helpers';
+import { quietly, restoreStubs, stubDb } from '../test/route-helpers';
 
 function silenceErrors<T>(fn: () => T): T {
   const original = console.error;
@@ -250,7 +250,6 @@ describe('adminRoute', () => {
   const route = adminRoute(
     {
       action: 'Test',
-      publishes: false,
       params: {
         id: 'Thing not found.',
         userId: { schema: userIdParam, notFound: 'User not found.' },
@@ -301,7 +300,7 @@ describe('adminRoute', () => {
       adminRoute(
         {
           action: 'Throw',
-          publishes: true,
+          publish: 'now',
           onError: (e) => (isUniqueViolation(e) ? slugTaken() : undefined),
         },
         async () => {
@@ -325,37 +324,89 @@ describe('adminRoute', () => {
     }
   });
 
-  it('requests a rebuild after a successful publishing route, and only then', async () => {
+  describe('publishing routes', () => {
     const originalFetch = globalThis.fetch;
-    const hookCalls: string[] = [];
-    globalThis.fetch = (async (url: URL) => {
-      hookCalls.push(String(url));
-      return new Response('{}', { status: 201 });
-    }) as typeof fetch;
-    process.env.DEPLOY_HOOK_URL = 'https://api.vercel.com/v1/integrations/deploy/prj_x/secret';
-    const responding = (publishes: boolean, status: number) =>
-      adminRoute({ action: 'Respond', publishes }, async () => jsonResponse({}, status));
-    try {
-      signedInAs(chair);
-      assert.equal((await call(responding(true, 200))).status, 200);
-      assert.equal(hookCalls.length, 1);
+    let hookCalls: string[];
 
-      await call(responding(false, 200));
-      await call(responding(true, 409));
+    beforeEach(() => {
+      hookCalls = [];
+      globalThis.fetch = (async (url: URL) => {
+        hookCalls.push(String(url));
+        return new Response('{}', { status: 201 });
+      }) as typeof fetch;
+      process.env.DEPLOY_HOOK_URL = 'https://api.vercel.com/v1/integrations/deploy/prj_x/secret';
+    });
+
+    afterEach(() => {
+      (auth.api as any).getSession = originalGetSession;
+      globalThis.fetch = originalFetch;
+      process.env.DEPLOY_HOOK_URL = '';
+      restoreStubs();
+    });
+
+    const responding = (publish: 'queue' | 'now' | undefined, status = 200) =>
+      adminRoute(
+        { action: 'Respond', publish, venueParam: 'id', params: { id: 'Venue not found.' } },
+        async () => jsonResponse({}, status)
+      );
+    const settle = () => new Promise((resolve) => setImmediate(resolve));
+
+    it('records a pending change and reports the count, without calling the Deploy Hook', async () => {
+      signedInAs(chair);
+      const inserts = stubDb('insert');
+      stubDb('select', [{ total: 4 }]);
+      const response = await call(responding('queue'), { id: ID });
+      await settle();
+
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get('X-Unpublished-Changes'), '4');
+      assert.deepEqual(inserts.find((c) => c.method === 'values')?.args[0], {
+        action: 'Respond',
+        venueId: ID,
+        actorId: 'admin-1',
+      });
+      assert.equal(hookCalls.length, 0);
+    });
+
+    it('also asks for a build, off the response path, when the route publishes now', async () => {
+      signedInAs(chair);
+      const inserts = stubDb('insert');
+      stubDb('select', [{ total: 1 }]);
+      await call(responding('now'), { id: ID });
+      await settle();
+
+      assert.equal(hookCalls.length, 1);
+      const requests = inserts.filter((c) => c.method === 'values').map((c) => c.args[0]);
+      assert.deepEqual(requests.at(-1), { source: 'auto', requestedBy: 'admin-1', accepted: true });
+    });
+
+    it('records nothing for a failure, a route that does not publish, or a refused request', async () => {
+      const inserts = stubDb('insert');
+      stubDb('select', [{ total: 1 }]);
+      signedInAs(chair);
+      await call(responding(undefined), { id: ID });
+      await call(responding('queue', 409), { id: ID });
       await quietly(() =>
         call(
-          adminRoute({ action: 'Throw', publishes: true }, async () => {
+          adminRoute({ action: 'Throw', publish: 'now' }, async () => {
             throw new Error('boom');
           })
         )
       );
       signedInAs(null);
-      await call(responding(true, 200));
-      assert.equal(hookCalls.length, 1);
-    } finally {
-      (auth.api as any).getSession = originalGetSession;
-      globalThis.fetch = originalFetch;
-      process.env.DEPLOY_HOOK_URL = '';
-    }
+      await call(responding('queue'), { id: ID });
+      await settle();
+
+      assert.equal(inserts.length, 0);
+      assert.equal(hookCalls.length, 0);
+    });
+
+    it('still answers when the change cannot be recorded', async () => {
+      signedInAs(chair);
+      stubDb('insert', new Error('db down'));
+      const response = await quietly(() => call(responding('queue'), { id: ID }));
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get('X-Unpublished-Changes'), null);
+    });
   });
 });

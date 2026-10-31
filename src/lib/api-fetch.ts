@@ -5,6 +5,8 @@
  * so there is no try/catch or JSON parsing at the call site.
  */
 
+import { noteUnpublishedChanges } from '@/stores/publish';
+
 export type ApiFetchResult<T> =
   | { ok: true; data: T }
   | {
@@ -45,6 +47,11 @@ export async function apiFetch<T = unknown>(
     if ((error as Error)?.name === 'AbortError') throw error;
     return { ok: false, error: offline, fields: {} };
   }
+
+  // Publishing responses say how many changes now wait for the Chairs to publish them.
+  const unpublished = response.headers.get('X-Unpublished-Changes');
+  if (unpublished !== null && /^\d+$/.test(unpublished))
+    noteUnpublishedChanges(Number(unpublished));
 
   const result = await response.json().catch(() => null);
   if (response.ok) return { ok: true, data: result as T };

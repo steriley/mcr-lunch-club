@@ -24,7 +24,8 @@ const visitInputSchema = z.preprocess(
 export const POST = adminRoute(
   {
     action: 'Record visit',
-    publishes: true,
+    publish: 'queue',
+    venueParam: 'id',
     params: { id: 'Venue not found.' },
     body: visitInputSchema,
   },

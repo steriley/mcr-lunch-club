@@ -13,7 +13,7 @@ const notFound = () => jsonError(404, NOT_FOUND);
 export const PUT = adminRoute(
   {
     action: 'Update bribery record',
-    publishes: true,
+    publish: 'queue',
     params: { id: NOT_FOUND },
     body: briberyInputSchema,
   },
@@ -35,7 +35,7 @@ export const PUT = adminRoute(
 export const PATCH = adminRoute(
   {
     action: 'Publish bribery record',
-    publishes: true,
+    publish: 'queue',
     params: { id: NOT_FOUND },
     body: briberyPublishSchema,
   },
@@ -50,7 +50,7 @@ export const PATCH = adminRoute(
 );
 
 export const DELETE = adminRoute(
-  { action: 'Delete bribery record', publishes: true, params: { id: NOT_FOUND } },
+  { action: 'Delete bribery record', publish: 'queue', params: { id: NOT_FOUND } },
   async ({ params }) => {
     const [row] = await db
       .delete(briberyRecords)

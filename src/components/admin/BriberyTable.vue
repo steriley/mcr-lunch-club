@@ -54,13 +54,13 @@ async function performDelete() {
     return;
   }
   rows.value = rows.value.filter((row) => row.id !== record.id);
-  message.value = 'Record deleted.';
+  message.value = 'Deleted. Not live until published.';
 }
 
 onMounted(() => {
   const params = new URLSearchParams(window.location.search);
-  if (params.get('saved') === '1') message.value = 'Record saved.';
-  if (params.get('deleted') === '1') message.value = 'Record deleted.';
+  if (params.get('saved') === '1') message.value = 'Saved. Not live until published.';
+  if (params.get('deleted') === '1') message.value = 'Deleted. Not live until published.';
 });
 </script>
 

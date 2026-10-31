@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import ConfirmDialog from '../ConfirmDialog.vue';
 import DossierCard from './DossierCard.vue';
 import ExpungeDialog from './ExpungeDialog.vue';
@@ -21,6 +21,22 @@ const showClose = ref(false);
 const showExpunge = ref(false);
 const busy = ref(false);
 const errorMessage = ref('');
+const message = ref('');
+
+// A close or reopen reloads the page so the dossier shows the new state; this carries the notice across.
+const CLOSE_NOTICES: Record<string, string> = {
+  closed: 'Closed. The public site updates within about a minute.',
+  reopened: 'Reopened. The public site updates within about a minute.',
+};
+
+onMounted(() => {
+  const url = new URL(window.location.href);
+  const notice = CLOSE_NOTICES[url.searchParams.get('governance') ?? ''];
+  if (!notice) return;
+  message.value = notice;
+  url.searchParams.delete('governance');
+  window.history.replaceState(null, '', url);
+});
 
 async function setClosed(action: 'close' | 'reopen') {
   showClose.value = false;
@@ -35,7 +51,9 @@ async function setClosed(action: 'close' | 'reopen') {
     errorMessage.value = result.error;
     return;
   }
-  window.location.reload();
+  const url = new URL(window.location.href);
+  url.searchParams.set('governance', action === 'close' ? 'closed' : 'reopened');
+  window.location.assign(url);
 }
 
 async function expunge() {
@@ -116,6 +134,9 @@ defineExpose({ openClose });
       </button>
     </div>
 
+    <p v-if="message" role="status" class="mt-0 text-[13px] font-semibold text-success-ink">
+      {{ message }}
+    </p>
     <p v-if="errorMessage" role="alert" class="dossier-error mt-0">{{ errorMessage }}</p>
 
     <ConfirmDialog

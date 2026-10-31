@@ -28,7 +28,7 @@ function createVenueFailure(error: unknown): Response | undefined {
 export const POST = adminRoute(
   {
     action: 'Create venue',
-    publishes: false,
+
     body: venueCreateSchema,
     onError: createVenueFailure,
   },

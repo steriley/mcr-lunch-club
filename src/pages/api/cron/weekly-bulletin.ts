@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
+import { db } from '@/lib/db';
 import { getCronSecret } from '@/lib/env';
-import { requestRebuild } from '@/lib/rebuild';
+import { publishNow } from '@/lib/publishing';
 
 export const prerender = false;
 
@@ -17,14 +18,19 @@ function json(body: Record<string, unknown>, status: number): Response {
  * prerendered. Vercel Cron calls it at 00:00 UTC on Thursday (vercel.json),
  * which is after 23:59 London time all year. Hobby crons fire at some point in
  * the scheduled hour, so the schedule starts after the issue time rather than
- * at it. It sends CRON_SECRET as a bearer token.
+ * at it. It sends CRON_SECRET as a bearer token. The build it triggers clears
+ * pending changes through publish:settle, like any other build.
  */
 export const GET: APIRoute = async ({ request }) => {
   const secret = getCronSecret();
   if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
     return json({ error: 'Unauthorized' }, 401);
   }
-  const requested = await requestRebuild('Weekly bulletin');
+  const requested = await publishNow(db, {
+    source: 'bulletin',
+    requestedBy: null,
+    reason: 'Weekly bulletin',
+  });
   return requested
     ? json({ rebuild: 'requested' }, 202)
     : json({ error: 'Rebuild could not be requested.' }, 502);

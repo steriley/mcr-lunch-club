@@ -104,3 +104,20 @@ describe('failureText', () => {
     assert.equal(failureText({ error: 'Bad.', fields: {} }), 'Bad.');
   });
 });
+
+describe('apiFetch and the unpublished-changes count', () => {
+  it('writes the X-Unpublished-Changes header to the store, and ignores a missing or bad one', async () => {
+    const { $unpublishedChanges } = await import('@/stores/publish');
+    $unpublishedChanges.set(null);
+    stubFetch(() => Response.json({}, { headers: { 'X-Unpublished-Changes': '4' } }));
+    await apiFetch('/api/admin/venues/x', { method: 'PUT', fallback: 'x' });
+    assert.deepEqual($unpublishedChanges.get(), { count: 4 });
+
+    $unpublishedChanges.set(null);
+    stubFetch(() => Response.json({}, { headers: { 'X-Unpublished-Changes': 'lots' } }));
+    await apiFetch('/api/admin/venues/x', { method: 'PUT', fallback: 'x' });
+    stubFetch(() => Response.json({}));
+    await apiFetch('/api/admin/publish', { fallback: 'x' });
+    assert.equal($unpublishedChanges.get(), null);
+  });
+});

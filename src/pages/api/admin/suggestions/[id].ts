@@ -17,7 +17,7 @@ const NOT_FOUND = 'Suggestion not found.';
 export const PATCH = adminRoute(
   {
     action: 'Update suggestion',
-    publishes: false,
+
     params: { id: NOT_FOUND },
     body: suggestionStatusSchema,
   },
@@ -49,7 +49,7 @@ export const PATCH = adminRoute(
 );
 
 export const DELETE = adminRoute(
-  { action: 'Delete suggestion', publishes: false, params: { id: NOT_FOUND } },
+  { action: 'Delete suggestion', params: { id: NOT_FOUND } },
   async ({ params }) => {
     const [row] = await db
       .delete(venueSuggestions)

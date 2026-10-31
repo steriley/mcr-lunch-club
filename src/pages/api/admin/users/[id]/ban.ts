@@ -7,7 +7,7 @@ export const prerender = false;
 export const POST = adminRoute(
   {
     action: 'Ban user',
-    publishes: false,
+
     params: { id: { schema: userIdParam, notFound: 'User not found.' } },
     onError: (error) => authApiError('Ban user', error),
   },
