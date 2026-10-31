@@ -15,7 +15,7 @@ const bodySchema = z.object({ proposedTier: z.enum(TIER_VALUES, { error: 'Choose
 export const POST = adminRoute(
   {
     action: 'Propose verdict',
-    publishes: false,
+
     params: { id: 'Venue not found.' },
     body: bodySchema,
   },

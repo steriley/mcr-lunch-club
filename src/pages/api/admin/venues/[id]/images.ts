@@ -63,7 +63,12 @@ const positiveInt = (value: FormDataEntryValue | null) =>
  * blobs written so far are deleted.
  */
 export const POST = adminRoute(
-  { action: 'Add venue image', publishes: true, params: { id: 'Venue not found.' } },
+  {
+    action: 'Add venue image',
+    publish: 'queue',
+    venueParam: 'id',
+    params: { id: 'Venue not found.' },
+  },
   async ({ request, params, actor }) => {
     if (!isBlobConfigured()) return jsonError(503, 'Image uploads are not configured.');
     const token = getBlobToken();

@@ -7,7 +7,12 @@ export const prerender = false;
 
 /** POST /api/admin/venues/[id]/recompute-route: retry the ORS walking route from HQ. */
 export const POST = adminRoute(
-  { action: 'Recompute venue route', publishes: true, params: { id: 'Venue not found.' } },
+  {
+    action: 'Recompute venue route',
+    publish: 'queue',
+    venueParam: 'id',
+    params: { id: 'Venue not found.' },
+  },
   async ({ params, actor }) => {
     const result = await rerouteVenue(db, params.id, actor);
     if (result.ok) return jsonResponse({ venue: serializeVenue(result.venue) });

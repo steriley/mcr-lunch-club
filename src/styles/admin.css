@@ -322,3 +322,8 @@
     }
   }
 }
+
+/* Keep the sticky unpublished-changes bar from covering a field scrolled into view. */
+html {
+  scroll-padding-top: 4rem;
+}

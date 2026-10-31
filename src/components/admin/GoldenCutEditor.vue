@@ -103,7 +103,7 @@ async function save() {
   }
   rows.value = result.data.entries.map(toRow);
   savedSnapshot.value = JSON.stringify(rows.value);
-  message.value = 'Saved. The home page shows the new order within about a minute.';
+  message.value = 'Saved. Publish from the bar at the top to update the home page.';
 }
 
 function discard() {

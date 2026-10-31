@@ -9,7 +9,7 @@ import {
 export const prerender = false;
 
 export const POST = adminRoute(
-  { action: 'withdraw proposal', publishes: false, params: { id: 'Proposal not found.' } },
+  { action: 'withdraw proposal', params: { id: 'Proposal not found.' } },
   async ({ params, actor }) => {
     const result = await withdrawProposal(db, params.id, actor);
     if (!result.ok)

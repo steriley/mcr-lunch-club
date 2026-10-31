@@ -399,7 +399,7 @@ async function save() {
     justSaved.value = true;
     clearTimeout(savedTimer);
     savedTimer = setTimeout(() => (justSaved.value = false), 2000);
-    notify('success', result.routeWarning ?? 'Decree saved. All changes ratified and archived.');
+    notify('success', result.routeWarning ?? 'Saved. Not live until published.');
   } catch (error) {
     console.error('Venue save failed', error);
     notify('error', 'Unable to save this venue right now.');

@@ -7,7 +7,7 @@ export const prerender = false;
 
 /** Replaces the whole list, in the order given. Any admin; no countersign. */
 export const PUT = adminRoute(
-  { action: 'Save the Golden Cut', publishes: true, body: goldenCutInputSchema },
+  { action: 'Save the Golden Cut', publish: 'queue', body: goldenCutInputSchema },
   async ({ body, actor }) => {
     const result = await saveGoldenCut(db, body.entries, actor);
     if (!result.ok) return jsonError(400, result.error);

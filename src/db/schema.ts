@@ -285,6 +285,54 @@ export const venueImages = pgTable(
   ]
 );
 
+/**
+ * A publishing admin action that has not reached the public site yet (#100).
+ * The public pages are prerendered, so these wait for a production build; the
+ * build's `publish:settle` step deletes the ones saved before it started.
+ */
+export const pendingPublishChanges = pgTable(
+  'pending_publish_changes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    // The admin route's action label, e.g. "Update venue".
+    action: text('action').notNull(),
+    venueId: uuid('venue_id').references(() => venues.id, { onDelete: 'set null' }),
+    actorId: text('actor_id')
+      .notNull()
+      .references(() => user.id),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('pending_publish_changes_created_idx').on(table.createdAt)]
+);
+
+/** Each ask for a rebuild, and whether the Deploy Hook accepted it. Null requester: a cron. */
+export const publishRequests = pgTable(
+  'publish_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    source: text('source').notNull(),
+    requestedBy: text('requested_by').references(() => user.id),
+    requestedAt: timestamp('requested_at', { withTimezone: true }).notNull().defaultNow(),
+    accepted: boolean('accepted').notNull(),
+  },
+  (table) => [
+    check(
+      'publish_requests_source_valid',
+      sql`${table.source} in ('chair', 'auto', 'nightly', 'bulletin')`
+    ),
+  ]
+);
+
+/** A single row (id 1): when the last production build that settled the queue started. */
+export const publishState = pgTable(
+  'publish_state',
+  {
+    id: integer('id').primaryKey().default(1),
+    lastPublishedAt: timestamp('last_published_at', { withTimezone: true }),
+  },
+  (table) => [check('publish_state_single_row', sql`${table.id} = 1`)]
+);
+
 export const suggestionStatusEnum = pgEnum('suggestion_status', ['new', 'accepted', 'dismissed']);
 
 /** Venue suggestions sent in by members from the public "Suggest a Venue" form. */

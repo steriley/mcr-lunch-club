@@ -24,3 +24,6 @@ Thumbs.db
 !.env.example
 test-results/
 playwright-report/
+
+# Written by `pnpm publish:mark` at the start of a production build
+.publish-cut

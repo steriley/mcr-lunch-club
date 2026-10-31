@@ -7,7 +7,7 @@ import { db } from '@/lib/db';
 export const prerender = false;
 
 export const POST = adminRoute(
-  { action: 'Create bribery record', publishes: true, body: briberyInputSchema },
+  { action: 'Create bribery record', publish: 'queue', body: briberyInputSchema },
   async ({ body, actor }) => {
     const result = await briberyValues(db, body);
     if (!result.ok)

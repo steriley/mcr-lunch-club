@@ -9,7 +9,7 @@ import {
 export const prerender = false;
 
 export const POST = adminRoute(
-  { action: 'approve proposal', publishes: true, params: { id: 'Proposal not found.' } },
+  { action: 'approve proposal', publish: 'queue', params: { id: 'Proposal not found.' } },
   async ({ params, actor }) => {
     const result = await approveProposal(db, params.id, actor);
     if (!result.ok)

@@ -423,7 +423,11 @@ describe('PATCH /api/admin/venues/[id]/images/[imageId]', () => {
     });
     const { image } = await response.json();
     assert.deepEqual([image.caption, image.focalX, image.focalY], ['Counter', 30, 70]);
-    assert.equal(values(inserts).length, 0, 'caption and focal edits are not logged');
+    assert.deepEqual(
+      values(inserts).map((row) => (row as any).action),
+      ['Update venue image'],
+      'caption and focal edits are not logged; only the pending publish is recorded'
+    );
   });
 
   it('resets the focal point to centre', async () => {
@@ -495,7 +499,9 @@ describe('DELETE /api/admin/venues/[id]/images/[imageId]', () => {
     assert.deepEqual(dels, [[imageRow().fullUrl, imageRow().thumbUrl]]);
     assert.deepEqual(order, ['del:2'], 'blobs go after the row change is logged');
     assert.deepEqual(
-      values(inserts).map((event) => [event.kind, event.detail.imageId, event.detail.reason]),
+      values(inserts)
+        .filter((event) => event.kind)
+        .map((event) => [event.kind, event.detail.imageId, event.detail.reason]),
       [
         ['image_removed', IMAGE_ID, undefined],
         ['image_primary_changed', 'promoted-id', 'promoted_after_delete'],

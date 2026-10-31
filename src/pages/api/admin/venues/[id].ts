@@ -16,7 +16,8 @@ const notFound = () => jsonError(404, NOT_FOUND);
 export const PUT = adminRoute(
   {
     action: 'Update venue',
-    publishes: true,
+    publish: 'queue',
+    venueParam: 'id',
     params: { id: NOT_FOUND },
     body: venueInputSchema,
     onError: (error) => (isUniqueViolation(error) ? slugTaken() : undefined),
@@ -32,7 +33,7 @@ export const PUT = adminRoute(
 );
 
 export const DELETE = adminRoute(
-  { action: 'Delete venue', publishes: true, params: { id: NOT_FOUND } },
+  { action: 'Delete venue', publish: 'queue', params: { id: NOT_FOUND } },
   async ({ params }) => {
     // Collect the photos first: deleting the venue cascades to their rows.
     const images = await db

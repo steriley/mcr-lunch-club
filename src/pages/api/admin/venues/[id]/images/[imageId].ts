@@ -64,7 +64,13 @@ const imageParams = {
 const notConfigured = () => jsonError(503, 'Image uploads are not configured.');
 
 export const PATCH = adminRoute(
-  { action: 'Update venue image', publishes: true, params: imageParams, body: imagePatchSchema },
+  {
+    action: 'Update venue image',
+    publish: 'queue',
+    venueParam: 'id',
+    params: imageParams,
+    body: imagePatchSchema,
+  },
   async ({ params, body, actor }) => {
     if (!isBlobConfigured()) return notConfigured();
 
@@ -92,7 +98,7 @@ export const PATCH = adminRoute(
 
 /** Row first (promoting a new primary if needed), then the blobs, best-effort. */
 export const DELETE = adminRoute(
-  { action: 'Delete venue image', publishes: true, params: imageParams },
+  { action: 'Delete venue image', publish: 'queue', venueParam: 'id', params: imageParams },
   async ({ params, actor }) => {
     if (!isBlobConfigured()) return notConfigured();
 

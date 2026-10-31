@@ -112,7 +112,13 @@ describe('/api/admin/golden-cut', () => {
     stubDb('delete');
     const inserts = stubDb('insert');
     assert.equal((await put({ entries: [] })).status, 200);
-    assert.equal(inserts.length, 0);
+    // Only the pending-publish record, no Golden Cut rows.
+    assert.deepEqual(
+      inserts
+        .filter((call) => call.method === 'values')
+        .map((call) => (call.args[0] as any).action),
+      ['Save the Golden Cut']
+    );
   });
 
   it('PUT returns 500 on database errors', async () => {
