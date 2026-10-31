@@ -24,11 +24,21 @@ test.describe('homepage map framing', () => {
     await expect(pill).toBeHidden();
   });
 
-  test('a wide map frames every venue, so there is nothing further out', async ({ page }) => {
+  test('on a wide map everything is framed, and the pill appears once the view moves away', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await visit(page, '/');
     await expect(page.locator('.leaflet-container')).toBeVisible();
     await expect(page.locator('.map-outliers')).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Show all matching venues' })).toBeVisible();
+    await expect(page.locator('.ledger-reset-control')).toHaveCount(0);
+
+    // Zoom in on Base: the matches that fall out of view are counted, and the pill brings them back.
+    const zoomIn = page.locator('.leaflet-control-zoom-in');
+    for (let i = 0; i < 3; i++) await zoomIn.click();
+    const pill = page.locator('.map-outliers');
+    await expect(pill).toBeVisible();
+    await pill.click();
+    await expect(pill).toBeHidden();
   });
 });
