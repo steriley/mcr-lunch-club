@@ -1,5 +1,6 @@
 import { TIERS, tierInfo, type TierValue } from '@/lib/tiers';
 import type { Venue } from '@/types';
+import { worldPx, latFromMercatorY, lngFromMercatorX, mercatorX, mercatorY } from './projection';
 
 /**
  * Clustering for the home map, so no two markers ever overlap.
@@ -21,8 +22,6 @@ const GAP_PX = 8;
 
 /** A pin's disc sits above the venue's point (its stem ends on it); a cluster is centred on its point. */
 const PIN_LIFT_PX = 16;
-
-const TILE_PX = 256;
 
 interface VenueItem {
   kind: 'venue';
@@ -57,17 +56,6 @@ interface Group {
   y: number;
 }
 
-const mercatorX = (lng: number) => (lng + 180) / 360;
-
-const mercatorY = (lat: number) => {
-  const sin = Math.sin((lat * Math.PI) / 180);
-  return 0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI);
-};
-
-const lngFromX = (x: number) => x * 360 - 180;
-
-const latFromY = (y: number) => (Math.atan(Math.sinh(Math.PI * (1 - 2 * y))) * 180) / Math.PI;
-
 const isCluster = (group: Group) => group.venues.length > 1;
 
 /** How far apart two groups' markers sit on screen at `scale` px per world unit, allowing for a pin's lift. */
@@ -95,7 +83,7 @@ function merge(a: Group, b: Group): Group {
 
 /** Merges the closest touching pair, again and again, until no two groups touch at this zoom. */
 function mergeTouching(groups: Group[], zoom: number): Group[] {
-  const scale = TILE_PX * 2 ** zoom;
+  const scale = worldPx(zoom);
   const result = [...groups];
   for (;;) {
     let closest: { i: number; j: number; distance: number } | null = null;
@@ -163,8 +151,8 @@ export function createClusterIndex(venues: readonly Venue[]): ClusterIndex {
         return {
           kind: 'cluster',
           key,
-          lat: latFromY(group.y),
-          lng: lngFromX(group.x),
+          lat: latFromMercatorY(group.y),
+          lng: lngFromMercatorX(group.x),
           count: group.venues.length,
           tiers: tierCounts(group.venues),
           venues: group.venues,
