@@ -8,12 +8,11 @@ import {
   createMapRemover,
   createTileLayer,
   createUserMarkerLayers,
-  createVenueIcon,
-  createVenueMarker,
   haversineMetres,
   type RankedVenue,
   type useGeolocation,
 } from '@/lib/map';
+import { createVenuePinLayer, type VenuePinLayer } from '@/lib/map/pin-layer';
 import type { SheetSnap } from '@/lib/near-me/sheet';
 import type { Venue } from '@/types';
 import type { BottomSheet } from './useBottomSheet';
@@ -45,8 +44,6 @@ interface NearMeLeafletOptions {
   geo: ReturnType<typeof useGeolocation>;
   /** Venues that get a pin: in the selected tiers and price bands, with a location. */
   pinnedVenues: () => Venue[];
-  /** Every public venue, to rebuild a pin's icon when its rank changes. */
-  allVenues: () => readonly Venue[];
   rankedVenues: Ref<RankedVenue[]>;
   selectedVenueId: Ref<string | null>;
   isFollowingUser: Ref<boolean>;
@@ -72,11 +69,8 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
   // Removes the map once any zoom animation has ended (see createMapRemover).
   let removeMap: (() => void) | null = null;
   let leafletModule: any = null;
-  let venueMarkersLayer: any = null;
+  let pins: VenuePinLayer | null = null;
   let userLayersGroup: any = null;
-  const venueMarkersMap = new Map<string, any>();
-  // Swap a pin's icon only when its rank changed, so pins aren't rebuilt needlessly on re-ranking.
-  const pinRanks = new Map<string, number | undefined>();
   let isProgrammaticMove = false;
 
   const leaflet = () => leafletModule.default || leafletModule;
@@ -96,51 +90,12 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
   }
 
   function highlightSelectedPin() {
-    venueMarkersMap.forEach((marker, id) => {
-      const el = marker.getElement();
-      if (!el) return;
-      const isSelected = id === options.selectedVenueId.value;
-      el.classList.toggle('is-selected-pin', isSelected);
-      marker.setZIndexOffset(isSelected ? 1000 : 0);
-    });
+    pins?.select(options.selectedVenueId.value);
   }
 
-  function applyPinRanks() {
-    if (!leafletModule || venueMarkersMap.size === 0) return;
-    const L = leaflet();
-    let changed = false;
-    venueMarkersMap.forEach((marker, id) => {
-      const rank = pinRankFor(id);
-      if (pinRanks.get(id) === rank) return;
-      const venue = options.allVenues().find((v) => v.id === id);
-      if (!venue) return;
-      marker.setIcon(createVenueIcon(L, venue, rank));
-      pinRanks.set(id, rank);
-      changed = true;
-    });
-    if (changed) highlightSelectedPin();
-  }
-
+  /** Pins for the venues the filters match, each of the nearest few with its number. */
   function renderVenueMarkers() {
-    if (!mapInstance || !leafletModule || !venueMarkersLayer) return;
-    const L = leaflet();
-    venueMarkersLayer.clearLayers();
-    venueMarkersMap.clear();
-    pinRanks.clear();
-
-    options.pinnedVenues().forEach((venue) => {
-      const rank = pinRankFor(venue.id);
-      const marker = createVenueMarker(L, venue, rank);
-      if (!marker) return;
-
-      venueMarkersMap.set(venue.id, marker);
-      pinRanks.set(venue.id, rank);
-
-      // The selected venue's card shows in the panel (Your selection), not on the map.
-      marker.on('click', () => options.onPinSelect(venue));
-      venueMarkersLayer.addLayer(marker);
-    });
-
+    pins?.sync(options.pinnedVenues().map((venue) => ({ venue, rank: pinRankFor(venue.id) })));
     highlightSelectedPin();
   }
 
@@ -224,8 +179,7 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
 
   /** Pans so the venue's pin sits in the clear part of the map: above the sheet, or beside the panel. */
   function focusVenue(venue: Venue, { sheetState }: { sheetState: SheetSnap }) {
-    if (!mapInstance || !venueMarkersMap.has(venue.id) || venue.lat == null || venue.lng == null)
-      return;
+    if (!mapInstance || !pins?.has(venue.id) || venue.lat == null || venue.lng == null) return;
     moveProgrammatically(() => {
       const zoom = mapInstance.getZoom();
       mapInstance.panTo(
@@ -334,7 +288,9 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
     tileLayer.on('tileerror', () => {});
     tileLayer.addTo(mapInstance);
 
-    venueMarkersLayer = L.layerGroup().addTo(mapInstance);
+    // The selected venue's card shows in the panel (Your selection), not on the map.
+    pins = createVenuePinLayer(L, (venue) => options.onPinSelect(venue));
+    pins.layer.addTo(mapInstance);
     userLayersGroup = L.layerGroup().addTo(mapInstance);
     mapInstance.addLayer(createBaseMarker(L));
 
@@ -369,16 +325,14 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
     removeMap?.();
     removeMap = null;
     mapInstance = null;
-    venueMarkersLayer = null;
+    pins = null;
     userLayersGroup = null;
-    venueMarkersMap.clear();
   }
 
   return {
     init,
     destroy,
     renderVenueMarkers,
-    applyPinRanks,
     highlightSelectedPin,
     fitFirstFixBounds,
     focusVenue,

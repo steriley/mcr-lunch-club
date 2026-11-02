@@ -109,47 +109,23 @@ import {
   createMapRemover,
   BASE_LAT,
   BASE_LNG,
+  CARTO_VOYAGER_TILE_CONFIG,
   DEFAULT_ZOOM,
   createTileLayer,
   createBaseMarker,
   createWalkingIsochrones,
   createLabelMarker,
-  createVenueMarker,
-  createVenueIcon,
   createClusterMarker,
-  WALKING_ISOCHRONES,
 } from '@/lib/map';
+import type { Rect } from '@/lib/map/labels';
+import { createVenuePinLayer, onMarkerActivate, type VenuePinLayer } from '@/lib/map/pin-layer';
 import {
-  CLUSTER_MAX_ZOOM,
-  clusterLabel,
-  createClusterIndex,
-  spiderfyOffsets,
-  type ClusterIndex,
-  type ClusterItem,
-  type MapItem,
-} from '@/lib/map/clusters';
-import {
-  NARROW_MAP_MAX_WIDTH,
-  anyOutsideView,
-  coreVenues,
-  countOutsideView,
-  frameFor,
-  type LatLng,
-} from '@/lib/map/framing';
-import {
-  NAME_HEIGHT_PX,
-  NAME_MIN_ZOOM,
-  byNamePriority,
-  clusterRect,
-  labelWidth,
-  nameLabelText,
-  nameOptions,
-  pinRect,
-  placeLabels,
-  ringLabelOptions,
-  type LabelCandidate,
-  type Rect,
-} from '@/lib/map/labels';
+  createLedgerMapScene,
+  type FanOut,
+  type Frame,
+  type MarkerFrame,
+  type PlacedLabel,
+} from '@/lib/map/scene';
 import { tierInfo } from '@/lib/tiers';
 import { onThemeChange } from '@/lib/theme';
 import { themeColor } from '@/lib/theme-color';
@@ -166,45 +142,36 @@ const inspectionsStore = useStore($inspectionsList);
 // The store hands back a deep-readonly copy; the card only reads it (Near Me does the same).
 const inspectionsList = computed(() => inspectionsStore.value as Inspection[]);
 
+// What the map shows (pins, clusters, fan-out, labels, framing) is decided by the scene;
+// this file draws it with Leaflet and looks after the card, focus and the rings switch.
+const scene = createLedgerMapScene({ maxZoom: CARTO_VOYAGER_TILE_CONFIG.maxZoom });
+
 let mapInstance: any = null;
 let removeMap: (() => void) | null = null;
 let leafletModule: any = null;
-let markersLayer: any = null;
-const markersById = new Map<string, any>();
+// Single pins, kept between zooms so a focused pin stays focused, and a fan-out's pins.
+let pins: VenuePinLayer | null = null;
+let fanOutPins: VenuePinLayer | null = null;
+// Clusters are redrawn whenever the markers change.
+let clusterLayer: any = null;
+const clusterMarkers = new Map<string, any>();
+// The fan-out's legs and the dot it fans out from.
+let spiderLayer: any = null;
 // The walking rings and their labels come and go together with the "Walking rings" switch.
 let ringsLayer: any = null;
 let ringLabelsLayer: any = null;
 let baseLayer: any = null;
 // Venue names beside their pins, from zoom 16.
 let namesLayer: any = null;
-let namedPins: Set<string> = new Set();
-// The rect each placed name takes, in the map's pixel space: the walking-ring labels steer clear of them.
-let placedNameRects: Rect[] = [];
+// The scene's marker frame last drawn: an unchanged one isn't redrawn.
+let drawnMarkersKey: string | null = null;
 let ringsButton: HTMLAnchorElement | null = null;
 const RINGS_STORAGE_KEY = 'mcr-map-rings';
 const ringsVisible = ref(true);
-
-// Clusters are redrawn at every zoom; single pins are kept between zooms, so a focused pin stays focused.
-let clusterLayer: any = null;
-let clusterIndex: ClusterIndex | null = null;
-// The pins of a cluster that can't zoom any further (several venues in one building), fanned out around it.
-let spiderLayer: any = null;
-const spiderMarkers = new Map<string, any>();
-let spiderfied: { key: string; lat: number; lng: number; venues: Venue[] } | null = null;
-// A cluster that can never split (one building) was tapped from afar: it fans out once the map has zoomed in.
-let pendingFanOut: { key: string; until: number } | null = null;
-// How long a tap's zoom may take before its fan-out is forgotten (a user who zooms away shouldn't get one later).
-const FAN_OUT_WAIT_MS = 3000;
-// True while the selected venue is pulled out of a cluster it would otherwise hide in.
-let pinnedOutsideClusters = false;
 // Set while a ?venue= link positions the map itself, so a filter change it causes doesn't reframe.
 let suppressReframe = false;
-
-// Room to keep clear when framing: the Near Me button above, the venue card below.
-const FRAME_PADDING = { top: 72, right: 48, bottom: 48, left: 48 };
-// A phone's narrow map must zoom out to fit every venue; never closer than street level.
-const FRAME_MIN_ZOOM = 12;
-const FRAME_MAX_ZOOM = 16;
+// True from a zoom's start to its end, animation included.
+let zooming = false;
 
 // The venues the filters match: the store's, so the list beside the map shows exactly these.
 const filteredVenues = useStore($filteredVenues);
@@ -223,8 +190,6 @@ const announcement = computed(() =>
 // What shares the pick with the list: the venue chosen there (or here), and the row being pointed at.
 const selection = useStore($mapSelection);
 const hovered = useStore($hoveredVenueId);
-// The cluster marker each venue currently sits in, so a hovered row can light up its cluster.
-const clusterMarkerByVenue = new Map<string, any>();
 // Where focus goes back to when the card closes: the pin that opened it.
 let returnFocusTo: HTMLElement | null = null;
 // A cluster was opened from the keyboard: its markers are about to be redrawn, so focus would be lost.
@@ -260,9 +225,8 @@ async function startMap() {
 
   leafletModule = await import('leaflet');
   if (!mapContainer.value) return;
-  const L = leafletModule.default || leafletModule;
+  const L = leaflet();
 
-  // Initialize Map
   mapInstance = L.map(mapContainer.value, {
     center: [BASE_LAT, BASE_LNG],
     zoom: DEFAULT_ZOOM,
@@ -275,46 +239,49 @@ async function startMap() {
   });
   removeMap = createMapRemover(mapInstance);
 
-  // Custom Zoom Control top-right
   L.control.zoom({ position: 'topright' }).addTo(mapInstance);
-
-  // CartoDB Positron / Voyager Muted Archival Tile Layer
   createTileLayer(L, props.mapApiKey).addTo(mapInstance);
-
   addRingsControl(L);
 
-  // Layer groups
+  // Layer groups, bottom to top.
   baseLayer = L.layerGroup().addTo(mapInstance);
   ringsLayer = L.layerGroup();
   ringLabelsLayer = L.layerGroup();
   namesLayer = L.layerGroup().addTo(mapInstance);
-  ringsVisible.value = readRingsChoice();
-  showRings(ringsVisible.value);
-  markersLayer = L.layerGroup().addTo(mapInstance);
+  pins = createVenuePinLayer(L, (venue, viaKeyboard) => showPin(venue, viaKeyboard));
+  pins.layer.addTo(mapInstance);
   clusterLayer = L.layerGroup().addTo(mapInstance);
   spiderLayer = L.layerGroup().addTo(mapInstance);
+  fanOutPins = createVenuePinLayer(L, (venue, viaKeyboard) => showPin(venue, viaKeyboard));
+  fanOutPins.layer.addTo(mapInstance);
 
   // Tapping empty map puts the card and any fanned-out pins away (a pin tap doesn't reach the map).
   mapInstance.on('click', () => {
-    collapseSpider();
+    collapseFanOut();
     clearPin();
   });
 
-  // Draw Base & Walking Rings
   drawBaseAndRings();
 
+  scene.setVenues(filteredVenues.value, { reframe: false });
+  syncView();
   // A ?venue= link positions the map itself; otherwise fit every venue the filters match.
-  clusterIndex = createClusterIndex(filteredVenues.value);
-  if (!new URLSearchParams(window.location.search).has('venue')) frameAll({ animate: false });
+  if (!new URLSearchParams(window.location.search).has('venue')) {
+    moveTo(scene.frameAll(), false);
+  }
 
-  // Clusters depend on the zoom: regroup whenever it changes (and drop a fan-out as it starts).
-  mapInstance.on('zoomstart', collapseSpider);
-  mapInstance.on('zoomend', renderMarkers);
-  // Ring labels sit where they can be seen, so they follow the view; names don't depend on it.
-  mapInstance.on('moveend resize', updateRingLabels);
-  mapInstance.on('moveend resize', updateOutsideCount);
-  renderMarkers();
-  updateOutsideCount();
+  // A zoom folds a fan-out away as it starts; every move tells the scene where the map now is.
+  mapInstance.on('zoomstart', () => {
+    zooming = true;
+    collapseFanOut();
+  });
+  mapInstance.on('zoomend', () => {
+    zooming = false;
+  });
+  mapInstance.on('moveend resize', syncView);
+  syncView();
+  ringsVisible.value = readRingsChoice();
+  showRings(ringsVisible.value);
   mapReady.value = true;
 
   void focusLinkedVenue();
@@ -326,74 +293,46 @@ function leaflet() {
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const BASE_POINT = { lat: BASE_LAT, lng: BASE_LNG };
-
-const isNarrowMap = () => mapInstance.getSize().x < NARROW_MAP_MAX_WIDTH;
-
-const matchingPoints = () =>
-  filteredVenues.value.map((venue) => ({ lat: venue.lat!, lng: venue.lng! }));
-
-/** The points to frame: on a narrow map the core around Base, otherwise every match. */
-function framedPoints() {
-  const points = matchingPoints();
-  return isNarrowMap() ? coreVenues(points, BASE_POINT) : points;
+/** Where the map's own controls sit over the tiles, in container pixels: ring labels keep out from under them. */
+function controlZones(size: { x: number; y: number }): Rect[] {
+  return [
+    { x: 0, y: 0, width: 170, height: 64 }, // Near Me
+    { x: size.x - 54, y: 0, width: 54, height: 160 }, // zoom and rings
+    { x: 0, y: size.y - 28, width: size.x, height: 28 }, // attribution
+  ];
 }
 
-/** Centre and zoom the map on the venues to frame (see framedVenues), plus Base. */
-function frameAll({ animate }: { animate: boolean }) {
+/** Tells the scene where the map is now, then draws what changed. */
+function syncView() {
   if (!mapInstance) return;
-  frameOn(framedPoints(), animate);
+  const centre = mapInstance.getCenter();
+  const size = mapInstance.getSize();
+  scene.setView({
+    lat: centre.lat,
+    lng: centre.lng,
+    zoom: mapInstance.getZoom(),
+    width: size.x,
+    height: size.y,
+    controls: controlZones(size),
+  });
+  draw();
+}
+
+function moveTo(frame: Frame, animate: boolean) {
+  if (!mapInstance) return;
+  // Leaflet ignores a move asked for during an animated zoom (a tap on the pill mid-zoom), so it waits.
+  if (zooming) {
+    mapInstance.once('zoomend', () => moveTo(frame, animate));
+    return;
+  }
+  mapInstance.setView([frame.lat, frame.lng], frame.zoom, {
+    animate: animate && !prefersReducedMotion(),
+  });
 }
 
 /** The "further out" pill: every matching venue, on any width. */
 function frameEverything() {
-  if (!mapInstance) return;
-  frameOn(matchingPoints(), true);
-}
-
-function frameOn(points: readonly LatLng[], animate: boolean) {
-  const options = { animate: animate && !prefersReducedMotion() };
-  if (points.length === 0) {
-    mapInstance.setView([BASE_LAT, BASE_LNG], DEFAULT_ZOOM, options);
-    return;
-  }
-  const size = mapInstance.getSize();
-  const frame = frameFor([BASE_POINT, ...points], {
-    width: size.x,
-    height: size.y,
-    padding: FRAME_PADDING,
-    minZoom: FRAME_MIN_ZOOM,
-    maxZoom: FRAME_MAX_ZOOM,
-  });
-  if (frame) mapInstance.setView([frame.lat, frame.lng], frame.zoom, options);
-}
-
-/** Recount the matching venues outside the view (on pan, zoom, resize and filter changes). */
-function updateOutsideCount() {
-  if (!mapInstance) return;
-  const view = mapInstance.getBounds();
-  outsideCount.value = countOutsideView(matchingPoints(), {
-    south: view.getSouth(),
-    west: view.getWest(),
-    north: view.getNorth(),
-    east: view.getEast(),
-  });
-}
-
-/**
- * After a filter change: reframe only if a venue we would frame is off screen, so a small tweak
- * (and, on a narrow map, an outlier) doesn't make the map jump.
- */
-function reframeIfNeeded() {
-  if (!mapInstance || filteredVenues.value.length === 0) return;
-  const view = mapInstance.getBounds();
-  const outside = anyOutsideView(framedPoints(), {
-    south: view.getSouth(),
-    west: view.getWest(),
-    north: view.getNorth(),
-    east: view.getEast(),
-  });
-  if (outside) frameAll({ animate: true });
+  moveTo(scene.frameEverything(), true);
 }
 
 /** `/?venue=<slug>` (from a dossier's "Locate on Ledger Map") centres on that venue and shows its card. */
@@ -417,10 +356,10 @@ async function focusLinkedVenue() {
   suppressReframe = false;
 }
 
-// The rings' colours are resolved when drawn (SVG attributes), so redraw them for the new theme.
+// The rings' and the fan-out's colours are resolved when drawn (SVG attributes), so redraw them for the new theme.
 const stopFollowingTheme = onThemeChange(() => {
   drawBaseAndRings();
-  drawSpider();
+  drawFanOut(scene.frame().markers.fanOut);
 });
 
 onUnmounted(() => {
@@ -434,27 +373,28 @@ onUnmounted(() => {
 
 // A filter change regroups the clusters, then brings any matching venue that is off screen into view.
 watch(filteredVenues, () => {
-  if (!mapInstance || !leafletModule) return;
-  clusterIndex = createClusterIndex(filteredVenues.value);
-  spiderfied = null;
-  renderMarkers();
-  if (!suppressReframe) reframeIfNeeded();
-  updateOutsideCount();
+  if (!mapInstance) return;
+  const move = scene.setVenues(filteredVenues.value, { reframe: !suppressReframe });
+  // The filters can take the selected venue off the map: drop its card.
+  if (pinVenue.value && scene.selected() === null) {
+    pinVenue.value = null;
+    selectMapVenue(null);
+  }
+  draw();
+  if (move) moveTo(move, true);
 });
 
 function drawBaseAndRings() {
-  if (!mapInstance || !leafletModule || !ringsLayer || !baseLayer) return;
-  const L = leafletModule.default || leafletModule;
+  if (!mapInstance || !ringsLayer || !baseLayer) return;
+  const L = leaflet();
   ringsLayer.clearLayers();
   baseLayer.clearLayers();
 
-  // 1. Spinningfields Base Origin Marker
   const baseMarker = createBaseMarker(L);
   // Venues near HQ would otherwise sit under its marker: keep it beneath the pins and clusters.
   baseMarker.setZIndexOffset(-1000);
   baseLayer.addLayer(baseMarker);
 
-  // 2. Walking Time Isochrones (Rings)
   createWalkingIsochrones(L).forEach((circle) => {
     ringsLayer.addLayer(circle);
   });
@@ -481,19 +421,20 @@ function rememberRingsChoice(visible: boolean) {
 function showRings(visible: boolean) {
   if (!mapInstance || !ringsLayer || !ringLabelsLayer) return;
   ringsVisible.value = visible;
+  scene.showRings(visible);
   if (visible) {
     mapInstance.addLayer(ringsLayer);
     mapInstance.addLayer(ringLabelsLayer);
-    updateRingLabels();
   } else {
     mapInstance.removeLayer(ringsLayer);
     mapInstance.removeLayer(ringLabelsLayer);
   }
+  drawRingLabels(scene.frame().ringLabels);
   ringsButton?.setAttribute('aria-pressed', String(visible));
   ringsButton?.setAttribute('title', visible ? 'Hide walking rings' : 'Show walking rings');
 }
 
-/** A switch under the reset button that hides the walking rings; the choice is remembered. */
+/** A switch under the zoom buttons that hides the walking rings; the choice is remembered. */
 function addRingsControl(L: any) {
   const RingsControl = L.Control.extend({
     options: { position: 'topright' },
@@ -529,231 +470,97 @@ function addRingsControl(L: any) {
   new RingsControl().addTo(mapInstance);
 }
 
-const NAME_FONT = '600 12px "Playfair Display", "Playfair Display Fallback", Georgia, serif';
-const RING_FONT = '600 11px "Playfair Display", "Playfair Display Fallback", Georgia, serif';
-const RING_LABEL_HEIGHT_PX = 14;
-const EARTH_CIRCUMFERENCE_M = 40_075_016.686;
-
-/** Where the map's own controls sit over the tiles, in container pixels: ring labels keep out from under them. */
-function controlZones(size: { x: number; y: number }): Rect[] {
-  return [
-    { x: 0, y: 0, width: 170, height: 64 }, // Near Me
-    { x: size.x - 54, y: 0, width: 54, height: 160 }, // zoom, reset and rings
-    { x: 0, y: size.y - 28, width: size.x, height: 28 }, // attribution
-  ];
-}
-
-/**
- * Names beside the pins, from zoom 16. Every pin, cluster and the Base marker is an
- * obstacle; a name that would touch one, or another name, is left out. Approved
- * venues get first pick, then the nearest to Base. Placement doesn't depend on what is
- * in view, so names stay put as the map is dragged.
- */
-function updateNames() {
-  if (!mapInstance || !namesLayer) return;
-  const L = leaflet();
-  namesLayer.clearLayers();
-  namedPins.forEach((id) =>
-    (markersById.get(id) ?? spiderMarkers.get(id))?.getElement()?.classList.remove('has-name-label')
-  );
-  namedPins = new Set();
-  placedNameRects = [];
-
-  const zoom = mapInstance.getZoom();
-  if (zoom < NAME_MIN_ZOOM) return;
-  const project = (latlng: any) => mapInstance.project(latlng, zoom);
-
-  const obstacles: Rect[] = [];
-  const basePoint = project([BASE_LAT, BASE_LNG]);
-  obstacles.push({ x: basePoint.x - 16, y: basePoint.y - 16, width: 32, height: 32 });
-  markersById.forEach((marker) => obstacles.push(pinRect(project(marker.getLatLng()))));
-  spiderMarkers.forEach((marker) => obstacles.push(pinRect(project(marker.getLatLng()))));
-  clusterLayer.eachLayer((marker: any) => obstacles.push(clusterRect(project(marker.getLatLng()))));
-
-  const byId = new Map(filteredVenues.value.map((venue) => [venue.id, venue]));
-  const shown = [...markersById.keys()]
-    .map((id) => byId.get(id))
-    .filter((venue): venue is Venue => !!venue);
-  const candidates: Array<LabelCandidate & { venue: Venue }> = byNamePriority(shown).map(
-    (venue) => {
-      const text = nameLabelText(venue);
-      const width = labelWidth(text, NAME_FONT);
-      return {
-        id: venue.id,
-        venue,
-        options: nameOptions(project([venue.lat!, venue.lng!]), width),
-      };
-    }
-  );
-
-  const placed = placeLabels(candidates, obstacles);
-  for (const candidate of candidates) {
-    const index = placed.get(candidate.id);
-    if (index === undefined) continue;
-    const box = candidate.options[index];
-    placedNameRects.push(box);
-    namedPins.add(candidate.id);
-    markersById.get(candidate.id)?.getElement()?.classList.add('has-name-label');
-    const centre = mapInstance.unproject([box.x + box.width / 2, box.y + box.height / 2], zoom);
-    namesLayer.addLayer(
-      createLabelMarker(
-        L,
-        [centre.lat, centre.lng],
-        nameLabelText(candidate.venue),
-        { width: box.width, height: NAME_HEIGHT_PX },
-        'name'
-      )
-    );
+/** Draws the scene's current frame: the markers if they changed, then the ring labels, selection and hover. */
+function draw() {
+  if (!mapInstance || !pins || !fanOutPins) return;
+  const frame = scene.frame();
+  if (frame.markers.key !== drawnMarkersKey) {
+    drawMarkers(frame.markers);
+    drawnMarkersKey = frame.markers.key;
   }
-}
-
-/**
- * Each walking ring's minutes, printed on the ring where it is on screen and clear of pins,
- * clusters, names and the map's own buttons. Recomputed as the map moves.
- */
-function updateRingLabels() {
-  if (!mapInstance || !ringLabelsLayer || !ringsVisible.value) return;
-  const L = leaflet();
-  ringLabelsLayer.clearLayers();
-
-  const zoom = mapInstance.getZoom();
-  const project = (latlng: any) => mapInstance.project(latlng, zoom);
-  const size = mapInstance.getSize();
-  // The view in the same pixel space as project(), wherever the map has been dragged to.
-  const origin = mapInstance.getPixelBounds().min;
-  const view: Rect = { x: origin.x, y: origin.y, width: size.x, height: size.y };
-  const inset = (rect: Rect, by: number): Rect => ({
-    x: rect.x + by,
-    y: rect.y + by,
-    width: rect.width - by * 2,
-    height: rect.height - by * 2,
-  });
-
-  const obstacles: Rect[] = [...placedNameRects];
-  markersById.forEach((marker) => obstacles.push(pinRect(project(marker.getLatLng()))));
-  spiderMarkers.forEach((marker) => obstacles.push(pinRect(project(marker.getLatLng()))));
-  clusterLayer?.eachLayer((marker: any) =>
-    obstacles.push(clusterRect(project(marker.getLatLng())))
-  );
-  obstacles.push(
-    ...controlZones(size).map((zone) => ({ ...zone, x: zone.x + origin.x, y: zone.y + origin.y }))
-  );
-
-  const centre = project([BASE_LAT, BASE_LNG]);
-  // Web Mercator: a metre is this many pixels at Base's latitude.
-  const pixelsPerMetre =
-    (256 * 2 ** zoom) / (EARTH_CIRCUMFERENCE_M * Math.cos((BASE_LAT * Math.PI) / 180));
-  const candidates = WALKING_ISOCHRONES.map((ring) => {
-    const width = labelWidth(ring.shortLabel, RING_FONT, 80);
-    const options = ringLabelOptions(
-      centre,
-      ring.radius * pixelsPerMetre,
-      { width, height: RING_LABEL_HEIGHT_PX },
-      inset(view, 6)
-    );
-    return { id: ring.shortLabel, ring, options };
-  });
-
-  const placed = placeLabels(candidates, obstacles);
-  for (const candidate of candidates) {
-    const index = placed.get(candidate.id);
-    if (index === undefined) continue;
-    const box = candidate.options[index];
-    const at = mapInstance.unproject([box.x + box.width / 2, box.y + box.height / 2], zoom);
-    ringLabelsLayer.addLayer(
-      createLabelMarker(
-        L,
-        [at.lat, at.lng],
-        candidate.ring.shortLabel,
-        { width: box.width, height: RING_LABEL_HEIGHT_PX },
-        'ring'
-      )
-    );
-  }
-}
-
-/** What to draw at `zoom`. A selected venue never hides inside a cluster: it comes out as its own pin. */
-function itemsToShow(zoom: number): MapItem[] {
-  pinnedOutsideClusters = false;
-  const items = clusterIndex?.itemsAt(zoom) ?? [];
-  const selected = pinVenue.value;
-  if (!selected || !filteredVenues.value.some((venue) => venue.id === selected.id)) return items;
-
-  const shownAlone = items.some((item) => item.kind === 'venue' && item.venue.id === selected.id);
-  const fannedOut = spiderfied?.venues.some((venue) => venue.id === selected.id);
-  if (shownAlone || fannedOut) return items;
-
-  pinnedOutsideClusters = true;
-  const others = createClusterIndex(
-    filteredVenues.value.filter((venue) => venue.id !== selected.id)
-  );
-  return [...others.itemsAt(zoom), { kind: 'venue', venue: selected }];
-}
-
-function renderMarkers() {
-  if (!mapInstance || !leafletModule || !markersLayer || !clusterLayer) return;
-  const L = leaflet();
-  const items = itemsToShow(mapInstance.getZoom());
-  const maxZoom = Math.min(mapInstance.getMaxZoom(), CLUSTER_MAX_ZOOM);
-
-  // A tapped one-building cluster fans out as soon as the map is deep enough to show it honestly.
-  if (pendingFanOut && Date.now() > pendingFanOut.until) pendingFanOut = null;
-  if (pendingFanOut && mapInstance.getZoom() >= maxZoom) {
-    const target = items.find(
-      (item): item is ClusterItem => item.kind === 'cluster' && item.key === pendingFanOut!.key
-    );
-    pendingFanOut = null;
-    if (target)
-      spiderfied = { key: target.key, lat: target.lat, lng: target.lng, venues: target.venues };
-  }
-
-  clusterLayer.clearLayers();
-  clusterMarkerByVenue.clear();
-  const singles = new Map<string, Venue>();
-  let fanOutStillThere = false;
-  for (const item of items) {
-    if (item.kind === 'venue') {
-      singles.set(item.venue.id, item.venue);
-    } else if (spiderfied && item.key === spiderfied.key) {
-      fanOutStillThere = true; // the fan-out draws its venues in its place
-    } else {
-      const label = clusterLabel(item, mapInstance.getZoom() < maxZoom ? 'Zoom in' : 'Spread out');
-      const marker = createClusterMarker(L, item, label);
-      onActivate(marker, (viaKeyboard) => openCluster(item, viaKeyboard));
-      clusterLayer.addLayer(marker);
-      item.venues.forEach((venue) => clusterMarkerByVenue.set(venue.id, marker));
-    }
-  }
-  if (spiderfied && !fanOutStillThere) spiderfied = null;
-  drawSpider();
-
-  // Single pins stay put between zooms; only the ones that appear or vanish change.
-  markersById.forEach((marker, id) => {
-    if (singles.has(id)) return;
-    markersLayer.removeLayer(marker);
-    markersById.delete(id);
-  });
-  singles.forEach((venue, id) => {
-    if (markersById.has(id)) return;
-    const marker = createVenueMarker(L, venue);
-    if (!marker) return;
-    // Tapping a pin shows its card at the bottom of the map; the card links to the venue's page.
-    onActivate(marker, (viaKeyboard) => showPin(venue, viaKeyboard));
-    markersById.set(id, marker);
-    markersLayer.addLayer(marker);
-  });
-
-  // A filter change can take the selected venue off the map: drop its card.
-  if (pinVenue.value && !filteredVenues.value.some((venue) => venue.id === pinVenue.value?.id)) {
-    pinVenue.value = null;
-    selectMapVenue(null);
-  }
-  highlightPin();
+  drawRingLabels(frame.ringLabels);
+  outsideCount.value = frame.outsideCount;
+  pins.select(pinVenue.value?.id ?? null);
+  fanOutPins.select(pinVenue.value?.id ?? null);
   markHovered();
+}
+
+function drawMarkers(markers: MarkerFrame) {
+  if (!pins || !clusterLayer) return;
+  const L = leaflet();
+  clusterLayer.clearLayers();
+  clusterMarkers.clear();
+  for (const { cluster, label } of markers.clusters) {
+    const marker = createClusterMarker(L, cluster, label);
+    onMarkerActivate(marker, (viaKeyboard) => openCluster(cluster.key, viaKeyboard));
+    clusterLayer.addLayer(marker);
+    clusterMarkers.set(cluster.key, marker);
+  }
+  pins.sync(markers.pins.map((venue) => ({ venue })));
+  drawFanOut(markers.fanOut);
+  drawNames(markers.names);
   orderMarkersForKeyboard();
   keepFocusInMap();
-  updateNames();
-  updateRingLabels();
+}
+
+/** Draws the fan-out: each venue's pin on a circle around the cluster's spot, joined to it by a leg. */
+function drawFanOut(fanOut: FanOut | null) {
+  if (!spiderLayer || !fanOutPins) return;
+  spiderLayer.clearLayers();
+  if (!fanOut) {
+    fanOutPins.sync([]);
+    return;
+  }
+  const L = leaflet();
+  const ink = themeColor('graphite');
+  spiderLayer.addLayer(
+    L.circleMarker([fanOut.lat, fanOut.lng], {
+      className: 'ledger-spider',
+      radius: 4,
+      color: ink,
+      weight: 1.5,
+      fillColor: ink,
+      fillOpacity: 1,
+      interactive: false,
+    })
+  );
+  for (const pin of fanOut.pins) {
+    spiderLayer.addLayer(
+      L.polyline(
+        [
+          [fanOut.lat, fanOut.lng],
+          [pin.at.lat, pin.at.lng],
+        ],
+        { className: 'ledger-spider', color: ink, weight: 1.5, opacity: 0.7, interactive: false }
+      )
+    );
+  }
+  fanOutPins.sync(fanOut.pins);
+}
+
+function drawNames(names: readonly PlacedLabel[]) {
+  if (!namesLayer || !pins) return;
+  const L = leaflet();
+  namesLayer.clearLayers();
+  const named = new Set(names.map((label) => label.id));
+  for (const id of pins.ids())
+    pins.get(id)?.getElement()?.classList.toggle('has-name-label', named.has(id));
+  for (const label of names) {
+    namesLayer.addLayer(
+      createLabelMarker(L, [label.at.lat, label.at.lng], label.text, label, 'name')
+    );
+  }
+}
+
+function drawRingLabels(labels: readonly PlacedLabel[]) {
+  if (!ringLabelsLayer) return;
+  const L = leaflet();
+  ringLabelsLayer.clearLayers();
+  for (const label of labels) {
+    ringLabelsLayer.addLayer(
+      createLabelMarker(L, [label.at.lat, label.at.lng], label.text, label, 'ring')
+    );
+  }
 }
 
 /**
@@ -763,11 +570,17 @@ function renderMarkers() {
 function keepFocusInMap() {
   if (Date.now() > keepKeyboardInMapUntil) return;
   keepKeyboardInMapUntil = 0;
-  const firstPin = spiderMarkers.values().next().value?.getElement() as HTMLElement | undefined;
+  const firstPin = fanOutPins?.markers()[0]?.getElement() as HTMLElement | undefined;
   (firstPin ?? (mapInstance?.getContainer() as HTMLElement | undefined))?.focus({
     preventScroll: true,
   });
 }
+
+const allMarkers = (): any[] => [
+  ...(pins?.markers() ?? []),
+  ...clusterMarkers.values(),
+  ...(fanOutPins?.markers() ?? []),
+];
 
 /**
  * Tab order should follow the map, top to bottom. Leaflet adds markers in the order they are drawn,
@@ -783,12 +596,7 @@ function orderMarkersForKeyboard() {
       pane.contains(document.activeElement))
   )
     return;
-  const markers = [
-    ...markersById.values(),
-    ...(clusterLayer?.getLayers() ?? []),
-    ...spiderMarkers.values(),
-  ];
-  markers
+  allMarkers()
     .map((marker) => ({
       element: marker.getElement() as HTMLElement | undefined,
       at: marker.getLatLng(),
@@ -800,100 +608,16 @@ function orderMarkersForKeyboard() {
     .forEach((entry) => pane.appendChild(entry.element));
 }
 
-/**
- * Runs `handler` when a marker is tapped, or when Enter or Space is pressed on it. Leaflet only
- * turns Enter into a click for popups, and a marker is a button, so it must answer to both keys.
- */
-function onActivate(marker: any, handler: (viaKeyboard: boolean) => void) {
-  marker.on('click', () => handler(false));
-  marker.on('keydown', (event: any) => {
-    const key = event.originalEvent?.key;
-    if (key !== 'Enter' && key !== ' ') return;
-    event.originalEvent.preventDefault();
-    handler(true);
-  });
-}
-
-/** Tapping a cluster zooms to its venues; one that can't split by zooming (one building) zooms in and fans out. */
-function openCluster(cluster: ClusterItem, viaKeyboard = false) {
-  if (!mapInstance) return;
+/** Tapping a cluster zooms to its venues; one that can't split by zooming (one building) fans out. */
+function openCluster(key: string, viaKeyboard = false) {
   keepKeyboardInMapUntil = viaKeyboard ? Date.now() + KEEP_FOCUS_MS : 0;
-  const maxZoom = Math.min(mapInstance.getMaxZoom(), CLUSTER_MAX_ZOOM);
-  if (cluster.expansionZoom > maxZoom) {
-    if (mapInstance.getZoom() >= maxZoom) {
-      spiderfied = { key: cluster.key, lat: cluster.lat, lng: cluster.lng, venues: cluster.venues };
-      renderMarkers();
-    } else {
-      // Zooming never splits it: go to street level, then fan it out (see renderMarkers).
-      pendingFanOut = { key: cluster.key, until: Date.now() + FAN_OUT_WAIT_MS };
-      mapInstance.setView([cluster.lat, cluster.lng], maxZoom, {
-        animate: !prefersReducedMotion(),
-      });
-    }
-    return;
-  }
-  const L = leaflet();
-  const bounds = L.latLngBounds(cluster.venues.map((venue) => [venue.lat!, venue.lng!]));
-  const fit = mapInstance.getBoundsZoom(bounds, false, L.point(64, 64));
-  const zoom = Math.min(maxZoom, Math.max(fit, cluster.expansionZoom));
-  mapInstance.setView(bounds.getCenter(), zoom, { animate: !prefersReducedMotion() });
+  const move = scene.openCluster(key);
+  if (move) moveTo(move, true);
+  else draw();
 }
 
-function collapseSpider() {
-  if (!spiderfied) return;
-  spiderfied = null;
-  renderMarkers();
-}
-
-/** Draws the fan-out: each venue's pin on a circle around the cluster's spot, joined to it by a leg. */
-function drawSpider() {
-  if (!spiderLayer) return;
-  spiderLayer.clearLayers();
-  spiderMarkers.clear();
-  if (!spiderfied || !mapInstance) return;
-
-  const L = leaflet();
-  const { lat, lng, venues } = spiderfied;
-  const centre = mapInstance.latLngToContainerPoint([lat, lng]);
-  const offsets = spiderfyOffsets(venues.length);
-  const ink = themeColor('graphite');
-
-  spiderLayer.addLayer(
-    L.circleMarker([lat, lng], {
-      className: 'ledger-spider',
-      radius: 4,
-      color: ink,
-      weight: 1.5,
-      fillColor: ink,
-      fillOpacity: 1,
-      interactive: false,
-    })
-  );
-  venues.forEach((venue, i) => {
-    const spot = mapInstance.containerPointToLatLng(
-      L.point(centre.x + offsets[i].x, centre.y + offsets[i].y)
-    );
-    spiderLayer.addLayer(
-      L.polyline([[lat, lng], spot], {
-        className: 'ledger-spider',
-        color: ink,
-        weight: 1.5,
-        opacity: 0.7,
-        interactive: false,
-      })
-    );
-    const marker = L.marker(spot, { icon: createVenueIcon(L, venue) });
-    onActivate(marker, (viaKeyboard) => showPin(venue, viaKeyboard));
-    spiderMarkers.set(venue.id, marker);
-    spiderLayer.addLayer(marker);
-  });
-}
-
-function highlightPin() {
-  const mark = (marker: any, id: string) =>
-    marker.getElement()?.classList.toggle('is-selected-pin', id === pinVenue.value?.id);
-  markersById.forEach(mark);
-  spiderMarkers.forEach(mark);
+function collapseFanOut() {
+  if (scene.collapseFanOut()) draw();
 }
 
 /** A pin was picked on the map: show its card and tell the list. */
@@ -908,9 +632,9 @@ function applyPin(venue: Venue, source: 'map' | 'list', viaKeyboard = false) {
   returnFocusTo =
     focused instanceof HTMLElement && rootRef.value?.contains(focused) ? focused : null;
   pinVenue.value = venue;
-  // A venue that isn't on the map as a pin of its own (it sits in a cluster) comes out of it.
-  if (!markersById.has(venue.id) && !spiderMarkers.has(venue.id)) renderMarkers();
-  highlightPin();
+  // A venue that sits in a cluster comes out of it as a pin of its own.
+  scene.select(venue.id);
+  draw();
   if (source === 'list') {
     bringIntoView(venue);
     return;
@@ -930,7 +654,7 @@ function bringIntoView(venue: Venue) {
   const spot: [number, number] = [venue.lat, venue.lng];
   // On a phone the list sits under the map: bring the map back into view.
   mapContainer.value?.scrollIntoView({ block: 'nearest', behavior: animate ? 'smooth' : 'auto' });
-  if (markersById.has(venue.id) && mapInstance.getBounds().pad(-0.08).contains(spot)) {
+  if (pins?.has(venue.id) && mapInstance.getBounds().pad(-0.08).contains(spot)) {
     void nextTick(() => revealPin(venue));
     return;
   }
@@ -938,13 +662,17 @@ function bringIntoView(venue: Venue) {
   mapInstance.setView(spot, Math.max(mapInstance.getZoom(), 16), { animate });
 }
 
+/** Puts the card away; the venue rejoins any cluster it was pulled out of. */
+function dropPin() {
+  pinVenue.value = null;
+  scene.select(null);
+  draw();
+}
+
 /** The card closes. From the keyboard, focus goes back to the pin that opened it. */
 function clearPin({ restoreFocus = false } = {}) {
   const hadCard = pinVenue.value !== null;
-  pinVenue.value = null;
-  // If the venue had been pulled out of a cluster, let it rejoin.
-  if (pinnedOutsideClusters) renderMarkers();
-  highlightPin();
+  dropPin();
   selectMapVenue(null);
   if (restoreFocus && hadCard) {
     void nextTick(() => {
@@ -965,10 +693,7 @@ function onCloseClick(event: MouseEvent) {
 // The venue picked or cleared elsewhere, in the list.
 watch(selection, (current) => {
   if (!current) {
-    if (!pinVenue.value) return;
-    pinVenue.value = null;
-    if (pinnedOutsideClusters) renderMarkers();
-    highlightPin();
+    if (pinVenue.value) dropPin();
     return;
   }
   if (pinVenue.value?.id === current.id) return; // our own pick, already showing
@@ -979,15 +704,14 @@ watch(selection, (current) => {
 /** Lights up the pin (or the cluster it sits in) of the list row being pointed at. */
 function markHovered() {
   const id = hovered.value;
-  const lit = id
-    ? (markersById.get(id) ?? spiderMarkers.get(id) ?? clusterMarkerByVenue.get(id) ?? null)
-    : null;
-  const all = new Set<any>([
-    ...markersById.values(),
-    ...spiderMarkers.values(),
-    ...clusterMarkerByVenue.values(),
-  ]);
-  all.forEach((marker) => marker.getElement()?.classList.toggle('is-hovered-pin', marker === lit));
+  const drawnAs = id ? scene.markerOf(id) : null;
+  let lit: any = null;
+  if (drawnAs?.kind === 'pin') lit = pins?.get(drawnAs.venueId);
+  else if (drawnAs?.kind === 'fan-out') lit = fanOutPins?.get(drawnAs.venueId);
+  else if (drawnAs?.kind === 'cluster') lit = clusterMarkers.get(drawnAs.key);
+  allMarkers().forEach((marker) =>
+    marker.getElement()?.classList.toggle('is-hovered-pin', marker === lit)
+  );
 }
 watch(hovered, markHovered);
 
@@ -1018,7 +742,7 @@ function revealPin(venue: Venue) {
 
 function onMapKeydown(event: KeyboardEvent) {
   if (event.key !== 'Escape') return;
-  if (spiderfied) collapseSpider();
+  if (scene.collapseFanOut()) draw();
   else if (pinVenue.value)
     clearPin({ restoreFocus: Boolean(rootRef.value?.contains(document.activeElement)) });
 }

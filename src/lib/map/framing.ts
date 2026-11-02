@@ -5,6 +5,14 @@
  */
 
 import { WALKING_ISOCHRONES } from './config';
+import {
+  TILE_PX,
+  latFromMercatorY,
+  lngFromMercatorX,
+  mercatorX,
+  mercatorY,
+  worldPx,
+} from './projection';
 import { haversineMetres, type LatLng } from './ranking';
 
 export type { LatLng };
@@ -22,18 +30,6 @@ export interface FrameOptions {
 export interface Frame extends LatLng {
   zoom: number;
 }
-
-const TILE_PX = 256;
-
-const mercatorX = (lng: number) => (lng + 180) / 360;
-
-const mercatorY = (lat: number) => {
-  const sin = Math.sin((lat * Math.PI) / 180);
-  return 0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI);
-};
-
-const latFromMercatorY = (y: number) =>
-  (Math.atan(Math.sinh(Math.PI * (1 - 2 * y))) * 180) / Math.PI;
 
 /**
  * The centre and whole-number zoom that put every point inside the map's padded
@@ -62,11 +58,11 @@ export function frameFor(points: readonly LatLng[], options: FrameOptions): Fram
 
   // The map centre sits half the padding difference away from the points' centre,
   // so the points centre in the padded area rather than in the whole map.
-  const worldPx = TILE_PX * 2 ** zoom;
-  const centreX = (minX + maxX) / 2 - (padding.left - padding.right) / 2 / worldPx;
-  const centreY = (minY + maxY) / 2 - (padding.top - padding.bottom) / 2 / worldPx;
+  const world = worldPx(zoom);
+  const centreX = (minX + maxX) / 2 - (padding.left - padding.right) / 2 / world;
+  const centreY = (minY + maxY) / 2 - (padding.top - padding.bottom) / 2 / world;
 
-  return { lat: latFromMercatorY(centreY), lng: centreX * 360 - 180, zoom };
+  return { lat: latFromMercatorY(centreY), lng: lngFromMercatorX(centreX), zoom };
 }
 
 export interface ViewBounds {

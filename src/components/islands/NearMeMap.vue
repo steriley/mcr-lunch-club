@@ -288,7 +288,6 @@ const map = useNearMeLeaflet({
         v.lat != null &&
         v.lng != null
     ),
-  allVenues: () => venuesList.value,
   rankedVenues,
   selectedVenueId,
   isFollowingUser,
@@ -509,7 +508,7 @@ watch([geo.position, geo.isManual], () => {
 
 // Watch rankedVenues to fit bounds if first fix position was acquired before ranking finished
 watch(rankedVenues, (venues) => {
-  map.applyPinRanks();
+  map.renderVenueMarkers();
   if (!hasFittedFirstFix.value && geo.position.value && venues.length > 0) {
     void nextTick(() => {
       map.fitFirstFixBounds();
