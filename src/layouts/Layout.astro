@@ -5,6 +5,7 @@ import '@/styles/global.css';
 import Fonts from '@/components/Fonts.astro';
 import ThemeScript from '@/components/ThemeScript.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
+import Snow from '@/components/Snow.astro';
 import {
   countPublicInspections,
   countPublicInspectionsForBuild,
@@ -121,6 +122,8 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
         </details>
       </div>
     </header>
+
+    <Snow />
 
     <main id="main" tabindex="-1" class="flex-1 flex flex-col outline-none">
       <slot />
