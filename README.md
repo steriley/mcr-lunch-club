@@ -55,7 +55,7 @@ Every public page carries a canonical URL and Open Graph / Twitter card tags (`s
   - `nanostores` with `@nanostores/vue` for cross-island reactive filtering and modal state.
   - `src/stores/ledger.ts` holds the public venues and confirmed inspections the server embeds in the page (`LedgerCanon.astro`).
 - **Data Validation**:
-  - Zod schemas in `src/lib/venue-schema.ts`, `src/lib/bribery-schema.ts`, `src/lib/suggestion-schema.ts` and `src/lib/user-schema.ts`, shared by the APIs and the forms.
+  - Zod schemas in `src/lib/venue-schema.ts`, `src/lib/bribery-schema.ts`, `src/lib/suggestion-schema.ts`, `src/lib/field-notes-schema.ts` and `src/lib/user-schema.ts`, shared by the APIs and the forms.
 - **Shared modules** (one place for each rule):
   - `src/lib/tiers.ts` — every per-tier fact (label, URL slug, colours, banner, mottos, rule), keyed by the stored value.
   - `src/lib/venues.ts` — the venue store: `updateVenue()` writes a venue row and its revision in one transaction; `saveVenue()` and `rerouteVenue()` add the slug check and the ORS walking route.
@@ -424,6 +424,23 @@ not sign you in on the `vercel.app` address; sign in on each separately.
   and never count as verified). Deactivated Chairs can't press it.
   Public pages (`/inspections`, venue pages, the home page) show the same
   confirmed records; pending and lapsed presses never appear.
+- **Visits and field notes** (Chairs only, never public): a visit is one Chair
+  at one venue on one UK day. Every **Visited today** press records the
+  presser's visit, linked to the inspection it started or confirmed; **Log a
+  visit** on the venue page records one for today or an earlier day with no
+  inspection, so a venue can be visited a third or tenth time without a new
+  inspection. A visit on its own never changes "last inspected", an
+  inspection or a tier, and nothing is queued for publishing. A Chair writes
+  **field notes** (plain text, up to 4,000 characters) on their **own**
+  visits at any time, and can edit (shown as "edited") or delete them; every
+  active Chair reads every note on every visit. The venue page's **Visits &
+  Field Notes** section lists them all, and a motion that cites an
+  inspection shows its visits' notes on the venue page and on **Pending**.
+  The timeline says "Visit logged" and "Field note added", never the text.
+  Visits and notes live in `venue_visits` and `visit_notes`
+  (`src/lib/visits.ts`, `src/lib/field-notes.ts`), apart from `inspections`;
+  a database check keeps every note `internal` until a public release, and
+  `src/test/public-safety.test.ts` keeps public code away from them.
 - **The Golden Cut**: up to five Approved venues the Chairs pick for the top
   of the home page, edited at `/admin/golden-cut` (drag or use the arrows to
   reorder, then save; any Chair, no countersign). #01 gets the hero card and
@@ -487,7 +504,7 @@ mcr-lunch-club/
 │   │   ├── manifesto.astro
 │   │   ├── 404.astro
 │   │   ├── admin/             # Chairs' Area
-│   │   ├── api/               # Public, admin and weather endpoints
+│   │   ├── api/               # Public, admin and weather endpoints (admin/venues/[id]/visits.ts, admin/visits/[id]/notes.ts and admin/notes/[id].ts: visits and field notes)
 │   │   ├── verdicts/[tier].astro # Verdict pages
 │   │   └── venues/[slug].astro# Venue dossiers
 │   ├── stores/                # Nanostores: filters, modal state and the venue ledger

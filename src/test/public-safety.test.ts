@@ -9,7 +9,8 @@ import type { VenueRow } from '@/db/schema';
 /**
  * Tier proposals and decline reasons are internal. Public code reads
  * venues.tier only: no public page, public API route or public serializer
- * may touch proposal data.
+ * may touch proposal data. Visits and field notes are internal too (v1): no
+ * public page, component or serializer may touch their tables or modules.
  */
 
 const ROOT = path.resolve('src');
@@ -31,7 +32,7 @@ const publicFiles = [
   ),
   ...files(path.join(ROOT, 'components')).filter(
     (file) =>
-      !/(Venue(Form|Table|Closure)|Proposal|TierProposal|VisitedToday|PlaceSearch|Suggestion|User|Bribery|Admin|Login|Session|ChangePassword|ImageUpload|ConfirmDialog|TierBadge)/.test(
+      !/(Venue(Form|Table|Closure)|Proposal|TierProposal|VisitedToday|PlaceSearch|Suggestion|User|Bribery|Admin|Login|Session|ChangePassword|ImageUpload|ConfirmDialog|TierBadge|VenueVisits)/.test(
         path.basename(file)
       )
   ),
@@ -48,6 +49,17 @@ const FORBIDDEN = [
   /proposedTier/,
 ];
 
+/** Visits and field notes (src/lib/visits.ts, src/lib/field-notes.ts). */
+const VISIT_FORBIDDEN = [
+  /venue_visits/,
+  /venueVisits/,
+  /visit_notes/,
+  /visitNotes/,
+  /lib\/visits(\.ts)?['"]/,
+  /field-notes/,
+  /VenueVisits/,
+];
+
 describe('public code never touches tier proposals', () => {
   it('checks the public pages, API routes, components and serializers', () => {
     assert.ok(publicFiles.some((file) => file.endsWith(`pages${path.sep}index.astro`)));
@@ -62,6 +74,20 @@ describe('public code never touches tier proposals', () => {
     it(path.relative(ROOT, file), () => {
       const source = readFileSync(file, 'utf8');
       for (const pattern of FORBIDDEN) assert.doesNotMatch(source, pattern);
+    });
+  }
+});
+
+describe('public code never touches visits or field notes', () => {
+  it('checks the dossier components that are not themselves the Visits section', () => {
+    assert.ok(publicFiles.some((file) => file.endsWith('ConcordCard.vue')));
+    assert.ok(!publicFiles.some((file) => file.endsWith('VenueVisits.vue')));
+  });
+
+  for (const file of publicFiles) {
+    it(path.relative(ROOT, file), () => {
+      const source = readFileSync(file, 'utf8');
+      for (const pattern of VISIT_FORBIDDEN) assert.doesNotMatch(source, pattern);
     });
   }
 

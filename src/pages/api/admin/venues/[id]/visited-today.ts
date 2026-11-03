@@ -5,6 +5,7 @@ import { INSPECTION_OUTCOMES } from '@/lib/inspection-display';
 import { getVisitStatus, recordVisit } from '@/lib/inspections';
 import { notifyChairs } from '@/lib/push/dispatch';
 import { visitEvent } from '@/lib/push/messages';
+import { serializeVisit } from '@/lib/visits';
 
 export const prerender = false;
 
@@ -21,7 +22,8 @@ const visitInputSchema = z.preprocess(
  * today (Europe/London, server clock), with body `{ outcome }`. Two different
  * admins on the same day confirm an inspection; the first press sets the
  * outcome and the cosigner affirms it. Banned admins are refused by
- * adminRoute.
+ * adminRoute. The response carries the presser's visit for today (without
+ * its notes) so the dossier can offer a field note.
  */
 export const POST = adminRoute(
   {
@@ -51,10 +53,12 @@ export const POST = adminRoute(
     )
       notifyChairs(visitEvent(outcome.inspection));
     const status = await getVisitStatus(db, params.id, actor.id, now);
+    const { visit, inspection } = outcome;
     return jsonResponse({
       result: outcome.result,
       confirmedNow: outcome.result === 'confirmed' && outcome.confirmedNow,
       status,
+      visit: serializeVisit(visit, visit.inspectionId === inspection.id ? inspection : null),
     });
   }
 );

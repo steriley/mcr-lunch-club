@@ -18,6 +18,9 @@ import {
 
 afterEach(restoreStubs);
 
+const values0 = (calls: { method: string; args: unknown[] }[]) =>
+  calls.find((call) => call.method === 'values')!.args[0] as any;
+
 const ctx = (id: string = VENUE_ID, origin?: string, body?: unknown) => ({
   request: adminRequest('POST', body, { origin }),
   params: { id },
@@ -50,18 +53,49 @@ describe('POST /api/admin/venues/[id]/visited-today', () => {
     // confirmed-today lookup, pending lookup, then the status read.
     const { stubDbSequence } = await import('../route-helpers');
     stubDbSequence('select', [[], [], [pending]]);
-    const inserts = stubDb('insert', [pending]);
+    const visit = {
+      id: 'v1',
+      venueId: VENUE_ID,
+      visitDate: '2026-10-21',
+      inspectionId: 'i1',
+      visitorId: ADMIN.id,
+      visitorName: 'Sam',
+      createdAt: new Date('2026-10-21T11:44:00Z'),
+    };
+    const inserts = stubDbSequence('insert', [[pending], [visit]]);
     const response = await run(visitedToday, ctx(VENUE_ID, undefined, { outcome: 'below_par' }));
     assert.equal(response.status, 200);
     const body = await response.json();
     assert.equal(body.result, 'waiting');
+    // The press records the Chair's visit, linked to the inspection it started.
+    assert.deepEqual(body.visit, {
+      id: 'v1',
+      venueId: VENUE_ID,
+      visitDate: '2026-10-21',
+      visitorId: ADMIN.id,
+      visitorName: 'Sam',
+      createdAt: '2026-10-21T11:44:00.000Z',
+      inspectionId: 'i1',
+      statusLabel: 'Pending',
+      notes: [],
+    });
+    const visitValues = inserts.filter((call) => call.method === 'values')[1].args[0] as any;
+    assert.deepEqual(
+      {
+        inspectionId: visitValues.inspectionId,
+        visitorId: visitValues.visitorId,
+        visitorName: visitValues.visitorName,
+      },
+      { inspectionId: 'i1', visitorId: ADMIN.id, visitorName: 'Sam' }
+    );
+    assert.equal(visitValues.visitDate, values0(inserts).inspectionDate);
     assert.deepEqual(body.status.pending, {
       firstAdminName: 'Sam',
       byMe: true,
       firstAt: '2026-10-21T11:44:00.000Z',
       outcome: 'below_par',
     });
-    const values = inserts.find((call) => call.method === 'values')!.args[0] as any;
+    const values = values0(inserts);
     assert.equal(values.firstAdminId, ADMIN.id);
     assert.equal(values.status, 'pending');
     assert.equal(values.outcome, 'below_par');

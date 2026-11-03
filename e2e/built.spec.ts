@@ -443,3 +443,75 @@ test.describe('Chairs’ Area', () => {
     expect(monitor.violations).toEqual([]);
   });
 });
+
+test.describe('Visits and field notes', () => {
+  test('the dossier lists visits, and a Chair can log one and write a note', async ({
+    page,
+    monitor,
+  }) => {
+    await signIn(page);
+    const session = await (await page.request.get('/api/auth/get-session')).json();
+    const chairId: string = session.user.id;
+    await visit(page, '/admin/venues');
+    const editPath = await page
+      .locator('a[href^="/admin/venues/"]:not([href$="/new"]):not([href*="/history"])')
+      .first()
+      .getAttribute('href');
+    await visit(page, editPath!);
+    await expect(page.getByRole('heading', { name: 'Visits & Field Notes' })).toBeVisible();
+
+    // Writes are stubbed: what matters is that the section renders and updates under the policy,
+    // and a smoke test against a deployment must not add visits or notes to its data.
+    const visitId = '00000000-0000-4000-8000-0000000000aa';
+    await page.route(/\/api\/admin\/venues\/[^/]+\/visits$/, (route) =>
+      route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          visit: {
+            id: visitId,
+            venueId: 'stub',
+            visitDate: '2020-01-15',
+            visitorId: chairId,
+            visitorName: 'Smoke Chair',
+            createdAt: '2020-01-15T12:00:00.000Z',
+            inspectionId: null,
+            statusLabel: 'Visit only',
+            notes: [],
+          },
+        }),
+      })
+    );
+    await page.route(/\/api\/admin\/visits\/[^/]+\/notes$/, (route) =>
+      route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          note: {
+            id: '00000000-0000-4000-8000-0000000000bb',
+            visitId,
+            body: route.request().postDataJSON().body.trim(),
+            createdAt: '2020-01-18T12:00:00.000Z',
+            editedAt: null,
+            daysAfterVisit: 3,
+          },
+        }),
+      })
+    );
+    await page.getByLabel('Log a visit').fill('2020-01-15');
+    await page.getByRole('button', { name: 'Log visit' }).click();
+    const card = page.locator(`#visit-${visitId}`);
+    await expect(card.getByText('Smoke Chair')).toBeVisible();
+    await expect(card.getByText('Visit only')).toBeVisible();
+
+    // Logging opens the note editor on the new visit.
+    await card.getByLabel('Field note').fill('Smoke note: <b>not bold</b>\nSecond line.');
+    await card.getByRole('button', { name: 'Save note' }).click();
+    await expect(card.getByText('3 days after the visit')).toBeVisible();
+    await expect(card.locator('b')).toHaveCount(0);
+    await expect(card.getByText('Smoke note: <b>not bold</b>')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Edit' })).toBeVisible();
+    expect(monitor.violations).toEqual([]);
+    expect(monitor.errors).toEqual([]);
+  });
+});

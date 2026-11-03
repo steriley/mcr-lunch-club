@@ -17,6 +17,8 @@ import {
 import { loadVenueTimeline } from '@/lib/venue-history';
 import { listVenueImages, serializeVenueImage } from '@/lib/venue-images';
 import { serializeVenue } from '@/lib/venues';
+import { londonDate } from '@/lib/london-date';
+import { listVisitsForVenue } from '@/lib/visits';
 
 export const prerender = false;
 
@@ -48,6 +50,7 @@ const [
   verifiedInspection,
   activeAdmins,
   images,
+  visits,
 ] = await Promise.all([
   nameOf(row.updatedBy),
   nameOf(row.closedBy),
@@ -57,6 +60,8 @@ const [
   latestVerifiedInspection(db, row.id),
   countActiveAdmins(db),
   listVenueImages(db, row.id),
+  // Every Chair's visits and notes: any active Chair reads them all (src/lib/visits.ts).
+  listVisitsForVenue(db, row.id),
 ]);
 
 const closedText = row.closedAt
@@ -76,7 +81,12 @@ const dossier = {
     ? `${formatDate(verifiedInspection.inspectionDate)}, ${describeInspection(verifiedInspection).replace(/^V/, 'v')}`
     : null,
   pendingMotion: pendingProposal ? serializeProposal(pendingProposal) : null,
+  motionVisits: pendingProposal?.inspectionId
+    ? visits.filter((visit) => visit.inspectionId === pendingProposal.inspectionId)
+    : [],
   activeAdmins,
+  visits,
+  today: londonDate(),
   closed: row.closedAt !== null,
   closedText,
   timeline: timeline.map(({ id, kind, when, text, note }) => ({

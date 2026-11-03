@@ -1,9 +1,12 @@
 ---
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import ProposalActions from '@/components/admin/ProposalActions.vue';
+import VenueVisits from '@/components/admin/dossier/VenueVisits.vue';
 import { db } from '@/lib/db';
 import { formatDate, formatDateTime } from '@/lib/dates';
 import { describeInspection, latestVerifiedInspection } from '@/lib/inspections';
+import { londonDate } from '@/lib/london-date';
+import { listVisitsForInspections } from '@/lib/visits';
 import {
   countActiveAdmins,
   listPendingProposals,
@@ -32,6 +35,13 @@ const inspectionByVenue = new Map(
     })
   )
 );
+
+// The field notes behind each motion's cited inspection, for the deciding Chair.
+const visitsByInspection = await listVisitsForInspections(
+  db,
+  pending.flatMap((proposal) => (proposal.inspectionId ? [proposal.inspectionId] : []))
+);
+const today = londonDate();
 
 const STATUS_TEXT: Record<string, string> = {
   approved: 'Approved',
@@ -92,6 +102,27 @@ const STATUS_TEXT: Record<string, string> = {
                 <p class="text-graphite">
                   Latest verified inspection: {inspectionByVenue.get(proposal.venueId)}
                 </p>
+                {proposal.inspectionId && (
+                  <div class="dossier mt-2 space-y-2">
+                    <p class="font-semibold text-ink">
+                      Field notes from the cited inspection{' '}
+                      <a
+                        href={`/admin/venues/${proposal.venueId}#visits`}
+                        class="font-normal text-graphite underline"
+                      >
+                        All visits
+                      </a>
+                    </p>
+                    <VenueVisits
+                      readOnly
+                      venueId={proposal.venueId}
+                      visits={visitsByInspection.get(proposal.inspectionId) ?? []}
+                      currentUserId={null}
+                      today={today}
+                      emptyText="No visits recorded for that inspection."
+                    />
+                  </div>
+                )}
               </div>
               <ProposalActions
                 client:load

@@ -20,7 +20,15 @@ const props = defineProps<{
   initialStatus: VisitStatus;
   latestVerifiedInspection: string | null;
 }>();
-const emit = defineEmits<{ (event: 'confirmed', status: VisitStatus): void }>();
+/** The presser's visit as the route returns it; the dossier's Visits section reads the rest. */
+interface PressedVisit {
+  id: string;
+}
+const emit = defineEmits<{
+  (event: 'confirmed', status: VisitStatus): void;
+  (event: 'visited', visit: PressedVisit): void;
+  (event: 'add-note', visit: PressedVisit): void;
+}>();
 
 const status = ref<VisitStatus>(props.initialStatus);
 const latest = ref(props.latestVerifiedInspection);
@@ -28,6 +36,8 @@ const online = useOnline();
 const busy = ref(false);
 const errorMessage = ref('');
 const justConfirmed = ref(false);
+// After a press: offer (never require) a field note about the visit.
+const notePrompt = ref<PressedVisit | null>(null);
 // No default: the Chair must say how the inspection went before signing.
 const chosenOutcome = ref<InspectionOutcome | null>(null);
 
@@ -47,25 +57,35 @@ const canPress = computed(
     online.value && !busy.value && (state.value === 'confirm_other' || chosenOutcome.value !== null)
 );
 
+function addNoteFromPrompt() {
+  if (notePrompt.value) emit('add-note', notePrompt.value);
+  notePrompt.value = null;
+}
+
 async function press() {
   errorMessage.value = '';
   busy.value = true;
-  const result = await apiFetch<{ status: VisitStatus; confirmedNow?: boolean }>(
-    `/api/admin/venues/${props.venueId}/visited-today`,
-    {
-      method: 'POST',
-      // A cosigner sends nothing: they affirm the outcome the first Chair recorded.
-      body: state.value === 'none' ? { outcome: chosenOutcome.value } : {},
-      fallback: 'Could not record your visit. Try again.',
-    }
-  );
+  const result = await apiFetch<{
+    status: VisitStatus;
+    confirmedNow?: boolean;
+    visit?: PressedVisit;
+  }>(`/api/admin/venues/${props.venueId}/visited-today`, {
+    method: 'POST',
+    // A cosigner sends nothing: they affirm the outcome the first Chair recorded.
+    body: state.value === 'none' ? { outcome: chosenOutcome.value } : {},
+    fallback: 'Could not record your visit. Try again.',
+  });
   busy.value = false;
   if (!result.ok) {
     errorMessage.value = result.error;
     return;
   }
-  const { status: visit, confirmedNow } = result.data;
+  const { status: visit, confirmedNow, visit: pressed } = result.data;
   status.value = visit;
+  if (pressed) {
+    emit('visited', pressed);
+    notePrompt.value = pressed;
+  }
   justConfirmed.value = Boolean(confirmedNow);
   if (confirmedNow && visit.confirmed) {
     const { firstAdminName, secondAdminName } = visit.confirmed;
@@ -231,6 +251,24 @@ async function press() {
       }}
       <template v-if="recordedOutcome">Outcome: {{ recordedOutcome.toLowerCase() }}.</template>
     </p>
+
+    <div
+      v-if="notePrompt"
+      role="status"
+      class="dossier-inset flex items-center gap-2 bg-[var(--dossier-field)] text-[13px]"
+    >
+      <DossierIcon name="feather" :size="16" class="shrink-0 text-[var(--dossier-secondary)]" />
+      <span class="min-w-0 flex-1">Add a field note about this visit?</span>
+      <button type="button" class="dossier-link" @click="addNoteFromPrompt">Add field note</button>
+      <button
+        type="button"
+        class="dossier-link"
+        aria-label="Dismiss the field note prompt"
+        @click="notePrompt = null"
+      >
+        <DossierIcon name="x" :size="14" />
+      </button>
+    </div>
 
     <p v-if="errorMessage" role="alert" class="dossier-error mt-0">{{ errorMessage }}</p>
 
