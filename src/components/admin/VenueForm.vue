@@ -12,6 +12,7 @@ import DossierIcon from './dossier/DossierIcon.vue';
 import DossierMap from './dossier/DossierMap.vue';
 import GovernanceCard from './dossier/GovernanceCard.vue';
 import PublicDocketModal, { type DocketPreview } from './dossier/PublicDocketModal.vue';
+import VenueVisits from './dossier/VenueVisits.vue';
 import { CUISINES, cuisineLabel, isCuisineValue } from '@/lib/cuisines';
 import { formatDate, formatDateTime } from '@/lib/dates';
 import { INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
@@ -31,6 +32,7 @@ import type { VisitStatus } from '@/lib/inspections';
 import type { SuggestionPrefill } from '@/lib/suggestions';
 import type { SerializedProposal } from '@/lib/tier-proposals';
 import type { SerializedVenue } from '@/lib/venues';
+import type { SerializedVisit } from '@/lib/visits';
 import { hiddenReason } from '@/lib/visibility';
 
 /**
@@ -47,7 +49,13 @@ interface DossierContext {
   visitStatus: VisitStatus;
   latestVerifiedInspection: string | null;
   pendingMotion: SerializedProposal | null;
+  /** Visits behind the pending motion's inspection, with their field notes. */
+  motionVisits: SerializedVisit[];
   activeAdmins: number;
+  /** Every visit to the venue, newest first, with every Chair's field notes. */
+  visits: SerializedVisit[];
+  /** London today, YYYY-MM-DD. */
+  today: string;
   closed: boolean;
   /** e.g. "Marked closed on 21st Oct 26 by Sam." */
   closedText: string | null;
@@ -140,6 +148,7 @@ const showDiscard = ref(false);
 const showDocket = ref(false);
 const showHistory = ref(false);
 const governance = ref<InstanceType<typeof GovernanceCard> | null>(null);
+const venueVisits = ref<InstanceType<typeof VenueVisits> | null>(null);
 
 function notify(tone: 'success' | 'error', text: string) {
   toast.value = { tone, text };
@@ -436,6 +445,15 @@ function onConcordConfirmed(status: VisitStatus) {
   ];
 }
 
+// The press returns the Chair's visit without its notes; the Visits section merges it in.
+function onVisited(visit: { id: string }) {
+  venueVisits.value?.upsert(visit as SerializedVisit);
+}
+
+function onAddNote(visit: { id: string }) {
+  void venueVisits.value?.openNote(visit as SerializedVisit);
+}
+
 function onExpunged() {
   savedSnapshot.value = JSON.stringify(form);
   window.location.assign('/admin/venues?deleted=1');
@@ -468,6 +486,7 @@ const MOBILE_ORDER = [
   'order-5 lg:order-none',
   'order-6 lg:order-none',
   'order-7 lg:order-none',
+  'order-8 lg:order-none',
 ];
 const mobileOrder = (n: number) => MOBILE_ORDER[n];
 </script>
@@ -767,6 +786,16 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
           </p>
         </DossierCard>
 
+        <VenueVisits
+          v-if="mode === 'edit' && dossier"
+          ref="venueVisits"
+          :venue-id="venueId"
+          :visits="dossier.visits"
+          :current-user-id="dossier.currentUserId"
+          :today="dossier.today"
+          :class="mobileOrder(7)"
+        />
+
         <GovernanceCard
           v-if="mode === 'edit' && dossier"
           ref="governance"
@@ -774,7 +803,7 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
           :venue-name="saved.name"
           :closed="dossier.closed"
           :is-gone-but-not-forgotten="dossier.currentTier === 'gone_but_not_forgotten'"
-          :class="mobileOrder(7)"
+          :class="mobileOrder(8)"
           @expunged="onExpunged"
         />
       </div>
@@ -788,6 +817,8 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
           :latest-verified-inspection="dossier.latestVerifiedInspection"
           :class="mobileOrder(1)"
           @confirmed="onConcordConfirmed"
+          @visited="onVisited"
+          @add-note="onAddNote"
         />
 
         <TierProposalPanel
@@ -795,6 +826,8 @@ const mobileOrder = (n: number) => MOBILE_ORDER[n];
           :venue-id="venueId"
           :current-tier="dossier.currentTier"
           :pending="dossier.pendingMotion"
+          :motion-visits="dossier.motionVisits"
+          :today="dossier.today"
           :current-user-id="dossier.currentUserId"
           :active-admins="dossier.activeAdmins"
           :class="mobileOrder(2)"

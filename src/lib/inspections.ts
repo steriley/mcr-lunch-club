@@ -1,10 +1,11 @@
 import { and, desc, eq, lt, max, sql } from 'drizzle-orm';
-import { inspections, venues, type InspectionRow } from '@/db/schema';
+import { inspections, venues, type InspectionRow, type VenueVisitRow } from '@/db/schema';
 import { isUniqueViolation } from '@/lib/db-errors';
 import type { Database, Tx } from '@/lib/db-client';
 import { INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import { londonDate } from '@/lib/london-date';
 import { actorName, type Actor } from '@/lib/venue-events';
+import { ensureVisit } from '@/lib/visits';
 import type { InspectionOutcome } from '@/types';
 
 /**
@@ -20,14 +21,20 @@ import type { InspectionOutcome } from '@/types';
  *
  * The first press also sets the outcome (satisfactory or below par); the
  * cosigner affirms that outcome and cannot choose a different one.
+ *
+ * Every accepted press also records the presser's visit for the day (src/lib/visits.ts) in the
+ * same transaction, linked to the inspection it started or confirmed. A refused press records none.
  */
 
 type Executor = Database | Tx;
 
 export type VisitOutcome =
-  /** `startedNow`: this press started it (a repeat press by the same Chair changes nothing). */
-  | { result: 'waiting'; inspection: InspectionRow; startedNow: boolean }
-  | { result: 'confirmed'; inspection: InspectionRow; confirmedNow: boolean }
+  /**
+   * `startedNow`: this press started it (a repeat press by the same Chair changes nothing).
+   * `visit`: the presser's visit for today (src/lib/visits.ts), created or linked by this press.
+   */
+  | { result: 'waiting'; inspection: InspectionRow; startedNow: boolean; visit: VenueVisitRow }
+  | { result: 'confirmed'; inspection: InspectionRow; confirmedNow: boolean; visit: VenueVisitRow }
   /** A first press must say how the inspection went. */
   | { result: 'outcome_required' }
   /** The cosigner named a different outcome from the one the first Chair set. */
@@ -87,8 +94,20 @@ async function visitOnce(
         )
       )
       .limit(1);
-    if (confirmedToday)
-      return { result: 'confirmed', inspection: confirmedToday, confirmedNow: false };
+    if (confirmedToday) {
+      // A third Chair's press on an already confirmed day is still their visit, but not part of it.
+      const verifier =
+        confirmedToday.firstAdminId === actor.id || confirmedToday.secondAdminId === actor.id;
+      const visit = await ensureVisit(
+        tx,
+        venueId,
+        actor,
+        today,
+        verifier ? confirmedToday.id : null,
+        now
+      );
+      return { result: 'confirmed', inspection: confirmedToday, confirmedNow: false, visit };
+    }
 
     const [pending] = await tx
       .select()
@@ -111,12 +130,15 @@ async function visitOnce(
           createdAt: now,
         })
         .returning();
-      return { result: 'waiting', inspection: created, startedNow: true };
+      const visit = await ensureVisit(tx, venueId, actor, today, created.id, now);
+      return { result: 'waiting', inspection: created, startedNow: true, visit };
     }
 
     // The same admin pressing again changes nothing: one person can never confirm their own visit.
-    if (pending.firstAdminId === actor.id)
-      return { result: 'waiting', inspection: pending, startedNow: false };
+    if (pending.firstAdminId === actor.id) {
+      const visit = await ensureVisit(tx, venueId, actor, today, pending.id, now);
+      return { result: 'waiting', inspection: pending, startedNow: false, visit };
+    }
     if (outcome && outcome !== pending.outcome)
       return { result: 'outcome_mismatch', inspection: pending };
 
@@ -131,7 +153,8 @@ async function visitOnce(
       .where(and(eq(inspections.id, pending.id), eq(inspections.status, 'pending')))
       .returning();
     await refreshLastInspectionDate(tx, venueId);
-    return { result: 'confirmed', inspection: confirmed, confirmedNow: true };
+    const visit = await ensureVisit(tx, venueId, actor, today, confirmed.id, now);
+    return { result: 'confirmed', inspection: confirmed, confirmedNow: true, visit };
   });
 }
 

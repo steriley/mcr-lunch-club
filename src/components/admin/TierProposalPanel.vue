@@ -4,16 +4,21 @@ import ProposalActions from './ProposalActions.vue';
 import TierBadge from './TierBadge.vue';
 import DossierCard from './dossier/DossierCard.vue';
 import DossierIcon from './dossier/DossierIcon.vue';
+import VenueVisits from './dossier/VenueVisits.vue';
 import { formatDateTime } from '@/lib/dates';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
 import { apiFetch } from '@/lib/api-fetch';
 import { useOnline } from '@/lib/pwa/useOnline';
 import type { SerializedProposal } from '@/lib/tier-proposals';
+import type { SerializedVisit } from '@/lib/visits';
 
 const props = defineProps<{
   venueId: string;
   currentTier: string | null;
   pending: SerializedProposal | null;
+  /** The visits behind the inspection the pending motion cites, with their field notes. */
+  motionVisits?: SerializedVisit[];
+  today?: string;
   currentUserId: string;
   activeAdmins: number;
 }>();
@@ -72,6 +77,20 @@ async function propose() {
         {{ pending.proposedByName ?? 'a former admin' }}.
       </p>
       <p class="text-[12px] text-warning-ink">{{ proposedWhen }} · awaiting a different Chair</p>
+      <div v-if="pending.inspectionId" class="space-y-2 border-t border-warning/40 pt-2">
+        <p class="text-[12px] font-semibold text-warning-ink">
+          Field notes from the cited inspection
+          <a href="#visits" class="dossier-link ml-1 text-[12px]">All visits</a>
+        </p>
+        <VenueVisits
+          read-only
+          :venue-id="venueId"
+          :visits="motionVisits ?? []"
+          :current-user-id="null"
+          :today="today ?? ''"
+          empty-text="No visits recorded for that inspection."
+        />
+      </div>
       <ProposalActions
         :proposal-id="pending.id"
         :proposed-by="pending.proposedBy"

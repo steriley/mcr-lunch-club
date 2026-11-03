@@ -16,6 +16,18 @@ describe('describeVenueEvent', () => {
     );
   });
 
+  it('describes visits and field notes without the note text', () => {
+    const at = new Date('2026-11-03T12:00:00Z');
+    assert.equal(
+      describeVenueEvent({ kind: 'visit_logged', actorName: 'Sam', createdAt: at }),
+      'Visit logged by Sam on 3rd Nov 26'
+    );
+    assert.equal(
+      describeVenueEvent({ kind: 'field_note_added', actorName: 'Sam', createdAt: at }),
+      'Field note added by Sam on 3rd Nov 26'
+    );
+  });
+
   it('describes photo events as text lines', () => {
     const at = new Date('2026-10-22T11:00:00Z');
     assert.equal(

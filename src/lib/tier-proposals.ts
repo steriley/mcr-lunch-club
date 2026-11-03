@@ -366,6 +366,8 @@ export function serializeProposal(proposal: TierProposalRow) {
     decidedByName: proposal.decidedByName,
     decidedAt: proposal.decidedAt?.toISOString() ?? null,
     declineReason: proposal.declineReason,
+    // The verified inspection the motion cites, if any: its visits' field notes are the evidence.
+    inspectionId: proposal.inspectionId,
   };
 }
 

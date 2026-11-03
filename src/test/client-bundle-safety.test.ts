@@ -103,6 +103,35 @@ describe('client bundle safety', () => {
     });
   }
 
+  // Visits and field notes are Chairs-only (v1): no public island may reach their modules or the
+  // Visits section, so their text cannot end up in a public client bundle.
+  const VISIT_MODULES = [
+    'lib/visits.ts',
+    'lib/field-notes.ts',
+    'lib/field-notes-schema.ts',
+    'components/admin/dossier/VenueVisits.vue',
+  ].map((file) => path.join(ROOT, file));
+  const publicIslands = entries.filter(
+    (file) => !file.startsWith(path.join(ROOT, 'components', 'admin') + path.sep)
+  );
+
+  it('finds the public islands to check', () => {
+    assert.ok(publicIslands.some((file) => file.endsWith('LedgerSearchField.vue')));
+    assert.ok(!publicIslands.some((file) => file.includes(`${path.sep}admin${path.sep}`)));
+  });
+
+  for (const island of publicIslands) {
+    it(`${path.relative(ROOT, island)} never reaches visits or field notes`, () => {
+      const graph = reachable(island);
+      for (const module of VISIT_MODULES) {
+        assert.ok(
+          !graph.has(module),
+          `${path.relative(ROOT, island)} reaches ${path.relative(ROOT, module)}`
+        );
+      }
+    });
+  }
+
   it('no client code mentions the ORS key', () => {
     for (const entry of entries) {
       for (const file of reachable(entry)) {

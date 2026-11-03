@@ -246,6 +246,16 @@ describe('pushes from "Visited today"', () => {
     inspectionDate: '2026-11-03',
     createdAt: new Date('2026-11-03T12:00:00Z'),
   };
+  // The presser's visit row (src/lib/visits.ts), written in the same transaction.
+  const visit = {
+    id: 'v1',
+    venueId: VENUE_ID,
+    visitDate: '2026-11-03',
+    inspectionId: 'i1',
+    visitorId: ADMIN.id,
+    visitorName: 'Sam',
+    createdAt: new Date('2026-11-03T12:00:00Z'),
+  };
   const press = (body?: unknown) => ({
     request: adminRequest('POST', body),
     params: { id: VENUE_ID },
@@ -258,7 +268,7 @@ describe('pushes from "Visited today"', () => {
     stubExecute([{ id: VENUE_ID }]);
     stubDb('update', []);
     stubDbSequence('select', [[], [], [inspection]]);
-    stubDb('insert', [inspection]);
+    stubDbSequence('insert', [[inspection], [visit]]);
     assert.equal(
       (await quietly(() => run(visitedToday, press({ outcome: 'satisfactory' })))).status,
       200
@@ -281,6 +291,7 @@ describe('pushes from "Visited today"', () => {
     stubExecute([{ id: VENUE_ID }]);
     stubDb('update', []);
     stubDbSequence('select', [[], [inspection], [inspection]]);
+    stubDb('insert', [visit]);
     const response = await quietly(() => run(visitedToday, press({ outcome: 'satisfactory' })));
     assert.equal((await response.json()).result, 'waiting');
     assert.equal(sent.length, 0);
@@ -299,6 +310,7 @@ describe('pushes from "Visited today"', () => {
     stubExecute([{ id: VENUE_ID }]);
     stubDbSequence('update', [[], [confirmed], []]);
     stubDbSequence('select', [[], [inspection], [{ date: '2026-11-03' }], [confirmed]]);
+    stubDb('insert', [{ ...visit, visitorId: 'alex', visitorName: 'Alex' }]);
     assert.equal((await quietly(() => run(visitedToday, press()))).status, 200);
     assert.equal(sent.length, 1);
     assert.equal(sent[0].event.type, 'visit_confirmed');

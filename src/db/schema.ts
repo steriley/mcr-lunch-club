@@ -168,6 +168,64 @@ export const inspections = pgTable(
   ]
 );
 
+export const noteVisibilityEnum = pgEnum('note_visibility', ['internal', 'public']);
+
+/**
+ * A visit: one Chair at one venue on one Europe/London day. "Visited today"
+ * creates (or links) the presser's visit; "Log a visit" records one with no
+ * inspection. Kept apart from `inspections` because inspection rows feed the
+ * public pages. Internal only: no public page reads this table.
+ */
+export const venueVisits = pgTable(
+  'venue_visits',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    venueId: uuid('venue_id')
+      .notNull()
+      .references(() => venues.id, { onDelete: 'cascade' }),
+    visitDate: date('visit_date').notNull(),
+    // Null for a standalone visit, or if the inspection is ever deleted.
+    inspectionId: uuid('inspection_id').references(() => inspections.id, { onDelete: 'set null' }),
+    visitorId: text('visitor_id').references(() => user.id, { onDelete: 'set null' }),
+    visitorName: text('visitor_name'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    // One visit per Chair per venue per day; keeps the Visited today press idempotent.
+    uniqueIndex('venue_visits_one_per_chair_day')
+      .on(table.venueId, table.visitorId, table.visitDate)
+      .where(sql`${table.visitorId} is not null`),
+    index('venue_visits_venue_date_idx').on(table.venueId, table.visitDate),
+    index('venue_visits_inspection_idx').on(table.inspectionId),
+  ]
+);
+
+/**
+ * Field notes: what a Chair wrote about their own visit. Authorship is the
+ * visit's visitor (checked in src/lib/field-notes.ts). Every active Chair can
+ * read every note. `visibility` is for a later public release; until then a
+ * check constraint keeps every note internal.
+ */
+export const visitNotes = pgTable(
+  'visit_notes',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    visitId: uuid('visit_id')
+      .notNull()
+      .references(() => venueVisits.id, { onDelete: 'cascade' }),
+    body: text('body').notNull(),
+    visibility: noteVisibilityEnum('visibility').notNull().default('internal'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    editedAt: timestamp('edited_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('visit_notes_visit_idx').on(table.visitId, table.createdAt),
+    check('visit_notes_body_length', sql`char_length(trim(${table.body})) between 1 and 4000`),
+    // V1 safety rail: nothing may be public until the public release lands.
+    check('visit_notes_internal_only', sql`${table.visibility} = 'internal'`),
+  ]
+);
+
 export const tierProposalStatusEnum = pgEnum('tier_proposal_status', [
   'pending',
   'approved',
@@ -405,6 +463,8 @@ export type BriberyRow = typeof briberyRecords.$inferSelect;
 export type SuggestionRow = typeof venueSuggestions.$inferSelect;
 export type VenueEventRow = typeof venueEvents.$inferSelect;
 export type InspectionRow = typeof inspections.$inferSelect;
+export type VenueVisitRow = typeof venueVisits.$inferSelect;
+export type VisitNoteRow = typeof visitNotes.$inferSelect;
 export type TierProposalRow = typeof tierProposals.$inferSelect;
 export type VenueImageRow = typeof venueImages.$inferSelect;
 export type PushSubscriptionRow = typeof pushSubscriptions.$inferSelect;

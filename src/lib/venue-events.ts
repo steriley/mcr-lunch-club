@@ -9,7 +9,14 @@ import type { Database } from '@/lib/db-client';
  * deletion. Kinds are added by the phases that need them.
  */
 export type VenueEventKind =
-  'closed' | 'reopened' | 'image_added' | 'image_removed' | 'image_primary_changed';
+  | 'closed'
+  | 'reopened'
+  | 'image_added'
+  | 'image_removed'
+  | 'image_primary_changed'
+  // Visits and field notes (src/lib/visits.ts, src/lib/field-notes.ts): `detail` holds ids only, never a note's text.
+  | 'visit_logged'
+  | 'field_note_added';
 
 export interface Actor {
   id: string;
@@ -49,6 +56,8 @@ const EVENT_VERBS: Record<VenueEventKind, string> = {
   image_added: 'Photo added',
   image_removed: 'Photo removed',
   image_primary_changed: 'Primary photo changed',
+  visit_logged: 'Visit logged',
+  field_note_added: 'Field note added',
 };
 
 /** e.g. "Closed by Sam on 21st Oct 26" or "Photo added by Sam on 22nd Oct 26". Text only, never an image. */
