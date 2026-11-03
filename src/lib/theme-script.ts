@@ -11,7 +11,8 @@ import { createHash } from 'node:crypto';
  */
 export const THEME_SCRIPT = `(() => {
   const root = document.documentElement;
-  const meta = document.querySelector('meta[name="theme-color"]');
+  // One per colour scheme (media queries), so the browser chrome is right before this runs.
+  const metas = document.querySelectorAll('meta[name="theme-color"]');
   const system = window.matchMedia('(prefers-color-scheme: dark)');
   const saved = () => {
     try {
@@ -23,7 +24,7 @@ export const THEME_SCRIPT = `(() => {
   };
   const apply = (theme) => {
     root.dataset.theme = theme;
-    if (meta) meta.setAttribute('content', meta.dataset[theme] || meta.content);
+    metas.forEach((meta) => meta.setAttribute('content', meta.dataset[theme] || meta.content));
   };
   const resolve = () => saved() ?? (system.matches ? 'dark' : 'light');
   apply(resolve());

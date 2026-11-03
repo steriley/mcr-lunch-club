@@ -18,6 +18,8 @@ export interface StatusBannerState {
   /** The position was set by hand. */
   manual: boolean;
   lowAccuracy: boolean;
+  /** The device has no connection: the map tiles may be missing. GPS and the venue list still work. */
+  offline: boolean;
 }
 
 export interface StatusBannerActions {
@@ -29,7 +31,7 @@ export interface StatusBannerActions {
 
 /**
  * The one notification Near Me shows, if any. Priority: picking a position >
- * acquiring > location errors > far from Manchester > manual position > low
+ * acquiring > offline > location errors > far from Manchester > manual position > low
  * accuracy.
  */
 export function nearMeStatusBanner(
@@ -50,6 +52,15 @@ export function nearMeStatusBanner(
 
   if (state.geoState === 'requesting') {
     return { type: 'info', icon: 'signal', text: 'Acquiring your position…', action: null };
+  }
+
+  if (state.offline) {
+    return {
+      type: 'warning',
+      icon: 'signal',
+      text: 'Offline · map may be incomplete',
+      action: null,
+    };
   }
 
   const setLocation = { label: 'Set location', handler: actions.startPicking };

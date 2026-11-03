@@ -7,6 +7,7 @@ import DossierIcon from './DossierIcon.vue';
 import { formatDate, formatDateTime } from '@/lib/dates';
 import { INSPECTION_OUTCOMES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import { apiFetch } from '@/lib/api-fetch';
+import { useOnline } from '@/lib/pwa/useOnline';
 
 /**
  * "Visited today" as a two-signature concord. A press records this Chair's
@@ -23,6 +24,7 @@ const emit = defineEmits<{ (event: 'confirmed', status: VisitStatus): void }>();
 
 const status = ref<VisitStatus>(props.initialStatus);
 const latest = ref(props.latestVerifiedInspection);
+const online = useOnline();
 const busy = ref(false);
 const errorMessage = ref('');
 const justConfirmed = ref(false);
@@ -41,7 +43,8 @@ const recordedOutcome = computed(() =>
   first.value?.outcome ? INSPECTION_OUTCOME_LABELS[first.value.outcome] : null
 );
 const canPress = computed(
-  () => !busy.value && (state.value === 'confirm_other' || chosenOutcome.value !== null)
+  () =>
+    online.value && !busy.value && (state.value === 'confirm_other' || chosenOutcome.value !== null)
 );
 
 async function press() {
@@ -203,6 +206,13 @@ async function press() {
             : `Cosign ${status.pending!.firstAdminName}'s inspection`
       }}
     </button>
+    <p
+      v-if="!online && (state === 'none' || state === 'confirm_other')"
+      class="dossier-hint"
+      role="status"
+    >
+      You're offline. Visits are recorded by the server, so this waits for a connection.
+    </p>
     <p
       v-else-if="state === 'waiting_for_other'"
       class="dossier-inset text-[13px] text-[var(--dossier-ink)]"

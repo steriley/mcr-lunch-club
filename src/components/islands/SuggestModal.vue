@@ -194,11 +194,15 @@
         <div class="pt-2">
           <button
             type="submit"
-            :disabled="submitting"
+            :disabled="submitting || !online"
             class="w-full bg-navy-fixed hover:bg-deep disabled:opacity-60 text-white py-2.5 px-4 rounded-lg font-bold text-sm shadow transition-colors cursor-pointer"
           >
             {{ submitting ? 'Sending…' : 'Submit petition to the Chairs' }}
           </button>
+          <!-- Nothing is queued: the server limits petitions per sender, which needs a live request. -->
+          <p v-if="!online" class="suggest-error mt-2 text-center" role="status">
+            You're offline. Your suggestion will be here when you're back.
+          </p>
         </div>
       </form>
     </div>
@@ -212,6 +216,9 @@ import { useStore } from '@nanostores/vue';
 import { $isSuggestModalOpen, closeSuggestModal } from '@/stores/filters';
 import type { CostTier } from '@/types';
 import { apiFetch } from '@/lib/api-fetch';
+import { useOnline } from '@/lib/pwa/useOnline';
+
+const online = useOnline();
 
 const isOpen = useStore($isSuggestModalOpen);
 

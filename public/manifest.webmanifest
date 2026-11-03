@@ -14,7 +14,7 @@
     { "src": "/brand/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
-    { "name": "Where to today?", "url": "/#where-to-today" },
-    { "name": "Near Me", "url": "/#near-me" }
+    { "name": "Near Me", "short_name": "Near Me", "url": "/#near-me" },
+    { "name": "Chairs' Area", "short_name": "Chairs", "url": "/admin" }
   ]
 }

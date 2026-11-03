@@ -62,5 +62,7 @@ describe('map config', () => {
     assert.ok(url.endsWith('?key=k'));
     assert.equal(options.maxZoom, 18);
     assert.equal(options.subdomains, 'abcd');
+    // CORS tiles, so the service worker stores real responses instead of opaque ones.
+    assert.equal(options.crossOrigin, true);
   });
 });

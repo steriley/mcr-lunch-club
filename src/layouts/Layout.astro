@@ -6,6 +6,10 @@ import Fonts from '@/components/Fonts.astro';
 import ThemeScript from '@/components/ThemeScript.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
 import Snow from '@/components/Snow.astro';
+import PwaStatus from '@/components/PwaStatus.vue';
+import InstallApp from '@/components/InstallApp.vue';
+import StandaloneBack from '@/components/StandaloneBack.astro';
+import { BUILT_AT } from '@/lib/build-time';
 import {
   countPublicInspections,
   countPublicInspectionsForBuild,
@@ -65,6 +69,10 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="apple-mobile-web-app-title" content="MCR Lunch Club" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mcr-built-at" content={BUILT_AT} />
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex ? (
@@ -86,6 +94,7 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
     <a href="#main" class="skip-link">
       Skip to content
     </a>
+    <PwaStatus client:load />
     <header class="site-header sticky top-0 z-50">
       <div class="site-header-inner">
         <a href="/" class="brand-lockup" aria-label="MCR Lunch Club home">
@@ -124,6 +133,7 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
     </header>
 
     <Snow />
+    <StandaloneBack hidden={currentPath === '/'} />
 
     <main id="main" tabindex="-1" class="flex-1 flex flex-col outline-none">
       <slot />
@@ -182,6 +192,7 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
               FAQs
             </a>
           </div>
+          <InstallApp client:idle />
           <ThemeToggle class="footer-theme-toggle" />
         </div>
 
@@ -198,11 +209,15 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
           </span>
           <span>
             Walking times and distances from Base: ©{' '}
-            <a href="https://openrouteservice.org/" rel="noopener noreferrer">
+            <a href="https://openrouteservice.org/" target="_blank" rel="noopener noreferrer">
               openrouteservice.org
             </a>{' '}
             by HeiGIT | Map data ©{' '}
-            <a href="https://www.openstreetmap.org/copyright" rel="noopener noreferrer">
+            <a
+              href="https://www.openstreetmap.org/copyright"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               OpenStreetMap
             </a>{' '}
             contributors
@@ -210,6 +225,9 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
         </div>
       </div>
     </footer>
+    <script>
+      import '@/pwa/register';
+    </script>
     <script>
       import { getWalkingDirectionsUrl } from '@/lib/map/directions';
 

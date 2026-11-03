@@ -105,6 +105,9 @@ export function createTileLayer(L: any, apiKey?: string): any {
     attribution: CARTO_VOYAGER_TILE_CONFIG.attribution,
     subdomains: CARTO_VOYAGER_TILE_CONFIG.subdomains,
     maxZoom: CARTO_VOYAGER_TILE_CONFIG.maxZoom,
+    // Tiles are requested with CORS, so the service worker can save real responses. An opaque one
+    // can count as several MB against the storage quota each (src/sw/sw.ts).
+    crossOrigin: true,
   });
   const unsubscribe = onThemeChange((theme) =>
     layer.setUrl(CARTO_VOYAGER_TILE_CONFIG.getUrl(apiKey, theme))

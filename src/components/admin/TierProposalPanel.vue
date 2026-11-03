@@ -7,6 +7,7 @@ import DossierIcon from './dossier/DossierIcon.vue';
 import { formatDateTime } from '@/lib/dates';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
 import { apiFetch } from '@/lib/api-fetch';
+import { useOnline } from '@/lib/pwa/useOnline';
 import type { SerializedProposal } from '@/lib/tier-proposals';
 
 const props = defineProps<{
@@ -16,6 +17,7 @@ const props = defineProps<{
   currentUserId: string;
   activeAdmins: number;
 }>();
+const online = useOnline();
 
 const label = (tier: string | null) =>
   isTierValue(tier) ? tierLabel(tier) : 'No approved verdict';
@@ -100,9 +102,17 @@ async function propose() {
             {{ tier.label }}
           </option>
         </select>
-        <button type="button" :disabled="busy" class="dossier-btn is-primary" @click="propose">
+        <button
+          type="button"
+          :disabled="busy || !online"
+          class="dossier-btn is-primary"
+          @click="propose"
+        >
           {{ busy ? 'Proposing…' : 'Propose' }}
         </button>
+        <span v-if="!online" class="dossier-hint mt-0" role="status">
+          You're offline. Proposals need a connection.
+        </span>
       </div>
     </div>
     <p v-if="errorMessage" role="alert" class="dossier-error mt-0">{{ errorMessage }}</p>

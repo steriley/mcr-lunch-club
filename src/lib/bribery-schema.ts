@@ -1,3 +1,4 @@
+import '@/lib/zod-browser';
 import { z } from 'zod';
 
 /** Bribery / Improper Benefit Attempt Record input, shared by the API and BriberyForm. */

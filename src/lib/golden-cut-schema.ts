@@ -1,3 +1,4 @@
+import '@/lib/zod-browser';
 import { z } from 'zod';
 
 /**

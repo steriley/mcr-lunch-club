@@ -164,6 +164,7 @@ import {
 import { matchesCost, toggleCost } from '@/lib/near-me/filters';
 import { trapTabKey } from '@/lib/near-me/focus-trap';
 import { nearMeStatusBanner } from '@/lib/near-me/status-banner';
+import { useOnline } from '@/lib/pwa/useOnline';
 import NearMeCollapsedSummary from './near-me/NearMeCollapsedSummary.vue';
 import NearMeControls from './near-me/NearMeControls.vue';
 import NearMePrePermission from './near-me/NearMePrePermission.vue';
@@ -213,6 +214,8 @@ const showPrePermission = ref<boolean>(false);
 const isUserFarFromManchester = ref<boolean>(false);
 /** Low accuracy detected (radius > 100m) */
 const isLowAccuracy = ref<boolean>(false);
+// GPS and the venue list work without data; only the map tiles need the network.
+const online = useOnline();
 
 // Dev-only forced state override via ?near_me_state=<value> query param
 const DEV_FORCED_STATE = (() => {
@@ -439,6 +442,7 @@ const statusBanner = computed(() =>
       farFromManchester: isUserFarFromManchester.value,
       manual: geo.isManual.value,
       lowAccuracy: isLowAccuracy.value,
+      offline: !online.value,
     },
     {
       startPicking: () => {
