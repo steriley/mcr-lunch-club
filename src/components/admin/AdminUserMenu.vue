@@ -1,23 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { authClient } from '@/lib/auth-client';
-import { forgetThisDevice } from '@/pwa/push-client';
+import { signOut } from '@/components/admin/sign-out';
 
 const props = defineProps<{ userName?: string }>();
 
 const displayName = computed(() => props.userName || 'Chair');
-
-async function signOut() {
-  try {
-    // While still signed in, so the server knows whose device to forget.
-    await forgetThisDevice();
-    await authClient.signOut();
-  } catch (error) {
-    console.error('Failed to sign out.', error);
-  } finally {
-    window.location.assign('/admin/login');
-  }
-}
 </script>
 
 <template>

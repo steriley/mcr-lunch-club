@@ -1,13 +1,18 @@
 <template>
   <component
-    :is="href ? 'a' : 'button'"
+    :is="href ? 'a' : isStatic ? 'span' : 'button'"
     :href="href"
-    :type="href ? undefined : 'button'"
-    :aria-pressed="href ? undefined : selected"
+    :type="href || isStatic ? undefined : 'button'"
+    :aria-pressed="href || isStatic ? undefined : selected"
     :aria-current="href && selected ? 'page' : undefined"
     :aria-disabled="disabled ? 'true' : undefined"
     :title="disabled ? disabledReason : undefined"
-    :class="['ledger-tier-chip', selected && 'is-selected', disabled && 'is-disabled']"
+    :class="[
+      'ledger-tier-chip',
+      selected && 'is-selected',
+      disabled && 'is-disabled',
+      isStatic && 'is-static',
+    ]"
     :style="selected ? { backgroundColor: color, borderColor: color } : undefined"
   >
     <span
@@ -35,7 +40,7 @@
       aria-hidden="true"
     ></span>
     <span>{{ name }}</span>
-    <span class="nav-count ledger-tier-count">{{ count }}</span>
+    <span v-if="count !== undefined" class="nav-count ledger-tier-count">{{ count }}</span>
     <span v-if="selected && showCheck" class="ledger-tier-check" aria-hidden="true">✓</span>
   </component>
 </template>
@@ -46,11 +51,14 @@ defineProps<{
   color: string;
   /** The tier's mark (SVG path data); shown in place of a plain colour dot. */
   glyph?: string;
-  count: number;
+  /** Omit to show the chip without a count pill. */
+  count?: number;
   selected: boolean;
   /** Render as a link (page navigation) instead of a toggle button. */
   href?: string;
   showCheck?: boolean;
+  /** A plain label that looks like a chosen chip but is not interactive (a verdict badge in a table). */
+  isStatic?: boolean;
   /**
    * Shown as unavailable but kept focusable (aria-disabled), so the click
    * still reaches the parent, which decides to ignore it.
@@ -85,6 +93,10 @@ defineProps<{
     color 140ms ease;
 }
 
+.ledger-tier-chip.is-static {
+  cursor: default;
+}
+
 .ledger-tier-chip.is-disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -98,7 +110,7 @@ defineProps<{
 }
 
 /* A chosen chip is already filled, so hovering it lifts the fill a touch instead. */
-.ledger-tier-chip.is-selected:hover:not(.is-disabled) {
+.ledger-tier-chip.is-selected:hover:not(.is-disabled):not(.is-static) {
   filter: brightness(1.12);
 }
 

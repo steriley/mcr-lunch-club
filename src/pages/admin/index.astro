@@ -1,16 +1,14 @@
 ---
-import { count, desc, eq, not, sql } from 'drizzle-orm';
+import { count, desc, eq, not } from 'drizzle-orm';
 import NotificationPrompt from '@/components/admin/NotificationPrompt.vue';
 import TierBadge from '@/components/admin/TierBadge.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import { user } from '@/db/auth-schema';
-import { briberyRecords, tierProposals, venueSuggestions, venues } from '@/db/schema';
+import { tierProposals, venueSuggestions, venues } from '@/db/schema';
 import { formatDateTime } from '@/lib/dates';
 import { db } from '@/lib/db';
 import { getPushEnvironment } from '@/lib/env';
 import { getPreferences, listDevices } from '@/lib/push/store';
-import { countActiveAdmins } from '@/lib/tier-proposals';
-import { TIERS } from '@/lib/tiers';
 import { isPubliclyVisible } from '@/lib/visibility';
 import { publicVenueCondition } from '@/lib/visibility-sql';
 
@@ -18,44 +16,31 @@ export const prerender = false;
 
 const currentUser = Astro.locals.user;
 
-const [tierCounts, hiddenVenues, recent, [bribery], activeChairs, [suggestions], [pendingChanges]] =
-  await Promise.all([
-    db
-      .select({
-        tier: venues.tier,
-        visible: sql<number>`count(*) filter (where ${publicVenueCondition()})`.mapWith(Number),
-        hidden: sql<number>`count(*) filter (where not (${publicVenueCondition()}))`.mapWith(
-          Number
-        ),
-      })
-      .from(venues)
-      .groupBy(venues.tier),
-    db
-      .select({ id: venues.id, name: venues.name, tier: venues.tier, updatedAt: venues.updatedAt })
-      .from(venues)
-      .where(not(publicVenueCondition()))
-      .orderBy(desc(venues.updatedAt))
-      .limit(10),
-    db
-      .select({
-        id: venues.id,
-        name: venues.name,
-        tier: venues.tier,
-        latitude: venues.latitude,
-        longitude: venues.longitude,
-        closedAt: venues.closedAt,
-        updatedAt: venues.updatedAt,
-        editor: user.name,
-      })
-      .from(venues)
-      .leftJoin(user, eq(user.id, venues.updatedBy))
-      .orderBy(desc(venues.updatedAt))
-      .limit(8),
-    db.select({ total: count() }).from(briberyRecords),
-    countActiveAdmins(db),
-    db.select({ total: count() }).from(venueSuggestions).where(eq(venueSuggestions.status, 'new')),
-    db.select({ total: count() }).from(tierProposals).where(eq(tierProposals.status, 'pending')),
-  ]);
+const [hiddenVenues, recent, [suggestions], [pendingChanges]] = await Promise.all([
+  db
+    .select({ id: venues.id, name: venues.name, tier: venues.tier, updatedAt: venues.updatedAt })
+    .from(venues)
+    .where(not(publicVenueCondition()))
+    .orderBy(desc(venues.updatedAt))
+    .limit(10),
+  db
+    .select({
+      id: venues.id,
+      name: venues.name,
+      tier: venues.tier,
+      latitude: venues.latitude,
+      longitude: venues.longitude,
+      closedAt: venues.closedAt,
+      updatedAt: venues.updatedAt,
+      editor: user.name,
+    })
+    .from(venues)
+    .leftJoin(user, eq(user.id, venues.updatedBy))
+    .orderBy(desc(venues.updatedAt))
+    .limit(8),
+  db.select({ total: count() }).from(venueSuggestions).where(eq(venueSuggestions.status, 'new')),
+  db.select({ total: count() }).from(tierProposals).where(eq(tierProposals.status, 'pending')),
+]);
 
 // A one-time nudge towards notifications, for a Chair with no device subscribed (#115).
 const showNotificationPrompt =
@@ -65,30 +50,9 @@ const showNotificationPrompt =
         .catch(() => false)
     : false;
 
-const countsByTier = new Map(tierCounts.map((row) => [row.tier, row]));
-const tiers = TIERS.map((tier) => ({
-  ...tier,
-  visible: countsByTier.get(tier.value)?.visible ?? 0,
-  hidden: countsByTier.get(tier.value)?.hidden ?? 0,
-}));
-const totalVisible = tierCounts.reduce((sum, row) => sum + row.visible, 0);
-const totalHidden = tierCounts.reduce((sum, row) => sum + row.hidden, 0);
-
 const stats = [
   {
-    label: 'Public venues',
-    value: totalVisible,
-    href: '/admin/venues?status=public',
-    tone: 'bg-success-tint text-success',
-  },
-  {
-    label: 'Hidden venues',
-    value: totalHidden,
-    href: '/admin/venues?status=hidden',
-    tone: 'bg-warning-tint text-warning',
-  },
-  {
-    label: 'Pending verdict changes',
+    label: 'Pending verdicts',
     value: pendingChanges.total,
     href: '/admin/pending',
     tone: 'bg-warning-tint text-ochre-fixed',
@@ -99,123 +63,45 @@ const stats = [
     href: '/admin/suggestions',
     tone: 'bg-plum-tint text-plum',
   },
-  {
-    label: 'Bribery records',
-    value: bribery.total,
-    href: '/admin/bribery',
-    tone: 'bg-danger-tint text-danger',
-  },
-  {
-    label: 'Active Chairs',
-    value: activeChairs,
-    href: '/admin/users',
-    tone: 'bg-navy-tint text-navy',
-  },
 ];
 ---
 
 <AdminLayout title="Dashboard">
   <div class="space-y-6">
-    <div class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm">
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Overview</p>
-      <h1 class="mt-2 text-3xl font-bold text-ink">
-        Welcome back, {currentUser?.name || 'Chair'}.
-      </h1>
-    </div>
+    <h1 class="sr-only">Overview</h1>
 
     {showNotificationPrompt && <NotificationPrompt client:load />}
 
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <div class="grid grid-cols-2 gap-2.5 sm:gap-4">
       {stats.map((stat) => (
         <a
           href={stat.href}
-          class="rounded-2xl border border-hairline bg-parchment p-5 shadow-sm transition hover:border-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy"
+          class="block overflow-hidden rounded-xl border border-hairline bg-parchment shadow-sm transition hover:border-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-navy sm:rounded-2xl"
         >
           <span
             class:list={[
               stat.tone,
-              'inline-flex rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-[0.12em]',
+              'font-serif-header block px-3 py-1.5 text-[10px] font-bold uppercase leading-tight tracking-[0.1em] sm:px-5 sm:py-2 sm:text-xs sm:tracking-[0.12em]',
             ]}
           >
             {stat.label}
           </span>
-          <span class="mt-4 block text-3xl font-bold text-ink">{stat.value}</span>
+          <span class="block px-3 py-2 text-2xl font-bold text-ink sm:px-5 sm:py-4 sm:text-3xl">
+            {stat.value}
+          </span>
         </a>
       ))}
     </div>
 
-    <section
-      class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
-      aria-labelledby="tiers-heading"
-    >
-      <h2 id="tiers-heading" class="text-xl font-bold text-ink">
-        Venues by verdict
-      </h2>
-      <div class="mt-4 overflow-x-auto">
-        <table class="min-w-full text-left text-sm">
-          <thead class="text-graphite">
-            <tr>
-              <th scope="col" class="py-2 pr-4 font-semibold">
-                Verdict
-              </th>
-              <th scope="col" class="py-2 pr-4 text-right font-semibold">
-                Public
-              </th>
-              <th scope="col" class="py-2 text-right font-semibold">
-                Hidden
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-sand">
-            {tiers.map((tier) => (
-              <tr>
-                <td class="py-2 pr-4">
-                  <a href={`/admin/venues?tier=${tier.value}`} class="hover:underline">
-                    <TierBadge tier={tier.value} />
-                  </a>
-                </td>
-                <td class="py-2 pr-4 text-right font-semibold">{tier.visible}</td>
-                <td class="py-2 text-right">{tier.hidden}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-
     <div class="grid gap-6 lg:grid-cols-2">
-      <section
-        class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
-        aria-labelledby="drafts-heading"
-      >
-        <h2 id="drafts-heading" class="text-xl font-bold text-ink">
-          Hidden from the public site
-        </h2>
-        <p class="mt-1 text-xs text-graphite">Venues without an approved verdict or a location.</p>
-        {hiddenVenues.length === 0 ? (
-          <p class="mt-4 text-sm text-soot">Nothing hidden. Every venue is on the public site.</p>
-        ) : (
-          <ul class="mt-4 divide-y divide-sand text-sm">
-            {hiddenVenues.map((venue) => (
-              <li class="flex items-center justify-between gap-3 py-2">
-                <a
-                  href={`/admin/venues/${venue.id}`}
-                  class="font-semibold text-ink hover:underline"
-                >
-                  {venue.name}
-                </a>
-                <TierBadge tier={venue.tier} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
       <section
         class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
         aria-labelledby="recent-heading"
       >
-        <h2 id="recent-heading" class="text-xl font-bold text-ink">
+        <h2
+          id="recent-heading"
+          class="font-serif-header border-b border-hairline pb-2 text-xs font-bold uppercase leading-snug tracking-[0.055em] text-ochre"
+        >
           Recently edited
         </h2>
         <ul class="mt-4 divide-y divide-sand text-sm">
@@ -241,6 +127,36 @@ const stats = [
             </li>
           ))}
         </ul>
+      </section>
+
+      <section
+        class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
+        aria-labelledby="drafts-heading"
+      >
+        <h2
+          id="drafts-heading"
+          class="font-serif-header border-b border-hairline pb-2 text-xs font-bold uppercase leading-snug tracking-[0.055em] text-ochre"
+        >
+          Hidden from the public site
+        </h2>
+        <p class="mt-2 text-xs text-graphite">Venues without an approved verdict or a location.</p>
+        {hiddenVenues.length === 0 ? (
+          <p class="mt-4 text-sm text-soot">Nothing hidden. Every venue is on the public site.</p>
+        ) : (
+          <ul class="mt-4 divide-y divide-sand text-sm">
+            {hiddenVenues.map((venue) => (
+              <li class="flex items-center justify-between gap-3 py-2">
+                <a
+                  href={`/admin/venues/${venue.id}`}
+                  class="font-semibold text-ink hover:underline"
+                >
+                  {venue.name}
+                </a>
+                <TierBadge tier={venue.tier} />
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   </div>

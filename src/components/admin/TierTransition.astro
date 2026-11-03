@@ -1,0 +1,25 @@
+---
+import { tierInfo, tierLabel, type TierValue } from '@/lib/tiers';
+
+interface Props {
+  /** The verdict being left; null when the venue had none. */
+  from: TierValue | null;
+  to: TierValue;
+}
+
+const { from, to } = Astro.props;
+
+// A venue with no verdict reads as the neutral tier colour, as TierBadge does.
+const fromInfo = tierInfo(from ?? 'gone_but_not_forgotten');
+const toInfo = tierInfo(to);
+const fromLabel = from ? tierLabel(from) : 'No approved verdict';
+---
+
+<span class="tier-transition" role="img" aria-label={`${fromLabel} to ${tierLabel(to)}`}>
+  <span class="tier-transition-from" style={`background:${fromInfo.color}`}>
+    {fromLabel}
+  </span>
+  <span class="tier-transition-to" style={`background:${toInfo.color}`}>
+    {tierLabel(to)}
+  </span>
+</span>

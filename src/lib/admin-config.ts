@@ -3,11 +3,11 @@ export const ADMIN_AREA_NAME = "Chairs' Area";
 
 export const ADMIN_NAV = [
   { href: '/admin', label: 'Dashboard' },
-  { href: '/admin/venues', label: 'Venues' },
-  { href: '/admin/golden-cut', label: 'Golden Cut' },
   { href: '/admin/pending', label: 'Pending' },
+  { href: '/admin/venues', label: 'Venues' },
   { href: '/admin/suggestions', label: 'Suggestions' },
-  { href: '/admin/bribery', label: 'Bribery Record' },
+  { href: '/admin/golden-cut', label: 'Golden Cut' },
+  { href: '/admin/bribery', label: 'Bribery Records' },
   { href: '/admin/users', label: 'Users' },
   { href: '/admin/account', label: 'Account' },
 ] as const;

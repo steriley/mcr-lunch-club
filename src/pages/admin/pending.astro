@@ -1,5 +1,6 @@
 ---
 import AdminLayout from '@/layouts/AdminLayout.astro';
+import TierTransition from '@/components/admin/TierTransition.astro';
 import ProposalActions from '@/components/admin/ProposalActions.vue';
 import VenueVisits from '@/components/admin/dossier/VenueVisits.vue';
 import { db } from '@/lib/db';
@@ -43,23 +44,29 @@ const visitsByInspection = await listVisitsForInspections(
 );
 const today = londonDate();
 
-const STATUS_TEXT: Record<string, string> = {
-  approved: 'Approved',
-  declined: 'Declined',
-  withdrawn: 'Withdrawn',
-  superseded: 'Replaced',
-};
+/** How a proposal ended, worded for the line under its verdict change. */
+function outcomeText(proposal: (typeof recent)[number]): string {
+  const by = proposal.decidedByName ? ` by ${proposal.decidedByName}` : '';
+  switch (proposal.status) {
+    case 'approved':
+      return `Approved${by}`;
+    case 'declined':
+      return `Declined${by}`;
+    case 'withdrawn':
+      return 'Withdrawn by its proposer';
+    case 'superseded':
+      return 'Replaced by a newer proposal';
+    default:
+      return proposal.status;
+  }
+}
 ---
 
 <AdminLayout title="Pending verdict changes">
   <div class="space-y-6">
     <div>
-      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Countersigning</p>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Inbox</p>
       <h1 class="mt-2 text-3xl font-bold text-ink">Pending verdict changes</h1>
-      <p class="mt-2 max-w-3xl text-sm text-graphite">
-        Every verdict change needs a second Chair. Approve or decline anything you did not propose
-        yourself. There are no notifications: tell each other in person.
-      </p>
     </div>
 
     {activeAdmins < 2 && (
@@ -76,7 +83,10 @@ const STATUS_TEXT: Record<string, string> = {
       class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
       aria-labelledby="pending-heading"
     >
-      <h2 id="pending-heading" class="text-xl font-bold text-ink">
+      <h2
+        id="pending-heading"
+        class="font-serif-header border-b border-hairline pb-2 text-xs font-bold uppercase leading-snug tracking-[0.055em] text-ochre"
+      >
         Awaiting a decision ({pending.length})
       </h2>
       {pending.length === 0 ? (
@@ -138,10 +148,13 @@ const STATUS_TEXT: Record<string, string> = {
     </section>
 
     <section
-      class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
+      class="overflow-hidden rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
       aria-labelledby="recent-heading"
     >
-      <h2 id="recent-heading" class="text-xl font-bold text-ink">
+      <h2
+        id="recent-heading"
+        class="font-serif-header border-b border-hairline pb-2 text-xs font-bold uppercase leading-snug tracking-[0.055em] text-ochre"
+      >
         Recently decided
       </h2>
       {recent.length === 0 ? (
@@ -149,25 +162,21 @@ const STATUS_TEXT: Record<string, string> = {
       ) : (
         <ul class="mt-4 divide-y divide-sand text-sm">
           {recent.map((proposal) => (
-            <li class="space-y-1 py-3">
-              <p>
-                <a
-                  href={`/admin/venues/${proposal.venueId}`}
-                  class="font-semibold text-ink hover:underline"
-                >
-                  {proposal.venueName}
-                </a>
-                : {tierText(proposal.fromTier)} → {tierText(proposal.proposedTier)}{' '}
-                <span class="font-semibold">{STATUS_TEXT[proposal.status] ?? proposal.status}</span>
-              </p>
-              <p class="text-graphite">
-                Proposed by {proposal.proposedByName ?? 'a former admin'}
-                {proposal.decidedByName &&
-                (proposal.status === 'approved' || proposal.status === 'declined')
-                  ? ` · ${STATUS_TEXT[proposal.status].toLowerCase()} by ${proposal.decidedByName}`
-                  : ''}
-                {proposal.decidedAt ? ` · ${formatDateTime(proposal.decidedAt)}` : ''}
-              </p>
+            <li class="space-y-2 py-3">
+              <a
+                href={`/admin/venues/${proposal.venueId}`}
+                class="block font-semibold text-ink hover:underline"
+              >
+                {proposal.venueName}
+              </a>
+              <TierTransition from={proposal.fromTier} to={proposal.proposedTier} />
+              <div class="space-y-0.5 text-graphite">
+                <p>Proposed by {proposal.proposedByName ?? 'a former admin'}</p>
+                <p>
+                  <span class="font-semibold text-soot">{outcomeText(proposal)}</span>
+                  {proposal.decidedAt ? ` on ${formatDateTime(proposal.decidedAt)}` : ''}
+                </p>
+              </div>
               {proposal.declineReason && <p class="text-soot">Reason: {proposal.declineReason}</p>}
             </li>
           ))}

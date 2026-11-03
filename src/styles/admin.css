@@ -327,3 +327,50 @@
 html {
   scroll-padding-top: 4rem;
 }
+
+/*
+ * A verdict change as two joined badges: the old verdict's background runs into the new one's
+ * and ends in an arrow point, so the arrow is the old colour merging into the new.
+ */
+.tier-transition {
+  --point: 12px;
+  display: inline-flex;
+  max-width: 100%;
+  align-items: stretch;
+  /* The solid tier colour with white text, as a chosen chip in the homepage filters. */
+  color: var(--color-white);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tier-transition-from,
+.tier-transition-to {
+  display: inline-flex;
+  align-items: center;
+  padding-block: 5px;
+}
+
+.tier-transition-from {
+  position: relative;
+  z-index: 1;
+  padding-inline: 12px calc(var(--point) + 6px);
+  border-radius: 999px 0 0 999px;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--point)) 0,
+    100% 50%,
+    calc(100% - var(--point)) 100%,
+    0 100%
+  );
+}
+
+/* Tucked under the arrow point, so no gap shows between the two colours. */
+.tier-transition-to {
+  margin-left: calc(var(--point) * -1);
+  padding-inline: calc(var(--point) + 10px) 12px;
+  border-radius: 0 999px 999px 0;
+}

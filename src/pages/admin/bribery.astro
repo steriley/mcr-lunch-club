@@ -20,12 +20,12 @@ const records = await db
   .orderBy(desc(briberyRecords.incidentDate), desc(briberyRecords.createdAt));
 ---
 
-<AdminLayout title="Bribery Record">
+<AdminLayout title="Bribery Records">
   <div class="space-y-6">
     <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div>
         <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Hall of Shame</p>
-        <h1 class="mt-2 text-3xl font-bold text-ink">Bribery / Improper Benefit Attempt Record</h1>
+        <h1 class="mt-2 text-3xl font-bold text-ink">Bribery Records</h1>
       </div>
       <a
         href="/admin/bribery/new"

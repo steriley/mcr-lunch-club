@@ -250,7 +250,7 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
     <ConfirmDialog
       :open="showDeleteDialog"
       title="Delete record"
-      message="Remove this entry from the Bribery / Improper Benefit Attempt Record permanently?"
+      message="Remove this entry from the Bribery Records permanently?"
       confirm-label="Delete record"
       @cancel="showDeleteDialog = false"
       @confirm="performDelete"
