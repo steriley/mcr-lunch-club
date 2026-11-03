@@ -19,6 +19,7 @@ function banner(overrides: Partial<StatusBannerState> = {}) {
       farFromManchester: false,
       manual: false,
       lowAccuracy: false,
+      offline: false,
       ...overrides,
     },
     actions
@@ -64,5 +65,22 @@ describe('Near Me status banner', () => {
   it('lets the dev override win', () => {
     assert.equal(banner({ devForced: 'far' })?.type, 'warning');
     assert.equal(banner({ devForced: 'nonsense' }), null);
+  });
+
+  it('says so when offline, below picking and acquiring but above location errors', () => {
+    assert.equal(banner({ offline: true })?.text, 'Offline · map may be incomplete');
+    assert.equal(
+      banner({ offline: true, picking: true })?.text,
+      'Tap the map to set your position'
+    );
+    assert.equal(
+      banner({ offline: true, geoState: 'requesting' })?.text,
+      'Acquiring your position…'
+    );
+    assert.equal(
+      banner({ offline: true, geoState: 'denied' })?.text,
+      'Offline · map may be incomplete'
+    );
+    assert.equal(banner({ offline: true, manual: true })?.text, 'Offline · map may be incomplete');
   });
 });

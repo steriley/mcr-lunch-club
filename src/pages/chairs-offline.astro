@@ -1,0 +1,36 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Icon from '@/components/Icon.astro';
+
+// Shown by the service worker (src/sw/sw.ts) when a visit to the Chairs' Area cannot reach the
+// server. Static, with no admin data: the real admin pages are never stored on the device.
+export const prerender = true;
+---
+
+<Layout title="The Chairs’ Area needs a connection — MCR Lunch Club" noindex>
+  <div class="max-w-xl mx-auto px-4 py-16 sm:py-24 w-full flex flex-col items-center text-center space-y-5">
+    <Icon name="scales" class="icon-hero text-navy" />
+    <p class="text-xs font-bold uppercase tracking-widest text-navy font-sans">
+      The Chairs’ Area · Online only
+    </p>
+    <h1 class="text-3xl sm:text-4xl font-bold text-ink">The Chairs’ Area needs a connection</h1>
+    <p class="text-base text-stone-600 font-sans">
+      Proposals, inspections and edits go straight to the server, so none of them can be saved for
+      later. Try again when you have a signal.
+    </p>
+    <div class="flex flex-wrap justify-center gap-3 pt-2 font-sans text-sm">
+      <a
+        href="/admin"
+        class="rounded-lg bg-navy-fixed px-4 py-2.5 font-semibold text-white hover:bg-deep"
+      >
+        Try again
+      </a>
+      <a
+        href="/"
+        class="rounded-lg border border-hairline bg-surface px-4 py-2.5 font-semibold text-ink hover:bg-stone-50"
+      >
+        The public site
+      </a>
+    </div>
+  </div>
+</Layout>

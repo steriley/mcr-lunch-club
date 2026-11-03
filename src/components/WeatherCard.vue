@@ -1,5 +1,7 @@
 <template>
+  <!-- The forecast needs the network: the card steps aside while offline. -->
   <FieldPanel
+    v-if="online"
     title="Atmospheric Dispatch"
     class="weather-card"
     :class="`theme-${themeFor(currentIcon)}`"
@@ -99,12 +101,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import FieldPanel from '@/components/FieldPanel.vue';
+import { useOnline } from '@/lib/pwa/useOnline';
 import type { WeatherIcon, WeatherPoint, WeatherSummary } from '@/lib/weather';
 
 type WeatherShape =
   | { kind: 'path'; d: string }
   | { kind: 'circle'; cx: number; cy: number; r: number; filled?: boolean };
 
+const online = useOnline();
 const loading = ref(true);
 const error = ref(false);
 const stale = ref(false);

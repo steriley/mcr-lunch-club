@@ -6,6 +6,7 @@ import { CAPTION_MAX, MAX_IMAGES_PER_VENUE, focalStyle } from '@/lib/image-uploa
 import { OptimiseError, optimiseImage } from '@/lib/optimise-image';
 import type { SerializedVenueImage } from '@/lib/image-upload';
 import { apiFetch, failureText } from '@/lib/api-fetch';
+import { useOnline } from '@/lib/pwa/useOnline';
 
 /**
  * Venue photos on the edit page (#35). Every change here applies at once
@@ -14,6 +15,7 @@ import { apiFetch, failureText } from '@/lib/api-fetch';
  * one at a time, each with its own status and Retry.
  */
 const props = defineProps<{ venueId: string; venueName: string; uploadsEnabled: boolean }>();
+const online = useOnline();
 const images = defineModel<SerializedVenueImage[]>('images', { required: true });
 
 type QueueStatus = 'waiting' | 'optimising' | 'uploading' | 'done' | 'failed';
@@ -387,7 +389,7 @@ const altFor = (image: SerializedVenueImage) => image.caption || props.venueName
       <label
         :class="[
           'dossier-btn inline-flex items-center gap-1.5',
-          freeSlots === 0 ? 'pointer-events-none opacity-50' : 'cursor-pointer',
+          freeSlots === 0 || !online ? 'pointer-events-none opacity-50' : 'cursor-pointer',
         ]"
       >
         <input
@@ -395,7 +397,7 @@ const altFor = (image: SerializedVenueImage) => image.caption || props.venueName
           accept="image/*"
           multiple
           class="sr-only"
-          :disabled="freeSlots === 0"
+          :disabled="freeSlots === 0 || !online"
           @change="onPick"
         />
         <DossierIcon name="upload" :size="16" />
@@ -405,6 +407,9 @@ const altFor = (image: SerializedVenueImage) => image.caption || props.venueName
             : `Add photos (up to ${freeSlots} more)`
         }}
       </label>
+      <p v-if="!online" class="dossier-hint mt-0" role="status">
+        You're offline. Photos can be added when you're back online.
+      </p>
       <p class="dossier-hint mt-0">
         Photos are resized and converted in your browser before upload; location data is removed.
       </p>

@@ -1,3 +1,4 @@
+import '@/lib/zod-browser';
 import { z } from 'zod';
 import { CUISINE_VALUES, DEFAULT_CUISINE } from '@/lib/cuisines';
 import { TIER_VALUES } from '@/lib/tiers';

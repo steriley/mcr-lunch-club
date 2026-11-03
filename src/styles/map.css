@@ -6,6 +6,12 @@
   background-color: var(--ledger-paper);
 }
 
+/* Offline (or a CDN hiccup): a tile that never loaded stays invisible, so the container's paper
+   background shows through instead of broken-image icons. */
+.leaflet-tile-pane .leaflet-tile:not(.leaflet-tile-loaded) {
+  visibility: hidden;
+}
+
 .leaflet-control-zoom a {
   color: var(--color-deep-ink) !important;
 }

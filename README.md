@@ -24,7 +24,7 @@ Built on **Astro 7** on Vercel (functions in `lhr1`, next to the Neon database i
 
 The public pages are **prerendered**: they read the database when the site is built and are served as static files, so visitors never wait on Neon. Admin saves that change what the public sees (each `adminRoute` declares `publish`) do not rebuild straight away: they **record a pending change** (`src/lib/publishing.ts`), and a bar across the Chairs' Area lists what is unpublished with a **Publish now** button that calls the Vercel Deploy Hook (`src/lib/rebuild.ts`). Closing or reopening a venue publishes at once. A pending change clears only when a production build completes, whatever started it (the button, a cron or a push to `main`): `vercel.json` runs `pnpm publish:mark` first, which records the build's start by the database's clock, and `pnpm publish:settle` last, which deletes the changes saved before that time. A change saved during a build stays pending, and a failed build leaves everything pending. A nightly cron (05:00 UTC, `src/pages/api/cron/publish-pending.ts`) publishes anything still waiting, and another rebuilds the site on Wednesday evenings for the new weekly bulletin (`src/pages/api/cron/weekly-bulletin.ts`). Without a `DEPLOY_HOOK_URL` (local runs) changes stay pending, since only a production build clears them. Only the Chairs' Area, `/api/*` and the sign-in page run on demand.
 
-Every public page carries a canonical URL and Open Graph / Twitter card tags (`src/layouts/Layout.astro`), so links shared in a chat show a preview: venue pages use their photo, everything else `public/brand/og-default.png`. Venue pages also carry schema.org `Restaurant` JSON-LD (`src/lib/structured-data.ts`) for search results, and `public/manifest.webmanifest` lets the site be added to a phone's home screen, with Where to today? and Near Me as shortcuts. `@astrojs/sitemap` writes `/sitemap-index.xml` at build time, and `vercel.json` sets the security headers (`nosniff`, no framing, referrer and permissions policies; geolocation stays allowed for Near Me).
+Every public page carries a canonical URL and Open Graph / Twitter card tags (`src/layouts/Layout.astro`), so links shared in a chat show a preview: venue pages use their photo, everything else `public/brand/og-default.png`. Venue pages also carry schema.org `Restaurant` JSON-LD (`src/lib/structured-data.ts`) for search results, and `public/manifest.webmanifest` makes the site an installable app that works offline (see "Offline mode and installing the app"), with Near Me and the Chairs' Area as shortcuts. `@astrojs/sitemap` writes `/sitemap-index.xml` at build time, and `vercel.json` sets the security headers (`nosniff`, no framing, referrer and permissions policies; geolocation stays allowed for Near Me).
 
 - **Content-Security-Policy**: `security.csp` in `astro.config.mjs`. Astro hashes every script and style it emits, so an injected inline script won't run; images may come only from the site, CARTO tiles and Vercel Blob, and fonts only from the site itself (self-hosted WOFF2 in `public/fonts/`, icons as inline SVG from `src/lib/icons.ts`). Prerendered pages carry it as a `<meta>` tag, on-demand pages as a header. Inline `style` attributes are allowed (Vue renders tier colours with them). The theme script's hash is added from `src/lib/theme-script.ts`, the Chairs' Area adds `'wasm-unsafe-eval'` for the WebP encoder and turns off Zod's eval probe (`AdminLayout.astro`), and `frame-ancestors` stays in `vercel.json` because a `<meta>` policy cannot set it. A new third-party script, image host or API needs adding there, and CSP is not applied by `pnpm dev`: check with `pnpm build` and the browser console.
 
@@ -241,6 +241,39 @@ Use a Neon **branch** so local work never touches production data:
    build and `pnpm check:bundle`. In **GitHub → Settings → Branches**, protect
    `main` and make **checks** (the CI workflow's job) a required status check, so nothing reaches
    production (or its database migrations) untested.
+
+### Offline mode and installing the app
+
+The public site is an installable PWA that keeps working with no signal. It is prerendered, so caching a page caches
+its data. The Chairs' Area stays **online-only**, and nothing is ever queued for later: tier proposals, "Visited today",
+suggestions and admin saves are all live requests (the server's Europe/London day and the two-Chair rules need it).
+
+- **Manifest and install:** `public/manifest.webmanifest` (icons, maskable icon, shortcuts for Near Me and the Chairs'
+  Area). The footer offers "Install app" through `beforeinstallprompt` on Chrome/Android and a "Share → Add to Home
+  Screen" hint on iOS Safari; neither appears once installed, and there is never an automatic pop-up. Standalone mode
+  has no browser back button, so a Back strip (`StandaloneBack.astro`) shows only there.
+- **Worker:** `src/sw/sw.ts`, bundled with esbuild and given its precache list by Workbox `injectManifest` over
+  `.vercel/output/static` (`scripts/build-sw.ts`, the last step of `pnpm build`, so before `publish:settle`). It is
+  served from `/sw.js` with `Cache-Control: no-cache` (`vercel.json`) and registered by `src/pwa/register.ts` in
+  production builds only, so `pnpm dev` never registers one; `pnpm serve:build` and Previews do.
+- **What is cached:** the shell pages and hashed assets are precached. Public HTML is network-first (3 s) then the
+  device's copy, then `/offline`. Venue pages are saved as visited and warmed while the browser is idle. Venue photo
+  thumbnails are cache-first (200 entries, 30 days), CARTO tiles cache-first (1,500 tiles, 30 days, requested with CORS).
+  `/admin/**`, `/api/**`, `/og/**` and anything but GET are never intercepted for content; a failed navigation into the
+  Chairs' Area shows the static `/chairs-offline` page. The rules live in `src/lib/pwa/routing.ts` (unit tested), and
+  `e2e/offline.spec.ts` asserts no `/admin` or `/api` URL ever reaches Cache Storage.
+- **Freshness:** a page served from the device carries `data-saved-copy` on `<html>`, and the bar at the top reads
+  "Offline · verdicts as of …" from the `mcr-built-at` meta tag. A new worker waits: public pages offer "New verdicts
+  published · Refresh"; the Chairs' Area never reloads over a form, and the worker takes over on the next cold launch.
+- **Not built:** bulk pre-download of map tiles. CARTO's basemap terms have to allow offline caching first; until
+  someone checks them, tiles are saved only as they are viewed.
+- **Kill switch:** if a bad worker gets stuck in browsers, set `PWA_KILL_SWITCH=1` on the Vercel project and redeploy.
+  The build then writes a worker that deletes every cache and unregisters itself instead of the real one (visitors pick
+  it up on their next visit). `pnpm pwa:kill-switch` does the same over a local build. Remove the variable afterwards.
+- **Cache versions:** bump `VERSION` in `src/sw/sw.ts` to discard every saved cache; older `mcr-*` caches are deleted on
+  activate. `mcrlunchclub.com` and `mcr-lunch-club.vercel.app` are separate origins with separate workers and caches.
+- **Manual checks** (not in CI): install on an iPhone (Home Screen) and on Android, switch to airplane mode, open the
+  app, use Near Me, and check Back everywhere; run Lighthouse's installability audit.
 
 ### Preview deployments (a Neon branch per pull request)
 

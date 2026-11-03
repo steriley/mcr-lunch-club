@@ -3,6 +3,8 @@ import '@/styles/admin.css';
 import Fonts from '@/components/Fonts.astro';
 import ThemeScript from '@/components/ThemeScript.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
+import PwaStatus from '@/components/PwaStatus.vue';
+import StandaloneBack from '@/components/StandaloneBack.astro';
 import AdminUserMenu from '@/components/admin/AdminUserMenu.vue';
 import PublishBar from '@/components/admin/PublishBar.vue';
 import { ADMIN_AREA_NAME, ADMIN_NAV } from '@/lib/admin-config';
@@ -49,7 +51,19 @@ const navItems = ADMIN_NAV.map((item) => ({
     <link rel="icon" type="image/png" href="/brand/favicon-64.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon-chairs.png" />
     <meta name="apple-mobile-web-app-title" content="MCR Chairs" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <title>{pageTitle} | MCR Lunch Club</title>
+    <!-- In the head, ahead of every island: Zod's jitless setting must be in place before any form builds a schema. -->
+    <script>
+      import { config } from 'zod';
+
+      // The forms validate with Zod, which otherwise probes for eval support and
+      // trips the Content-Security-Policy; it validates the same without it.
+      config({ jitless: true });
+    </script>
   </head>
   <body class="min-h-screen bg-parchment text-ink antialiased">
     <a
@@ -58,6 +72,7 @@ const navItems = ADMIN_NAV.map((item) => ({
     >
       Skip to content
     </a>
+    <PwaStatus client:load chairsArea />
     {publishStatus && <PublishBar client:load initial={publishStatus} />}
     <header class="border-b border-hairline bg-parchment shadow-sm">
       <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
@@ -124,6 +139,8 @@ const navItems = ADMIN_NAV.map((item) => ({
       </nav>
     </header>
 
+    <StandaloneBack hidden={currentPath === '/admin'} />
+
     <main id="admin-main" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <slot />
     </main>
@@ -135,11 +152,7 @@ const navItems = ADMIN_NAV.map((item) => ({
       </div>
     </footer>
     <script>
-      import { config } from 'zod';
-
-      // The forms validate with Zod, which otherwise probes for eval support and
-      // trips the Content-Security-Policy; it validates the same without it.
-      config({ jitless: true });
+      import '@/pwa/register';
     </script>
   </body>
 </html>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { apiFetch } from '@/lib/api-fetch';
+import { useOnline } from '@/lib/pwa/useOnline';
 
 /**
  * Approve / Decline (with a required, internal reason) for admins other than
@@ -16,6 +17,7 @@ const props = defineProps<{
 const isMine = computed(() => props.proposedBy === props.currentUserId);
 const declining = ref(false);
 const reason = ref('');
+const online = useOnline();
 const busy = ref(false);
 const errorMessage = ref('');
 
@@ -54,16 +56,21 @@ const danger =
       <span class="text-xs text-graphite"
         >You proposed this. A different admin must approve or decline it.</span
       >
-      <button type="button" :class="secondary" :disabled="busy" @click="act('withdraw')">
+      <button type="button" :class="secondary" :disabled="busy || !online" @click="act('withdraw')">
         Withdraw
       </button>
     </div>
     <template v-else-if="canDecide">
       <div v-if="!declining" class="flex flex-wrap gap-2">
-        <button type="button" :class="primary" :disabled="busy" @click="act('approve')">
+        <button type="button" :class="primary" :disabled="busy || !online" @click="act('approve')">
           Approve
         </button>
-        <button type="button" :class="secondary" :disabled="busy" @click="declining = true">
+        <button
+          type="button"
+          :class="secondary"
+          :disabled="busy || !online"
+          @click="declining = true"
+        >
           Decline…
         </button>
       </div>
@@ -79,16 +86,24 @@ const danger =
           ></textarea>
         </label>
         <div class="flex gap-2">
-          <button type="button" :class="danger" :disabled="busy" @click="act('decline')">
+          <button type="button" :class="danger" :disabled="busy || !online" @click="act('decline')">
             Decline
           </button>
-          <button type="button" :class="secondary" :disabled="busy" @click="declining = false">
+          <button
+            type="button"
+            :class="secondary"
+            :disabled="busy || !online"
+            @click="declining = false"
+          >
             Cancel
           </button>
         </div>
       </div>
     </template>
     <p v-else class="text-xs text-graphite">A second active admin is needed to decide this.</p>
+    <p v-if="!online" role="status" class="text-xs text-graphite">
+      You're offline. Deciding on a proposal needs a connection.
+    </p>
     <p v-if="errorMessage" role="alert" class="text-xs text-red-700">{{ errorMessage }}</p>
   </div>
 </template>

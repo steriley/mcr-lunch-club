@@ -30,6 +30,10 @@ export default defineConfig({
         "font-src 'self'",
         "connect-src 'self'",
         "object-src 'none'",
+        // The service worker (/sw.js) and the web app manifest; worker-src would otherwise fall back
+        // to the hash-based script-src, which blocks registration.
+        "worker-src 'self'",
+        "manifest-src 'self'",
         "base-uri 'self'",
         "form-action 'self'",
       ],
@@ -51,7 +55,8 @@ export default defineConfig({
   integrations: [
     vue(),
     sitemap({
-      filter: (page) => !page.includes('/admin'),
+      filter: (page) =>
+        !page.includes('/admin') && !page.includes('/offline') && !page.includes('/chairs-offline'),
       serialize: (item) => {
         const url = new URL(item.url);
         if (url.pathname.length > 1) url.pathname = url.pathname.replace(/\/$/, '');
