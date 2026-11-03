@@ -25,7 +25,8 @@ import type { InspectionOutcome } from '@/types';
 type Executor = Database | Tx;
 
 export type VisitOutcome =
-  | { result: 'waiting'; inspection: InspectionRow }
+  /** `startedNow`: this press started it (a repeat press by the same Chair changes nothing). */
+  | { result: 'waiting'; inspection: InspectionRow; startedNow: boolean }
   | { result: 'confirmed'; inspection: InspectionRow; confirmedNow: boolean }
   /** A first press must say how the inspection went. */
   | { result: 'outcome_required' }
@@ -110,11 +111,12 @@ async function visitOnce(
           createdAt: now,
         })
         .returning();
-      return { result: 'waiting', inspection: created };
+      return { result: 'waiting', inspection: created, startedNow: true };
     }
 
     // The same admin pressing again changes nothing: one person can never confirm their own visit.
-    if (pending.firstAdminId === actor.id) return { result: 'waiting', inspection: pending };
+    if (pending.firstAdminId === actor.id)
+      return { result: 'waiting', inspection: pending, startedNow: false };
     if (outcome && outcome !== pending.outcome)
       return { result: 'outcome_mismatch', inspection: pending };
 

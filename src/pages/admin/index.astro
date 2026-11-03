@@ -1,11 +1,14 @@
 ---
 import { count, desc, eq, not, sql } from 'drizzle-orm';
+import NotificationPrompt from '@/components/admin/NotificationPrompt.vue';
 import TierBadge from '@/components/admin/TierBadge.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import { user } from '@/db/auth-schema';
 import { briberyRecords, tierProposals, venueSuggestions, venues } from '@/db/schema';
 import { formatDateTime } from '@/lib/dates';
 import { db } from '@/lib/db';
+import { getPushEnvironment } from '@/lib/env';
+import { getPreferences, listDevices } from '@/lib/push/store';
 import { countActiveAdmins } from '@/lib/tier-proposals';
 import { TIERS } from '@/lib/tiers';
 import { isPubliclyVisible } from '@/lib/visibility';
@@ -53,6 +56,14 @@ const [tierCounts, hiddenVenues, recent, [bribery], activeChairs, [suggestions],
     db.select({ total: count() }).from(venueSuggestions).where(eq(venueSuggestions.status, 'new')),
     db.select({ total: count() }).from(tierProposals).where(eq(tierProposals.status, 'pending')),
   ]);
+
+// A one-time nudge towards notifications, for a Chair with no device subscribed (#115).
+const showNotificationPrompt =
+  currentUser && getPushEnvironment()
+    ? await Promise.all([listDevices(db, currentUser.id), getPreferences(db, currentUser.id)])
+        .then(([devices, preferences]) => devices.length === 0 && !preferences.promptDismissed)
+        .catch(() => false)
+    : false;
 
 const countsByTier = new Map(tierCounts.map((row) => [row.tier, row]));
 const tiers = TIERS.map((tier) => ({
@@ -111,6 +122,8 @@ const stats = [
         Welcome back, {currentUser?.name || 'Chair'}.
       </h1>
     </div>
+
+    {showNotificationPrompt && <NotificationPrompt client:load />}
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {stats.map((stat) => (

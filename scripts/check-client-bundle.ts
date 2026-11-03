@@ -9,7 +9,7 @@
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { getBlobToken, getOrsApiKey } from '@/lib/env';
+import { getBlobToken, getOrsApiKey, getPushEnvironment } from '@/lib/env';
 
 const CLIENT_DIRS = ['.vercel/output/static', 'dist/client'].filter((dir) => existsSync(dir));
 
@@ -33,6 +33,9 @@ const needles = [
   'ORS_API_KEY',
   'api.openrouteservice.org',
   'BLOB_READ_WRITE_TOKEN',
+  'VAPID_PRIVATE_KEY',
+  // The push sender (src/lib/push/web-push-sender.ts) is server-only.
+  'Received unexpected response code',
   '@resvg/resvg-js',
   'wawoff2',
   'Unsupported OpenType signature',
@@ -41,6 +44,7 @@ const secrets = new Map<string, string>();
 for (const [name, value] of [
   ['ORS_API_KEY', getOrsApiKey()],
   ['BLOB_READ_WRITE_TOKEN', getBlobToken()],
+  ['VAPID_PRIVATE_KEY', getPushEnvironment()?.privateKey],
 ] as const) {
   if (value) {
     needles.push(value);

@@ -3,3 +3,8 @@ allowBuilds:
   better-sqlite3: true
   esbuild: true
   sharp: true
+
+# Held back from the newest releases until they clear pnpm's minimum release age.
+overrides:
+  resolve: 1.22.13
+  is-core-module: 2.17.0

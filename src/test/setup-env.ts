@@ -23,6 +23,13 @@ for (const key of [
 // through a publishing admin route must never call the real Deploy Hook, or
 // every build would start another. Empty rather than deleted, so a value in
 // .env.local can't fill them back in (src/lib/env.ts reads empty as unset).
-for (const key of ['DEPLOY_HOOK_URL', 'CRON_SECRET']) {
+// The same for Chairs' push notifications: with no VAPID keys, nothing is ever sent.
+for (const key of [
+  'DEPLOY_HOOK_URL',
+  'CRON_SECRET',
+  'VAPID_PUBLIC_KEY',
+  'VAPID_PRIVATE_KEY',
+  'VAPID_SUBJECT',
+]) {
   process.env[key] = '';
 }

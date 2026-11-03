@@ -219,3 +219,39 @@ export function getDeployHookUrl(): string | undefined {
 export function getCronSecret(): string | undefined {
   return optional('CRON_SECRET');
 }
+
+export interface PushEnvironment {
+  publicKey: string;
+  privateKey: string;
+  /** A `mailto:` (or https) contact the push services can reach the club at. */
+  subject: string;
+}
+
+const BASE64URL = /^[A-Za-z0-9_-]+$/;
+let warnedAboutPush = false;
+
+/**
+ * VAPID keys for Chairs' push notifications (#115). Undefined unless all three are set and valid:
+ * the feature is then off (no UI, no sends), which keeps local dev and Previews working without
+ * keys. An invalid set is logged once rather than thrown, so a typo never takes the Chairs' Area down.
+ */
+export function getPushEnvironment(): PushEnvironment | undefined {
+  const publicKey = optional('VAPID_PUBLIC_KEY');
+  const privateKey = optional('VAPID_PRIVATE_KEY');
+  const subject = optional('VAPID_SUBJECT');
+  if (!publicKey || !privateKey || !subject) return undefined;
+
+  const problem = !BASE64URL.test(publicKey)
+    ? 'VAPID_PUBLIC_KEY must be base64url'
+    : !BASE64URL.test(privateKey)
+      ? 'VAPID_PRIVATE_KEY must be base64url'
+      : !/^(mailto:|https:\/\/)/.test(subject)
+        ? 'VAPID_SUBJECT must be a mailto: or https:// URL'
+        : null;
+  if (problem) {
+    if (!warnedAboutPush) console.error(`[push] Notifications are off: ${problem}.`);
+    warnedAboutPush = true;
+    return undefined;
+  }
+  return { publicKey, privateKey, subject };
+}

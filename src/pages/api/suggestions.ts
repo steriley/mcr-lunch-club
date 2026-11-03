@@ -9,6 +9,7 @@ import {
   validationError,
 } from '@/lib/admin-api';
 import { db } from '@/lib/db';
+import { notifyChairs } from '@/lib/push/dispatch';
 import { suggestionInputSchema } from '@/lib/suggestion-schema';
 import { isSuggestionRateLimited, senderHash } from '@/lib/suggestions';
 
@@ -45,6 +46,7 @@ export const POST: APIRoute = async (context) => {
 
     const { website: _website, ...values } = parsed.data;
     await db.insert(venueSuggestions).values({ ...values, senderHash: hash });
+    notifyChairs({ type: 'suggestion' });
     return jsonResponse({ ok: true }, 201);
   } catch (error) {
     return serverError('Create suggestion', error);

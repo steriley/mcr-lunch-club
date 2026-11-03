@@ -86,6 +86,7 @@ pnpm --silent db:seed
 if [ -e .env.local ]; then
   log ".env.local exists; leaving it alone. For this database use:"
   printf '  DATABASE_URL=%s\n  TEST_DATABASE_URL=%s\n' "$DEV_URL" "$TEST_URL"
+  grep -q '^VAPID_PUBLIC_KEY=' .env.local || log "For push notifications, add the lines from: pnpm push:keys"
 else
   cat > .env.local <<ENV
 # Written by pnpm db:local. Local-only values; never reuse them anywhere real.
@@ -99,6 +100,8 @@ SEED_CHAIR_PASSWORD=$CHAIR_PASSWORD
 # Not a real token: it only switches the photo uploader on so pnpm check:built can exercise the WebP encoder
 # (the test stubs the upload request, so nothing reaches Vercel Blob).
 BLOB_READ_WRITE_TOKEN=local-only-not-a-real-token
+# Local-only VAPID keys, so the Chairs' notification settings show (pnpm push:keys makes more).
+$(pnpm --silent push:keys)
 ENV
   log "Wrote .env.local"
 fi

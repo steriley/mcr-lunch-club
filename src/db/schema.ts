@@ -355,6 +355,51 @@ export const venueSuggestions = pgTable('venue_suggestions', {
   reviewedBy: text('reviewed_by').references(() => user.id, { onDelete: 'set null' }),
 });
 
+/**
+ * A browser's Web Push subscription for a Chair (#115). One row per device, unique by endpoint: a
+ * device that signs in as someone else moves to them. Deleting the user deletes their devices.
+ */
+export const pushSubscriptions = pgTable(
+  'push_subscriptions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    endpoint: text('endpoint').notNull().unique(),
+    p256dh: text('p256dh').notNull(),
+    auth: text('auth').notNull(),
+    // Derived in the browser for the device list, e.g. "iPhone · Home Screen". Nothing more identifying.
+    userAgentLabel: text('user_agent_label'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    lastSuccessAt: timestamp('last_success_at', { withTimezone: true }),
+    // Consecutive failed deliveries; reset by a success.
+    failureCount: integer('failure_count').notNull().default(0),
+  },
+  (table) => [index('push_subscriptions_user_idx').on(table.userId)]
+);
+
+/**
+ * Which pushes a Chair wants, account-wide. No row means the defaults (all on but suggestions).
+ * The timestamps throttle suggestion and test pushes and remember the dashboard prompt.
+ */
+export const notificationPreferences = pgTable('notification_preferences', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  proposals: boolean('proposals').notNull().default(true),
+  decisions: boolean('decisions').notNull().default(true),
+  visits: boolean('visits').notNull().default(true),
+  suggestions: boolean('suggestions').notNull().default(false),
+  suggestionsNotifiedAt: timestamp('suggestions_notified_at', { withTimezone: true }),
+  testSentAt: timestamp('test_sent_at', { withTimezone: true }),
+  promptDismissedAt: timestamp('prompt_dismissed_at', { withTimezone: true }),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
 export type VenueRow = typeof venues.$inferSelect;
 export type BriberyRow = typeof briberyRecords.$inferSelect;
 export type SuggestionRow = typeof venueSuggestions.$inferSelect;
@@ -362,3 +407,5 @@ export type VenueEventRow = typeof venueEvents.$inferSelect;
 export type InspectionRow = typeof inspections.$inferSelect;
 export type TierProposalRow = typeof tierProposals.$inferSelect;
 export type VenueImageRow = typeof venueImages.$inferSelect;
+export type PushSubscriptionRow = typeof pushSubscriptions.$inferSelect;
+export type NotificationPreferencesRow = typeof notificationPreferences.$inferSelect;

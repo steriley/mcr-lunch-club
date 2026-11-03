@@ -46,6 +46,9 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Throwaway VAPID keys for this run, so the Chairs' notification settings render in check:built.
+      - name: Generate VAPID keys
+        run: pnpm --silent push:keys >> "$GITHUB_ENV"
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm knip

@@ -1,9 +1,11 @@
 import { adminRoute, authApiError, jsonError, jsonResponse, userIdParam } from '@/lib/admin-api';
 import { auth } from '@/lib/auth';
+import { db } from '@/lib/db';
+import { deleteUserSubscriptions } from '@/lib/push/store';
 
 export const prerender = false;
 
-/** Deactivates a user; Better Auth also revokes their sessions. */
+/** Deactivates a user; Better Auth also revokes their sessions, and their push devices are removed. */
 export const POST = adminRoute(
   {
     action: 'Ban user',
@@ -17,6 +19,7 @@ export const POST = adminRoute(
       headers: request.headers,
       body: { userId: params.id, banReason: 'Deactivated by a Chair.' },
     });
+    await deleteUserSubscriptions(db, params.id);
     return jsonResponse(result);
   }
 );
