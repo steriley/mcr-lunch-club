@@ -9,6 +9,7 @@ import AdminUserMenu from '@/components/admin/AdminUserMenu.vue';
 import PublishBar from '@/components/admin/PublishBar.vue';
 import { ADMIN_AREA_NAME, ADMIN_NAV } from '@/lib/admin-config';
 import { db } from '@/lib/db';
+import { getPushEnvironment } from '@/lib/env';
 import { getPublishStatus } from '@/lib/publishing';
 
 interface Props {
@@ -31,6 +32,8 @@ const publishStatus = user
       return null;
     })
   : null;
+// Chairs' push notifications (#115): the key this device subscribes with, when they are set up.
+const pushKey = user ? (getPushEnvironment()?.publicKey ?? null) : null;
 const pageTitle = title ? `${title} — ${ADMIN_AREA_NAME}` : ADMIN_AREA_NAME;
 const currentPath = Astro.url.pathname;
 const navItems = ADMIN_NAV.map((item) => ({
@@ -55,6 +58,7 @@ const navItems = ADMIN_NAV.map((item) => ({
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    {pushKey && <meta name="mcr-push-key" content={pushKey} />}
     <title>{pageTitle} | MCR Lunch Club</title>
     <!-- In the head, ahead of every island: Zod's jitless setting must be in place before any form builds a schema. -->
     <script>
@@ -153,6 +157,7 @@ const navItems = ADMIN_NAV.map((item) => ({
     </footer>
     <script>
       import '@/pwa/register';
+      import '@/pwa/push-sync';
     </script>
   </body>
 </html>

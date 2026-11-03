@@ -1,5 +1,7 @@
 import { adminRoute, isUniqueViolation, jsonError, jsonResponse, slugTaken } from '@/lib/admin-api';
 import { db } from '@/lib/db';
+import { notifyChairs } from '@/lib/push/dispatch';
+import { proposalEvent } from '@/lib/push/messages';
 import { PROPOSAL_ERROR_MESSAGES, PROPOSAL_ERROR_STATUS } from '@/lib/tier-proposals';
 import { markSuggestionAccepted, SUGGESTION_PROPOSED_TIER } from '@/lib/suggestions';
 import { createVenueWithProposal, ProposalFailed, SuggestionUnavailable } from '@/lib/venue-create';
@@ -53,6 +55,7 @@ export const POST = adminRoute(
           }
         )
       : await createVenueWithProposal(db, input, proposedTier, actor, route);
+    if (proposal) notifyChairs(proposalEvent(proposal));
     return jsonResponse(
       {
         venue: serializeVenue(venue),

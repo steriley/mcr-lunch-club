@@ -313,10 +313,74 @@ async function signIn(page: import('@playwright/test').Page) {
   await page.waitForLoadState('networkidle');
   await page.getByLabel(/email/i).fill(chairEmail!);
   await page.getByLabel(/password/i).fill(chairPassword!);
-  await page.getByRole('button', { name: /sign in/i }).click();
+  // Better Auth allows a few sign-ins per ten seconds, and several tests sign in back to back:
+  // when it answers 429, wait out the window and press again.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const answer = page.waitForResponse((response) => response.url().includes('/api/auth/sign-in'));
+    await page.getByRole('button', { name: /sign in/i }).click();
+    const response = await answer;
+    if (response.status() !== 429) break;
+    const retryAfter = Number(response.headers()['x-retry-after']) || 10;
+    await page.waitForTimeout(retryAfter * 1000 + 500);
+  }
   await page.waitForURL((url) => !url.pathname.startsWith('/admin/login'));
   await page.waitForLoadState('networkidle');
 }
+
+test.describe('Chairs’ notifications', () => {
+  test.skip(
+    !process.env.VAPID_PUBLIC_KEY && !process.env.SMOKE_BASE_URL,
+    'needs VAPID keys (pnpm push:keys) so the notification settings render'
+  );
+
+  // One sign-in for every state: Better Auth rate-limits sign-ins, and the other states open more
+  // pages in the same (signed-in) browser context.
+  test('the account page renders every device state', async ({ page, monitor }) => {
+    // Playwright cannot receive a push, so the flow is covered up to the browser's permission prompt.
+    // Headless Chromium starts at 'denied'; this is a browser that has not been asked yet, whose
+    // Chair then refuses the prompt.
+    await page.addInitScript(() => {
+      let permission: NotificationPermission = 'default';
+      Object.defineProperty(Notification, 'permission', { get: () => permission });
+      Notification.requestPermission = async () => (permission = 'denied');
+    });
+    await signIn(page);
+    await visit(page, '/admin/account');
+    const section = page.locator('#notifications');
+    await expect(
+      section.getByRole('heading', { name: 'Notifications on this device' })
+    ).toBeVisible();
+    await expect(section.getByText('Off for this device.')).toBeVisible();
+    await expect(section.getByRole('checkbox')).toHaveCount(4);
+
+    await section.getByRole('button', { name: 'Enable notifications' }).click();
+    await expect(section.getByText('Blocked for this device.')).toBeVisible();
+    await expect(section.getByText(/allow notifications/)).toBeVisible();
+
+    // A browser without the Push API (an in-app browser, an old iOS).
+    const unsupported = await page.context().newPage();
+    await unsupported.addInitScript(() => {
+      delete (window as { PushManager?: unknown }).PushManager;
+    });
+    await visit(unsupported, '/admin/account');
+    await expect(unsupported.getByText('This browser cannot receive notifications.')).toBeVisible();
+
+    // iPhone Safari, not added to the Home Screen.
+    const iphone = await page.context().newPage();
+    await iphone.addInitScript(() => {
+      Object.defineProperty(navigator, 'userAgent', {
+        get: () =>
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1',
+      });
+    });
+    await visit(iphone, '/admin/account');
+    await expect(
+      iphone.getByText('Add MCR Lunch Club to your Home Screen to get notifications.')
+    ).toBeVisible();
+    await expect(iphone.getByText(/Add to Home Screen/).first()).toBeVisible();
+    expect(monitor.violations).toEqual([]);
+  });
+});
 
 test.describe('Chairs’ Area', () => {
   test('every page loads signed in, and the WebP encoder runs', async ({ page, monitor }) => {

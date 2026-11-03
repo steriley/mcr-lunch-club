@@ -155,6 +155,7 @@ Environment Variables**. Never commit real values.
 | `DEPLOY_HOOK_URL`                                              | **Production only.** A Vercel Deploy Hook for `main` (**Settings → Git → Deploy Hooks**). Publishing (the bar's button, the nightly cron, closing or reopening a venue) POSTs to it so the prerendered public pages pick up the changes. Unset, saves still work but the public site only changes on the next deploy. Treat the URL as a secret. Never set it for Preview: a preview save would rebuild production.                                                                                                             |
 | `CRON_SECRET`                                                  | **Production only.** Random string (`openssl rand -hex 32`). Vercel Cron sends it to `/api/cron/weekly-bulletin`, which refuses requests without it.                                                                                                                                                                                                                                                                                                                                                                            |
 | `FLAGS`                                                        | Optional. A Vercel Flags SDK key, only for reading flags outside Vercel (on Vercel the deployment's OIDC token is used, so leave it unset there). The boolean `snow` flag (Vercel dashboard, **Flags**) switches the Christmas snowfall on or off live, per environment, with no redeploy; off, missing or unreadable means no snow. Add `?snow` to a URL to preview.                                                                                                                                                           |
+| `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT`     | Chairs' push notifications (see _Push notifications for Chairs_). `pnpm push:keys` prints a pair; the subject is a `mailto:` for the club. All three set turns them on; with any missing the settings are hidden and nothing is sent, so local dev and Previews work without them. The private key is server-only.                                                                                                                                                                                                              |
 
 ### Local development with a Neon branch
 
@@ -275,6 +276,37 @@ suggestions and admin saves are all live requests (the server's Europe/London da
 - **Manual checks** (not in CI): install on an iPhone (Home Screen) and on Android, switch to airplane mode, open the
   app, use Near Me, and check Back everywhere; run Lighthouse's installability audit.
 
+### Push notifications for Chairs
+
+A Chair can opt in, per device, to a Web Push notification when something waits for them: a verdict proposal to
+countersign (including a new venue or an accepted suggestion), a decision on their own proposal, a "Visited today" to
+countersign (or their own visit countersigned), and, if they switch it on, new public suggestions. Tapping one opens the
+item in the Chairs' Area, which shows its live state: a notification can be stale by then, and that is fine.
+
+- **Setup:** run `pnpm push:keys` once and set `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `VAPID_SUBJECT` in Vercel
+  (Production; Preview too if you want to test there). Pushes are signed with these keys and sent with `web-push` from
+  the functions in `lhr1`, straight to each browser's push service: no third-party push provider. `pnpm db:local` writes
+  local keys into a new `.env.local`; CI generates throwaway ones per run.
+- **Rotating keys** invalidates every subscription. Each device notices the new key on its next Chairs' Area visit and
+  resubscribes silently (`src/pwa/push-client.ts`).
+- **Who gets what:** never the Chair who acted, only active Chairs, only events they have on (account-wide, at
+  `/admin/account`; suggestions are off by default). Decisions and countersigns go to the one Chair concerned.
+  Deactivating a Chair deletes their devices; deleting the user cascades. Rules: `src/lib/push/messages.ts`.
+- **When:** after the action's transaction commits, with `waitUntil`, never awaited (`notifyChairs` in
+  `src/lib/push/dispatch.ts`). A failed push never fails the action, and a refused or rolled-back action sends nothing.
+- **Payloads** carry the event, venue, who acted, a tag and the target URL, never decline reasons, notes or suggestion
+  text: they show on lock screens. They stay under 3 KB (unit tested).
+- **Delivery:** 404/410 delete the subscription; 429/5xx get one retry after a short backoff; everything else is logged.
+  "Visited today" pushes are `high` urgency and expire at London midnight; suggestions are `low` and collapse into one
+  rolling notification, at most one per Chair every ten minutes.
+- **Platforms:** iPhone and iPad (iOS 16.4+) only from the app added to the Home Screen; Safari tabs get the "Add to Home
+  Screen" steps instead. Android and desktop browsers work in the browser or installed. The permission prompt only
+  appears after a tap on "Enable notifications". The service worker shows the notification and sets the app badge
+  (items the Chair can act on); it caches nothing for them, so the Chairs' Area stays uncached.
+- **Manual checks** (Playwright cannot receive a push): on an installed iPhone, Android Chrome and desktop Chrome or
+  Safari, have one Chair propose and check another is notified; tap through to the right page; tap after it was decided
+  and see the decided state; tap a "Visited today" push after midnight and see it lapsed.
+
 ### Preview deployments (a Neon branch per pull request)
 
 Every pull request gets a Vercel Preview deployment with its own Neon branch,
@@ -339,7 +371,8 @@ not sign you in on the `vercel.app` address; sign in on each separately.
 - **Chairs**: create accounts, deactivate (ban) them and set temporary
   passwords from `/admin/users`. Deactivating signs the user out everywhere.
   There is no email sending, so share initial/temporary passwords securely.
-  Chairs change their own password and sign out other devices at `/admin/account`.
+  Chairs change their own password, sign out other devices and set up
+  notifications at `/admin/account`.
 - **Suggestions**: the public "Suggest a Venue" form stores petitions in the
   database for review at `/admin/suggestions`. **Accept…** opens the new-venue
   form prefilled with the name and cost band only: the suggested address just

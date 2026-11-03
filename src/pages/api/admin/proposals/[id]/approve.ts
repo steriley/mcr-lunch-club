@@ -1,5 +1,7 @@
 import { adminRoute, jsonError, jsonResponse } from '@/lib/admin-api';
 import { db } from '@/lib/db';
+import { notifyChairs } from '@/lib/push/dispatch';
+import { decisionEvent } from '@/lib/push/messages';
 import {
   approveProposal,
   PROPOSAL_ERROR_MESSAGES,
@@ -14,6 +16,7 @@ export const POST = adminRoute(
     const result = await approveProposal(db, params.id, actor);
     if (!result.ok)
       return jsonError(PROPOSAL_ERROR_STATUS[result.error], PROPOSAL_ERROR_MESSAGES[result.error]);
+    notifyChairs(decisionEvent(result.value));
     return jsonResponse({ proposal: result.value });
   }
 );

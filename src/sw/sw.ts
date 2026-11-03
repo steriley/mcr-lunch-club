@@ -5,6 +5,9 @@
  * auth are never cached, and nothing is ever queued for later: a write that cannot reach the server
  * simply fails (the rules are in src/lib/pwa/routing.ts).
  *
+ * It also shows the Chairs' push notifications (#115). Those handlers touch no cache, so the
+ * Chairs' Area stays uncached.
+ *
  * Remove a bad worker with `pnpm pwa:kill-switch` (README, "Offline mode").
  */
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
@@ -20,6 +23,7 @@ import {
   pageCacheKey,
   thumbnailFor,
 } from '@/lib/pwa/routing';
+import { notificationTarget, parsePushMessage } from '@/lib/pwa/push';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -221,3 +225,106 @@ async function warmVenuePages(): Promise<void> {
     }
   }
 }
+
+/** The app badge, where the platform has one. */
+async function setBadge(count: number | undefined): Promise<void> {
+  const nav = self.navigator as Navigator & {
+    setAppBadge?: (count?: number) => Promise<void>;
+    clearAppBadge?: () => Promise<void>;
+  };
+  if (count === undefined || !nav.setAppBadge) return;
+  try {
+    if (count > 0) await nav.setAppBadge(count);
+    else await nav.clearAppBadge?.();
+  } catch {
+    /* not allowed here: the next Chairs' Area visit sets it */
+  }
+}
+
+self.addEventListener('push', (event) => {
+  // Every push must show a notification, so an unreadable one still shows the generic message.
+  let raw: string | null;
+  try {
+    raw = event.data?.text() ?? null;
+  } catch {
+    raw = null;
+  }
+  const message = parsePushMessage(raw);
+  event.waitUntil(
+    Promise.all([
+      self.registration.showNotification(message.title, {
+        body: message.body,
+        tag: message.tag,
+        renotify: message.renotify ?? false,
+        data: { url: message.url },
+        icon: '/brand/icon-192.png',
+        badge: '/brand/favicon-64.png',
+      } as NotificationOptions),
+      setBadge(message.badge),
+    ])
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = notificationTarget(
+    (event.notification.data as { url?: unknown } | null)?.url,
+    self.location.origin
+  );
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const open = windows.find((client) => new URL(client.url).origin === self.location.origin);
+      if (open) {
+        try {
+          const focused = await open.focus();
+          await focused.navigate(target);
+          return;
+        } catch {
+          /* an uncontrolled window cannot be navigated: open a new one */
+        }
+      }
+      await self.clients.openWindow(target);
+    })()
+  );
+});
+
+/**
+ * The browser replaced this device's subscription (mostly Firefox). Subscribe again and tell the
+ * server, naming the old endpoint. If the session has expired the POST fails; the next Chairs'
+ * Area visit puts it right (src/pwa/push-sync.ts).
+ */
+self.addEventListener('pushsubscriptionchange', (event) => {
+  const change = event as Event & {
+    oldSubscription?: PushSubscription | null;
+    newSubscription?: PushSubscription | null;
+    waitUntil(promise: Promise<unknown>): void;
+  };
+  change.waitUntil(
+    (async () => {
+      const old = change.oldSubscription ?? null;
+      const key = old?.options.applicationServerKey;
+      const fresh =
+        change.newSubscription ??
+        (key
+          ? await self.registration.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: key,
+            })
+          : null);
+      if (!fresh) return;
+      const json = fresh.toJSON();
+      await fetch('/api/admin/push/subscriptions', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          endpoint: json.endpoint,
+          keys: json.keys,
+          // The server keeps the old device's label.
+          oldEndpoint: old?.endpoint,
+        }),
+      }).catch(() => undefined);
+    })()
+  );
+});

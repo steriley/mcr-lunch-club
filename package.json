@@ -21,6 +21,7 @@
     "publish:mark": "tsx ./scripts/publish-mark.ts",
     "publish:settle": "tsx ./scripts/publish-settle.ts",
     "db:seed": "tsx ./scripts/seed-chair.ts",
+    "push:keys": "tsx ./scripts/generate-vapid-keys.ts",
     "auth:generate": "pnpm dlx auth@1.7.10 generate --config src/lib/auth.ts --output src/db/auth-schema.ts",
     "db:local": "bash scripts/db-local.sh",
     "serve:build": "tsx ./scripts/serve-build.ts",
@@ -63,6 +64,7 @@
     "tailwindcss": "^4.3.3",
     "vue": "^3.5.44",
     "wawoff2": "^2.0.1",
+    "web-push": "3.6.7",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -72,6 +74,7 @@
     "@types/leaflet": "^1.9.22",
     "@types/node": "^22.20.5",
     "@types/pg": "^8.23.1",
+    "@types/web-push": "3.6.4",
     "drizzle-kit": "^0.31.11",
     "esbuild": "^0.28.2",
     "eslint": "^10.13.0",

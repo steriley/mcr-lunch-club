@@ -77,13 +77,19 @@ export function stubDbSequence(
 /**
  * Makes `db.transaction(fn)` run `fn` against the (stubbed) `db` itself, so
  * queries inside a transaction hit the same stubs. Returns how many
- * transactions ran.
+ * transactions ran, and how many are still open (`open`, for checking that
+ * something happens only after a commit).
  */
 export function stubTransactions() {
-  const counter = { count: 0 };
+  const counter = { count: 0, open: 0 };
   patch(db as Mutable, 'transaction', async (fn: (tx: unknown) => unknown) => {
     counter.count += 1;
-    return fn(db);
+    counter.open += 1;
+    try {
+      return await fn(db);
+    } finally {
+      counter.open -= 1;
+    }
   });
   return counter;
 }

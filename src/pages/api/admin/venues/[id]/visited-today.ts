@@ -3,6 +3,8 @@ import { adminRoute, jsonError, jsonResponse } from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { INSPECTION_OUTCOMES } from '@/lib/inspection-display';
 import { getVisitStatus, recordVisit } from '@/lib/inspections';
+import { notifyChairs } from '@/lib/push/dispatch';
+import { visitEvent } from '@/lib/push/messages';
 
 export const prerender = false;
 
@@ -42,6 +44,12 @@ export const POST = adminRoute(
         outcome: 'Does not match the first Chair’s outcome.',
       });
     }
+    // A first press asks the others to countersign; the countersign tells the first Chair.
+    if (
+      (outcome.result === 'waiting' && outcome.startedNow) ||
+      (outcome.result === 'confirmed' && outcome.confirmedNow)
+    )
+      notifyChairs(visitEvent(outcome.inspection));
     const status = await getVisitStatus(db, params.id, actor.id, now);
     return jsonResponse({
       result: outcome.result,

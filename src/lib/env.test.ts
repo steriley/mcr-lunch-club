@@ -9,6 +9,7 @@ import {
   getMigrationDatabaseUrl,
   getPreviewOrigins,
   getPublicMapApiKey,
+  getPushEnvironment,
   getRuntimeDatabaseUrl,
   getSeedChairEnvironment,
   getWeatherApiKey,
@@ -36,6 +37,9 @@ const KEYS = [
   'VERCEL_BRANCH_URL',
   'VERCEL_PROJECT_PRODUCTION_URL',
   'BETTER_AUTH_ALLOWED_HOSTS',
+  'VAPID_PUBLIC_KEY',
+  'VAPID_PRIVATE_KEY',
+  'VAPID_SUBJECT',
 ];
 
 let saved: Record<string, string | undefined>;
@@ -258,5 +262,46 @@ describe('blobEnvPrefix', () => {
     assert.equal(blobEnvPrefix(), 'prod');
     process.env.VERCEL_ENV = 'preview';
     assert.equal(blobEnvPrefix(), 'preview');
+  });
+});
+
+describe('getPushEnvironment', () => {
+  const set = () => {
+    process.env.VAPID_PUBLIC_KEY = 'BOr5x8vYbDkGhOO2K9Xx2SA7KQXSzc1V';
+    process.env.VAPID_PRIVATE_KEY = 'a1b2c3d4e5f6_-';
+    process.env.VAPID_SUBJECT = 'mailto:chairs@mcrlunchclub.com';
+  };
+
+  it('is the three keys when all are set', () => {
+    set();
+    assert.deepEqual(getPushEnvironment(), {
+      publicKey: 'BOr5x8vYbDkGhOO2K9Xx2SA7KQXSzc1V',
+      privateKey: 'a1b2c3d4e5f6_-',
+      subject: 'mailto:chairs@mcrlunchclub.com',
+    });
+  });
+
+  it('is off when any key is missing', () => {
+    assert.equal(getPushEnvironment(), undefined);
+    for (const key of ['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT']) {
+      set();
+      process.env[key] = '  ';
+      assert.equal(getPushEnvironment(), undefined, key);
+    }
+  });
+
+  it('is off, without throwing, when a key is malformed', () => {
+    const error = console.error;
+    console.error = () => {};
+    try {
+      set();
+      process.env.VAPID_SUBJECT = 'chairs@mcrlunchclub.com';
+      assert.equal(getPushEnvironment(), undefined);
+      set();
+      process.env.VAPID_PUBLIC_KEY = 'not base64url!';
+      assert.equal(getPushEnvironment(), undefined);
+    } finally {
+      console.error = error;
+    }
   });
 });

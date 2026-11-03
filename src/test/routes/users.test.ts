@@ -10,10 +10,12 @@ import {
   ADMIN,
   adminRequest,
   quietly,
+  renderSql,
   restoreStubs,
   run,
   signInAs,
   stubAuthApi,
+  stubDb,
 } from '../route-helpers';
 
 afterEach(restoreStubs);
@@ -65,10 +67,14 @@ describe('POST /api/admin/users/[id]/ban', () => {
   it('bans another user and maps errors', async () => {
     signInAs();
     const calls = stubAuthApi('banUser', () => ({ user: { id: 'u2', banned: true } }));
+    const deletes = stubDb('delete', []);
     const response = await run(ban, ctx('u2'));
     assert.equal(response.status, 200);
     assert.equal(calls[0].body.userId, 'u2');
     assert.ok(calls[0].body.banReason);
+    // Their push devices go in the same action, so a deactivated Chair stops getting notifications.
+    const where = deletes.find((call) => call.method === 'where')!.args[0];
+    assert.deepEqual(renderSql(where).params, ['u2']);
 
     stubAuthApi('banUser', () => {
       throw new Error('boom');
