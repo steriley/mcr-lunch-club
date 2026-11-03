@@ -1,17 +1,19 @@
-import { get } from '@vercel/edge-config';
+import { flagsClient, Reason } from '@vercel/flags-core';
 
-/** The Edge Config key behind the Christmas snowfall flag. Toggle it in the Vercel dashboard. */
+/** The Vercel Flags flag behind the Christmas snowfall. Toggle it in the Vercel dashboard (Flags). */
 const SNOW_FLAG = 'snow';
 
 /**
  * Whether the snowfall is switched on. Anything but a literal `true` is off, including no
- * EDGE_CONFIG (local dev, unlinked previews) and an unreachable store: the flag is decoration,
- * so it fails closed.
+ * credentials (local dev without `vercel env pull`), an unknown flag and an unreachable Flags
+ * service: the flag is decoration, so it fails closed. On Vercel the client authenticates with
+ * the deployment's OIDC token and evaluates the flag for the deployment's environment; elsewhere
+ * it uses the `FLAGS` SDK key if one is set.
  */
 export async function isSnowEnabled(): Promise<boolean> {
-  if (!process.env.EDGE_CONFIG) return false;
   try {
-    return (await get(SNOW_FLAG)) === true;
+    const result = await flagsClient.evaluate(SNOW_FLAG, false);
+    return result.reason !== Reason.ERROR && result.value === true;
   } catch {
     return false;
   }
