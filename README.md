@@ -250,7 +250,9 @@ its data. The Chairs' Area stays **online-only**, and nothing is ever queued for
 suggestions and admin saves are all live requests (the server's Europe/London day and the two-Chair rules need it).
 
 - **Manifest and install:** `public/manifest.webmanifest` (icons, maskable icon, shortcuts for Near Me and the Chairs'
-  Area). The footer offers "Install app" through `beforeinstallprompt` on Chrome/Android and a "Share → Add to Home
+  Area). The Chairs' Area has its own `public/chairs.webmanifest` (`id`, `scope` and `start_url` all `/admin`), linked
+  from `AdminLayout.astro`, so adding `/admin` to the Home Screen installs a separate Chairs app that opens at the
+  Chairs' Area rather than the public map. The footer offers "Install app" through `beforeinstallprompt` on Chrome/Android and a "Share → Add to Home
   Screen" hint on iOS Safari; neither appears once installed, and there is never an automatic pop-up. Standalone mode
   has no browser back button, so a Back strip (`StandaloneBack.astro`) shows only there.
 - **Worker:** `src/sw/sw.ts`, bundled with esbuild and given its precache list by Workbox `injectManifest` over
