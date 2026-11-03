@@ -82,6 +82,7 @@ const result = await injectManifest({
     'brand/*.{png,webp,svg}',
     'apple-touch-icon*.png',
     'manifest.webmanifest',
+    'chairs.webmanifest',
     ...SHELL_PAGES,
   ],
   // Final URLs only: `venues/foo/index.html` is served at `/venues/foo`.

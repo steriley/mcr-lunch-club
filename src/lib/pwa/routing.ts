@@ -35,6 +35,7 @@ const ASSET_FILES = new Set([
   '/apple-touch-icon.png',
   '/apple-touch-icon-chairs.png',
   '/manifest.webmanifest',
+  '/chairs.webmanifest',
 ]);
 const TILE_HOST = /(^|\.)basemaps\.cartocdn\.com$/;
 const BLOB_HOST = /\.public\.blob\.vercel-storage\.com$/;
