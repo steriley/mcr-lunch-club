@@ -5,6 +5,7 @@ import ThemeScript from '@/components/ThemeScript.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
 import PwaStatus from '@/components/PwaStatus.vue';
 import StandaloneBack from '@/components/StandaloneBack.astro';
+import AdminMobileMenu from '@/components/admin/AdminMobileMenu.vue';
 import AdminUserMenu from '@/components/admin/AdminUserMenu.vue';
 import PublishBar from '@/components/admin/PublishBar.vue';
 import { ADMIN_AREA_NAME, ADMIN_NAV } from '@/lib/admin-config';
@@ -69,7 +70,7 @@ const navItems = ADMIN_NAV.map((item) => ({
       config({ jitless: true });
     </script>
   </head>
-  <body class="min-h-screen bg-parchment text-ink antialiased">
+  <body class="flex min-h-screen flex-col bg-parchment text-ink antialiased">
     <a
       href="#admin-main"
       class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-navy focus:shadow"
@@ -78,28 +79,14 @@ const navItems = ADMIN_NAV.map((item) => ({
     </a>
     <PwaStatus client:load chairsArea />
     {publishStatus && <PublishBar client:load initial={publishStatus} />}
-    <header class="border-b border-hairline bg-parchment shadow-sm">
+    <header class="admin-header relative">
       <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <a
-          href="/"
-          class="flex items-center gap-3 text-ink no-underline"
-          aria-label="MCR Lunch Club home"
-        >
-          <img
-            src="/brand/logo-96.webp"
-            width="96"
-            height="96"
-            alt=""
-            class="h-11 w-11 object-contain"
-          />
-          <div>
-            <div class="font-serif text-lg font-bold uppercase tracking-[0.08em]">
-              MCR LUNCH CLUB
-            </div>
-            <div class="text-[10px] font-bold uppercase tracking-[0.2em] text-ochre">
-              {ADMIN_AREA_NAME}
-            </div>
-          </div>
+        <a href="/admin" class="brand-lockup" aria-label="MCR Lunch Club Chairs' Area home">
+          <img src="/brand/logo-96.webp" width="96" height="96" alt="" class="brand-crest" />
+          <span class="brand-copy">
+            <span class="brand-name">MCR LUNCH CLUB</span>
+            <span class="brand-caption">{ADMIN_AREA_NAME.toUpperCase()}</span>
+          </span>
         </a>
 
         <nav
@@ -120,32 +107,21 @@ const navItems = ADMIN_NAV.map((item) => ({
           ))}
         </nav>
 
-        <AdminUserMenu client:load userName={user?.name || user?.email || 'Chair'} />
+        <div class="hidden lg:block">
+          <AdminUserMenu client:load userName={user?.name || user?.email || 'Chair'} />
+        </div>
+        <AdminMobileMenu
+          client:load
+          items={navItems}
+          userName={user?.name || user?.email || 'Chair'}
+          ariaLabel={`${ADMIN_AREA_NAME} navigation`}
+        />
       </div>
-
-      <nav class="border-t border-sand lg:hidden" aria-label={`${ADMIN_AREA_NAME} navigation`}>
-        <ul class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 sm:px-6">
-          {navItems.map((item) => (
-            <li class="shrink-0">
-              <a
-                href={item.href}
-                class:list={[
-                  'block rounded-full px-3 py-1.5 text-sm font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-navy',
-                  item.active ? 'bg-surface text-navy shadow-sm' : 'text-ink hover:bg-card',
-                ]}
-                aria-current={item.active ? 'page' : undefined}
-              >
-                {item.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
     </header>
 
     <StandaloneBack hidden={currentPath === '/admin'} />
 
-    <main id="admin-main" class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <main id="admin-main" class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
       <slot />
     </main>
 
