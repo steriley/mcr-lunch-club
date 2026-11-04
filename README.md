@@ -16,7 +16,7 @@ Welcome to the official repository of the **Manchester Lunch Club Map App**.
 - **The Base Datum**: Crown Square / Hardman Square, Spinningfields (`53.478997°N, -2.252024°W`).
 - **Walking-Time Rings**: 5, 10, 15, 20, and 25-minute pedestrian rings and the 2.5-mile boundary, in one quiet grey with their minutes printed on the ring. A switch under the map's zoom buttons hides them, and the choice is remembered.
 - **The 2.5-Mile Boundary**: Delineates the maximum authorized perimeter for civilized municipal dining (Rusholme Chippy, about two miles out as the crow flies, currently marks the frontier).
-- **The Sacred Two-Visit Rule**: No venue may enter **Approved** on a single visit. Two distinct, satisfactory audits conducted under peak duress are required, and every tier change needs a second Chair to approve it. _Temporarily relaxed:_ while legacy venues whose earlier visits went unrecorded are being assessed, the code asks for only one dual-verified inspection (see "Tier changes need two Chairs" under Operating notes). The full rule comes back once those venues have been assessed.
+- **The Sacred Two-Visit Rule** (Manifesto, Article II): No venue may enter **Approved** on a single visit. It must be visited on at least two separate occasions and deliver satisfactory outcomes on both. Consistency is king.
 - **The Guillotine Clause**: A single sub-par inspection triggers swift demotion to **Rejected** or **If We Must**.
 - **No Member Voting**: The Chairs maintain impartial authority. Members may petition and suggest, but verdicts belong strictly to the tribunal.
 - **The Hall of Shame**: Incorruptible register tracking attempted bribery (e.g. unsolicited chicken tenders or illicit cold San Pellegrino cans).
@@ -454,10 +454,11 @@ not sign you in on the `vercel.app` address; sign in on each separately.
   which is internal and never public. One pending proposal per venue: only
   its proposer can withdraw or replace it. Until approval the public site
   keeps the last approved tier, and a new venue stays hidden. Moving a venue
-  into Approved needs a dual-verified inspection (`src/lib/tier-proposals.ts`).
-  This is one inspection, not the manifesto's two visits: a temporary
-  relaxation so legacy venues with unrecorded earlier visits can be promoted.
-  Restore the two-visit requirement once they have all been assessed. With only one active Chair
+  into Approved follows the manifesto's Two-Visit Rule: two separate
+  satisfactory visits. **Temporary exception:** while legacy venues whose
+  earlier visits went unrecorded are being assessed, the code
+  (`src/lib/tier-proposals.ts`) asks for only one dual-verified inspection.
+  Restore the full rule in code once they have all been assessed. With only one active Chair
   nothing can be approved; there is no override. Chairs who have turned on
   push notifications are told about proposals to countersign and decisions on
   their own (see _Push notifications for Chairs_).
