@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { briberyRecords, venues, type BriberyRow } from '@/db/schema';
 import type { BriberyInput } from '@/lib/bribery-schema';
 import type { Database } from '@/lib/db-client';
-import { fail, ok, type Outcome, type PublicChange } from '@/lib/outcome';
+import { fail, ok, publicChange, type Outcome } from '@/lib/outcome';
 
 /** Builds the stored values, resolving the linked venue's name; fails if the venue id is unknown. */
 export async function briberyValues(db: Database, input: BriberyInput) {
@@ -38,7 +38,7 @@ export async function briberyValues(db: Database, input: BriberyInput) {
 export type BriberyError = 'bribery_venue_unknown' | 'bribery_not_found';
 
 /** The register is on the public site but concerns no single venue, so these name none. */
-const published = (action: string): PublicChange => ({ action, venueId: null, when: 'queue' });
+const published = (action: string) => publicChange(action, null);
 
 export async function createBribery(
   db: Database,

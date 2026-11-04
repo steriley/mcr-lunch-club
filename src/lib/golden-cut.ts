@@ -3,7 +3,7 @@ import { goldenCut, venues } from '@/db/schema';
 import type { Database } from '@/lib/db-client';
 import type { GoldenCutEntryInput } from '@/lib/golden-cut-schema';
 import type { Actor } from '@/lib/venue-events';
-import { fail, ok, type Outcome } from '@/lib/outcome';
+import { fail, ok, publicChange, type Outcome } from '@/lib/outcome';
 import { isMappable, type VisibilityFields } from '@/lib/visibility';
 
 /**
@@ -94,6 +94,6 @@ export async function saveGoldenCut(
         }))
       );
     }
-    return ok(null, { action: 'Save the Golden Cut', venueId: null, when: 'queue' });
+    return ok(null, publicChange('Save the Golden Cut', null));
   });
 }

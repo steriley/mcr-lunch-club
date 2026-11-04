@@ -224,7 +224,7 @@ export const ERROR_HTTP = {
   },
 } as const satisfies Record<string, ErrorHttp>;
 
-type ErrorCode = keyof typeof ERROR_HTTP;
+export type ErrorCode = keyof typeof ERROR_HTTP;
 
 /** The 409 for a venue slug another venue already has, from the pre-check or the unique index. */
 export function slugTaken(): Response {

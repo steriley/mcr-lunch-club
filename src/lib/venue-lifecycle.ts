@@ -17,8 +17,7 @@ import {
   MAX_THUMB_BYTES,
   THUMB_MAX_EDGE,
 } from '@/lib/image-upload';
-import type { LatLng, WalkingRoute } from '@/lib/ors';
-import { fail, ok, outcomeTransaction, type Outcome, type PublicChange } from '@/lib/outcome';
+import { fail, ok, outcomeTransaction, publicChange, type Outcome } from '@/lib/outcome';
 import { markSuggestionAccepted, SUGGESTION_PROPOSED_TIER } from '@/lib/suggestions';
 import { proposeTierInTx, type ProposalError } from '@/lib/tier-proposals';
 import type { TierValue } from '@/lib/tiers';
@@ -44,7 +43,13 @@ import {
   writeVenue,
 } from '@/lib/venues';
 import { readWebpInfo, type WebpInfo } from '@/lib/webp';
-import { computeRoute, resolveRoute, routeWarning, type ResolvedRoute } from '@/lib/walking-route';
+import {
+  computeRoute,
+  resolveRoute,
+  routeWarning,
+  type ResolvedRoute,
+  type RouteLookup,
+} from '@/lib/walking-route';
 
 /**
  * The venue lifecycle (#108): every operation on a venue, in one place.
@@ -59,11 +64,6 @@ import { computeRoute, resolveRoute, routeWarning, type ResolvedRoute } from '@/
  * Tier changes stay in src/lib/tier-proposals.ts; creating a venue starts
  * its first proposal there, in the same transaction.
  */
-
-type RouteLookup = (to: LatLng) => Promise<WalkingRoute>;
-
-const change = (action: string, venueId: string, when: PublicChange['when'] = 'queue') =>
-  ({ action, venueId, when }) satisfies PublicChange;
 
 // --- Validation: the one home of the caption and focal-point rules ---------------------------------
 
@@ -93,7 +93,7 @@ interface CreateOptions {
   fromSuggestion?: string | null;
 }
 
-type CreateError = 'slug_taken' | 'suggestion_unavailable' | ProposalError;
+export type CreateError = 'slug_taken' | 'suggestion_unavailable' | ProposalError;
 
 interface Created {
   venue: VenueRow;
@@ -181,14 +181,14 @@ async function updateVenue(
   const route = await resolveRoute(input, existing, lookup);
   try {
     const venue = await writeVenue(db, id, venueValues(input, actor.id, route), actor);
-    return venue ? ok({ venue, route }, change('Update venue', id)) : fail('venue_not_found');
+    return venue ? ok({ venue, route }, publicChange('Update venue', id)) : fail('venue_not_found');
   } catch (error) {
     if (isUniqueViolation(error)) return fail('slug_taken');
     throw error;
   }
 }
 
-type RerouteError =
+export type RerouteError =
   'venue_not_found' | 'needs_location' | 'route_rate_limited' | 'route_unavailable';
 
 /** Retries the ORS walking route from HQ. A failed lookup changes nothing. */
@@ -217,7 +217,7 @@ async function rerouteVenue(
     );
 
   const row = await writeVenue(db, id, routeColumns(route), actor);
-  return row ? ok(row, change('Recompute venue route', id)) : fail('venue_not_found');
+  return row ? ok(row, publicChange('Recompute venue route', id)) : fail('venue_not_found');
 }
 
 // --- Close, reopen, delete --------------------------------------------------------------------------
@@ -255,7 +255,7 @@ async function setClosed(
     }
 
     await recordVenueEvent(tx, venueId, close ? 'closed' : 'reopened', actor);
-    return ok(venue, change(close ? 'Close venue' : 'Reopen venue', venueId, 'now'));
+    return ok(venue, publicChange(close ? 'Close venue' : 'Reopen venue', venueId, 'now'));
   });
 }
 
@@ -289,7 +289,7 @@ async function deleteVenue(
     images.flatMap((image) => [image.fullUrl, image.thumbUrl]).filter((url) => url !== null)
   );
   return ok(null, {
-    ...change('Delete venue', venueId),
+    ...publicChange('Delete venue', venueId),
     venueName: existing?.name ?? null,
   });
 }
@@ -297,34 +297,36 @@ async function deleteVenue(
 // --- Photos -----------------------------------------------------------------------------------------
 
 interface NewPhoto {
-  /** The two WebP variants; null when the form had none. */
-  full: Uint8Array | null;
-  thumb: Uint8Array | null;
+  /** The two WebP variants as uploaded, unread; null when the form had none. */
+  full: Blob | null;
+  thumb: Blob | null;
   /** What the browser says the full variant measures; it must match the file. */
   width: number | null;
   height: number | null;
   caption: string | null;
 }
 
-type PhotoError = VenueImageError | 'caption_too_long' | 'invalid_focal' | 'invalid_photo';
+export type PhotoError = VenueImageError | 'caption_too_long' | 'invalid_focal' | 'invalid_photo';
 
 const KB = (bytes: number) => `${Math.round(bytes / 1024)} KB`;
 
 type Variant = { ok: true; bytes: Uint8Array; info: WebpInfo } | { ok: false; message: string };
 
 /** Must really be WebP (by its bytes, not its declared type) and within the size and dimension limits. */
-function checkVariant(
-  bytes: Uint8Array | null,
+async function checkVariant(
+  file: Blob | null,
   label: string,
   maxBytes: number,
   maxEdge: number
-): Variant {
-  if (!bytes) return { ok: false, message: `The ${label} image is missing.` };
-  if (bytes.length > maxBytes)
+): Promise<Variant> {
+  if (!file) return { ok: false, message: `The ${label} image is missing.` };
+  // The size is known before the file is read, so an oversized upload is never buffered.
+  if (file.size > maxBytes)
     return {
       ok: false,
-      message: `The ${label} image is ${KB(bytes.length)}; the limit is ${KB(maxBytes)}.`,
+      message: `The ${label} image is ${KB(file.size)}; the limit is ${KB(maxBytes)}.`,
     };
+  const bytes = new Uint8Array(await file.arrayBuffer());
   const info = readWebpInfo(bytes);
   if (!info) return { ok: false, message: `The ${label} image is not a valid WebP file.` };
   if (Math.max(info.width, info.height) > maxEdge) {
@@ -348,12 +350,12 @@ const refused = (detail: string) => ({
   detail,
 });
 
-function checkPhoto(
+async function checkPhoto(
   photo: NewPhoto
-): Variants | { ok: false; error: 'invalid_photo'; detail: string } {
-  const full = checkVariant(photo.full, 'full-size', MAX_FULL_BYTES, FULL_MAX_EDGE);
+): Promise<Variants | { ok: false; error: 'invalid_photo'; detail: string }> {
+  const full = await checkVariant(photo.full, 'full-size', MAX_FULL_BYTES, FULL_MAX_EDGE);
   if (!full.ok) return refused(full.message);
-  const thumb = checkVariant(photo.thumb, 'thumbnail', MAX_THUMB_BYTES, THUMB_MAX_EDGE);
+  const thumb = await checkVariant(photo.thumb, 'thumbnail', MAX_THUMB_BYTES, THUMB_MAX_EDGE);
   if (!thumb.ok) return refused(thumb.message);
   if (photo.width !== full.info.width || photo.height !== full.info.height)
     return refused('The width and height do not match the full-size image.');
@@ -375,7 +377,7 @@ async function addPhoto(
 ): Promise<Outcome<VenueImageRow, PhotoError>> {
   const caption = normaliseCaption(photo.caption);
   if (!caption.ok) return caption;
-  const checked = checkPhoto(photo);
+  const checked = await checkPhoto(photo);
   if (!checked.ok) return checked;
 
   // A cheap early exit before anything is uploaded; addVenueImage checks again under the lock.
@@ -413,7 +415,7 @@ async function addPhoto(
       await photos.delete(written);
       return added;
     }
-    return ok(added.value, change('Add venue image', venueId));
+    return ok(added.value, publicChange('Add venue image', venueId));
   } catch (error) {
     await photos.delete(written);
     throw error;
@@ -462,10 +464,10 @@ async function updatePhoto(
     primaryImage = primary.value.image;
   }
   if (primaryImage && Object.keys(meta).length === 0)
-    return ok(primaryImage, change('Update venue image', venueId));
+    return ok(primaryImage, publicChange('Update venue image', venueId));
 
   const updated = await updateImageMeta(db, venueId, imageId, meta);
-  return updated.ok ? ok(updated.value, change('Update venue image', venueId)) : updated;
+  return updated.ok ? ok(updated.value, publicChange('Update venue image', venueId)) : updated;
 }
 
 /** Removes the row (promoting a new primary if needed), then the files, best-effort. */
@@ -480,7 +482,7 @@ async function removePhoto(
   if (!removed.ok) return removed;
   const { deleted } = removed.value;
   await photos.delete([deleted.fullUrl, ...(deleted.thumbUrl ? [deleted.thumbUrl] : [])]);
-  return ok(removed.value, change('Delete venue image', venueId));
+  return ok(removed.value, publicChange('Delete venue image', venueId));
 }
 
 /**
