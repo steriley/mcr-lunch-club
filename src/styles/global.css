@@ -677,7 +677,7 @@
   }
 }
 
-/* Phones: title, creed, links, theme toggle and one legal line. */
+/* Phones: title, creed, Usher’s Desk links, theme toggle and one legal line. */
 @media (max-width: 639px) {
   .site-footer {
     padding-block: 20px;
@@ -690,10 +690,6 @@
 
   .footer-column {
     gap: 4px;
-  }
-
-  .footer-codex .footer-section-title {
-    display: none;
   }
 
   /* Links above, theme toggle on its own row beneath with space around it. */
