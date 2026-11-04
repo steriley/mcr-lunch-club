@@ -314,8 +314,7 @@ export async function listRecentDecisions(db: Database, limit = 20): Promise<Pro
   }));
 }
 
-export const tierText = (tier: TierValue | null) =>
-  tier ? tierLabel(tier) : 'No approved verdict';
+const tierText = (tier: TierValue | null) => (tier ? tierLabel(tier) : 'No approved verdict');
 
 /** History lines for one proposal: when it was made, and how it ended. */
 export function describeProposal(

@@ -1,4 +1,5 @@
 import type { Inspection, InspectionOutcome } from '@/types';
+import { formatDate } from '@/lib/dates';
 
 /** Badge text for a public inspection. */
 export const INSPECTION_KIND_LABELS: Record<Inspection['kind'], string> = {
@@ -27,4 +28,34 @@ export function inspectionWitnesses(inspection: {
   if (inspection.kind === 'legacy' || inspection.chairs.length === 0)
     return "From the Chairs' earlier records";
   return `Verified by ${inspection.chairs.join(' and ')}`;
+}
+
+/** "21st Oct 26, verified by Sam and Alex, satisfactory": a just-confirmed visit, as the Chairs' Area lists it. */
+export function verifiedVisitSummary(
+  date: string,
+  visit: { firstAdminName: string; secondAdminName: string; outcome: InspectionOutcome | null }
+): string {
+  const outcome = visit.outcome
+    ? `, ${INSPECTION_OUTCOME_LABELS[visit.outcome].toLowerCase()}`
+    : '';
+  return `${formatDate(date)}, verified by ${visit.firstAdminName} and ${visit.secondAdminName}${outcome}`;
+}
+
+/**
+ * How a visit stands, from the inspection it belongs to (if any): "Pending", "Confirmed: below par",
+ * "Unconfirmed" or "Visit only". Here rather than in src/lib/visits.ts so an island can relabel a
+ * visit once its inspection is cosigned.
+ */
+export function visitStatusLabel(
+  inspection: {
+    status: 'pending' | 'confirmed' | 'lapsed';
+    outcome: InspectionOutcome | null;
+  } | null
+): string {
+  if (!inspection) return 'Visit only';
+  if (inspection.status === 'pending') return 'Pending';
+  if (inspection.status === 'lapsed') return 'Unconfirmed';
+  return inspection.outcome
+    ? `Confirmed: ${INSPECTION_OUTCOME_LABELS[inspection.outcome].toLowerCase()}`
+    : 'Confirmed';
 }

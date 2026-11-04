@@ -3,7 +3,12 @@ import { after, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { and, eq } from 'drizzle-orm';
 import { inspections, venues } from '@/db/schema';
-import { getVisitStatus, latestVerifiedInspection, recordVisit } from '@/lib/inspections';
+import {
+  getVisitStatus,
+  latestVerifiedInspection,
+  listPendingInspections,
+  recordVisit,
+} from '@/lib/inspections';
 import {
   closeTestDb,
   createAdmin,
@@ -297,5 +302,36 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
       noon
     );
     assert.equal(outcome.result, 'not_found');
+  });
+
+  it('lists today’s unsigned inspections for the Pending page, and drops them once cosigned or lapsed', async () => {
+    const db = await testDb();
+    const otherVenue = await createVenue('Pie Hut');
+    await recordVisit(db, venueId, sam, 'below_par', noon);
+    await recordVisit(db, otherVenue, alex, 'satisfactory', lateEvening);
+
+    const forAlex = await listPendingInspections(db, alex.id, lateEvening);
+    assert.deepEqual(
+      forAlex.map(({ venueId: id, status }) => ({
+        id,
+        first: status.pending?.firstAdminName,
+        byMe: status.pending?.byMe,
+        outcome: status.pending?.outcome,
+      })),
+      [
+        { id: venueId, first: 'Sam', byMe: false, outcome: 'below_par' },
+        { id: otherVenue, first: 'Alex', byMe: true, outcome: 'satisfactory' },
+      ]
+    );
+    assert.equal(forAlex[1].venueName, 'Pie Hut');
+    assert.ok(forAlex[0].inspectionId);
+
+    await recordVisit(db, venueId, alex, undefined, lateEvening);
+    assert.deepEqual(
+      (await listPendingInspections(db, alex.id, lateEvening)).map((item) => item.venueId),
+      [otherVenue]
+    );
+    // After midnight the lone press no longer counts, even before anyone presses again.
+    assert.deepEqual(await listPendingInspections(db, alex.id, justAfterMidnight), []);
   });
 });

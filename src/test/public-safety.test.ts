@@ -32,7 +32,7 @@ const publicFiles = [
   ),
   ...files(path.join(ROOT, 'components')).filter(
     (file) =>
-      !/(Venue(Form|Table|Closure)|Proposal|TierProposal|VisitedToday|PlaceSearch|Suggestion|User|Bribery|Admin|Login|Session|ChangePassword|ImageUpload|ConfirmDialog|TierBadge|VenueVisits)/.test(
+      !/(Venue(Form|Table|Closure)|Proposal|TierProposal|Pending|VisitedToday|PlaceSearch|Suggestion|User|Bribery|Admin|Login|Session|ChangePassword|ImageUpload|ConfirmDialog|TierBadge|VenueVisits)/.test(
         path.basename(file)
       )
   ),
