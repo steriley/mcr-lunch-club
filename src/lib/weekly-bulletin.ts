@@ -168,14 +168,6 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 
 /** The backlog line under the bulletin: a floor, since re-inspections and annual leave only add to it. */
 export function backlogText({ venues, weeks }: Backlog): string {
-  if (venues === 0) return 'The docket is clear. Nobody awaits judgement.';
-  const months = Math.round((weeks * 7) / 30.44);
-  const span =
-    weeks < 6
-      ? plural(weeks, 'week')
-      : months >= 12
-        ? `${plural(weeks, 'week')} (over a year)`
-        : `${plural(weeks, 'week')} (about ${plural(months, 'month')})`;
-  const who = venues === 1 ? '1 venue awaits' : `${venues} venues await`;
-  return `${who} judgement: ${span} at the very least, leave permitting.`;
+  if (venues === 0) return 'The Waiting Chamber is empty. Nobody awaits judgement.';
+  return `${plural(venues, 'venue')} in the Waiting Chamber: ${plural(weeks, 'week')} of lunching, minimum.`;
 }
