@@ -156,6 +156,32 @@ test.describe('Near Me on a phone', () => {
     await expect(body).toBeVisible();
   });
 
+  test('with reduced motion, recentring moves the map without a zoom animation', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openNearMe(page);
+    const pane = page.locator('.near-me-shell .leaflet-map-pane');
+    // Record whether Leaflet ever flags the pane as animating a zoom.
+    await pane.evaluate((el) => {
+      (window as any).__zoomAnimSeen = false;
+      new MutationObserver(() => {
+        if (el.classList.contains('leaflet-zoom-anim')) (window as any).__zoomAnimSeen = true;
+      }).observe(el, { attributes: true, attributeFilter: ['class'] });
+    });
+    // The map's pane offset resets on a zoom, so watch where a pin lands on screen instead.
+    const pin = page.locator('.near-me-shell .custom-ledger-pin').first();
+    const centre = async () => JSON.stringify(await box(pin));
+    // Go back to the base, then recentre on the user: two moves, the second a zoom change.
+    await page.locator('#btn-near-me-home').click();
+    await page.waitForTimeout(700);
+    const atBase = await centre();
+    await page.locator('#btn-near-me-recenter').click();
+    await page.waitForTimeout(700);
+    expect(await centre(), 'recentring moved the map').not.toBe(atBase);
+    expect(await page.evaluate(() => (window as any).__zoomAnimSeen)).toBe(false);
+  });
+
   test('Escape still closes it, and the controls keep their labels', async ({ page, monitor }) => {
     const dialog = await openNearMe(page);
     await expect(page.getByRole('button', { name: 'Recentre on me' })).toBeVisible();

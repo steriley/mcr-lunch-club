@@ -116,6 +116,7 @@ import {
   createWalkingIsochrones,
   createLabelMarker,
   createClusterMarker,
+  prefersReducedMotion,
 } from '@/lib/map';
 import type { Rect } from '@/lib/map/labels';
 import { createVenuePinLayer, onMarkerActivate, type VenuePinLayer } from '@/lib/map/pin-layer';
@@ -290,8 +291,6 @@ async function startMap() {
 function leaflet() {
   return leafletModule.default || leafletModule;
 }
-
-const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** Where the map's own controls sit over the tiles, in container pixels: ring labels keep out from under them. */
 function controlZones(size: { x: number; y: number }): Rect[] {

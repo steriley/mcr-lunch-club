@@ -5,3 +5,4 @@ export * from './userMarker';
 export * from './ranking';
 export * from './directions';
 export * from './removal';
+export * from './motion';

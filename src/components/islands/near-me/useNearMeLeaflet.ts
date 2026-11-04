@@ -9,6 +9,7 @@ import {
   createTileLayer,
   createUserMarkerLayers,
   haversineMetres,
+  prefersReducedMotion,
   type RankedVenue,
   type useGeolocation,
 } from '@/lib/map';
@@ -133,7 +134,9 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
   /** Centres on a point at street zoom or closer, clear of the panel. */
   function showPoint(lat: number, lng: number) {
     const zoom = Math.max(mapInstance.getZoom(), 16);
-    mapInstance.setView(centreForVisibleMap(lat, lng, zoom), zoom, { animate: true });
+    mapInstance.setView(centreForVisibleMap(lat, lng, zoom), zoom, {
+      animate: !prefersReducedMotion(),
+    });
   }
 
   // First-fix bounds fitting: fits user plus top 3 venues
@@ -157,7 +160,7 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
           paddingTopLeft: [410, 60],
           paddingBottomRight: [60, 60],
           maxZoom: 17,
-          animate: true,
+          animate: !prefersReducedMotion(),
         });
       } else {
         // Fit into the part of the map the sheet, the close button and the controls leave showing.
@@ -171,7 +174,7 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
             bottomPadding,
           ],
           maxZoom: 17,
-          animate: true,
+          animate: !prefersReducedMotion(),
         });
       }
     }, 500);
@@ -190,7 +193,7 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
           sheetState,
           SELECTED_PIN_VISIBLE_FRACTION
         ),
-        { animate: true }
+        { animate: !prefersReducedMotion() }
       );
     });
   }
@@ -207,7 +210,7 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
     if (!mapInstance) return;
     moveProgrammatically(() => {
       mapInstance.setView(centreForVisibleMap(BASE_LAT, BASE_LNG, DEFAULT_ZOOM), DEFAULT_ZOOM, {
-        animate: true,
+        animate: !prefersReducedMotion(),
       });
     });
   }
@@ -277,6 +280,10 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
       center: [BASE_LAT, BASE_LNG],
       zoom: DEFAULT_ZOOM,
       zoomControl: false,
+      zoomAnimation: !prefersReducedMotion(),
+      fadeAnimation: !prefersReducedMotion(),
+      markerZoomAnimation: !prefersReducedMotion(),
+      inertia: !prefersReducedMotion(),
     });
     removeMap = createMapRemover(mapInstance);
 
