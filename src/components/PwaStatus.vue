@@ -70,6 +70,9 @@ const showBar = computed(() => !online.value || (!props.chairsArea && savedCopy.
   left: 50%;
   bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   z-index: 60;
+  /* left: 50% shrinks the available width to half the screen, which wrapped the text. */
+  width: max-content;
+  max-width: calc(100vw - 2rem);
   display: flex;
   align-items: center;
   gap: 0.75rem;
