@@ -261,7 +261,7 @@
   width: min(100%, 1440px);
   margin-inline: auto;
   display: grid;
-  grid-template-columns: 5fr 4fr 3fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
 
@@ -313,50 +313,22 @@
   line-height: 1.6;
 }
 
-.footer-jurisdiction {
-  align-content: start;
-}
-
-.footer-fact {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  color: var(--color-on-dark-soft);
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.footer-about > summary {
-  cursor: pointer;
-}
-
-.footer-about > .footer-fact {
-  margin-top: 10px;
-}
-
-.footer-fact-icon {
-  flex: 0 0 15px;
-  margin-top: 2px;
-  color: var(--color-peach);
-  font-size: 15px;
-}
-
-.footer-fact strong {
-  color: var(--color-on-dark);
-}
-
 .footer-codex {
   align-content: start;
 }
 
-.footer-theme-toggle {
-  justify-self: start;
-  margin-top: 16px;
+.footer-codex-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 32px;
 }
 
 .footer-links {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
 }
 
 .footer-links a,
@@ -696,12 +668,7 @@
   }
 
   .site-footer-inner {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
-  }
-
-  .footer-editorial {
-    grid-column: 1 / -1;
   }
 
   .footer-legal {
@@ -710,23 +677,7 @@
   }
 }
 
-/* Wide screens show the ledger notes without a toggle, even before the script opens the <details>. */
-@media (min-width: 640px) {
-  .footer-about > summary {
-    pointer-events: none;
-    list-style: none;
-  }
-
-  .footer-about > summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .footer-about::details-content {
-    content-visibility: visible;
-  }
-}
-
-/* Phones: creed, links, theme toggle and one legal line; "About the ledger" is left out. */
+/* Phones: creed, links, theme toggle and one legal line. */
 @media (max-width: 639px) {
   .site-footer {
     padding-block: 20px;
@@ -746,30 +697,14 @@
     display: none;
   }
 
-  .footer-codex .footer-links {
-    display: flex;
-    flex-wrap: wrap;
-    column-gap: 20px;
-  }
-
-  .footer-theme-toggle {
-    margin-top: 4px;
-  }
-
-  .footer-about {
-    display: none;
+  .footer-codex-row {
+    gap: 4px 20px;
   }
 }
 
 @media (max-width: 480px) {
   .site-footer-inner {
-    grid-template-columns: minmax(0, 1fr);
     gap: 14px;
-  }
-
-  .footer-editorial,
-  .footer-legal {
-    grid-column: auto;
   }
 }
 

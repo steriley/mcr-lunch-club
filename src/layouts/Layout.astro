@@ -155,45 +155,25 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
           </p>
         </div>
 
-        <details class="footer-column footer-jurisdiction footer-about">
-          <summary class="footer-section-title">About the ledger</summary>
-          <div class="footer-fact">
-            <Icon name="target" class="footer-fact-icon" />
-            <span>
-              Jurisdiction: Central Manchester · 2.5 Miles from Base at Spinningfields Crown Square.
-            </span>
-          </div>
-          <div class="footer-fact">
-            <span class="footer-fact-icon" aria-hidden="true">
-              £
-            </span>
-            <span>
-              <strong>Cost Key:</strong> £ (under £10) · ££ (above £10) · £££ (payday treat)
-            </span>
-          </div>
-          <div class="footer-fact">
-            <Icon name="check" class="footer-fact-icon" />
-            <span>All decisions of the Chairs are final.</span>
-          </div>
-        </details>
-
         <div class="footer-column footer-codex">
           <span class="footer-section-title">Tribunal Codex</span>
-          <div class="footer-links">
-            <a href="/hall-of-shame">
-              <Icon name="scales" />
-              Bribery Register
-            </a>
-            <a href="/#suggest-a-venue">
-              <span aria-hidden="true">＋</span>Suggest a Venue
-            </a>
-            <a href="/faqs">
-              <Icon name="scroll" />
-              FAQs
-            </a>
-            <InstallApp client:idle />
+          <div class="footer-codex-row">
+            <div class="footer-links">
+              <a href="/hall-of-shame">
+                <Icon name="scales" />
+                Bribery Register
+              </a>
+              <a href="/#suggest-a-venue">
+                <span aria-hidden="true">＋</span>Suggest a Venue
+              </a>
+              <a href="/faqs">
+                <Icon name="scroll" />
+                FAQs
+              </a>
+              <InstallApp client:idle />
+            </div>
+            <ThemeToggle class="footer-theme-toggle" />
           </div>
-          <ThemeToggle class="footer-theme-toggle" />
         </div>
 
         <div class="footer-legal">
@@ -231,17 +211,6 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
         if (Number.isFinite(lat) && Number.isFinite(lng))
           link.href = getWalkingDirectionsUrl(lat, lng);
       });
-    </script>
-    <script>
-      // "About the ledger" is hidden on phones and always open from 640px up.
-      const wide = window.matchMedia('(min-width: 640px)');
-      const syncAbout = () => {
-        document.querySelectorAll<HTMLDetailsElement>('.footer-about').forEach((about) => {
-          about.open = wide.matches;
-        });
-      };
-      syncAbout();
-      wide.addEventListener('change', syncAbout);
     </script>
     <script>
       // <details> flips to display:none the moment it closes, so keep it [open] while the
