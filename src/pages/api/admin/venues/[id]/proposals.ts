@@ -18,7 +18,7 @@ export const POST = adminRoute(
   {
     action: 'Propose verdict',
 
-    params: { id: 'Venue not found.' },
+    params: { id: 'venue_not_found' },
     body: bodySchema,
   },
   async ({ params, body, actor }) => {

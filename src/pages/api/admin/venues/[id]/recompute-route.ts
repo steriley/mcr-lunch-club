@@ -11,7 +11,7 @@ export const POST = adminRoute(
     action: 'Recompute venue route',
     publish: 'queue',
     venueParam: 'id',
-    params: { id: 'Venue not found.' },
+    params: { id: 'venue_not_found' },
   },
   async ({ params, actor }) => {
     const result = await rerouteVenue(db, params.id, actor);

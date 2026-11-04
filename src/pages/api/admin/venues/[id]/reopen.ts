@@ -6,7 +6,7 @@ import { serializeVenue } from '@/lib/venues';
 export const prerender = false;
 
 export const POST = adminRoute(
-  { action: 'Reopen venue', publish: 'now', venueParam: 'id', params: { id: 'Venue not found.' } },
+  { action: 'Reopen venue', publish: 'now', venueParam: 'id', params: { id: 'venue_not_found' } },
   async ({ params, actor }) => {
     const result = await reopenVenue(db, params.id, actor);
     if (!result.ok) {

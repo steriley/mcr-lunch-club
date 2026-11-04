@@ -10,7 +10,7 @@ export const POST = adminRoute(
   {
     action: 'Ban user',
 
-    params: { id: { schema: userIdParam, notFound: 'User not found.' } },
+    params: { id: { schema: userIdParam, notFound: 'user_not_found' } },
     onError: (error) => authApiError('Ban user', error),
   },
   async ({ request, params, actor }) => {

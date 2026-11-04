@@ -7,7 +7,7 @@ import { serializeSuggestion } from '@/lib/suggestions';
 
 export const prerender = false;
 
-const NOT_FOUND = 'Suggestion not found.';
+const NOT_FOUND = 'suggestion_not_found' as const;
 
 /**
  * Dismiss a suggestion, or move it back to the inbox. An accepted suggestion

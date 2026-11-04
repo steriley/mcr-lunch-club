@@ -12,7 +12,7 @@ export const prerender = false;
 export const POST = adminRoute(
   {
     action: 'Add field note',
-    params: { id: 'Visit not found.' },
+    params: { id: 'visit_not_found' },
     body: noteInputSchema,
   },
   async ({ params, body, actor }) => {

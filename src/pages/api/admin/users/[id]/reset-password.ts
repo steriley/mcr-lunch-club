@@ -12,7 +12,7 @@ export const POST = adminRoute(
   {
     action: 'Reset password',
 
-    params: { id: { schema: userIdParam, notFound: 'User not found.' } },
+    params: { id: { schema: userIdParam, notFound: 'user_not_found' } },
     body: resetPasswordSchema,
     onError: (error) => authApiError('Reset password', error),
   },

@@ -7,7 +7,7 @@ export const POST = adminRoute(
   {
     action: 'Unban user',
 
-    params: { id: { schema: userIdParam, notFound: 'User not found.' } },
+    params: { id: { schema: userIdParam, notFound: 'user_not_found' } },
     onError: (error) => authApiError('Unban user', error),
   },
   async ({ request, params }) => {
