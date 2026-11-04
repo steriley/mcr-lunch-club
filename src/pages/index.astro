@@ -23,6 +23,8 @@ import { buildSovereignBench, toCard } from '@/lib/sovereign-bench';
 import { getToBeAssessedEntries } from '@/lib/tier-entry-dates';
 import { tierInfo } from '@/lib/tiers';
 import {
+  backlogFor,
+  backlogText,
   bulletinIssue,
   bulletinText,
   changesInIssue,
@@ -56,6 +58,8 @@ const initialResultsCount = venuesData.filter((venue) =>
 
 const publicMapApiKey = getPublicMapApiKey();
 const bulletin = bulletinText(changesInIssue(recentTierChanges, issue));
+// Open venues only: the map venues leave out the permanently closed, who need no visit.
+const backlog = backlogText(backlogFor(venuesData, issue));
 const { mode, hero, pillars } = buildSovereignBench(goldenCut, venuesData, inspectionsData);
 const heroSrcset = hero?.image ? imageSrcset(hero.image) : undefined;
 const isGoldenCut = mode === 'golden-cut';
@@ -251,6 +255,9 @@ const summonsColumns = [
           <div class="bulletin-copy">
             <strong>Weekly inspection bulletin</strong>
             <p>{bulletin}</p>
+            <p class="bulletin-backlog">
+              <span>Backlog</span> {backlog}
+            </p>
           </div>
           <a href="/inspections">{gazetteLabel(issue)}</a>
         </div>

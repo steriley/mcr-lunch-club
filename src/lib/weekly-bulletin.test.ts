@@ -1,6 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  backlogFor,
+  backlogText,
   bulletinIssue,
   bulletinText,
   changesInIssue,
@@ -149,5 +151,55 @@ describe('bulletinText', () => {
       bulletinText([change('a', 'approved', 'rejected', '2026-10-20T09:00:00Z')]),
       '1 verdict has moved this week: A knocked off Approved to Rejected.'
     );
+  });
+});
+
+describe('backlog', () => {
+  // The issue out on Wednesday 21 Oct 26 (23:59 BST).
+  const issue = bulletinIssue(new Date('2026-10-22T12:00:00Z'));
+  const venues = (counts: Partial<Record<TierChange['toTier'], number>>) =>
+    Object.entries(counts).flatMap(([tier, n]) =>
+      Array.from({ length: n }, () => ({ tier: tier as TierChange['toTier'] }))
+    );
+
+  it('counts Under Consideration and To Be Assessed at two a week', () => {
+    const backlog = backlogFor(
+      venues({ under_consideration: 14, to_be_assessed: 10, approved: 30, rejected: 5 }),
+      issue
+    );
+    assert.equal(backlog.underConsideration, 14);
+    assert.equal(backlog.toBeAssessed, 10);
+    assert.equal(backlog.weeks, 12);
+    assert.deepEqual(backlog.clearsBy, new Date('2027-01-13T22:59:00Z'));
+    assert.equal(
+      backlogText(backlog),
+      '14 Under Consideration and 10 To Be Assessed still on the docket. At 2 lunches a week that is 12 weeks of backlog (roughly 3 months), clear by 13th Jan 27 at the very earliest, and that is before re-checking the Approved or anyone taking annual leave.'
+    );
+  });
+
+  it('rounds an odd venue up to a whole week and drops an empty tier', () => {
+    const backlog = backlogFor(venues({ to_be_assessed: 3 }), issue);
+    assert.equal(backlog.weeks, 2);
+    assert.match(
+      backlogText(backlog),
+      /^3 To Be Assessed still on the docket\. At 2 lunches a week that is 2 weeks of backlog, clear by 4th Nov 26/
+    );
+    assert.match(
+      backlogText(backlogFor(venues({ under_consideration: 1 }), issue)),
+      /that is 1 week of backlog/
+    );
+  });
+
+  it('owns up to a backlog of over a year', () => {
+    assert.match(
+      backlogText(backlogFor(venues({ to_be_assessed: 110 }), issue)),
+      /that is 55 weeks of backlog \(well over a year\)/
+    );
+  });
+
+  it('celebrates an empty backlog', () => {
+    const backlog = backlogFor(venues({ approved: 3 }), issue);
+    assert.equal(backlog.weeks, 0);
+    assert.match(backlogText(backlog), /^The backlog is clear/);
   });
 });
