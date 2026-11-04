@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { isCalendarDay, noteBodySchema, visitDateSchema } from '@/lib/field-notes-schema';
 import { daysAfterVisit } from '@/lib/field-notes';
-import { visitStatusLabel } from '@/lib/visits';
+import { visitStatusLabel } from '@/lib/inspection-display';
 
 describe('field note body', () => {
   it('trims, keeps inner newlines and allows 1 to 4,000 characters', () => {

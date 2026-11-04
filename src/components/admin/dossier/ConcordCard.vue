@@ -3,9 +3,13 @@ import { computed, ref } from 'vue';
 import type { InspectionOutcome } from '@/types';
 import type { VisitStatus } from '@/lib/inspections';
 import DossierCard from './DossierCard.vue';
+import ConcordSignatures from './ConcordSignatures.vue';
 import DossierIcon from './DossierIcon.vue';
-import { formatDate, formatDateTime } from '@/lib/dates';
-import { INSPECTION_OUTCOMES, INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
+import {
+  INSPECTION_OUTCOMES,
+  INSPECTION_OUTCOME_LABELS,
+  verifiedVisitSummary,
+} from '@/lib/inspection-display';
 import { apiFetch } from '@/lib/api-fetch';
 import { useOnline } from '@/lib/pwa/useOnline';
 
@@ -47,7 +51,6 @@ const state = computed(() => {
   if (status.value.pending) return 'confirm_other';
   return 'none';
 });
-const signatures = computed(() => (status.value.confirmed ? 2 : status.value.pending ? 1 : 0));
 const first = computed(() => status.value.confirmed ?? status.value.pending);
 const recordedOutcome = computed(() =>
   first.value?.outcome ? INSPECTION_OUTCOME_LABELS[first.value.outcome] : null
@@ -88,11 +91,7 @@ async function press() {
   }
   justConfirmed.value = Boolean(confirmedNow);
   if (confirmedNow && visit.confirmed) {
-    const { firstAdminName, secondAdminName } = visit.confirmed;
-    const outcomeLabel = visit.confirmed.outcome
-      ? `, ${INSPECTION_OUTCOME_LABELS[visit.confirmed.outcome as InspectionOutcome].toLowerCase()}`
-      : '';
-    latest.value = `${formatDate(visit.today)}, verified by ${firstAdminName} and ${secondAdminName}${outcomeLabel}`;
+    latest.value = verifiedVisitSummary(visit.today, visit.confirmed);
     emit('confirmed', visit);
   }
 }
@@ -112,68 +111,7 @@ async function press() {
       on the same calendar day (UK time). A lone declaration lapses at midnight.
     </p>
 
-    <div class="dossier-inset space-y-3 bg-[var(--dossier-field)]" role="status">
-      <div class="flex items-center justify-between gap-2">
-        <span class="dossier-overline">Quorum concordance</span>
-        <span
-          :class="[
-            'dossier-figures text-xs font-bold',
-            signatures === 2 ? 'text-success-ink' : 'text-[var(--dossier-secondary)]',
-          ]"
-        >
-          {{ signatures }} / 2 affirmed
-        </span>
-      </div>
-      <div class="h-2 overflow-hidden rounded-full bg-[var(--dossier-border)]" aria-hidden="true">
-        <div
-          class="h-full rounded-full transition-[width] duration-500"
-          :class="signatures === 2 ? 'bg-[var(--dossier-green)]' : 'bg-[var(--dossier-secondary)]'"
-          :style="{ width: `${signatures * 50}%` }"
-        />
-      </div>
-      <ul class="space-y-1.5 text-[13px]">
-        <li class="flex items-center justify-between gap-2">
-          <span class="flex min-w-0 items-center gap-2">
-            <DossierIcon
-              :name="first ? 'checkCircle' : 'circle'"
-              :size="16"
-              :class="first ? 'text-success-ink' : 'text-[var(--dossier-border)]'"
-            />
-            <span :class="first ? 'font-semibold' : 'text-[var(--dossier-muted)]'">{{
-              first?.firstAdminName ?? 'Awaiting first Chair'
-            }}</span>
-          </span>
-          <span
-            v-if="first"
-            class="dossier-figures shrink-0 text-[11px] text-[var(--dossier-muted)]"
-            >{{ formatDateTime(first.firstAt) }}</span
-          >
-        </li>
-        <li class="flex items-center justify-between gap-2">
-          <span class="flex min-w-0 items-center gap-2">
-            <DossierIcon
-              :name="status.confirmed ? 'checkCircle' : 'circle'"
-              :size="16"
-              :class="status.confirmed ? 'text-success-ink' : 'text-[var(--dossier-border)]'"
-            />
-            <span :class="status.confirmed ? 'font-semibold' : 'text-[var(--dossier-muted)]'">
-              {{ status.confirmed?.secondAdminName ?? 'Awaiting second Chair cosigner' }}
-            </span>
-          </span>
-          <span
-            v-if="status.confirmed?.confirmedAt"
-            class="dossier-figures shrink-0 text-[11px] text-[var(--dossier-muted)]"
-          >
-            {{ formatDateTime(status.confirmed.confirmedAt) }}
-          </span>
-          <span
-            v-else-if="status.pending"
-            class="shrink-0 text-[11px] font-bold uppercase tracking-[0.08em] text-[var(--dossier-amber)]"
-            >Pending</span
-          >
-        </li>
-      </ul>
-    </div>
+    <ConcordSignatures :status="status" />
 
     <fieldset v-if="state === 'none'" class="space-y-2" :disabled="busy">
       <legend class="dossier-overline mb-1">How did the inspection go?</legend>

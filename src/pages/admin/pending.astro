@@ -1,48 +1,59 @@
 ---
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import TierTransition from '@/components/admin/TierTransition.astro';
-import ProposalActions from '@/components/admin/ProposalActions.vue';
-import VenueVisits from '@/components/admin/dossier/VenueVisits.vue';
+import PendingDocket from '@/components/admin/pending/PendingDocket.vue';
 import { db } from '@/lib/db';
 import { formatDate, formatDateTime } from '@/lib/dates';
-import { describeInspection, latestVerifiedInspection } from '@/lib/inspections';
+import {
+  describeInspection,
+  latestVerifiedInspection,
+  listPendingInspections,
+} from '@/lib/inspections';
 import { londonDate } from '@/lib/london-date';
-import { listVisitsForInspections } from '@/lib/visits';
+import { buildPendingEntries } from '@/lib/pending-docket';
 import {
   countActiveAdmins,
   listPendingProposals,
   listRecentDecisions,
-  tierText,
+  serializeProposal,
 } from '@/lib/tier-proposals';
+import { listVisitsForInspections } from '@/lib/visits';
 
 export const prerender = false;
 
 const currentUserId = Astro.locals.user!.id;
-const [pending, recent, activeAdmins] = await Promise.all([
+const [proposals, inspections, recent, activeAdmins] = await Promise.all([
   listPendingProposals(db),
+  listPendingInspections(db, currentUserId),
   listRecentDecisions(db),
   countActiveAdmins(db),
 ]);
-const inspectionByVenue = new Map(
-  await Promise.all(
-    pending.map(async (proposal) => {
-      const inspection = await latestVerifiedInspection(db, proposal.venueId);
+const venueIds = [...new Set([...proposals, ...inspections].map((item) => item.venueId))];
+const [latestByVenue, visitsByInspection] = await Promise.all([
+  Promise.all(
+    venueIds.map(async (venueId) => {
+      const inspection = await latestVerifiedInspection(db, venueId);
       return [
-        proposal.venueId,
+        venueId,
         inspection
-          ? `${formatDate(inspection.inspectionDate)} (${describeInspection(inspection)})`
-          : 'No verified inspection',
+          ? `${formatDate(inspection.inspectionDate)}, ${describeInspection(inspection).replace(/^V/, 'v')}`
+          : null,
       ] as const;
     })
-  )
+  ).then((pairs) => new Map(pairs)),
+  // The field notes behind today's unsigned inspections and each motion's cited inspection.
+  listVisitsForInspections(db, [
+    ...inspections.map((item) => item.inspectionId),
+    ...proposals.flatMap((proposal) => (proposal.inspectionId ? [proposal.inspectionId] : [])),
+  ]),
+]);
+const entries = buildPendingEntries(
+  inspections,
+  proposals.map((proposal) => ({ ...serializeProposal(proposal), venueName: proposal.venueName })),
+  latestByVenue,
+  visitsByInspection,
+  currentUserId
 );
-
-// The field notes behind each motion's cited inspection, for the deciding Chair.
-const visitsByInspection = await listVisitsForInspections(
-  db,
-  pending.flatMap((proposal) => (proposal.inspectionId ? [proposal.inspectionId] : []))
-);
-const today = londonDate();
 
 /** How a proposal ended, worded for the line under its verdict change. */
 function outcomeText(proposal: (typeof recent)[number]): string {
@@ -62,11 +73,15 @@ function outcomeText(proposal: (typeof recent)[number]): string {
 }
 ---
 
-<AdminLayout title="Pending verdict changes">
+<AdminLayout title="Pending countersignatures">
   <div class="space-y-6">
     <div>
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Inbox</p>
-      <h1 class="mt-2 text-3xl font-bold text-ink">Pending verdict changes</h1>
+      <h1 class="mt-2 text-3xl font-bold text-ink">Awaiting a second Chair</h1>
+      <p class="mt-2 max-w-3xl text-sm text-graphite">
+        Inspections and verdict changes both need a second Chair. An inspection must be cosigned the
+        same day (UK time) or it lapses at midnight.
+      </p>
     </div>
 
     {activeAdmins < 2 && (
@@ -79,72 +94,20 @@ function outcomeText(proposal: (typeof recent)[number]): string {
       </p>
     )}
 
-    <section
-      class="rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
-      aria-labelledby="pending-heading"
-    >
+    <section aria-labelledby="pending-heading" class="dossier space-y-3">
       <h2
         id="pending-heading"
         class="font-serif-header border-b border-hairline pb-2 text-xs font-bold uppercase leading-snug tracking-[0.055em] text-ochre"
       >
-        Awaiting a decision ({pending.length})
+        Awaiting a decision
       </h2>
-      {pending.length === 0 ? (
-        <p class="mt-4 text-sm text-soot">Nothing waiting.</p>
-      ) : (
-        <ul class="mt-4 divide-y divide-sand">
-          {pending.map((proposal) => (
-            <li class="grid gap-3 py-4 md:grid-cols-[1fr_auto] md:items-start">
-              <div class="space-y-1 text-sm">
-                <a
-                  href={`/admin/venues/${proposal.venueId}`}
-                  class="text-base font-semibold text-ink hover:underline"
-                >
-                  {proposal.venueName}
-                </a>
-                <p class="text-ink">
-                  {tierText(proposal.fromTier)} → <strong>{tierText(proposal.proposedTier)}</strong>
-                </p>
-                <p class="text-graphite">
-                  Proposed by {proposal.proposedByName ?? 'a former admin'} ·{' '}
-                  {formatDateTime(proposal.proposedAt)}
-                </p>
-                <p class="text-graphite">
-                  Latest verified inspection: {inspectionByVenue.get(proposal.venueId)}
-                </p>
-                {proposal.inspectionId && (
-                  <div class="dossier mt-2 space-y-2">
-                    <p class="font-semibold text-ink">
-                      Field notes from the cited inspection{' '}
-                      <a
-                        href={`/admin/venues/${proposal.venueId}#visits`}
-                        class="font-normal text-graphite underline"
-                      >
-                        All visits
-                      </a>
-                    </p>
-                    <VenueVisits
-                      readOnly
-                      venueId={proposal.venueId}
-                      visits={visitsByInspection.get(proposal.inspectionId) ?? []}
-                      currentUserId={null}
-                      today={today}
-                      emptyText="No visits recorded for that inspection."
-                    />
-                  </div>
-                )}
-              </div>
-              <ProposalActions
-                client:load
-                proposalId={proposal.id}
-                proposedBy={proposal.proposedBy}
-                currentUserId={currentUserId}
-                canDecide={activeAdmins >= 2}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
+      <PendingDocket
+        client:load
+        entries={entries}
+        currentUserId={currentUserId}
+        activeAdmins={activeAdmins}
+        today={londonDate()}
+      />
     </section>
 
     <section

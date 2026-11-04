@@ -8,7 +8,7 @@ import {
 } from '@/db/schema';
 import type { Database, Tx } from '@/lib/db-client';
 import { listNotesForVisits, type SerializedNote } from '@/lib/field-notes';
-import { INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
+import { visitStatusLabel } from '@/lib/inspection-display';
 import { londonDate } from '@/lib/london-date';
 import { actorName, recordVenueEvent, type Actor } from '@/lib/venue-events';
 
@@ -45,16 +45,6 @@ export type LogVisitResult =
   | { result: 'already_logged'; visit: SerializedVisit }
   | { result: 'future_date' }
   | { result: 'not_found' };
-
-/** How a visit stands, from the inspection it belongs to (if any). */
-export function visitStatusLabel(inspection: InspectionState | null): string {
-  if (!inspection) return 'Visit only';
-  if (inspection.status === 'pending') return 'Pending';
-  if (inspection.status === 'lapsed') return 'Unconfirmed';
-  return inspection.outcome
-    ? `Confirmed: ${INSPECTION_OUTCOME_LABELS[inspection.outcome].toLowerCase()}`
-    : 'Confirmed';
-}
 
 export function serializeVisit(
   visit: VenueVisitRow,

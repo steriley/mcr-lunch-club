@@ -200,6 +200,15 @@ export interface VisitStatus {
   } | null;
 }
 
+function pendingView(row: InspectionRow, userId: string): NonNullable<VisitStatus['pending']> {
+  return {
+    firstAdminName: row.firstAdminName ?? 'Another admin',
+    byMe: row.firstAdminId === userId,
+    firstAt: row.createdAt.toISOString(),
+    outcome: row.outcome,
+  };
+}
+
 /** What the "Visited today" control shows. Read-only: an earlier day's pending press shows as nothing. */
 export async function getVisitStatus(
   db: Database,
@@ -222,15 +231,7 @@ export async function getVisitStatus(
   const pending = rows.find((row) => row.status === 'pending');
   return {
     today,
-    pending:
-      pending && !confirmed
-        ? {
-            firstAdminName: pending.firstAdminName ?? 'Another admin',
-            byMe: pending.firstAdminId === userId,
-            firstAt: pending.createdAt.toISOString(),
-            outcome: pending.outcome,
-          }
-        : null,
+    pending: pending && !confirmed ? pendingView(pending, userId) : null,
     confirmed: confirmed
       ? {
           firstAdminName: confirmed.firstAdminName ?? 'A former admin',
@@ -241,6 +242,45 @@ export async function getVisitStatus(
         }
       : null,
   };
+}
+
+export interface PendingInspection {
+  inspectionId: string;
+  venueId: string;
+  venueName: string;
+  /** The same shape the venue page's concord card uses, so both pages draw it the same way. */
+  status: VisitStatus;
+}
+
+/**
+ * Today's inspections still waiting for a second Chair, across every venue, oldest first: the
+ * Pending page lists them beside the verdict motions. Read-only: a press from an earlier day has
+ * lapsed and is left out, as getVisitStatus leaves it out.
+ */
+export async function listPendingInspections(
+  db: Database,
+  userId: string,
+  now: Date = new Date()
+): Promise<PendingInspection[]> {
+  const today = londonDate(now);
+  const rows = await db
+    .select({ inspection: inspections, venueName: venues.name })
+    .from(inspections)
+    .innerJoin(venues, eq(venues.id, inspections.venueId))
+    .where(
+      and(
+        eq(inspections.status, 'pending'),
+        eq(inspections.kind, 'verified'),
+        eq(inspections.inspectionDate, today)
+      )
+    )
+    .orderBy(inspections.createdAt);
+  return rows.map(({ inspection, venueName }) => ({
+    inspectionId: inspection.id,
+    venueId: inspection.venueId,
+    venueName,
+    status: { today, pending: pendingView(inspection, userId), confirmed: null },
+  }));
 }
 
 export async function listConfirmedInspections(
