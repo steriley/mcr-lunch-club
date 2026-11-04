@@ -169,5 +169,5 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 /** The backlog line under the bulletin: a floor, since re-inspections and annual leave only add to it. */
 export function backlogText({ venues, weeks }: Backlog): string {
   if (venues === 0) return 'The Waiting Chamber is empty. Nobody awaits judgement.';
-  return `${plural(venues, 'venue')} in the Waiting Chamber: ${plural(weeks, 'week')} of lunching, minimum.`;
+  return `We have ${plural(venues, 'venue')} in the Waiting Chamber: ${plural(weeks, 'week')} of lunching, minimum.`;
 }

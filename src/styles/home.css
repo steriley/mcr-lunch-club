@@ -912,9 +912,9 @@ a.bench-details {
 
 .weekly-bulletin strong {
   display: block;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
   color: var(--color-ochre);
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -922,21 +922,8 @@ a.bench-details {
 .bulletin-copy p {
   margin: 0;
   color: var(--ledger-ink);
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.bulletin-copy .bulletin-backlog {
-  margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px dashed var(--ledger-border);
-}
-
-.bulletin-backlog span {
-  color: var(--color-ochre);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .weekly-bulletin a {
@@ -945,7 +932,7 @@ a.bench-details {
   border: 1px solid var(--ledger-border);
   border-radius: 6px;
   color: var(--color-deep-ink);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   text-decoration: none;
 }
