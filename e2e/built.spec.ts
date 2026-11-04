@@ -449,8 +449,9 @@ test.describe('Chairs’ Area', () => {
   }) => {
     await signIn(page);
     await visit(page, '/admin/venues');
-    // Older WebKit ignores position: relative on <tr>. Mimic that, so nothing in a row can rely
-    // on it (a stretched-link overlay once covered the page and every tap opened the last venue).
+    // WebKit without the fix for bug 240961 ignores position: relative on <tr>. Mimic that, so
+    // nothing in a row can rely on it (a stretched-link overlay once covered the page and every
+    // tap opened the last venue).
     await page.evaluate(() => {
       for (const row of document.querySelectorAll('tbody tr'))
         (row as HTMLElement).style.position = 'static';

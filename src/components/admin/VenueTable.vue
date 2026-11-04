@@ -79,8 +79,9 @@ function sortIndicator(key: SortKey) {
 }
 
 // The whole row opens the venue. This is a click handler, not a stretched ::after link:
-// browsers that ignore position: relative on <tr> (older WebKit) let every row's overlay
-// cover the page, so a tap anywhere (the search box included) opened the last row.
+// WebKit (Safari, and every browser on iOS) ignores position: relative on <tr> until a fix
+// committed in April 2026 (https://bugs.webkit.org/show_bug.cgi?id=240961), so every row's
+// overlay covered the page and a tap anywhere (the search box included) opened the last row.
 function openRow(event: MouseEvent, venue: VenueRow) {
   if ((event.target as Element).closest('a, button, input, select, textarea, label')) return;
   if (window.getSelection()?.toString()) return;
