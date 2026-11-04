@@ -359,7 +359,8 @@
   gap: 8px;
 }
 
-.footer-links a {
+.footer-links a,
+.footer-links .install-app {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -371,11 +372,39 @@
   transition: color 140ms ease;
 }
 
-.footer-links a:hover {
+.footer-links .install-app {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* iOS has no install prompt, so the footer shows a hint in the same slot. */
+.footer-links .install-app-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  max-width: 16rem;
+  color: var(--color-on-dark-soft);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.footer-links .install-app-hint .icon {
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+
+.footer-links a:hover,
+.footer-links .install-app:hover {
   color: var(--color-on-dark);
 }
 
-.footer-links a .icon {
+.footer-links a .icon,
+.footer-links .install-app .icon,
+.footer-links .install-app-hint .icon {
   width: 14px;
   height: 14px;
   color: var(--color-gold);
@@ -1070,7 +1099,8 @@
     gap: 0;
   }
 
-  .footer-links a {
+  .footer-links a,
+  .footer-links .install-app {
     min-height: 44px;
   }
 

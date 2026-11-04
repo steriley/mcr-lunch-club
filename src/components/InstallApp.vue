@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { installOffer, type InstallOffer } from '@/lib/pwa/install';
 import { $installPrompt } from '@/stores/pwa';
+import Icon from '@/components/Icon.vue';
 
 /**
  * "Install app" in the footer. Never a pop-up: Chrome-family browsers get the real prompt when the
@@ -43,34 +44,11 @@ async function install() {
 
 <template>
   <button v-if="offer === 'prompt'" type="button" class="install-app" @click="install">
-    <span aria-hidden="true">⬇</span> Install app
+    <Icon name="download" />
+    Install app
   </button>
   <p v-else-if="offer === 'ios-hint'" class="install-app-hint">
-    Install: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.
+    <Icon name="download" />
+    <span>Install: tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.</span>
   </p>
 </template>
-
-<style scoped>
-.install-app {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 2.75rem;
-  padding: 0 0.25rem;
-  font: inherit;
-  font-weight: 600;
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  background: none;
-  cursor: pointer;
-}
-
-.install-app-hint {
-  margin: 0;
-  max-width: 16rem;
-  font-size: 0.8125rem;
-  line-height: 1.4;
-  opacity: 0.85;
-}
-</style>
