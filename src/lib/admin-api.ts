@@ -7,12 +7,7 @@ import { db } from '@/lib/db';
 import { getAuthEnvironment } from '@/lib/env';
 import { MAX_IMAGES_PER_VENUE, CAPTION_MAX } from '@/lib/image-upload';
 import type { Outcome, PublicChange } from '@/lib/outcome';
-import {
-  countPendingChanges,
-  publishNow,
-  recordPendingChange,
-  venueNameOf,
-} from '@/lib/publishing';
+import { countPendingChanges, publishNow, recordPendingChange } from '@/lib/publishing';
 import { hasAdminRole, isBanned } from '@/lib/roles';
 import type { Actor } from '@/lib/venue-events';
 
@@ -258,15 +253,6 @@ type ParamSpec = ErrorCode | { schema: z.ZodType<string>; notFound: ErrorCode };
 export interface AdminRouteSpec<P extends string, S extends z.ZodType | undefined> {
   /** Names the action in the server log when it fails, e.g. "Update venue". */
   action: string;
-  /**
-   * Set when a success can change what the public site shows. The public pages
-   * are prerendered, so a success records a pending change (src/lib/publishing.ts)
-   * for the Chairs to publish in one go: `'queue'` records it and nothing more,
-   * `'now'` also asks Vercel for a build without holding up the response.
-   */
-  publish?: 'queue' | 'now';
-  /** With `publish`: the param that names the venue the change concerns. */
-  venueParam?: NoInfer<P>;
   /** Checked in order; the first invalid one answers 404 with its message. */
   params?: Record<P, ParamSpec>;
   /** Validates the JSON body; failures answer 400 with field errors. */
@@ -286,12 +272,6 @@ export interface AdminRouteContext<P extends string, B> {
   body: B;
   /** The signed-in Chair. */
   actor: Actor & { email: string };
-  /**
-   * With `publish`: names the venue the change concerns, overriding `venueParam`.
-   * For a route whose param is not a venue id, or one that deletes the venue:
-   * call it (and await it) before the venue goes, as the name is read now.
-   */
-  publishedVenue: (venueId: string) => Promise<void>;
 }
 
 /**
@@ -330,10 +310,6 @@ export function adminRoute<P extends string = never, S extends z.ZodType | undef
     }
 
     const actor = { id: session.user.id, name: session.user.name, email: session.user.email };
-    let venue: { id: string; name: string | null } | undefined;
-    const publishedVenue = async (venueId: string) => {
-      venue = { id: venueId, name: await venueNameOf(db, venueId) };
-    };
     let response: Response;
     let published: PublicChange | undefined;
     try {
@@ -343,19 +319,9 @@ export function adminRoute<P extends string = never, S extends z.ZodType | undef
         params,
         body: body as never,
         actor,
-        publishedVenue,
       });
       if (result instanceof Response) {
         response = result;
-        if (spec.publish && response.ok) {
-          published = {
-            action: spec.action,
-            venueId:
-              (venue ?? (spec.venueParam ? { id: params[spec.venueParam] } : null))?.id ?? null,
-            venueName: venue?.name,
-            when: spec.publish,
-          };
-        }
       } else if (result.ok) {
         response = jsonResponse(result.value, spec.status ?? 200);
         published = result.published;

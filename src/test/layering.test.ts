@@ -9,6 +9,10 @@ import { runtimeImports } from './imports';
  * auth: those load Better Auth and open the runtime database pool on import,
  * which scripts and domain code should not pay for. Shared helpers they need
  * live in dependency-free modules (roles.ts, db-errors.ts).
+ *
+ * They also say what went wrong with an error code (src/lib/outcome.ts), never
+ * with an HTTP status: the status and message for each code are ERROR_HTTP in
+ * admin-api.ts (#112).
  */
 
 const LIB = path.resolve('src/lib');
@@ -30,6 +34,18 @@ describe('layering', () => {
       const imports = runtimeImports(readFileSync(file, 'utf8'));
       for (const forbidden of HTTP_ONLY) {
         assert.ok(!imports.includes(forbidden), `${path.relative(LIB, file)} imports ${forbidden}`);
+      }
+    }
+  });
+
+  it('no domain module exports a status code or a code-to-status table', () => {
+    const statusExport = /export\s+(?:const|let|function)\s+(\w*(?:_STATUS|_HTTP))\b/g;
+    for (const file of libModules(LIB)) {
+      if (ALLOWED.has(path.relative(LIB, file))) continue;
+      for (const [, name] of readFileSync(file, 'utf8').matchAll(statusExport)) {
+        assert.fail(
+          `${path.relative(LIB, file)} exports ${name}: map codes to HTTP in admin-api.ts`
+        );
       }
     }
   });
