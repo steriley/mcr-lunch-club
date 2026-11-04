@@ -590,6 +590,5 @@ mcr-lunch-club/
 ├── .github/workflows/         # ci.yml (every PR and push to main), preview-smoke.yml (opt-in)
 ├── docker-compose.yml         # Postgres 16 for pnpm db:local -- --docker
 ├── vercel.json                # Build command, crons, headers
-├── manchester_lunch_venues.csv     # The club's original list of lunch spots (reference only)
 └── astro.config.mjs
 ```
