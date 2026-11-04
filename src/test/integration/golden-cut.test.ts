@@ -17,6 +17,9 @@ import {
   type TestAdmin,
 } from './db';
 
+/** What a save reports as having changed on the public site. */
+const SAVED = { action: 'Save the Golden Cut', venueId: null, when: 'queue' } as const;
+
 describe('the Golden Cut (database)', { skip: skipIntegration }, () => {
   let sam: TestAdmin;
   let alex: TestAdmin;
@@ -46,7 +49,7 @@ describe('the Golden Cut (database)', { skip: skipIntegration }, () => {
         [ids[0], ids[1], ids[2]].map((venueId) => ({ venueId, puffPiece: null, anchorDish: null })),
         sam
       ),
-      { ok: true }
+      { ok: true, value: null, published: SAVED }
     );
     assert.deepEqual(await stored(), [
       [ids[0], 1],
@@ -81,7 +84,7 @@ describe('the Golden Cut (database)', { skip: skipIntegration }, () => {
       [{ venueId: ids[1], puffPiece: null, anchorDish: null }],
       sam
     );
-    assert.equal(result.ok, false);
+    assert.deepEqual(result.ok === false && result.error, 'golden_cut_not_approved');
     assert.deepEqual(await stored(), [[ids[0], 1]]);
   });
 
@@ -114,7 +117,10 @@ describe('the Golden Cut (database)', { skip: skipIntegration }, () => {
       saveGoldenCut(db, first, sam),
       saveGoldenCut(db, second, alex),
     ]);
-    assert.deepEqual(results, [{ ok: true }, { ok: true }]);
+    assert.deepEqual(results, [
+      { ok: true, value: null, published: SAVED },
+      { ok: true, value: null, published: SAVED },
+    ]);
     const venueIds = (await stored()).map(([venueId]) => venueId);
     assert.ok(
       JSON.stringify(venueIds) === JSON.stringify(first.map((entry) => entry.venueId)) ||

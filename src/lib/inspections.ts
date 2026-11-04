@@ -4,6 +4,7 @@ import { isUniqueViolation } from '@/lib/db-errors';
 import type { Database, Tx } from '@/lib/db-client';
 import { INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import { londonDate } from '@/lib/london-date';
+import { fail, ok, type Outcome } from '@/lib/outcome';
 import { actorName, type Actor } from '@/lib/venue-events';
 import { ensureVisit } from '@/lib/visits';
 import type { InspectionOutcome } from '@/types';
@@ -28,18 +29,23 @@ import type { InspectionOutcome } from '@/types';
 
 type Executor = Database | Tx;
 
-export type VisitOutcome =
+/** What a successful "Visited today" press did. */
+export type VisitResult =
   /**
    * `startedNow`: this press started it (a repeat press by the same Chair changes nothing).
    * `visit`: the presser's visit for today (src/lib/visits.ts), created or linked by this press.
    */
   | { result: 'waiting'; inspection: InspectionRow; startedNow: boolean; visit: VenueVisitRow }
-  | { result: 'confirmed'; inspection: InspectionRow; confirmedNow: boolean; visit: VenueVisitRow }
+  | { result: 'confirmed'; inspection: InspectionRow; confirmedNow: boolean; visit: VenueVisitRow };
+
+export type VisitError =
+  | 'venue_not_found'
   /** A first press must say how the inspection went. */
-  | { result: 'outcome_required' }
+  | 'outcome_required'
   /** The cosigner named a different outcome from the one the first Chair set. */
-  | { result: 'outcome_mismatch'; inspection: InspectionRow }
-  | { result: 'not_found' };
+  | 'outcome_mismatch';
+
+export type VisitOutcome = Outcome<VisitResult, VisitError>;
 
 /** Re-derives venues.last_inspection_date from confirmed inspections (verified or legacy). */
 export async function refreshLastInspectionDate(
@@ -55,6 +61,10 @@ export async function refreshLastInspectionDate(
   return date;
 }
 
+/** An accepted press: it adds a visit (and perhaps an inspection) the public pages may show. */
+const visited = (venueId: string, value: VisitResult): VisitOutcome =>
+  ok(value, { action: 'Record visit', venueId, when: 'queue' });
+
 async function visitOnce(
   db: Database,
   venueId: string,
@@ -68,7 +78,7 @@ async function visitOnce(
     const locked = await tx.execute(
       sql`select ${venues.id} from ${venues} where ${venues.id} = ${venueId} for update`
     );
-    if (!locked.rows.length) return { result: 'not_found' };
+    if (!locked.rows.length) return fail('venue_not_found');
 
     // Lazy lapse: an unconfirmed press from an earlier London day no longer counts.
     await tx
@@ -106,7 +116,12 @@ async function visitOnce(
         verifier ? confirmedToday.id : null,
         now
       );
-      return { result: 'confirmed', inspection: confirmedToday, confirmedNow: false, visit };
+      return visited(venueId, {
+        result: 'confirmed',
+        inspection: confirmedToday,
+        confirmedNow: false,
+        visit,
+      });
     }
 
     const [pending] = await tx
@@ -116,7 +131,7 @@ async function visitOnce(
       .limit(1);
 
     if (!pending) {
-      if (!outcome) return { result: 'outcome_required' };
+      if (!outcome) return fail('outcome_required');
       const [created] = await tx
         .insert(inspections)
         .values({
@@ -131,16 +146,15 @@ async function visitOnce(
         })
         .returning();
       const visit = await ensureVisit(tx, venueId, actor, today, created.id, now);
-      return { result: 'waiting', inspection: created, startedNow: true, visit };
+      return visited(venueId, { result: 'waiting', inspection: created, startedNow: true, visit });
     }
 
     // The same admin pressing again changes nothing: one person can never confirm their own visit.
     if (pending.firstAdminId === actor.id) {
       const visit = await ensureVisit(tx, venueId, actor, today, pending.id, now);
-      return { result: 'waiting', inspection: pending, startedNow: false, visit };
+      return visited(venueId, { result: 'waiting', inspection: pending, startedNow: false, visit });
     }
-    if (outcome && outcome !== pending.outcome)
-      return { result: 'outcome_mismatch', inspection: pending };
+    if (outcome && outcome !== pending.outcome) return fail('outcome_mismatch');
 
     const [confirmed] = await tx
       .update(inspections)
@@ -154,7 +168,12 @@ async function visitOnce(
       .returning();
     await refreshLastInspectionDate(tx, venueId);
     const visit = await ensureVisit(tx, venueId, actor, today, confirmed.id, now);
-    return { result: 'confirmed', inspection: confirmed, confirmedNow: true, visit };
+    return visited(venueId, {
+      result: 'confirmed',
+      inspection: confirmed,
+      confirmedNow: true,
+      visit,
+    });
   });
 }
 

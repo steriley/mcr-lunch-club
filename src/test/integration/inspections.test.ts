@@ -7,8 +7,8 @@ import {
   getVisitStatus,
   latestVerifiedInspection,
   listPendingInspections,
-  recordVisit,
 } from '@/lib/inspections';
+import { recordVisit } from './visit-helpers';
 import {
   closeTestDb,
   createAdmin,
@@ -301,7 +301,7 @@ describe('dual-verified inspections (database)', { skip: skipIntegration }, () =
       'satisfactory',
       noon
     );
-    assert.equal(outcome.result, 'not_found');
+    assert.equal(outcome.result, 'venue_not_found');
   });
 
   it('lists today’s unsigned inspections for the Pending page, and drops them once cosigned or lapsed', async () => {

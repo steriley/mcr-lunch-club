@@ -57,10 +57,7 @@ const imagePatchSchema = z
 const failure = (error: VenueImageError) =>
   jsonError(VENUE_IMAGE_ERROR_STATUS[error], VENUE_IMAGE_ERROR_MESSAGES[error]);
 
-const imageParams = {
-  id: VENUE_IMAGE_ERROR_MESSAGES.venue_not_found,
-  imageId: VENUE_IMAGE_ERROR_MESSAGES.image_not_found,
-};
+const imageParams = { id: 'venue_not_found', imageId: 'image_not_found' } as const;
 const notConfigured = () => jsonError(503, 'Image uploads are not configured.');
 
 export const PATCH = adminRoute(

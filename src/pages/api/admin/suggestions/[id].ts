@@ -1,6 +1,6 @@
 import { and, eq, ne } from 'drizzle-orm';
 import { venueSuggestions } from '@/db/schema';
-import { adminRoute, jsonError, jsonResponse } from '@/lib/admin-api';
+import { adminRoute, errorResponse, jsonError, jsonResponse } from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { suggestionStatusSchema } from '@/lib/suggestion-schema';
 import { serializeSuggestion } from '@/lib/suggestions';
@@ -44,7 +44,7 @@ export const PATCH = adminRoute(
           409,
           'Another Chair has already accepted this suggestion and made a venue from it. Reload the inbox to see it.'
         )
-      : jsonError(404, NOT_FOUND);
+      : errorResponse(NOT_FOUND);
   }
 );
 
@@ -55,7 +55,7 @@ export const DELETE = adminRoute(
       .delete(venueSuggestions)
       .where(eq(venueSuggestions.id, params.id))
       .returning({ id: venueSuggestions.id });
-    if (!row) return jsonError(404, NOT_FOUND);
+    if (!row) return errorResponse(NOT_FOUND);
     return jsonResponse({ ok: true });
   }
 );

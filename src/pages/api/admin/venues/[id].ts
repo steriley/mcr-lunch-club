@@ -1,6 +1,12 @@
 import { eq } from 'drizzle-orm';
 import { venueImages, venues } from '@/db/schema';
-import { adminRoute, isUniqueViolation, jsonError, jsonResponse, slugTaken } from '@/lib/admin-api';
+import {
+  adminRoute,
+  errorResponse,
+  isUniqueViolation,
+  jsonResponse,
+  slugTaken,
+} from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { getBlobToken } from '@/lib/env';
 import { deleteOwnedBlobs } from '@/lib/venue-image-storage';
@@ -10,15 +16,14 @@ import { saveVenue, serializeVenue } from '@/lib/venues';
 
 export const prerender = false;
 
-const NOT_FOUND = 'Venue not found.';
-const notFound = () => jsonError(404, NOT_FOUND);
+const notFound = () => errorResponse('venue_not_found');
 
 export const PUT = adminRoute(
   {
     action: 'Update venue',
     publish: 'queue',
     venueParam: 'id',
-    params: { id: NOT_FOUND },
+    params: { id: 'venue_not_found' },
     body: venueInputSchema,
     onError: (error) => (isUniqueViolation(error) ? slugTaken() : undefined),
   },
@@ -33,7 +38,7 @@ export const PUT = adminRoute(
 );
 
 export const DELETE = adminRoute(
-  { action: 'Delete venue', publish: 'queue', params: { id: NOT_FOUND } },
+  { action: 'Delete venue', publish: 'queue', params: { id: 'venue_not_found' } },
   async ({ params, publishedVenue }) => {
     // Name the venue before it goes: the pending change keeps the name.
     await publishedVenue(params.id);
