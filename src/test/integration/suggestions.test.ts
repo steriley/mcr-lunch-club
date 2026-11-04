@@ -3,9 +3,8 @@ import { after, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { eq } from 'drizzle-orm';
 import { tierProposals, venueSuggestions, venues } from '@/db/schema';
-import { markSuggestionAccepted, SUGGESTION_PROPOSED_TIER } from '@/lib/suggestions';
 import { approveProposal, declineProposal, proposeTier } from '@/lib/tier-proposals';
-import { createVenueWithProposal, SuggestionUnavailable } from '@/lib/venue-create';
+import { venueLifecycle } from '@/lib/venue-lifecycle';
 import { venueInputSchema } from '@/lib/venue-schema';
 import { isPubliclyVisible } from '@/lib/visibility';
 import {
@@ -21,7 +20,7 @@ describe('accepting a suggestion (database)', { skip: skipIntegration }, () => {
   let sam: TestAdmin;
   let alex: TestAdmin;
   let suggestionId: string;
-  const route = { distanceMiles: 0.3, walkingTimeMin: 6 };
+  const lookup = async () => ({ distanceMetres: 480, durationSeconds: 400 });
   const input = venueInputSchema.parse({
     name: 'Pasty Palace',
     slug: 'pasty-palace',
@@ -50,18 +49,19 @@ describe('accepting a suggestion (database)', { skip: skipIntegration }, () => {
 
   after(closeTestDb);
 
-  const accept = async (actor: TestAdmin) =>
-    createVenueWithProposal(
+  const createFrom = async (actor: TestAdmin, venueInput = input) =>
+    venueLifecycle.createVenue(
       await testDb(),
-      input,
-      SUGGESTION_PROPOSED_TIER,
+      venueInput,
+      { proposedTier: null, fromSuggestion: suggestionId },
       actor,
-      route,
-      async (tx, venue) => {
-        if (!(await markSuggestionAccepted(tx, suggestionId, venue.id, actor.id)))
-          throw new SuggestionUnavailable();
-      }
+      lookup
     );
+  const accept = async (actor: TestAdmin) => {
+    const created = await createFrom(actor);
+    if (!created.ok) assert.fail(`expected the venue to be created, got ${created.error}`);
+    return created.value;
+  };
   const suggestion = async () =>
     (
       await (
@@ -120,20 +120,8 @@ describe('accepting a suggestion (database)', { skip: skipIntegration }, () => {
     const db = await testDb();
     await accept(sam);
     const otherInput = { ...input, slug: 'pasty-palace-2' };
-    await assert.rejects(
-      createVenueWithProposal(
-        db,
-        otherInput,
-        SUGGESTION_PROPOSED_TIER,
-        alex,
-        route,
-        async (tx, venue) => {
-          if (!(await markSuggestionAccepted(tx, suggestionId, venue.id, alex.id)))
-            throw new SuggestionUnavailable();
-        }
-      ),
-      SuggestionUnavailable
-    );
+    const second = await createFrom(alex, otherInput);
+    assert.deepEqual(second, { ok: false, error: 'suggestion_unavailable' });
     assert.equal((await db.select().from(venues)).length, 1);
     assert.equal((await db.select().from(tierProposals)).length, 1);
   });

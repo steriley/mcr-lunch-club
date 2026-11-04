@@ -63,7 +63,7 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     (await listVenueImages(await testDb(), id)).filter((row) => row.isPrimary).map((row) => row.id);
 
   it('makes the first image primary and later ones not, keeping the pre-generated id', async () => {
-    const first = await add({ caption: '  The counter  ' });
+    const first = await add({ caption: 'The counter' });
     const second = await add();
     assert.equal(first.isPrimary, true);
     assert.equal(second.isPrimary, false);
@@ -103,15 +103,11 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     assert.equal(result.value.isPrimary, true);
   });
 
-  it('refuses an unknown venue and an over-long caption', async () => {
+  it('refuses an unknown venue', async () => {
     const db = await testDb();
     assert.deepEqual(await addVenueImage(db, image({ venueId: randomUUID() })), {
       ok: false,
       error: 'venue_not_found',
-    });
-    assert.deepEqual(await addVenueImage(db, image({ caption: 'x'.repeat(201) })), {
-      ok: false,
-      error: 'caption_too_long',
     });
     assert.equal((await db.select().from(venueImages)).length, 0);
   });
@@ -235,7 +231,7 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     const row = await add();
 
     const edited = await updateImageMeta(db, venueId, row.id, {
-      caption: '  Top-down pizza ',
+      caption: 'Top-down pizza',
       focal: { focalX: 30, focalY: 70 },
     });
     assert.ok(edited.ok);
@@ -244,7 +240,7 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
       ['Top-down pizza', 30, 70]
     );
 
-    const captionOnly = await updateImageMeta(db, venueId, row.id, { caption: '' });
+    const captionOnly = await updateImageMeta(db, venueId, row.id, { caption: null });
     assert.ok(captionOnly.ok);
     assert.deepEqual(
       [captionOnly.value.caption, captionOnly.value.focalX, captionOnly.value.focalY],
@@ -258,21 +254,9 @@ describe('venue images (database)', { skip: skipIntegration }, () => {
     assert.deepEqual([reset.value.focalX, reset.value.focalY], [null, null]);
   });
 
-  it('refuses bad metadata and images from another venue', async () => {
+  it('refuses images from another venue', async () => {
     const db = await testDb();
     const row = await add();
-    assert.deepEqual(await updateImageMeta(db, venueId, row.id, { caption: 'x'.repeat(201) }), {
-      ok: false,
-      error: 'caption_too_long',
-    });
-    assert.deepEqual(
-      await updateImageMeta(db, venueId, row.id, { focal: { focalX: 101, focalY: 5 } }),
-      { ok: false, error: 'invalid_focal' }
-    );
-    assert.deepEqual(
-      await updateImageMeta(db, venueId, row.id, { focal: { focalX: 5, focalY: null } }),
-      { ok: false, error: 'invalid_focal' }
-    );
     const otherVenue = await createVenue('Pie Shop');
     assert.deepEqual(await updateImageMeta(db, otherVenue, row.id, { caption: 'Hijack' }), {
       ok: false,

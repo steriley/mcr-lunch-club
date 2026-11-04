@@ -1,8 +1,10 @@
 import './setup-env';
+import { mock } from 'node:test';
 import { PgDialect } from 'drizzle-orm/pg-core';
 import type { SQL } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { venueLifecycle } from '@/lib/venue-lifecycle';
 
 /**
  * Helpers for exercising admin API routes without a real database or auth
@@ -118,7 +120,33 @@ export function signInAs(user: Record<string, unknown> | null = ADMIN) {
   stubAuthApi('getSession', () => (user ? { user, session: { id: 's1' } } : null));
 }
 
+/**
+ * Replaces one venue lifecycle function, so a route test checks request
+ * parsing and the response mapping without a database. Returns the calls.
+ */
+export function stubLifecycle<K extends keyof typeof venueLifecycle>(
+  name: K,
+  implementation: (...args: Parameters<(typeof venueLifecycle)[K]>) => unknown
+) {
+  const calls: { arguments: Parameters<(typeof venueLifecycle)[K]> }[] = [];
+  mock.method(venueLifecycle, name, ((...args: Parameters<(typeof venueLifecycle)[K]>) => {
+    calls.push({ arguments: args });
+    return implementation(...args);
+  }) as never);
+  return calls;
+}
+
+/**
+ * Stubs what recording a published change reads and writes: the insert, and
+ * the count the header reports. Returns the insert calls.
+ */
+export function stubPublishing(pending = 1) {
+  stubDb('select', [{ total: pending }]);
+  return stubDb('insert');
+}
+
 export function restoreStubs() {
+  mock.restoreAll();
   for (const [key, original] of originals) {
     const [scope, name] = key.split('.');
     ((scope === 'db' ? db : auth.api) as Mutable)[name] = original;

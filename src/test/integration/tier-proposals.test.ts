@@ -12,7 +12,7 @@ import {
   proposeTier,
   withdrawProposal,
 } from '@/lib/tier-proposals';
-import { createVenueWithProposal } from '@/lib/venue-create';
+import { venueLifecycle } from '@/lib/venue-lifecycle';
 import { venueInputSchema } from '@/lib/venue-schema';
 import { getPublicVenue } from '@/lib/public-data';
 import {
@@ -205,10 +205,15 @@ describe('tier proposals (database)', { skip: skipIntegration }, () => {
       latitude: 53.48,
       longitude: -2.25,
     });
-    const { venue, proposal } = await createVenueWithProposal(db, input, 'to_be_assessed', sam, {
-      distanceMiles: 0.2,
-      walkingTimeMin: 4,
-    });
+    const { venue, proposal } = unwrap(
+      await venueLifecycle.createVenue(
+        db,
+        input,
+        { proposedTier: 'to_be_assessed' },
+        sam,
+        async () => ({ distanceMetres: 320, durationSeconds: 240 })
+      )
+    );
     assert.equal(venue.tier, null);
     assert.ok(proposal);
 

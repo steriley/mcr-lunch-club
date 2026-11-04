@@ -1,62 +1,29 @@
-import { eq } from 'drizzle-orm';
-import { venueImages, venues } from '@/db/schema';
-import {
-  adminRoute,
-  errorResponse,
-  isUniqueViolation,
-  jsonResponse,
-  slugTaken,
-} from '@/lib/admin-api';
+import { adminRoute } from '@/lib/admin-api';
 import { db } from '@/lib/db';
-import { getBlobToken } from '@/lib/env';
-import { deleteOwnedBlobs } from '@/lib/venue-image-storage';
+import { mapOutcome } from '@/lib/outcome';
+import { venueLifecycle } from '@/lib/venue-lifecycle';
+import { photoStore } from '@/lib/venue-image-storage';
 import { venueInputSchema } from '@/lib/venue-schema';
 import { routeWarning } from '@/lib/walking-route';
-import { saveVenue, serializeVenue } from '@/lib/venues';
+import { serializeVenue } from '@/lib/venues';
 
 export const prerender = false;
-
-const notFound = () => errorResponse('venue_not_found');
 
 export const PUT = adminRoute(
   {
     action: 'Update venue',
-    publish: 'queue',
-    venueParam: 'id',
     params: { id: 'venue_not_found' },
     body: venueInputSchema,
-    onError: (error) => (isUniqueViolation(error) ? slugTaken() : undefined),
   },
-  async ({ params, body, actor }) => {
-    const result = await saveVenue(db, params.id, body, actor);
-    if (!result.ok) return result.error === 'slug_taken' ? slugTaken() : notFound();
-    return jsonResponse({
-      venue: serializeVenue(result.venue),
-      routeWarning: routeWarning(result.route),
-    });
-  }
+  async ({ params, body, actor }) =>
+    mapOutcome(
+      await venueLifecycle.updateVenue(db, params.id, body, actor),
+      ({ venue, route }) => ({ venue: serializeVenue(venue), routeWarning: routeWarning(route) })
+    )
 );
 
 export const DELETE = adminRoute(
-  { action: 'Delete venue', publish: 'queue', params: { id: 'venue_not_found' } },
-  async ({ params, publishedVenue }) => {
-    // Name the venue before it goes: the pending change keeps the name.
-    await publishedVenue(params.id);
-    // Collect the photos first: deleting the venue cascades to their rows.
-    const images = await db
-      .select({ fullUrl: venueImages.fullUrl, thumbUrl: venueImages.thumbUrl })
-      .from(venueImages)
-      .where(eq(venueImages.venueId, params.id));
-    const [row] = await db
-      .delete(venues)
-      .where(eq(venues.id, params.id))
-      .returning({ id: venues.id });
-    if (!row) return notFound();
-    await deleteOwnedBlobs(
-      getBlobToken(),
-      images.flatMap((image) => [image.fullUrl, image.thumbUrl]),
-      'Delete venue'
-    );
-    return jsonResponse({ ok: true });
-  }
+  { action: 'Delete venue', params: { id: 'venue_not_found' } },
+  async ({ params }) =>
+    mapOutcome(await venueLifecycle.deleteVenue(db, photoStore(), params.id), () => ({ ok: true }))
 );
