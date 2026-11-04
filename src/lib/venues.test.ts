@@ -6,7 +6,7 @@ import {
   recordVenueRevision,
   routeColumns,
   serializeVenue,
-  updateVenue,
+  writeVenue,
   venueValues,
 } from './venues';
 import type { Database } from './db-client';
@@ -168,7 +168,7 @@ describe('routeColumns', () => {
   });
 });
 
-describe('updateVenue', () => {
+describe('writeVenue', () => {
   /** A db whose transaction runs on a recorder: update(...).returning() resolves to `rows`. */
   function transactionalDb(rows: unknown[]) {
     const calls: { method: string; args: unknown[] }[] = [];
@@ -206,10 +206,7 @@ describe('updateVenue', () => {
   it("stamps a Chair's change and records the revision as theirs, in one transaction", async () => {
     const { db, calls, transactions } = transactionalDb([row]);
     const now = new Date('2026-10-22T09:00:00Z');
-    assert.equal(
-      await updateVenue(db, 'venue-1', { tier: 'approved' }, { id: 'user-1' }, now),
-      row
-    );
+    assert.equal(await writeVenue(db, 'venue-1', { tier: 'approved' }, { id: 'user-1' }, now), row);
     assert.deepEqual(calls.find((call) => call.method === 'set')!.args[0], {
       tier: 'approved',
       updatedBy: 'user-1',
@@ -224,14 +221,14 @@ describe('updateVenue', () => {
 
   it("leaves the editor stamp alone for a script's change", async () => {
     const { db, calls } = transactionalDb([row]);
-    await updateVenue(db, 'venue-1', { walkingTimeMin: 9 }, null);
+    await writeVenue(db, 'venue-1', { walkingTimeMin: 9 }, null);
     assert.deepEqual(calls.find((call) => call.method === 'set')!.args[0], { walkingTimeMin: 9 });
     assert.equal((calls.find((call) => call.method === 'values')!.args[0] as any).changedBy, null);
   });
 
   it('returns null and records nothing when the venue does not exist', async () => {
     const { db, calls } = transactionalDb([]);
-    assert.equal(await updateVenue(db, 'gone', { walkingTimeMin: 9 }, { id: 'user-1' }), null);
+    assert.equal(await writeVenue(db, 'gone', { walkingTimeMin: 9 }, { id: 'user-1' }), null);
     assert.ok(!calls.some((call) => call.method === 'values'));
   });
 });

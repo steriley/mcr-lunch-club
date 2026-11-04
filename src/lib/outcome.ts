@@ -1,3 +1,5 @@
+import type { Database, Tx } from '@/lib/db-client';
+
 /**
  * One outcome type for every domain operation (#112).
  *
@@ -48,4 +50,29 @@ export function mapOutcome<T, U, E extends string>(
   transform: (value: T) => U
 ): Outcome<U, E> {
   return outcome.ok ? { ...outcome, value: transform(outcome.value) } : outcome;
+}
+
+/**
+ * Runs `work` in a transaction that rolls back when it returns a failure, so
+ * an operation can refuse part-way through without throwing. A failure is
+ * returned as it was; any other error still throws.
+ */
+export async function outcomeTransaction<T, E extends string>(
+  db: Database | Tx,
+  work: (tx: Tx) => Promise<Outcome<T, E>>
+): Promise<Outcome<T, E>> {
+  let refused: Outcome<never, E> | null = null;
+  try {
+    return await db.transaction(async (tx) => {
+      const outcome = await work(tx);
+      if (!outcome.ok) {
+        refused = outcome;
+        tx.rollback();
+      }
+      return outcome;
+    });
+  } catch (error) {
+    if (refused) return refused;
+    throw error;
+  }
 }

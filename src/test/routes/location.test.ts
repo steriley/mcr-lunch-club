@@ -1,6 +1,7 @@
 import '../setup-env';
-import { afterEach, beforeEach, describe, it } from 'node:test';
+import { afterEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
+import { ok, fail } from '@/lib/outcome';
 import { GET as geocode } from '@/pages/api/admin/geocode';
 import { POST as recompute } from '@/pages/api/admin/venues/[id]/recompute-route';
 import {
@@ -10,8 +11,8 @@ import {
   restoreStubs,
   run,
   signInAs,
-  stubDb,
-  stubTransactions,
+  stubLifecycle,
+  stubPublishing,
 } from '../route-helpers';
 
 const originalFetch = globalThis.fetch;
@@ -103,48 +104,50 @@ describe('GET /api/admin/geocode', () => {
 
 describe('POST /api/admin/venues/[id]/recompute-route', () => {
   const post = (id = VENUE_ID) => run(recompute, { request: adminRequest('POST'), params: { id } });
-  beforeEach(() => stubTransactions());
 
-  it('404s for a missing venue and 409s for a venue without a location', async () => {
+  it('returns the venue with its new route, and records the change', async () => {
     signInAs();
-    stubDb('select', []);
-    assert.equal((await post()).status, 404);
-    stubDb('select', [{ latitude: null, longitude: null }]);
-    assert.equal((await post()).status, 409);
-  });
-
-  it('stores the new route and records a revision', async () => {
-    signInAs();
-    stubOrs(() => Response.json({ routes: [{ summary: { distance: 402.336, duration: 300 } }] }));
-    stubDb('select', [{ latitude: '53.481000', longitude: '-2.249000' }]);
-    const updates = stubDb('update', [row]);
-    const inserts = stubDb('insert', []);
+    const calls = stubLifecycle('rerouteVenue', async () =>
+      ok(row as never, { action: 'Recompute venue route', venueId: VENUE_ID, when: 'queue' })
+    );
+    const inserts = stubPublishing();
     const response = await post();
     assert.equal(response.status, 200);
-    const set = updates.find((call) => call.method === 'set')!.args[0] as any;
-    assert.equal(set.distanceMiles, '0.25');
-    assert.equal(set.walkingTimeMin, 6);
-    assert.ok(set.routeUpdatedAt instanceof Date);
-    assert.ok(inserts.some((call) => call.method === 'values'));
+    assert.equal((await response.json()).venue.walkingTimeMin, 5);
+    assert.equal(calls[0].arguments[1], VENUE_ID);
+    assert.equal(
+      (inserts.find((call) => call.method === 'values')!.args[0] as any).venueId,
+      VENUE_ID
+    );
   });
 
-  it('leaves the venue alone when ORS fails', async () => {
+  it('maps the lifecycle’s refusals', async () => {
     signInAs();
-    stubOrs(() => new Response('', { status: 429 }));
-    stubDb('select', [{ latitude: '53.481000', longitude: '-2.249000' }]);
-    const updates = stubDb('update', [row]);
+    stubLifecycle('rerouteVenue', async () => fail('venue_not_found'));
+    assert.equal((await post()).status, 404);
+    stubLifecycle('rerouteVenue', async () => fail('needs_location'));
+    assert.equal((await post()).status, 409);
+
+    stubLifecycle('rerouteVenue', async () =>
+      fail(
+        'route_rate_limited',
+        'The walking route is pending because the route service is rate limited. Use Retry later.'
+      )
+    );
     const limited = await post();
     assert.equal(limited.status, 429);
     assert.match((await limited.json()).error, /^The walking route is pending/);
-    assert.equal(updates.length, 0);
-
-    stubOrs(() => new Response('', { status: 500 }));
+    stubLifecycle('rerouteVenue', async () =>
+      fail('route_unavailable', 'The walking route is pending.')
+    );
     assert.equal((await post()).status, 503);
   });
 
-  it('returns 500 on database errors', async () => {
+  it('returns 500 on errors', async () => {
     signInAs();
-    stubDb('select', new Error('db down'));
+    stubLifecycle('rerouteVenue', async () => {
+      throw new Error('db down');
+    });
     assert.equal((await quietly(() => post())).status, 500);
   });
 });

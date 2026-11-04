@@ -3,7 +3,7 @@ import type { Database } from '@/lib/db-client';
 import { mapLegacyCuisine } from '@/lib/cuisines';
 import { parseTier, type TierValue } from '@/lib/tiers';
 import { venueInputSchema, type VenueInput } from '@/lib/venue-schema';
-import { recordVenueRevision, updateVenue, venueValues } from '@/lib/venues';
+import { recordVenueRevision, writeVenue, venueValues } from '@/lib/venues';
 import type { Venue } from '@/types';
 
 /** A venue as the old static JSON stored it, with the tier as a display label. */
@@ -89,7 +89,7 @@ export async function importVenues(
     const values = venueValues(input, null, { distanceMiles: null, walkingTimeMin: null });
     if (existingId) {
       // Tiers change only through two-Chair proposals, so an update leaves them alone unless asked.
-      await updateVenue(db, existingId, updateTiers ? { ...values, tier } : values, null);
+      await writeVenue(db, existingId, updateTiers ? { ...values, tier } : values, null);
       result.updated += 1;
     } else {
       // Deliberately outside venueValues/venueInputSchema: this is the bootstrap path that fills an empty

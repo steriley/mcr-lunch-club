@@ -10,7 +10,7 @@ import {
   type LatLng,
   type WalkingRoute,
 } from '@/lib/ors';
-import { routeColumns, updateVenue } from '@/lib/venues';
+import { routeColumns, writeVenue } from '@/lib/venues';
 
 /**
  * Replaces the stored distance and walking time of venues with coordinates
@@ -90,7 +90,7 @@ export async function backfillRoutes(
   const save = async (venue: (typeof todo)[number], walk: WalkingRoute) => {
     const values = routeToVenueValues(walk);
     // A script's change: no Chair is stamped as the editor.
-    await updateVenue(db, venue.id, routeColumns({ ...values, routeUpdatedAt: new Date() }), null);
+    await writeVenue(db, venue.id, routeColumns({ ...values, routeUpdatedAt: new Date() }), null);
     result.routed += 1;
     result.remaining -= 1;
     log(`  ${venue.name}: ${values.distanceMiles.toFixed(2)} mi, ${values.walkingTimeMin} min`);

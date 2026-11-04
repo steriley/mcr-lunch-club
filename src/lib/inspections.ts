@@ -38,7 +38,7 @@ export type VisitResult =
   | { result: 'waiting'; inspection: InspectionRow; startedNow: boolean; visit: VenueVisitRow }
   | { result: 'confirmed'; inspection: InspectionRow; confirmedNow: boolean; visit: VenueVisitRow };
 
-export type VisitError =
+type VisitError =
   | 'venue_not_found'
   /** A first press must say how the inspection went. */
   | 'outcome_required'

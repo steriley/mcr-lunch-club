@@ -7,7 +7,7 @@ import { fail, ok, type Outcome } from '@/lib/outcome';
 import { isActiveChair } from '@/lib/roles';
 import { tierLabel, type TierValue } from '@/lib/tiers';
 import { actorName, type Actor } from '@/lib/venue-events';
-import { updateVenue } from '@/lib/venues';
+import { writeVenue } from '@/lib/venues';
 
 /**
  * Tier changes with two-admin integrity.
@@ -163,7 +163,7 @@ export function approveProposal(
       .returning();
     if (!decided) return fail('not_pending');
 
-    await updateVenue(tx, proposal.venueId, { tier: proposal.proposedTier }, actor, now);
+    await writeVenue(tx, proposal.venueId, { tier: proposal.proposedTier }, actor, now);
     // The most consequential public change there is: a venue moving tier.
     return ok(decided, { action: 'Approve proposal', venueId: decided.venueId, when: 'queue' });
   });

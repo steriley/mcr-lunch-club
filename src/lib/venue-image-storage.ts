@@ -1,63 +1,84 @@
 import { del, put } from '@vercel/blob';
-import { blobEnvPrefix, isBlobConfigured } from '@/lib/env';
-import { isOwnedBlobUrl } from '@/lib/venue-images';
+import { blobEnvPrefix, getBlobToken, isBlobConfigured } from '@/lib/env';
 
 /**
- * Vercel Blob storage for venue photos (#35). Server only.
+ * Where venue photos (#35) are kept. Server only.
  *
- * Keys: `{prod|preview|dev}/venues/{venueId}/{imageId}-{full|thumb}.webp`.
+ * The venue lifecycle (src/lib/venue-lifecycle.ts) talks to a `PhotoStore`:
+ * Vercel Blob in production (`blobPhotoStore`), an in-memory store in tests
+ * (src/test/memory-photo-store.ts). Keys are `venues/{venueId}/{imageId}-
+ * {full|thumb}.webp`; the Blob adapter puts `{prod|preview|dev}/` in front.
  * Every key is unique (the image id is a fresh UUID), so files are cached for
  * a year and never overwritten.
  */
 
-export type ImageVariant = 'full' | 'thumb';
+export interface PhotoStore {
+  /** Stores the bytes under `key` and returns the public URL. */
+  put(key: string, bytes: Uint8Array): Promise<string>;
+  /**
+   * Best-effort delete. Never throws and ignores URLs that are not this
+   * store's own (migrated external links): a stray file is better than a
+   * broken image.
+   */
+  delete(urls: string[]): Promise<void>;
+}
 
 const ONE_YEAR_SECONDS = 365 * 24 * 60 * 60;
 
-/** Swappable in tests so routes can be exercised without touching Blob. */
+/** Swappable in tests so the adapter can be exercised without touching Blob. */
 export const blobClient = { put, del };
 
-export function imageBlobKey(venueId: string, imageId: string, variant: ImageVariant): string {
-  return `${blobEnvPrefix()}/venues/${venueId}/${imageId}-${variant}.webp`;
-}
-
-export async function putImageBlob(
-  token: string | undefined,
-  key: string,
-  body: Blob | ArrayBuffer | Uint8Array
-): Promise<string> {
-  const result = await blobClient.put(key, body as Blob, {
-    access: 'public',
-    contentType: 'image/webp',
-    addRandomSuffix: false,
-    cacheControlMaxAge: ONE_YEAR_SECONDS,
-    ...(token ? { token } : {}),
-  });
-  return result.url;
-}
+const OWNED_BLOB_HOST_SUFFIX = '.public.blob.vercel-storage.com';
 
 /**
- * Best-effort delete of our own blobs. URLs that are not on our Blob store
- * (migrated external links) are never passed to `del()`. A failure is logged
- * and ignored: a stray file is better than a broken image.
+ * True only for our own public Vercel Blob URLs. Migrated external links
+ * (and anything unparseable) must never be passed to `del()`.
  */
-export async function deleteOwnedBlobs(
-  token: string | undefined,
-  urls: (string | null | undefined)[],
-  context: string
-): Promise<void> {
-  const owned = urls.filter((url): url is string => isOwnedBlobUrl(url));
-  if (!owned.length) return;
-  if (!isBlobConfigured()) {
-    console.error(`[admin] ${context}: blob cleanup skipped, uploads are not configured.`);
-    return;
-  }
+export function isOwnedBlobUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
   try {
-    await blobClient.del(owned, token ? { token } : {});
-  } catch (error) {
-    console.error(
-      `[admin] ${context}: blob cleanup failed:`,
-      error instanceof Error ? error.message : 'Unknown error'
+    const parsed = new URL(url);
+    return (
+      parsed.protocol === 'https:' && parsed.hostname.toLowerCase().endsWith(OWNED_BLOB_HOST_SUFFIX)
     );
+  } catch {
+    return false;
   }
+}
+
+export function blobPhotoStore(token: string | undefined): PhotoStore {
+  return {
+    async put(key, bytes) {
+      const result = await blobClient.put(`${blobEnvPrefix()}/${key}`, bytes as unknown as Blob, {
+        access: 'public',
+        contentType: 'image/webp',
+        addRandomSuffix: false,
+        cacheControlMaxAge: ONE_YEAR_SECONDS,
+        ...(token ? { token } : {}),
+      });
+      return result.url;
+    },
+
+    async delete(urls) {
+      const owned = urls.filter(isOwnedBlobUrl);
+      if (!owned.length) return;
+      if (!isBlobConfigured()) {
+        console.error('[admin] Photo cleanup skipped, uploads are not configured.');
+        return;
+      }
+      try {
+        await blobClient.del(owned, token ? { token } : {});
+      } catch (error) {
+        console.error(
+          '[admin] Photo cleanup failed:',
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      }
+    },
+  };
+}
+
+/** The store the running site uses. */
+export function photoStore(): PhotoStore {
+  return blobPhotoStore(getBlobToken());
 }
