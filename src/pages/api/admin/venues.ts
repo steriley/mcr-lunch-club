@@ -1,8 +1,14 @@
-import { adminRoute, isUniqueViolation, jsonError, jsonResponse, slugTaken } from '@/lib/admin-api';
+import {
+  adminRoute,
+  ERROR_HTTP,
+  errorResponse,
+  isUniqueViolation,
+  jsonResponse,
+  slugTaken,
+} from '@/lib/admin-api';
 import { db } from '@/lib/db';
 import { notifyChairs } from '@/lib/push/dispatch';
 import { proposalEvent } from '@/lib/push/messages';
-import { PROPOSAL_ERROR_MESSAGES, PROPOSAL_ERROR_STATUS } from '@/lib/tier-proposals';
 import { markSuggestionAccepted, SUGGESTION_PROPOSED_TIER } from '@/lib/suggestions';
 import { createVenueWithProposal, ProposalFailed, SuggestionUnavailable } from '@/lib/venue-create';
 import { venueCreateSchema } from '@/lib/venue-schema';
@@ -13,14 +19,14 @@ export const prerender = false;
 
 function createVenueFailure(error: unknown): Response | undefined {
   if (error instanceof SuggestionUnavailable) {
-    return jsonError(
-      409,
-      'That suggestion has already been accepted or dismissed, or no longer exists. Nothing was saved.'
-    );
+    return errorResponse('suggestion_unavailable');
   }
   if (error instanceof ProposalFailed) {
-    return jsonError(PROPOSAL_ERROR_STATUS[error.error], PROPOSAL_ERROR_MESSAGES[error.error], {
-      proposedTier: PROPOSAL_ERROR_MESSAGES[error.error],
+    return errorResponse(error.error, {
+      [error.error]: {
+        ...ERROR_HTTP[error.error],
+        fields: { proposedTier: ERROR_HTTP[error.error].message },
+      },
     });
   }
   if (isUniqueViolation(error)) return slugTaken();

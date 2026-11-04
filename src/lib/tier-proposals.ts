@@ -3,6 +3,7 @@ import { user } from '@/db/auth-schema';
 import { tierProposals, venues, type TierProposalRow, type VenueRow } from '@/db/schema';
 import type { Database, Tx } from '@/lib/db-client';
 import { latestVerifiedInspection } from '@/lib/inspections';
+import { fail, ok, type Outcome } from '@/lib/outcome';
 import { isActiveChair } from '@/lib/roles';
 import { tierLabel, type TierValue } from '@/lib/tiers';
 import { actorName, type Actor } from '@/lib/venue-events';
@@ -26,49 +27,23 @@ import { updateVenue } from '@/lib/venues';
 
 export const DECLINE_REASON_MAX = 1000;
 
-export type ProposalError =
-  | 'venue_not_found'
-  | 'proposal_not_found'
-  | 'same_as_current'
-  | 'same_as_pending'
-  | 'pending_by_other'
-  | 'needs_verified_inspection'
-  | 'not_pending'
-  | 'own_proposal'
-  | 'not_proposer'
-  | 'reason_required';
+/** Why a proposal operation was refused. How each answers over HTTP is ERROR_HTTP in src/lib/admin-api.ts. */
+export const PROPOSAL_ERRORS = [
+  'venue_not_found',
+  'proposal_not_found',
+  'same_as_current',
+  'same_as_pending',
+  'pending_by_other',
+  'needs_verified_inspection',
+  'not_pending',
+  'own_proposal',
+  'not_proposer',
+  'reason_required',
+] as const;
 
-export const PROPOSAL_ERROR_MESSAGES: Record<ProposalError, string> = {
-  venue_not_found: 'Venue not found.',
-  proposal_not_found: 'Proposal not found.',
-  same_as_current: 'That is already the venue’s approved verdict.',
-  same_as_pending: 'That verdict change is already waiting for approval.',
-  pending_by_other:
-    'Another admin’s verdict proposal is already pending for this venue. Approve or decline it first.',
-  needs_verified_inspection:
-    'Moving a venue into Approved needs a dual-verified inspection first: two Chairs press “Visited today” on the same day. Imported legacy dates do not count.',
-  not_pending: 'This proposal has already been decided or withdrawn.',
-  own_proposal: 'You proposed this change, so a different admin must approve or decline it.',
-  not_proposer: 'Only the admin who proposed this change can withdraw it.',
-  reason_required: 'Give a reason for declining. It is kept internal and never shown publicly.',
-};
+export type ProposalError = (typeof PROPOSAL_ERRORS)[number];
 
-export const PROPOSAL_ERROR_STATUS: Record<ProposalError, number> = {
-  venue_not_found: 404,
-  proposal_not_found: 404,
-  same_as_current: 409,
-  same_as_pending: 409,
-  pending_by_other: 409,
-  needs_verified_inspection: 409,
-  not_pending: 409,
-  own_proposal: 403,
-  not_proposer: 403,
-  reason_required: 400,
-};
-
-export type ProposalResult<T> = { ok: true; value: T } | { ok: false; error: ProposalError };
-
-const fail = (error: ProposalError) => ({ ok: false as const, error });
+export type ProposalResult<T> = Outcome<T, ProposalError>;
 
 async function lockVenue(tx: Tx, venueId: string): Promise<VenueRow | null> {
   const [venue] = await tx
@@ -140,7 +115,7 @@ export async function proposeTierInTx(
       inspectionId,
     })
     .returning();
-  return { ok: true, value: proposal };
+  return ok(proposal);
 }
 
 export function proposeTier(
@@ -189,7 +164,8 @@ export function approveProposal(
     if (!decided) return fail('not_pending');
 
     await updateVenue(tx, proposal.venueId, { tier: proposal.proposedTier }, actor, now);
-    return { ok: true, value: decided };
+    // The most consequential public change there is: a venue moving tier.
+    return ok(decided, { action: 'Approve proposal', venueId: decided.venueId, when: 'queue' });
   });
 }
 
@@ -219,7 +195,7 @@ export function declineProposal(
       })
       .where(and(eq(tierProposals.id, proposalId), eq(tierProposals.status, 'pending')))
       .returning();
-    return decided ? { ok: true, value: decided } : fail('not_pending');
+    return decided ? ok(decided) : fail('not_pending');
   });
 }
 
@@ -240,7 +216,7 @@ export function withdrawProposal(
       .set({ status: 'withdrawn', decidedAt: now })
       .where(and(eq(tierProposals.id, proposalId), eq(tierProposals.status, 'pending')))
       .returning();
-    return decided ? { ok: true, value: decided } : fail('not_pending');
+    return decided ? ok(decided) : fail('not_pending');
   });
 }
 

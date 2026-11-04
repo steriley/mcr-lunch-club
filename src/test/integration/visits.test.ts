@@ -7,7 +7,7 @@ import { user } from '@/db/auth-schema';
 import { inspections, venueEvents, venueVisits, venues, visitNotes } from '@/db/schema';
 import { db as appDb } from '@/lib/db';
 import { addNote, deleteNote, editNote, listNotesForVenue } from '@/lib/field-notes';
-import { recordVisit } from '@/lib/inspections';
+import { recordVisit } from './visit-helpers';
 import { getPublicInspections, getPublicVenue, getPublicVenues } from '@/lib/public-data';
 import { ensureVisit, listVisitsForInspections, listVisitsForVenue, logVisit } from '@/lib/visits';
 import { loadVenueTimeline } from '@/lib/venue-history';

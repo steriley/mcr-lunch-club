@@ -3,6 +3,7 @@ import { goldenCut, venues } from '@/db/schema';
 import type { Database } from '@/lib/db-client';
 import type { GoldenCutEntryInput } from '@/lib/golden-cut-schema';
 import type { Actor } from '@/lib/venue-events';
+import { fail, ok, type Outcome } from '@/lib/outcome';
 import { isMappable, type VisibilityFields } from '@/lib/visibility';
 
 /**
@@ -47,7 +48,10 @@ export async function listGoldenCut(db: Database): Promise<GoldenCutAdminEntry[]
   }));
 }
 
-export type SaveGoldenCutResult = { ok: true } | { ok: false; error: string };
+export type SaveGoldenCutResult = Outcome<
+  null,
+  'golden_cut_venue_missing' | 'golden_cut_not_approved'
+>;
 
 export async function saveGoldenCut(
   db: Database,
@@ -68,16 +72,12 @@ export async function saveGoldenCut(
     const byId = new Map(found.map((venue) => [venue.id, venue]));
     for (const id of ids) {
       const venue = byId.get(id);
-      if (!venue)
-        return {
-          ok: false,
-          error: 'One of those venues no longer exists. Reload the page and try again.',
-        };
+      if (!venue) return fail('golden_cut_venue_missing');
       if (venue.tier !== 'approved')
-        return {
-          ok: false,
-          error: `${venue.name} is not Approved, so it cannot be in The Golden Cut.`,
-        };
+        return fail(
+          'golden_cut_not_approved',
+          `${venue.name} is not Approved, so it cannot be in The Golden Cut.`
+        );
     }
 
     await tx.delete(goldenCut);
@@ -94,6 +94,6 @@ export async function saveGoldenCut(
         }))
       );
     }
-    return { ok: true };
+    return ok(null, { action: 'Save the Golden Cut', venueId: null, when: 'queue' });
   });
 }

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { eq } from 'drizzle-orm';
 import { user } from '@/db/auth-schema';
 import { inspections, tierProposals, venueRevisions, venues } from '@/db/schema';
-import { recordVisit } from '@/lib/inspections';
+import { recordVisit } from './visit-helpers';
 import {
   approveProposal,
   countActiveAdmins,
@@ -65,7 +65,14 @@ describe('tier proposals (database)', { skip: skipIntegration }, () => {
     });
     assert.equal(await tierOf(), 'under_consideration');
 
-    const approved = unwrap(await approveProposal(db, proposal.id, alex));
+    const outcome = await approveProposal(db, proposal.id, alex);
+    // Approving moves a venue between tiers, so it reports the venue as a public change.
+    assert.deepEqual(outcome.ok && outcome.published, {
+      action: 'Approve proposal',
+      venueId,
+      when: 'queue',
+    });
+    const approved = unwrap(outcome);
     assert.equal(approved.status, 'approved');
     assert.equal(approved.decidedByName, 'Alex');
     assert.equal(await tierOf(), 'if_we_must');

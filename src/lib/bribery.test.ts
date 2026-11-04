@@ -30,11 +30,11 @@ describe('briberyValues', () => {
   it('copies input fields and stamps updatedAt without touching the database when no venue is linked', async () => {
     const db = { select: () => assert.fail('should not query') } as unknown as Database;
     const result = await briberyValues(db, input({ venueNameText: 'Somewhere', published: false }));
-    assert.ok(result.ok);
-    assert.equal(result.values.title, 'Free cookie');
-    assert.equal(result.values.venueNameText, 'Somewhere');
-    assert.equal(result.values.published, false);
-    assert.ok(result.values.updatedAt instanceof Date);
+    assert.ok(result);
+    assert.equal(result.title, 'Free cookie');
+    assert.equal(result.venueNameText, 'Somewhere');
+    assert.equal(result.published, false);
+    assert.ok(result.updatedAt instanceof Date);
   });
 
   it('fills the venue name from the linked venue', async () => {
@@ -42,8 +42,7 @@ describe('briberyValues', () => {
       fakeDb([{ name: 'Chip Shop' }]),
       input({ venueId: VENUE_ID })
     );
-    assert.ok(result.ok);
-    assert.equal(result.values.venueNameText, 'Chip Shop');
+    assert.equal(result?.venueNameText, 'Chip Shop');
   });
 
   it('keeps an explicitly typed venue name', async () => {
@@ -51,13 +50,12 @@ describe('briberyValues', () => {
       fakeDb([{ name: 'Chip Shop' }]),
       input({ venueId: VENUE_ID, venueNameText: 'The Chippy' })
     );
-    assert.ok(result.ok);
-    assert.equal(result.values.venueNameText, 'The Chippy');
+    assert.equal(result?.venueNameText, 'The Chippy');
   });
 
   it('fails when the linked venue does not exist', async () => {
     const result = await briberyValues(fakeDb([]), input({ venueId: VENUE_ID }));
-    assert.deepEqual(result, { ok: false, error: 'Choose a venue from the list.' });
+    assert.equal(result, null);
   });
 });
 
