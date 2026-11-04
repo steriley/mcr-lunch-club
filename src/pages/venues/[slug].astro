@@ -18,12 +18,7 @@ import {
   type PublicVenueDetail,
 } from '@/lib/public-data';
 import { getWalkingDirectionsUrl } from '@/lib/map/directions';
-import {
-  NOT_INSPECTED_LABEL,
-  ROUTE_PENDING_LABEL,
-  routeStats,
-  walkText,
-} from '@/lib/route-display';
+import { walkText } from '@/lib/route-display';
 import { COST_LABELS } from '@/lib/cost-display';
 import { nearbyAlternatives } from '@/lib/nearby-venues';
 import { toCard, type BenchCard } from '@/lib/sovereign-bench';
@@ -72,7 +67,6 @@ const websiteHost = websiteHostname(venue.websiteUrl);
 const cuisine = venue.cuisine && venue.cuisine !== 'Other' ? venue.cuisine : null;
 const showActions = (hasLocation && !venue.closed) || websiteHref !== null;
 // The link preview when someone drops this page into the lunch chat.
-const stats = routeStats(venue.walkingTimeMin, venue.distanceMiles);
 const walk =
   venue.walkingTimeMin == null ? null : `${walkText(venue.walkingTimeMin)} from Spinningfields`;
 const pageDescription = truncate(
@@ -274,73 +268,6 @@ function truncate(text: string, max: number): string {
       )}
 
       {venue.tier === 'approved' && <ApprovedSticker variant="compact" />}
-
-      <!-- Geographic & Walking Specifications -->
-      <div
-        class={`grid ${stats.combined ? 'grid-cols-2' : 'grid-cols-3'} gap-2 sm:gap-4 bg-paper p-2 sm:p-4 rounded-xl border border-hairline text-center`}
-      >
-        {stats.combined ? (
-          <div class="p-1 sm:p-2">
-            <span class="text-xs text-graphite uppercase tracking-wider block font-sans">Walk</span>
-            <span class="text-xl sm:text-2xl font-bold text-subtle" aria-label="Not available">
-              —
-            </span>
-            <span class="text-xs text-dim block font-sans">{ROUTE_PENDING_LABEL}</span>
-          </div>
-        ) : (
-          <>
-            <div class="p-1 sm:p-2">
-              <span class="text-xs text-graphite uppercase tracking-wider block font-sans">
-                Walk
-              </span>
-              <span
-                class={`text-xl sm:text-2xl font-bold ${stats.walk.value === null ? 'text-subtle' : 'text-navy'}`}
-                aria-label={stats.walk.value === null ? 'Not available' : undefined}
-              >
-                {stats.walk.value ?? '—'}
-              </span>
-              <span class="text-xs text-dim block font-sans">{stats.walk.caption}</span>
-            </div>
-
-            <div class="p-1 sm:p-2 border-l border-hairline">
-              <span class="text-xs text-graphite uppercase tracking-wider block font-sans">
-                Distance
-              </span>
-              <span
-                class={`text-xl sm:text-2xl font-bold ${stats.distance.value === null ? 'text-subtle' : 'text-ink'}`}
-                aria-label={stats.distance.value === null ? 'Not available' : undefined}
-              >
-                {stats.distance.value ?? '—'}
-              </span>
-              <span class="text-xs text-dim block font-sans">{stats.distance.caption}</span>
-            </div>
-          </>
-        )}
-
-        <div class="p-1 sm:p-2 border-l border-hairline">
-          <span class="text-xs text-graphite uppercase tracking-wider block font-sans">
-            Last inspected
-          </span>
-          {venue.lastInspectionDate ? (
-            <>
-              <span class="text-sm sm:text-lg font-bold text-ink-soft font-sans tabular-nums sm:mt-1 block">
-                {formatDate(venue.lastInspectionDate)}
-              </span>
-              <span class="text-xs text-dim block font-sans">by the Chairs</span>
-            </>
-          ) : (
-            <>
-              <span
-                class="text-sm sm:text-lg font-bold text-subtle font-sans sm:mt-1 block"
-                aria-label="Not available"
-              >
-                —
-              </span>
-              <span class="text-xs text-dim block font-sans">{NOT_INSPECTED_LABEL}</span>
-            </>
-          )}
-        </div>
-      </div>
 
       <!-- Eat Like Us Box (Wax Seal Styling) -->
       {venue.tier === 'approved' && venue.eatLikeUs && (
