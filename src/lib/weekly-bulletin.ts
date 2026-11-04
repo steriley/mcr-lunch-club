@@ -1,4 +1,3 @@
-import { formatDate } from '@/lib/dates';
 import { londonDate, londonHour } from '@/lib/london-date';
 import { tierLabel, type TierValue } from '@/lib/tiers';
 
@@ -151,59 +150,32 @@ export function bulletinText(changes: TierChange[]): string {
 /** The most venues the Chairs can inspect in a week: one at each of the Tuesday and Wednesday lunches. */
 const INSPECTIONS_PER_WEEK = 2;
 
-/** How much of the ledger is still waiting for a first proper verdict. */
+/** Venues still waiting for a verdict (Under Consideration and To Be Assessed), and the weeks they take at the Chairs' best pace. */
 export interface Backlog {
-  underConsideration: number;
-  toBeAssessed: number;
-  /** Weeks to get through them all at INSPECTIONS_PER_WEEK. */
+  venues: number;
   weeks: number;
-  /** The Wednesday of the last of those weeks, counting from the issue: the earliest the backlog can clear. */
-  clearsBy: Date;
 }
 
-/** The backlog as of `issue`. Pass open venues only (the map venues): a closed venue needs no visit. */
-export function backlogFor(
-  venues: ReadonlyArray<{ tier: TierValue }>,
-  issue: Pick<BulletinIssue, 'publishedAt'>
-): Backlog {
-  const count = (tier: TierValue) => venues.filter((venue) => venue.tier === tier).length;
-  const underConsideration = count('under_consideration');
-  const toBeAssessed = count('to_be_assessed');
-  const weeks = Math.ceil((underConsideration + toBeAssessed) / INSPECTIONS_PER_WEEK);
-  return {
-    underConsideration,
-    toBeAssessed,
-    weeks,
-    clearsBy: new Date(issue.publishedAt.getTime() + weeks * 7 * DAY_MS),
-  };
+/** The backlog among `venues`. Pass open venues only (the map venues): a closed venue needs no visit. */
+export function backlogFor(venues: ReadonlyArray<{ tier: TierValue }>): Backlog {
+  const waiting = venues.filter(
+    ({ tier }) => tier === 'under_consideration' || tier === 'to_be_assessed'
+  ).length;
+  return { venues: waiting, weeks: Math.ceil(waiting / INSPECTIONS_PER_WEEK) };
 }
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
-/** Weeks of backlog, with a rough month count once it is long enough to sting. */
-function duration(weeks: number): string {
+/** The backlog line under the bulletin: a floor, since re-inspections and annual leave only add to it. */
+export function backlogText({ venues, weeks }: Backlog): string {
+  if (venues === 0) return 'The docket is clear. Nobody awaits judgement.';
   const months = Math.round((weeks * 7) / 30.44);
-  const backlog = `${plural(weeks, 'week')} of backlog`;
-  if (weeks < 6) return backlog;
-  if (months >= 12) return `${backlog} (well over a year)`;
-  return `${backlog} (roughly ${plural(months, 'month')})`;
-}
-
-/** The backlog line under the bulletin: how long, at best, until every waiting venue has been seen. */
-export function backlogText(backlog: Backlog): string {
-  const { underConsideration, toBeAssessed, weeks, clearsBy } = backlog;
-  if (weeks === 0)
-    return 'The backlog is clear: nothing Under Consideration or To Be Assessed. The Chairs are, briefly, out of excuses.';
-
-  const queue = [
-    underConsideration && `${underConsideration} ${tierLabel('under_consideration')}`,
-    toBeAssessed && `${toBeAssessed} ${tierLabel('to_be_assessed')}`,
-  ]
-    .filter(Boolean)
-    .join(' and ');
-  return (
-    `${queue} still on the docket. At ${INSPECTIONS_PER_WEEK} lunches a week that is ${duration(weeks)}, ` +
-    `clear by ${formatDate(clearsBy)} at the very earliest, and that is before re-checking the ` +
-    'Approved or anyone taking annual leave.'
-  );
+  const span =
+    weeks < 6
+      ? plural(weeks, 'week')
+      : months >= 12
+        ? `${plural(weeks, 'week')} (over a year)`
+        : `${plural(weeks, 'week')} (about ${plural(months, 'month')})`;
+  const who = venues === 1 ? '1 venue awaits' : `${venues} venues await`;
+  return `${who} judgement: ${span} at the very least, leave permitting.`;
 }

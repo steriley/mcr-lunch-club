@@ -59,7 +59,7 @@ const initialResultsCount = venuesData.filter((venue) =>
 const publicMapApiKey = getPublicMapApiKey();
 const bulletin = bulletinText(changesInIssue(recentTierChanges, issue));
 // Open venues only: the map venues leave out the permanently closed, who need no visit.
-const backlog = backlogText(backlogFor(venuesData, issue));
+const backlog = backlogText(backlogFor(venuesData));
 const { mode, hero, pillars } = buildSovereignBench(goldenCut, venuesData, inspectionsData);
 const heroSrcset = hero?.image ? imageSrcset(hero.image) : undefined;
 const isGoldenCut = mode === 'golden-cut';
