@@ -155,8 +155,6 @@ describe('bulletinText', () => {
 });
 
 describe('backlog', () => {
-  // The issue out on Wednesday 21 Oct 26 (23:59 BST).
-  const issue = bulletinIssue(new Date('2026-10-22T12:00:00Z'));
   const venues = (counts: Partial<Record<TierChange['toTier'], number>>) =>
     Object.entries(counts).flatMap(([tier, n]) =>
       Array.from({ length: n }, () => ({ tier: tier as TierChange['toTier'] }))
@@ -164,42 +162,37 @@ describe('backlog', () => {
 
   it('counts Under Consideration and To Be Assessed at two a week', () => {
     const backlog = backlogFor(
-      venues({ under_consideration: 14, to_be_assessed: 10, approved: 30, rejected: 5 }),
-      issue
+      venues({ under_consideration: 14, to_be_assessed: 10, approved: 30, rejected: 5 })
     );
-    assert.equal(backlog.underConsideration, 14);
-    assert.equal(backlog.toBeAssessed, 10);
-    assert.equal(backlog.weeks, 12);
-    assert.deepEqual(backlog.clearsBy, new Date('2027-01-13T22:59:00Z'));
+    assert.deepEqual(backlog, { venues: 24, weeks: 12 });
     assert.equal(
       backlogText(backlog),
-      '14 Under Consideration and 10 To Be Assessed still on the docket. At 2 lunches a week that is 12 weeks of backlog (roughly 3 months), clear by 13th Jan 27 at the very earliest, and that is before re-checking the Approved or anyone taking annual leave.'
+      '24 venues await judgement: 12 weeks (about 3 months) at the very least, leave permitting.'
     );
   });
 
-  it('rounds an odd venue up to a whole week and drops an empty tier', () => {
-    const backlog = backlogFor(venues({ to_be_assessed: 3 }), issue);
-    assert.equal(backlog.weeks, 2);
-    assert.match(
-      backlogText(backlog),
-      /^3 To Be Assessed still on the docket\. At 2 lunches a week that is 2 weeks of backlog, clear by 4th Nov 26/
+  it('rounds an odd venue up to a whole week and keeps short waits in weeks', () => {
+    assert.equal(
+      backlogText(backlogFor(venues({ to_be_assessed: 3 }))),
+      '3 venues await judgement: 2 weeks at the very least, leave permitting.'
     );
-    assert.match(
-      backlogText(backlogFor(venues({ under_consideration: 1 }), issue)),
-      /that is 1 week of backlog/
+    assert.equal(
+      backlogText(backlogFor(venues({ under_consideration: 1 }))),
+      '1 venue awaits judgement: 1 week at the very least, leave permitting.'
     );
   });
 
   it('owns up to a backlog of over a year', () => {
     assert.match(
-      backlogText(backlogFor(venues({ to_be_assessed: 110 }), issue)),
-      /that is 55 weeks of backlog \(well over a year\)/
+      backlogText(backlogFor(venues({ to_be_assessed: 110 }))),
+      /55 weeks \(over a year\)/
     );
   });
 
   it('celebrates an empty backlog', () => {
-    const backlog = backlogFor(venues({ approved: 3 }), issue);
-    assert.equal(backlog.weeks, 0);
-    assert.match(backlogText(backlog), /^The backlog is clear/);
+    assert.equal(
+      backlogText(backlogFor(venues({ approved: 3 }))),
+      'The docket is clear. Nobody awaits judgement.'
+    );
   });
 });
