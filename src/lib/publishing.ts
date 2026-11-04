@@ -66,7 +66,7 @@ export async function recordPendingChange(
 }
 
 /** The venue's current name, or null when it does not exist. */
-export async function venueNameOf(db: Database, venueId: string): Promise<string | null> {
+async function venueNameOf(db: Database, venueId: string): Promise<string | null> {
   try {
     const [row] = await db
       .select({ name: venues.name })
