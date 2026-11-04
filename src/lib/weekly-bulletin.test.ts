@@ -167,18 +167,18 @@ describe('backlog', () => {
     assert.deepEqual(backlog, { venues: 24, weeks: 12 });
     assert.equal(
       backlogText(backlog),
-      '24 venues in the Waiting Chamber: 12 weeks of lunching, minimum.'
+      'We have 24 venues in the Waiting Chamber: 12 weeks of lunching, minimum.'
     );
   });
 
   it('rounds an odd venue up to a whole week, in the singular for one', () => {
     assert.equal(
       backlogText(backlogFor(venues({ to_be_assessed: 3 }))),
-      '3 venues in the Waiting Chamber: 2 weeks of lunching, minimum.'
+      'We have 3 venues in the Waiting Chamber: 2 weeks of lunching, minimum.'
     );
     assert.equal(
       backlogText(backlogFor(venues({ under_consideration: 1 }))),
-      '1 venue in the Waiting Chamber: 1 week of lunching, minimum.'
+      'We have 1 venue in the Waiting Chamber: 1 week of lunching, minimum.'
     );
   });
 
