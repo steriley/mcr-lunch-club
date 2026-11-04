@@ -126,8 +126,8 @@ describe('POST /api/admin/venues/[id]/images', () => {
 
     const [, , venueId, photo, actor] = calls[0].arguments;
     assert.equal(venueId, VENUE_ID);
-    assert.deepEqual(photo.full, VP8X);
-    assert.deepEqual(photo.thumb, VP8);
+    assert.deepEqual(new Uint8Array(await photo.full!.arrayBuffer()), VP8X);
+    assert.deepEqual(new Uint8Array(await photo.thumb!.arrayBuffer()), VP8);
     assert.deepEqual([photo.width, photo.height, photo.caption], [29, 43, 'Top-down pizza']);
     assert.equal(actor.id, ADMIN.id);
     assert.equal(

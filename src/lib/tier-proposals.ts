@@ -3,7 +3,7 @@ import { user } from '@/db/auth-schema';
 import { tierProposals, venues, type TierProposalRow, type VenueRow } from '@/db/schema';
 import type { Database, Tx } from '@/lib/db-client';
 import { latestVerifiedInspection } from '@/lib/inspections';
-import { fail, ok, type Outcome } from '@/lib/outcome';
+import { fail, ok, publicChange, type Outcome } from '@/lib/outcome';
 import { isActiveChair } from '@/lib/roles';
 import { tierLabel, type TierValue } from '@/lib/tiers';
 import { actorName, type Actor } from '@/lib/venue-events';
@@ -165,7 +165,7 @@ export function approveProposal(
 
     await writeVenue(tx, proposal.venueId, { tier: proposal.proposedTier }, actor, now);
     // The most consequential public change there is: a venue moving tier.
-    return ok(decided, { action: 'Approve proposal', venueId: decided.venueId, when: 'queue' });
+    return ok(decided, publicChange('Approve proposal', decided.venueId));
   });
 }
 

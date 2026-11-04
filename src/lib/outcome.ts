@@ -36,6 +36,15 @@ export type Outcome<T, E extends string = string> =
       detail?: string;
     };
 
+/** A public change that waits for the Chairs to publish (`'queue'`), or builds the site at once (`'now'`). */
+export function publicChange(
+  action: string,
+  venueId: string | null,
+  when: PublicChange['when'] = 'queue'
+): PublicChange {
+  return { action, venueId, when };
+}
+
 export function ok<T>(value: T, published?: PublicChange): Outcome<T, never> {
   return published ? { ok: true, value, published } : { ok: true, value };
 }

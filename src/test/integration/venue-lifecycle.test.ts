@@ -18,6 +18,8 @@ import {
   type TestAdmin,
 } from './db';
 
+const asBlob = (bytes: Uint8Array | null) => (bytes ? new Blob([bytes.slice()]) : null);
+
 const lookup = async () => ({ distanceMetres: 480, durationSeconds: 400 });
 
 const input = (overrides: Record<string, unknown> = {}): VenueInput =>
@@ -392,12 +394,14 @@ describe('the venue lifecycle (database)', { skip: skipIntegration }, () => {
         photos,
         venueId,
         {
-          full: VP8X,
-          thumb: VP8,
+          full: asBlob(VP8X),
+          thumb: asBlob(VP8),
           width: 29,
           height: 43,
           caption: null,
           ...overrides,
+          ...('full' in overrides ? { full: asBlob(overrides.full as Uint8Array | null) } : {}),
+          ...('thumb' in overrides ? { thumb: asBlob(overrides.thumb as Uint8Array | null) } : {}),
         },
         sam
       );
@@ -478,6 +482,22 @@ describe('the venue lifecycle (database)', { skip: skipIntegration }, () => {
       assert.equal(photos.files.size, 0);
     });
 
+    it('refuses an oversized file from its size alone, without reading it', async () => {
+      const venueId = await createVenue();
+      const huge = new Blob([new Uint8Array(1)]);
+      Object.defineProperty(huge, 'size', { value: 800 * 1024 + 1 });
+      huge.arrayBuffer = async () => assert.fail('an oversized upload must not be buffered');
+      const refused = await venueLifecycle.addPhoto(
+        globalDb,
+        photos,
+        venueId,
+        { full: huge, thumb: asBlob(VP8), width: 29, height: 43, caption: null },
+        sam
+      );
+      assert.ok(!refused.ok && refused.error === 'invalid_photo');
+      assert.match(refused.detail ?? '', /the limit is 800 KB/);
+    });
+
     it('refuses a caption over 200 characters, storing nothing', async () => {
       const venueId = await createVenue();
       assert.deepEqual(await upload(venueId, { caption: 'x'.repeat(201) }), {
@@ -537,7 +557,7 @@ describe('the venue lifecycle (database)', { skip: skipIntegration }, () => {
         globalDb,
         racing,
         venueId,
-        { full: VP8X, thumb: VP8, width: 29, height: 43, caption: null },
+        { full: asBlob(VP8X), thumb: asBlob(VP8), width: 29, height: 43, caption: null },
         sam
       );
       assert.deepEqual(outcome, { ok: false, error: 'venue_not_found' });
@@ -640,7 +660,7 @@ describe('the venue lifecycle (database)', { skip: skipIntegration }, () => {
           db,
           photos,
           id,
-          { full: VP8X, thumb: VP8, width: 29, height: 43, caption: null },
+          { full: asBlob(VP8X), thumb: asBlob(VP8), width: 29, height: 43, caption: null },
           sam
         );
         assert.ok(added.ok);

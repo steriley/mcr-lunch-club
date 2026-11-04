@@ -4,7 +4,7 @@ import { isUniqueViolation } from '@/lib/db-errors';
 import type { Database, Tx } from '@/lib/db-client';
 import { INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import { londonDate } from '@/lib/london-date';
-import { fail, ok, type Outcome } from '@/lib/outcome';
+import { fail, ok, publicChange, type Outcome } from '@/lib/outcome';
 import { actorName, type Actor } from '@/lib/venue-events';
 import { ensureVisit } from '@/lib/visits';
 import type { InspectionOutcome } from '@/types';
@@ -38,7 +38,7 @@ export type VisitResult =
   | { result: 'waiting'; inspection: InspectionRow; startedNow: boolean; visit: VenueVisitRow }
   | { result: 'confirmed'; inspection: InspectionRow; confirmedNow: boolean; visit: VenueVisitRow };
 
-type VisitError =
+export type VisitError =
   | 'venue_not_found'
   /** A first press must say how the inspection went. */
   | 'outcome_required'
@@ -63,7 +63,7 @@ export async function refreshLastInspectionDate(
 
 /** An accepted press: it adds a visit (and perhaps an inspection) the public pages may show. */
 const visited = (venueId: string, value: VisitResult): VisitOutcome =>
-  ok(value, { action: 'Record visit', venueId, when: 'queue' });
+  ok(value, publicChange('Record visit', venueId));
 
 async function visitOnce(
   db: Database,

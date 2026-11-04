@@ -34,7 +34,7 @@ export interface StoredLocation {
   routeUpdatedAt: Date | null;
 }
 
-type RouteLookup = (to: LatLng) => Promise<WalkingRoute>;
+export type RouteLookup = (to: LatLng) => Promise<WalkingRoute>;
 
 const NO_ROUTE: RouteValues = { distanceMiles: null, walkingTimeMin: null, routeUpdatedAt: null };
 

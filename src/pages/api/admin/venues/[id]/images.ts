@@ -11,9 +11,8 @@ export const prerender = false;
 const positiveInt = (value: FormDataEntryValue | null) =>
   typeof value === 'string' && /^\d{1,5}$/.test(value) ? Number(value) : null;
 
-async function bytesOf(part: FormDataEntryValue | null): Promise<Uint8Array | null> {
-  return part instanceof Blob ? new Uint8Array(await part.arrayBuffer()) : null;
-}
+/** The uploaded file, unread: the lifecycle checks its size before buffering it. */
+const fileOf = (part: FormDataEntryValue | null) => (part instanceof Blob ? part : null);
 
 /**
  * POST /api/admin/venues/[id]/images: one photo as two WebP variants
@@ -39,8 +38,8 @@ export const POST = adminRoute(
       photoStore(),
       params.id,
       {
-        full: await bytesOf(form.get('full')),
-        thumb: await bytesOf(form.get('thumb')),
+        full: fileOf(form.get('full')),
+        thumb: fileOf(form.get('thumb')),
         width: positiveInt(form.get('width')),
         height: positiveInt(form.get('height')),
         caption: typeof caption === 'string' ? caption : null,
