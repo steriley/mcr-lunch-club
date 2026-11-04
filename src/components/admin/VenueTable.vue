@@ -78,6 +78,17 @@ function sortIndicator(key: SortKey) {
   return sortAscending.value ? '↑' : '↓';
 }
 
+// The whole row opens the venue. This is a click handler, not a stretched ::after link:
+// browsers that ignore position: relative on <tr> (older WebKit) let every row's overlay
+// cover the page, so a tap anywhere (the search box included) opened the last row.
+function openRow(event: MouseEvent, venue: VenueRow) {
+  if ((event.target as Element).closest('a, button, input, select, textarea, label')) return;
+  if (window.getSelection()?.toString()) return;
+  const href = `/admin/venues/${venue.id}`;
+  if (event.metaKey || event.ctrlKey) window.open(href, '_blank', 'noopener');
+  else window.location.assign(href);
+}
+
 // Keep filters in the URL so a filtered list can be bookmarked or shared.
 onMounted(() => {
   const params = new URLSearchParams(window.location.search);
@@ -176,12 +187,13 @@ const inputClass =
             <tr
               v-for="venue in visibleRows"
               :key="venue.id"
-              class="relative cursor-pointer transition-colors hover:bg-card focus-within:bg-card"
+              class="cursor-pointer transition-colors hover:bg-card focus-within:bg-card"
+              @click="openRow($event, venue)"
             >
               <td class="px-4 py-3">
                 <a
                   :href="`/admin/venues/${venue.id}`"
-                  class="font-semibold text-ink after:absolute after:inset-0 after:content-[''] hover:underline focus:outline-none focus-visible:after:ring-2 focus-visible:after:ring-inset focus-visible:after:ring-navy"
+                  class="rounded font-semibold text-ink hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-navy"
                   >{{ venue.name }}</a
                 >
                 <div class="text-xs text-graphite">{{ venue.slug }}</div>

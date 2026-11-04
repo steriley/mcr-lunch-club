@@ -442,6 +442,32 @@ test.describe('Chairs’ Area', () => {
     monitor.errors.length = 0; // the stubbed 500 is logged by the page as a console error only
     expect(monitor.violations).toEqual([]);
   });
+
+  test('the venue ledger search box stays usable, and a row opens its venue', async ({
+    page,
+    monitor,
+  }) => {
+    await signIn(page);
+    await visit(page, '/admin/venues');
+    // Older WebKit ignores position: relative on <tr>. Mimic that, so nothing in a row can rely
+    // on it (a stretched-link overlay once covered the page and every tap opened the last venue).
+    await page.evaluate(() => {
+      for (const row of document.querySelectorAll('tbody tr'))
+        (row as HTMLElement).style.position = 'static';
+    });
+    const search = page.getByRole('searchbox');
+    await search.click();
+    await expect(page).toHaveURL(/\/admin\/venues(\?.*)?$/);
+    await search.fill('zz-no-such-venue');
+    await expect(page.getByText('No venues match the current filters.')).toBeVisible();
+    await search.fill('');
+
+    const firstRow = page.locator('tbody tr').first();
+    const href = await firstRow.locator('a').first().getAttribute('href');
+    await firstRow.locator('td').last().click();
+    await expect(page).toHaveURL(new RegExp(`${href}$`));
+    expect(monitor.violations).toEqual([]);
+  });
 });
 
 test.describe('Visits and field notes', () => {
