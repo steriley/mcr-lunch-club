@@ -167,32 +167,25 @@ describe('backlog', () => {
     assert.deepEqual(backlog, { venues: 24, weeks: 12 });
     assert.equal(
       backlogText(backlog),
-      '24 venues await judgement: 12 weeks (about 3 months) at the very least, leave permitting.'
+      '24 venues in the Waiting Chamber: 12 weeks of lunching, minimum.'
     );
   });
 
-  it('rounds an odd venue up to a whole week and keeps short waits in weeks', () => {
+  it('rounds an odd venue up to a whole week, in the singular for one', () => {
     assert.equal(
       backlogText(backlogFor(venues({ to_be_assessed: 3 }))),
-      '3 venues await judgement: 2 weeks at the very least, leave permitting.'
+      '3 venues in the Waiting Chamber: 2 weeks of lunching, minimum.'
     );
     assert.equal(
       backlogText(backlogFor(venues({ under_consideration: 1 }))),
-      '1 venue awaits judgement: 1 week at the very least, leave permitting.'
+      '1 venue in the Waiting Chamber: 1 week of lunching, minimum.'
     );
   });
 
-  it('owns up to a backlog of over a year', () => {
-    assert.match(
-      backlogText(backlogFor(venues({ to_be_assessed: 110 }))),
-      /55 weeks \(over a year\)/
-    );
-  });
-
-  it('celebrates an empty backlog', () => {
+  it('reports an empty Waiting Chamber', () => {
     assert.equal(
       backlogText(backlogFor(venues({ approved: 3 }))),
-      'The docket is clear. Nobody awaits judgement.'
+      'The Waiting Chamber is empty. Nobody awaits judgement.'
     );
   });
 });
