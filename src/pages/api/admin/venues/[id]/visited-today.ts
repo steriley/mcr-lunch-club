@@ -30,7 +30,7 @@ export const POST = adminRoute(
     action: 'Record visit',
     publish: 'queue',
     venueParam: 'id',
-    params: { id: 'Venue not found.' },
+    params: { id: 'venue_not_found' },
     body: visitInputSchema,
   },
   async ({ params, body, actor }) => {

@@ -21,6 +21,7 @@ import {
   validationError,
 } from './admin-api';
 import { auth } from './auth';
+import { fail, ok } from './outcome';
 import { quietly, restoreStubs, stubDb } from '../test/route-helpers';
 
 function silenceErrors<T>(fn: () => T): T {
@@ -251,8 +252,8 @@ describe('adminRoute', () => {
     {
       action: 'Test',
       params: {
-        id: 'Thing not found.',
-        userId: { schema: userIdParam, notFound: 'User not found.' },
+        id: 'venue_not_found',
+        userId: { schema: userIdParam, notFound: 'user_not_found' },
       },
       body: z.object({ name: z.string().min(1, 'Name it.') }),
     },
@@ -268,7 +269,7 @@ describe('adminRoute', () => {
 
       signedInAs(chair);
       const badId = await call(route, { id: 'nope', userId: '' }, { name: 'x' });
-      assert.deepEqual([badId.status, await badId.json()], [404, { error: 'Thing not found.' }]);
+      assert.deepEqual([badId.status, await badId.json()], [404, { error: 'Venue not found.' }]);
       const badUser = await call(route, { id: ID, userId: '' }, { name: 'x' });
       assert.deepEqual([badUser.status, await badUser.json()], [404, { error: 'User not found.' }]);
       const badBody = await call(route, { id: ID, userId: 'u' }, { name: '' });
@@ -324,6 +325,146 @@ describe('adminRoute', () => {
     }
   });
 
+  describe('Outcome handlers', () => {
+    afterEach(() => {
+      (auth.api as any).getSession = originalGetSession;
+      restoreStubs();
+    });
+
+    it('answers a success with its value and the route status', async () => {
+      signedInAs(chair);
+      const created = adminRoute({ action: 'Create', status: 201 }, async () => ok({ id: 1 }));
+      const response = await call(created);
+      assert.deepEqual([response.status, await response.json()], [201, { id: 1 }]);
+      assert.equal((await call(adminRoute({ action: 'Read' }, async () => ok({})))).status, 200);
+    });
+
+    it('maps an error code through the central table, with its fields', async () => {
+      signedInAs(chair);
+      const conflict = await call(adminRoute({ action: 'Save' }, async () => fail('slug_taken')));
+      assert.deepEqual(
+        [conflict.status, await conflict.json()],
+        [
+          409,
+          {
+            error: 'That slug is already in use.',
+            fields: { slug: 'That slug is already in use. Choose another.' },
+          },
+        ]
+      );
+      const missing = await call(
+        adminRoute({ action: 'Get' }, async () => fail('venue_not_found'))
+      );
+      assert.deepEqual(
+        [missing.status, await missing.json()],
+        [404, { error: 'Venue not found.' }]
+      );
+    });
+
+    it('lets a route override a code, and a failure carry its own message', async () => {
+      signedInAs(chair);
+      const overridden = await call(
+        adminRoute(
+          { action: 'Get', errors: { venue_not_found: { status: 410, message: 'Gone.' } } },
+          async () => fail('venue_not_found')
+        )
+      );
+      assert.deepEqual([overridden.status, await overridden.json()], [410, { error: 'Gone.' }]);
+
+      const detailed = await call(
+        adminRoute({ action: 'Route' }, async () => fail('route_rate_limited', 'Try again soon.'))
+      );
+      assert.deepEqual(
+        [detailed.status, await detailed.json()],
+        [429, { error: 'Try again soon.' }]
+      );
+    });
+
+    it('answers a logged 500 for a code nothing maps', async () => {
+      signedInAs(chair);
+      const response = await quietly(() =>
+        call(adminRoute({ action: 'Oops' }, async () => fail('made_up_code')))
+      );
+      assert.equal(response.status, 500);
+    });
+  });
+
+  describe('published changes', () => {
+    const originalFetch = globalThis.fetch;
+    let hookCalls: string[];
+
+    beforeEach(() => {
+      hookCalls = [];
+      globalThis.fetch = (async (url: URL) => {
+        hookCalls.push(String(url));
+        return new Response('{}', { status: 201 });
+      }) as typeof fetch;
+      process.env.DEPLOY_HOOK_URL = 'https://api.vercel.com/v1/integrations/deploy/prj_x/secret';
+    });
+
+    afterEach(() => {
+      (auth.api as any).getSession = originalGetSession;
+      globalThis.fetch = originalFetch;
+      process.env.DEPLOY_HOOK_URL = '';
+      restoreStubs();
+    });
+
+    const settle = () => new Promise((resolve) => setImmediate(resolve));
+    const publishing = (when: 'queue' | 'now', venueName?: string | null) =>
+      adminRoute({ action: 'Change' }, async () =>
+        ok(
+          {},
+          { action: 'Change', venueId: ID, ...(venueName === undefined ? {} : { venueName }), when }
+        )
+      );
+
+    it('records exactly one pending change with the venue the operation named', async () => {
+      signedInAs(chair);
+      const inserts = stubDb('insert');
+      stubDb('select', [{ total: 2 }]);
+      const response = await call(publishing('queue'));
+      await settle();
+
+      assert.equal(response.headers.get('X-Unpublished-Changes'), '2');
+      const recorded = inserts.filter((c) => c.method === 'values').map((c) => c.args[0]);
+      assert.deepEqual(recorded, [
+        { action: 'Change', venueId: ID, venueName: null, actorId: 'admin-1' },
+      ]);
+      assert.equal(hookCalls.length, 0);
+    });
+
+    it('keeps the name the operation gave, for a venue that is about to go', async () => {
+      signedInAs(chair);
+      const inserts = stubDb('insert');
+      stubDb('select', [{ total: 1 }]);
+      await call(publishing('queue', "Albert's Schloss"));
+      assert.equal(
+        (inserts.find((c) => c.method === 'values')?.args[0] as any).venueName,
+        "Albert's Schloss"
+      );
+    });
+
+    it('also asks for a build, off the response path, when the change is for now', async () => {
+      signedInAs(chair);
+      stubDb('insert');
+      stubDb('select', [{ total: 1 }]);
+      await call(publishing('now'));
+      await settle();
+      assert.equal(hookCalls.length, 1);
+    });
+
+    it('records nothing for a failure or an outcome that published nothing', async () => {
+      const inserts = stubDb('insert');
+      stubDb('select', [{ total: 1 }]);
+      signedInAs(chair);
+      await call(adminRoute({ action: 'Quiet' }, async () => ok({})));
+      await call(adminRoute({ action: 'Refused' }, async () => fail('venue_not_found')));
+      await settle();
+      assert.equal(inserts.length, 0);
+      assert.equal(hookCalls.length, 0);
+    });
+  });
+
   describe('publishing routes', () => {
     const originalFetch = globalThis.fetch;
     let hookCalls: string[];
@@ -346,7 +487,7 @@ describe('adminRoute', () => {
 
     const responding = (publish: 'queue' | 'now' | undefined, status = 200) =>
       adminRoute(
-        { action: 'Respond', publish, venueParam: 'id', params: { id: 'Venue not found.' } },
+        { action: 'Respond', publish, venueParam: 'id', params: { id: 'venue_not_found' } },
         async () => jsonResponse({}, status)
       );
     const settle = () => new Promise((resolve) => setImmediate(resolve));

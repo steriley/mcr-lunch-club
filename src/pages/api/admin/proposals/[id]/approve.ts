@@ -11,7 +11,7 @@ import {
 export const prerender = false;
 
 export const POST = adminRoute(
-  { action: 'Approve proposal', publish: 'queue', params: { id: 'Proposal not found.' } },
+  { action: 'Approve proposal', publish: 'queue', params: { id: 'proposal_not_found' } },
   async ({ params, actor, publishedVenue }) => {
     const result = await approveProposal(db, params.id, actor);
     if (!result.ok)

@@ -24,7 +24,7 @@ export const POST = adminRoute(
   {
     action: 'Decline proposal',
 
-    params: { id: 'Proposal not found.' },
+    params: { id: 'proposal_not_found' },
     body: declineSchema,
   },
   async ({ params, body, actor }) => {

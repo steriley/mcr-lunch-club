@@ -11,7 +11,7 @@ const NOT_YOURS = 'Only the Chair who made this visit can change its notes.';
 export const PATCH = adminRoute(
   {
     action: 'Edit field note',
-    params: { id: 'Note not found.' },
+    params: { id: 'note_not_found' },
     body: noteInputSchema,
   },
   async ({ params, body, actor }) => {
@@ -24,7 +24,7 @@ export const PATCH = adminRoute(
 
 /** DELETE /api/admin/notes/[id]: delete a note on your own visit. */
 export const DELETE = adminRoute(
-  { action: 'Delete field note', params: { id: 'Note not found.' } },
+  { action: 'Delete field note', params: { id: 'note_not_found' } },
   async ({ params, actor }) => {
     const outcome = await deleteNote(db, params.id, actor);
     if (outcome.result === 'not_found') return jsonError(404, 'Note not found.');

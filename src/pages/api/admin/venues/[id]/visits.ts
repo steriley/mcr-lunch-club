@@ -12,7 +12,7 @@ export const prerender = false;
 export const POST = adminRoute(
   {
     action: 'Log visit',
-    params: { id: 'Venue not found.' },
+    params: { id: 'venue_not_found' },
     body: visitInputSchema(),
   },
   async ({ params, body, actor }) => {

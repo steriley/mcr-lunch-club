@@ -7,7 +7,7 @@ import { db } from '@/lib/db';
 
 export const prerender = false;
 
-const NOT_FOUND = 'Bribery record not found.';
+const NOT_FOUND = 'bribery_not_found' as const;
 const notFound = () => jsonError(404, NOT_FOUND);
 
 export const PUT = adminRoute(
