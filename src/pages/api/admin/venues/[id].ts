@@ -34,7 +34,9 @@ export const PUT = adminRoute(
 
 export const DELETE = adminRoute(
   { action: 'Delete venue', publish: 'queue', params: { id: NOT_FOUND } },
-  async ({ params }) => {
+  async ({ params, publishedVenue }) => {
+    // Name the venue before it goes: the pending change keeps the name.
+    await publishedVenue(params.id);
     // Collect the photos first: deleting the venue cascades to their rows.
     const images = await db
       .select({ fullUrl: venueImages.fullUrl, thumbUrl: venueImages.thumbUrl })

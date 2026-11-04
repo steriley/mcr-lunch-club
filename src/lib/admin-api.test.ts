@@ -363,6 +363,7 @@ describe('adminRoute', () => {
       assert.deepEqual(inserts.find((c) => c.method === 'values')?.args[0], {
         action: 'Respond',
         venueId: ID,
+        venueName: null,
         actorId: 'admin-1',
       });
       assert.equal(hookCalls.length, 0);

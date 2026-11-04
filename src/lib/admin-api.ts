@@ -5,7 +5,12 @@ import { waitUntil } from '@vercel/functions';
 import { auth, type AuthSession } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { getAuthEnvironment } from '@/lib/env';
-import { countPendingChanges, publishNow, recordPendingChange } from '@/lib/publishing';
+import {
+  countPendingChanges,
+  publishNow,
+  recordPendingChange,
+  venueNameOf,
+} from '@/lib/publishing';
 import { hasAdminRole, isBanned } from '@/lib/roles';
 import type { Actor } from '@/lib/venue-events';
 
@@ -146,6 +151,12 @@ export interface AdminRouteContext<P extends string, B> {
   body: B;
   /** The signed-in Chair. */
   actor: Actor & { email: string };
+  /**
+   * With `publish`: names the venue the change concerns, overriding `venueParam`.
+   * For a route whose param is not a venue id, or one that deletes the venue:
+   * call it (and await it) before the venue goes, as the name is read now.
+   */
+  publishedVenue: (venueId: string) => Promise<void>;
 }
 
 /**
@@ -179,16 +190,27 @@ export function adminRoute<P extends string = never, S extends z.ZodType | undef
     }
 
     const actor = { id: session.user.id, name: session.user.name, email: session.user.email };
+    let venue: { id: string; name: string | null } | undefined;
+    const publishedVenue = async (venueId: string) => {
+      venue = { id: venueId, name: await venueNameOf(db, venueId) };
+    };
     let response: Response;
     try {
-      response = await handler({ request, url, params, body: body as never, actor });
+      response = await handler({
+        request,
+        url,
+        params,
+        body: body as never,
+        actor,
+        publishedVenue,
+      });
     } catch (error) {
       return spec.onError?.(error) ?? serverError(spec.action, error);
     }
     if (spec.publish && response.ok) {
       await recordPublish(
         spec,
-        spec.venueParam ? params[spec.venueParam] : null,
+        venue ?? (spec.venueParam ? { id: params[spec.venueParam] } : null),
         actor.id,
         response
       );
@@ -206,12 +228,17 @@ const UNPUBLISHED_HEADER = 'X-Unpublished-Changes';
  */
 async function recordPublish(
   spec: { action: string; publish?: 'queue' | 'now' },
-  venueId: string | null,
+  venue: { id: string; name?: string | null } | null,
   actorId: string,
   response: Response
 ): Promise<void> {
   try {
-    await recordPendingChange(db, { action: spec.action, venueId, actorId });
+    await recordPendingChange(db, {
+      action: spec.action,
+      venueId: venue?.id ?? null,
+      venueName: venue?.name,
+      actorId,
+    });
     response.headers.set(UNPUBLISHED_HEADER, String(await countPendingChanges(db)));
   } catch (error) {
     console.error(

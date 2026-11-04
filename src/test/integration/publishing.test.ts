@@ -60,20 +60,24 @@ describe('batch publishing (database)', { skip: skipIntegration }, () => {
     assert.equal((await db.select().from(publishState)).length, 1);
   });
 
-  it('keeps the change but forgets the venue when the venue is deleted', async () => {
+  it('still names a deleted venue from the snapshot taken when the change was recorded', async () => {
     const db = await testDb();
-    await recordPendingChange(db, { action: 'Update venue', venueId, actorId: sam.id });
+    await recordPendingChange(db, { action: 'Delete venue', venueId, actorId: sam.id });
     await db.execute(sql`delete from venues where id = ${venueId}`);
     const status = await getPublishStatus(db);
+    const [change] = status.changes;
     assert.deepEqual(
-      [
-        status.count,
-        status.changes[0].venueId,
-        status.changes[0].venueName,
-        status.changes[0].actorName,
-      ],
-      [1, null, null, 'Sam']
+      [status.count, change.venueId, change.venueName, change.actorName],
+      [1, null, 'Chip Shop', 'Sam']
     );
+  });
+
+  it('names a renamed venue by its current name', async () => {
+    const db = await testDb();
+    await recordPendingChange(db, { action: 'Update venue', venueId, actorId: sam.id });
+    await db.execute(sql`update venues set name = 'Chippy' where id = ${venueId}`);
+    const [change] = (await getPublishStatus(db)).changes;
+    assert.equal(change.venueName, 'Chippy');
   });
 
   it('reports publishing after an accepted request, then idle once the build settles', async () => {

@@ -355,6 +355,8 @@ export const pendingPublishChanges = pgTable(
     // The admin route's action label, e.g. "Update venue".
     action: text('action').notNull(),
     venueId: uuid('venue_id').references(() => venues.id, { onDelete: 'set null' }),
+    // The venue's name when the change was recorded, so a deleted venue is still named.
+    venueName: text('venue_name'),
     actorId: text('actor_id')
       .notNull()
       .references(() => user.id),

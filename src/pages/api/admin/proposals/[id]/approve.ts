@@ -11,11 +11,12 @@ import {
 export const prerender = false;
 
 export const POST = adminRoute(
-  { action: 'approve proposal', publish: 'queue', params: { id: 'Proposal not found.' } },
-  async ({ params, actor }) => {
+  { action: 'Approve proposal', publish: 'queue', params: { id: 'Proposal not found.' } },
+  async ({ params, actor, publishedVenue }) => {
     const result = await approveProposal(db, params.id, actor);
     if (!result.ok)
       return jsonError(PROPOSAL_ERROR_STATUS[result.error], PROPOSAL_ERROR_MESSAGES[result.error]);
+    await publishedVenue(result.value.venueId);
     notifyChairs(decisionEvent(result.value));
     return jsonResponse({ proposal: result.value });
   }
