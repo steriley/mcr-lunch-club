@@ -1,0 +1,1 @@
+ALTER TABLE "pending_publish_changes" ADD COLUMN "venue_name" text;

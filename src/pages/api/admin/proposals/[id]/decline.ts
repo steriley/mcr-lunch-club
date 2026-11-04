@@ -22,7 +22,7 @@ const declineSchema = z.object({
 
 export const POST = adminRoute(
   {
-    action: 'decline proposal',
+    action: 'Decline proposal',
 
     params: { id: 'Proposal not found.' },
     body: declineSchema,

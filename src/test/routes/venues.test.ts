@@ -339,7 +339,11 @@ describe('/api/admin/venues/[id]', () => {
       try {
         const response = await quietly(() => run(byId.DELETE, ctx('DELETE', VENUE_ID)));
         assert.equal(response.status, 200, 'a failed blob delete does not fail the venue delete');
-        assert.deepEqual(order, ['select', 'delete', 'del']);
+        assert.deepEqual(
+          order,
+          ['select', 'select', 'delete', 'del'],
+          'the venue is named, then its photos collected, before the delete'
+        );
         assert.deepEqual(deleted, [[owned, ownedThumb]]);
       } finally {
         Object.assign(database, originalDb);

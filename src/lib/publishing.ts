@@ -47,13 +47,37 @@ export interface PublishStatus {
 
 export async function recordPendingChange(
   db: Database,
-  change: { action: string; venueId?: string | null; actorId: string }
+  change: { action: string; venueId?: string | null; venueName?: string | null; actorId: string }
 ): Promise<void> {
+  const venueId = change.venueId ?? null;
+  // The name is a snapshot, so it survives the venue being deleted.
+  const venueName =
+    change.venueName !== undefined
+      ? change.venueName
+      : venueId
+        ? await venueNameOf(db, venueId)
+        : null;
   await db.insert(pendingPublishChanges).values({
     action: change.action,
-    venueId: change.venueId ?? null,
+    venueId,
+    venueName,
     actorId: change.actorId,
   });
+}
+
+/** The venue's current name, or null when it does not exist. */
+export async function venueNameOf(db: Database, venueId: string): Promise<string | null> {
+  try {
+    const [row] = await db
+      .select({ name: venues.name })
+      .from(venues)
+      .where(eq(venues.id, venueId))
+      .limit(1);
+    return row?.name ?? null;
+  } catch {
+    // The name is a nicety; the change is still recorded against the id.
+    return null;
+  }
 }
 
 export async function countPendingChanges(db: Database): Promise<number> {
@@ -135,7 +159,7 @@ export async function getPublishStatus(db: Database, now = new Date()): Promise<
       id: pendingPublishChanges.id,
       action: pendingPublishChanges.action,
       venueId: pendingPublishChanges.venueId,
-      venueName: venues.name,
+      venueName: sql<string | null>`coalesce(${venues.name}, ${pendingPublishChanges.venueName})`,
       actorName: user.name,
       createdAt: pendingPublishChanges.createdAt,
     })

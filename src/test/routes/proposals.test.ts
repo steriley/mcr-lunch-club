@@ -81,9 +81,14 @@ describe('tier proposal endpoints', () => {
         },
       ],
     ]);
-    stubDb('insert', []);
+    const inserts = stubDb('insert', []);
     const response = await run(approve, ctx(PROPOSAL_ID));
     assert.equal(response.status, 200);
+    const recorded = inserts
+      .filter((call) => call.method === 'values')
+      .map((call) => call.args[0] as any)
+      .find((values) => values.action === 'Approve proposal');
+    assert.equal(recorded?.venueId, VENUE_ID);
     const sets = updates.filter((call) => call.method === 'set').map((call) => call.args[0] as any);
     assert.equal(sets[0].status, 'approved');
     assert.equal(sets[0].decidedBy, ADMIN.id);
