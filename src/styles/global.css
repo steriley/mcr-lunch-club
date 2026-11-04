@@ -1016,6 +1016,48 @@
   border-color: var(--color-action-hover);
 }
 
+.copy-link {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-action-outline);
+  border-radius: 999px;
+  color: var(--color-deep-ink);
+  background: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.copy-link .icon {
+  font-size: 20px;
+}
+
+.copy-link:hover,
+.copy-link.is-copied {
+  background: var(--color-action);
+  border-color: var(--color-action);
+  color: var(--color-action-ink);
+}
+
+.copy-link .copy-link-done,
+.copy-link.is-copied .copy-link-idle {
+  display: none;
+}
+
+.copy-link.is-copied .copy-link-done {
+  display: inline-block;
+}
+
+.copy-link:focus-visible {
+  outline: 2px solid var(--ledger-gold);
+  outline-offset: 2px;
+}
+
 .dossier-action:focus-visible {
   outline: 2px solid var(--ledger-gold);
   outline-offset: 2px;

@@ -219,6 +219,11 @@ test.describe('public pages', () => {
     expect(blocks.length, 'JSON-LD blocks on the venue page').toBeGreaterThan(0);
     const parsed = blocks.map((block) => JSON.parse(block));
     for (const data of parsed) expect(data['@type']).toBeTruthy();
+    // The copy-link button puts this page's URL on the clipboard (installed apps have no address bar).
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.locator('[data-copy-link]').click();
+    await expect(page.locator('[data-copy-link-status]')).toHaveText('Link copied');
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(page.url());
     const trail = parsed.find((data) => data['@type'] === 'BreadcrumbList');
     expect(trail, 'BreadcrumbList JSON-LD on the venue page').toBeTruthy();
     expect(trail.itemListElement.map((item: { position: number }) => item.position)).toEqual([
