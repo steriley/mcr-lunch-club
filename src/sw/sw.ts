@@ -106,7 +106,7 @@ const tiles = new CacheFirst({
     // The tile layer asks with CORS (crossOrigin: true), so a tile is a real 200, not an opaque
     // response that Chromium would count as several MB against the quota.
     new CacheableResponsePlugin({ statuses: [200] }),
-    new ExpirationPlugin({ maxEntries: 2000, maxAgeSeconds: 30 * DAY, purgeOnQuotaError: true }),
+    new ExpirationPlugin({ maxEntries: 1500, maxAgeSeconds: 30 * DAY, purgeOnQuotaError: true }),
   ],
 });
 

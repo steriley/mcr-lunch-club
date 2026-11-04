@@ -4,14 +4,19 @@
 
 Welcome to the official repository of the **Manchester Lunch Club Map App**.
 
+**Contents:** [Concept](#️-concept--articles-of-governance) · [Architecture](#️-architecture) ·
+[Getting started](#-getting-started) · [Admin setup](#admin-setup) · [Deploying](#deploying-to-vercel-runbook) ·
+[Offline mode](#offline-mode-and-installing-the-app) · [Push notifications](#push-notifications-for-chairs) ·
+[Operating notes](#operating-notes) · [Project structure](#-project-structure)
+
 ---
 
 ## 🏛️ Concept & Articles of Governance
 
 - **The Base Datum**: Crown Square / Hardman Square, Spinningfields (`53.478997°N, -2.252024°W`).
 - **Walking-Time Rings**: 5, 10, 15, 20, and 25-minute pedestrian rings and the 2.5-mile boundary, in one quiet grey with their minutes printed on the ring. A switch under the map's zoom buttons hides them, and the choice is remembered.
-- **The 2.5-Mile Boundary**: Delineates the maximum authorized perimeter for civilized municipal dining (with Butty's Booth and Rusholme Chippy marking the frontier at 2.2 miles).
-- **The Sacred Two-Visit Rule**: No venue may enter **Approved** on a single visit. Two distinct, satisfactory audits conducted under peak duress are required.
+- **The 2.5-Mile Boundary**: Delineates the maximum authorized perimeter for civilized municipal dining (Rusholme Chippy, about two miles out as the crow flies, currently marks the frontier).
+- **The Sacred Two-Chair Rule**: No venue may enter **Approved** on one Chair's word. A dual-verified inspection is required: two different Chairs press **Visited today** on the same day. Every tier change also needs a second Chair to approve it.
 - **The Guillotine Clause**: A single sub-par inspection triggers swift demotion to **Rejected** or **If We Must**.
 - **No Member Voting**: The Chairs maintain impartial authority. Members may petition and suggest, but verdicts belong strictly to the tribunal.
 - **The Hall of Shame**: Incorruptible register tracking attempted bribery (e.g. unsolicited chicken tenders or illicit cold San Pellegrino cans).
@@ -20,27 +25,32 @@ Welcome to the official repository of the **Manchester Lunch Club Map App**.
 
 ## 🛠️ Architecture
 
-Built on **Astro 7** on Vercel (functions in `lhr1`, next to the Neon database in London) with targeted **Vue 3 islands** hydrated only where interactive client state is required. Venue and Hall of Shame content lives in **Neon Postgres** and is edited by the Chairs in the admin area (`/admin`); public pages only show venues that pass the visibility rule in `src/lib/visibility.ts` (an approved tier and a location).
+Built on **Astro 7** on Vercel (functions in `lhr1`, next to the Neon database in London) with targeted **Vue 3 islands** hydrated only where interactive client state is required. Venue and Hall of Shame content lives in **Neon Postgres** and is edited by the Chairs in the admin area (`/admin`); public pages only show venues that pass the visibility rule in `src/lib/visibility.ts`: a tier (set by an approved proposal), coordinates, and not permanently closed, unless the tier is Gone But Not Forgotten.
 
-The public pages are **prerendered**: they read the database when the site is built and are served as static files, so visitors never wait on Neon. Admin saves that change what the public sees (each `adminRoute` declares `publish`) do not rebuild straight away: they **record a pending change** (`src/lib/publishing.ts`), and a bar across the Chairs' Area lists what is unpublished with a **Publish now** button that calls the Vercel Deploy Hook (`src/lib/rebuild.ts`). Closing or reopening a venue publishes at once. A pending change clears only when a production build completes, whatever started it (the button, a cron or a push to `main`): `vercel.json` runs `pnpm publish:mark` first, which records the build's start by the database's clock, and `pnpm publish:settle` last, which deletes the changes saved before that time. A change saved during a build stays pending, and a failed build leaves everything pending. A nightly cron (05:00 UTC, `src/pages/api/cron/publish-pending.ts`) publishes anything still waiting, and another rebuilds the site on Wednesday evenings for the new weekly bulletin (`src/pages/api/cron/weekly-bulletin.ts`). Without a `DEPLOY_HOOK_URL` (local runs) changes stay pending, since only a production build clears them. Only the Chairs' Area, `/api/*` and the sign-in page run on demand.
+The public pages are **prerendered**: they read the database when the site is built and are served as static files, so visitors never wait on Neon. Admin saves that change what the public sees (each `adminRoute` declares `publish`) do not rebuild straight away: they **record a pending change** (`src/lib/publishing.ts`), and a bar across the Chairs' Area lists what is unpublished with a **Publish now** button that calls the Vercel Deploy Hook (`src/lib/rebuild.ts`). Closing or reopening a venue publishes at once. A pending change clears only when a production build completes, whatever started it (the button, a cron or a push to `main`): `vercel.json` runs `pnpm publish:mark` first, which records the build's start by the database's clock, and `pnpm publish:settle` last, which deletes the changes saved before that time. A change saved during a build stays pending, and a failed build leaves everything pending. A nightly cron (05:00 UTC, `src/pages/api/cron/publish-pending.ts`) publishes anything still waiting, and another rebuilds the site at 00:00 UTC on Thursdays, just after the weekly bulletin's 23:59 Wednesday issue (`src/pages/api/cron/weekly-bulletin.ts`). Without a `DEPLOY_HOOK_URL` (local runs) changes stay pending, since only a production build clears them. Only the Chairs' Area (sign-in included) and `/api/*` run on demand.
 
-Every public page carries a canonical URL and Open Graph / Twitter card tags (`src/layouts/Layout.astro`), so links shared in a chat show a preview: venue pages use their photo, everything else `public/brand/og-default.png`. Venue pages also carry schema.org `Restaurant` JSON-LD (`src/lib/structured-data.ts`) for search results, and `public/manifest.webmanifest` makes the site an installable app that works offline (see "Offline mode and installing the app"), with Near Me and the Chairs' Area as shortcuts. `@astrojs/sitemap` writes `/sitemap-index.xml` at build time, and `vercel.json` sets the security headers (`nosniff`, no framing, referrer and permissions policies; geolocation stays allowed for Near Me).
+Every public page carries a canonical URL and Open Graph / Twitter card tags (`src/layouts/Layout.astro`), so links shared in a chat show a preview: a venue page uses its photo, or a card drawn at build time (`/og/venues/<slug>.png`, `src/lib/og-card.ts`) when it has none; everything else uses `public/brand/og-default.png`. Venue pages also carry schema.org `Restaurant` JSON-LD (`src/lib/structured-data.ts`) for search results, and `public/manifest.webmanifest` makes the site an installable app that works offline (see "Offline mode and installing the app"), with Near Me and the Chairs' Area as shortcuts. `@astrojs/sitemap` writes `/sitemap-index.xml` at build time, and `vercel.json` sets the security headers (`nosniff`, no framing, referrer and permissions policies; geolocation stays allowed for Near Me).
 
-- **Content-Security-Policy**: `security.csp` in `astro.config.mjs`. Astro hashes every script and style it emits, so an injected inline script won't run; images may come only from the site, CARTO tiles and Vercel Blob, and fonts only from the site itself (self-hosted WOFF2 in `public/fonts/`, icons as inline SVG from `src/lib/icons.ts`). Prerendered pages carry it as a `<meta>` tag, on-demand pages as a header. Inline `style` attributes are allowed (Vue renders tier colours with them). The theme script's hash is added from `src/lib/theme-script.ts`, the Chairs' Area adds `'wasm-unsafe-eval'` for the WebP encoder and turns off Zod's eval probe (`AdminLayout.astro`), and `frame-ancestors` stays in `vercel.json` because a `<meta>` policy cannot set it. A new third-party script, image host or API needs adding there, and CSP is not applied by `pnpm dev`: check with `pnpm build` and the browser console.
+- **Content-Security-Policy**: `security.csp` in `astro.config.mjs`. Astro hashes every script and style it emits, so an injected inline script won't run; images may come only from the site, CARTO tiles and Vercel Blob, and fonts only from the site itself (self-hosted WOFF2 in `public/fonts/`, icons as inline SVG from `src/lib/icons.ts`). `worker-src 'self'` and `manifest-src 'self'` let the service worker and the web app manifests load. Prerendered pages carry it as a `<meta>` tag, on-demand pages as a header. Inline `style` attributes are allowed (Vue renders tier colours with them). The theme script's hash is added from `src/lib/theme-script.ts`, the Chairs' Area adds `'wasm-unsafe-eval'` for the WebP encoder and turns off Zod's eval probe (`AdminLayout.astro`), and `frame-ancestors` stays in `vercel.json` because a `<meta>` policy cannot set it. A new third-party script, image host or API needs adding there. `pnpm dev` does not apply the CSP, so check with `pnpm build && pnpm check:built`: Chromium does not log violations to the console, so the smoke test listens for `securitypolicyviolation` events instead (`e2e/fixtures.ts`).
 
 - **Pages (`.astro`)**:
   - `/` — The interactive Leaflet Ledger Map
   - `/venues/[slug]` — Dossiers for every public establishment
-  - `/verdicts/[tier]` — Registry verdicts (the old `/tiers/…` URLs redirect here) (`approved`, `under-consideration`, `to-be-assessed`, `if-we-must`, `rejected`, `gone-but-not-forgotten`)
+  - `/verdicts/[tier]` — Registry verdicts (`approved`, `under-consideration`, `to-be-assessed`, `if-we-must`, `rejected`, `gone-but-not-forgotten`). The old URLs redirect with a 301: `/tiers` to `/verdicts/approved`, `/tiers/[tier]` to `/verdicts/[tier]` (`redirects` in `astro.config.mjs`)
   - `/hall-of-shame` — The Bribery & Improper Benefit Attempt Record
   - `/manifesto` — The Constitutional Articles of Governance
+  - `/faqs` — Questions and answers (copy in `src/data/faqs.ts`)
   - `/inspections` — The Complete Chronological Audit Log: every confirmed inspection (dual-verified or legacy) of a public venue
+  - `/offline`, `/chairs-offline` — What the service worker shows offline for a page that isn't saved, and for the Chairs' Area (left out of the sitemap)
+  - `/og/venues/[slug].png` — Social cards for venues without a photo, drawn at build time
   - `/api/suggestions` — Public "Suggest a Venue" endpoint (same-origin only, rate limited)
   - `/api/weather` — Compact Manchester forecast for the home page card (fetches the Met Office hourly and daily forecasts, normalises them in `src/lib/weather.ts`)
-  - `/api/cron/weekly-bulletin` — Vercel Cron: rebuilds the site when the Wednesday bulletin goes out
+  - `/api/flags/snow` — Whether the Christmas snowfall is on (the `snow` flag; see `FLAGS` below)
+  - `/api/cron/weekly-bulletin` — Vercel Cron (00:00 UTC Thursday): rebuilds the site for the new weekly bulletin
   - `/api/cron/publish-pending` — Vercel Cron (05:00 UTC): publishes pending changes, if there are any
-  - `/api/admin/publish` — `POST` publishes the pending changes (debounced for 60s); `GET` is the bar's state
-  - `/admin/*` — The Chairs' Area (sign-in required; see below)
+  - `/api/auth/*` — Better Auth (sign-in, sessions)
+  - `/api/admin/*` — The Chairs' Area API, every handler wrapped by `adminRoute` (see Shared modules). `/api/admin/publish`: `POST` publishes the pending changes (debounced for 60s); `GET` is the bar's state
+  - `/admin/*` — The Chairs' Area (sign-in at `/admin/login`; see below)
 - **Styles**: the public site and the Chairs' Area each have their own stylesheet (`src/styles/global.css`, `src/styles/admin.css`), and Tailwind scans only that side's files, so visitors never download admin styles. Both import `theme.css` (the colour tokens) and `map.css`. A new admin component goes in `src/components/admin/`; a new public page directory is picked up by `global.css` automatically.
 - **Dark mode**: `ThemeScript.astro` (in both layouts' `<head>`) sets `data-theme` on `<html>` before the page paints, from the visitor's saved choice or their system setting, and keeps following the system (and other tabs) while nothing is saved; `ThemeToggle.astro` (a Light / System / Dark switch in both footers) saves the choice, with System clearing it, and fires `mcr:themechange` (`src/lib/theme.ts`). The dark palette is the `:root[data-theme="dark"]` block in `theme.css`. Tokens ending `-fixed` (and `surface`, the `*-ink` text tokens) exist so brand fills and the text on them stay put while surfaces and text flip; Leaflet path colours go through `themeColor()`, and tile layers swap to CARTO Dark Matter on their own.
 - **Vue 3 Islands (`src/components/islands/`)**:
@@ -54,8 +64,9 @@ Every public page carries a canonical URL and Open Graph / Twitter card tags (`s
 - **State Management**:
   - `nanostores` with `@nanostores/vue` for cross-island reactive filtering and modal state.
   - `src/stores/ledger.ts` holds the public venues and confirmed inspections the server embeds in the page (`LedgerCanon.astro`).
+  - `src/stores/online.ts` (connection state), `pwa.ts` (install prompt, update notice, saved copy) and `publish.ts` (the Chairs' unpublished-changes bar).
 - **Data Validation**:
-  - Zod schemas in `src/lib/venue-schema.ts`, `src/lib/bribery-schema.ts`, `src/lib/suggestion-schema.ts`, `src/lib/field-notes-schema.ts` and `src/lib/user-schema.ts`, shared by the APIs and the forms.
+  - Zod schemas in `src/lib/venue-schema.ts`, `src/lib/bribery-schema.ts`, `src/lib/suggestion-schema.ts`, `src/lib/golden-cut-schema.ts`, `src/lib/field-notes-schema.ts` and `src/lib/user-schema.ts`, shared by the APIs and the forms. Schemas that ship to the browser import Zod through `src/lib/zod-browser.ts`, which turns on `jitless` (no eval, so no CSP violation).
 - **Shared modules** (one place for each rule):
   - `src/lib/tiers.ts` — every per-tier fact (label, URL slug, colours, banner, mottos, rule), keyed by the stored value.
   - `src/lib/venues.ts` — the venue store: `updateVenue()` writes a venue row and its revision in one transaction; `saveVenue()` and `rerouteVenue()` add the slug check and the ORS walking route.
@@ -84,6 +95,23 @@ pnpm test:db                 # database integration tests (TEST_DATABASE_URL com
 To use your own database instead (a Neon branch, say), copy `.env.example` to `.env.local` and fill it in;
 see "Admin setup". More in [CLAUDE.md](CLAUDE.md).
 
+`pnpm preview` (`astro preview`) does not work with the Vercel adapter; use `pnpm serve:build`. Sign in on the port in
+`BETTER_AUTH_URL` (4321 by default): any other origin fails with `Invalid origin`.
+
+### Before you push
+
+CI (`.github/workflows/ci.yml`) runs the same sequence, so run it locally first:
+
+```bash
+pnpm lint && pnpm format:check && pnpm knip && pnpm test && pnpm typecheck && pnpm test:db
+```
+
+```bash
+pnpm build && pnpm check:bundle && pnpm check:built
+```
+
+`pnpm lint:fix` and `pnpm format` fix what they can. `pnpm knip` reports unused files, exports and dependencies.
+
 ### Local environment
 
 `pnpm db:local` is safe to run again. It:
@@ -94,8 +122,8 @@ see "Admin setup". More in [CLAUDE.md](CLAUDE.md).
 2. creates the `lunch` (dev) and `lunch_test` (integration tests) databases;
 3. migrates `lunch`, imports the venues and bribery record (tiers included, so every venue is public) and seeds a Chair,
    always against the local database whatever `.env.local` says;
-4. writes `.env.local` with the local `DATABASE_URL`, `TEST_DATABASE_URL`, auth settings and Chair, unless one already exists
-   (it then just prints the URLs).
+4. writes `.env.local` with the local `DATABASE_URL`, `TEST_DATABASE_URL`, auth settings, Chair and local VAPID keys
+   (so the notification settings show), unless one already exists (it then just prints the URLs).
 
 The local Chair is `chair@lunch.test` / `local-chair-password` (override with `SEED_CHAIR_EMAIL` / `SEED_CHAIR_PASSWORD`).
 These are local-only credentials; never reuse them anywhere real.
@@ -103,10 +131,13 @@ These are local-only credentials; never reuse them anywhere real.
 ### Smoke test the build (`pnpm check:built`)
 
 Playwright drives the built site (`pnpm build` first; it starts `pnpm serve:build` itself, or reuses one already running).
-It visits every public page type, uses the map, theme toggle, Where to today?, Near Me (location granted) and the suggest
-form, signs in as the seeded Chair, loads every Chairs' Area page and runs the WebP encoder. It fails on any
-`securitypolicyviolation` event or uncaught page error, and asserts that injected inline `<script>` / `<style>` are
-blocked, WebAssembly is blocked on public pages and allowed in the Chairs' Area, and venue JSON-LD parses.
+`e2e/built.spec.ts` visits every public page type, uses the map, theme toggle, Where to today?, the weather card, Near Me
+(location granted) and the suggest form, signs in as the seeded Chair, loads every Chairs' Area page, runs the WebP
+encoder and logs a visit with a field note (writes stubbed). It fails on any `securitypolicyviolation` event or uncaught
+page error, and asserts that injected inline `<script>` / `<style>` are blocked, WebAssembly is blocked on public pages
+and allowed in the Chairs' Area, and venue JSON-LD parses. The other specs cover offline mode (`offline.spec.ts`, see
+"Offline mode"), the home map and Near Me on a phone (`home-map-mobile.spec.ts`, `near-me-mobile.spec.ts`) and 44×44px
+tap targets (`tap-targets.spec.ts`).
 
 First time on a laptop: `pnpm exec playwright install chromium`.
 
@@ -118,7 +149,7 @@ on-demand pages: sign-in and the Chairs' Area (the theme-script and Zod bugs fix
 `SMOKE_BASE_URL=https://<preview-url> SMOKE_CHAIR_EMAIL=… SMOKE_CHAIR_PASSWORD=… pnpm check:built` runs the same checks
 against a deployment. The suggest request is always stubbed (it is rate-limited per sender, and a smoke test shouldn't file petitions). Behind Deployment
 Protection also set `VERCEL_AUTOMATION_BYPASS_SECRET`. Previews copy production data, including Chairs, so use a dedicated
-smoke-test Chair that exists in production; the test only reads and signs in (the photo upload is stubbed).
+smoke-test Chair that exists in production; the test only reads and signs in (the photo upload, visit and note are stubbed).
 
 `.github/workflows/preview-smoke.yml` does this automatically for every successful Preview deployment. It is
 **off until you opt in**: add the secrets `SMOKE_CHAIR_EMAIL`, `SMOKE_CHAIR_PASSWORD` and
@@ -153,7 +184,8 @@ Environment Variables**. Never commit real values.
 | `ORS_API_KEY`                                                  | [OpenRouteService](https://openrouteservice.org) key, **server-only** (never prefix it with `PUBLIC_`). Powers the admin venue location search and the walking distance and time from HQ. Without it venues still save, but the location must be entered manually and routes stay "pending". `OPENROUTESERVICE_API_KEY` is accepted as an alternative name. Free Standard plan: 2,000 directions a day (40 a minute); Matrix has its own lower daily quota. Visitors never trigger requests, only admin saves and the backfill. |
 | `METOFFICE_API_KEY`, `PUBLIC_MAP_API_KEY`                      | Optional weather and map tile keys.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `DEPLOY_HOOK_URL`                                              | **Production only.** A Vercel Deploy Hook for `main` (**Settings → Git → Deploy Hooks**). Publishing (the bar's button, the nightly cron, closing or reopening a venue) POSTs to it so the prerendered public pages pick up the changes. Unset, saves still work but the public site only changes on the next deploy. Treat the URL as a secret. Never set it for Preview: a preview save would rebuild production.                                                                                                             |
-| `CRON_SECRET`                                                  | **Production only.** Random string (`openssl rand -hex 32`). Vercel Cron sends it to `/api/cron/weekly-bulletin`, which refuses requests without it.                                                                                                                                                                                                                                                                                                                                                                            |
+| `CRON_SECRET`                                                  | **Production only.** Random string (`openssl rand -hex 32`). Vercel Cron sends it as a bearer token to `/api/cron/weekly-bulletin` and `/api/cron/publish-pending`, which refuse requests without it.                                                                                                                                                                                                                                                                                                                           |
+| `PWA_KILL_SWITCH`                                              | Emergency only. `1` makes the build ship a service worker that deletes every cache and unregisters itself (see _Offline mode_). Remove it once the bad worker is gone.                                                                                                                                                                                                                                                                                                                                                          |
 | `FLAGS`                                                        | Optional. A Vercel Flags SDK key, only for reading flags outside Vercel (on Vercel the deployment's OIDC token is used, so leave it unset there). The boolean `snow` flag (Vercel dashboard, **Flags**) switches the Christmas snowfall on or off live, per environment, with no redeploy; off, missing or unreadable means no snow. Add `?snow` to a URL to preview.                                                                                                                                                           |
 | `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT`     | Chairs' push notifications (see _Push notifications for Chairs_). `pnpm push:keys` prints a pair; the subject is a `mailto:` for the club. All three set turns them on; with any missing the settings are hidden and nothing is sent, so local dev and Previews work without them. The private key is server-only.                                                                                                                                                                                                              |
 
@@ -174,7 +206,7 @@ Use a Neon **branch** so local work never touches production data:
 | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pnpm db:generate`                     | Generate a migration in `drizzle/` after changing `src/db/schema.ts`. Commit it.                                                                                                                                                                                                                                                                                                                                                                                           |
 | `pnpm db:migrate`                      | Apply committed migrations (uses `DATABASE_URL_UNPOOLED`).                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `pnpm db:migrate:deploy`               | Runs in the Vercel build after the tests and before `pnpm build` (which reads the database). Production builds migrate production; Preview builds migrate their own Neon branch; anywhere else it does nothing.                                                                                                                                                                                                                                                            |
+| `pnpm db:migrate:deploy`               | Runs in the Vercel build after `publish:mark` and before `pnpm build` (which reads the database). Production builds migrate production; Preview builds migrate their own Neon branch; anywhere else it does nothing.                                                                                                                                                                                                                                                       |
 | `pnpm db:studio`                       | Open Drizzle Studio.                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `pnpm db:seed`                         | Create (or re-promote) the first Chair from `SEED_CHAIR_*`. Idempotent; refuses to run with `NODE_ENV=production` unless `--force` is passed. `--reset-password` resets an existing Chair's password. Prints the email only.                                                                                                                                                                                                                                               |
 | `pnpm db:local`                        | One-command local database: see _Local environment_ above.                                                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -189,6 +221,9 @@ Use a Neon **branch** so local work never touches production data:
 | `pnpm test:db`                         | Integration tests for the transactional rules (inspections, proposals) against `TEST_DATABASE_URL`, a throwaway **local** database whose name contains `test` (tables are truncated).                                                                                                                                                                                                                                                                                      |
 | `pnpm check:bundle`                    | After `pnpm build`: fail if the browser bundle contains `ORS_API_KEY` (name or value) or calls ORS directly.                                                                                                                                                                                                                                                                                                                                                               |
 | `pnpm check:security [url]`            | Check that every `/admin` page and `/api/admin` route refuses anonymous and cross-origin requests, and that sign-up is disabled. Defaults to `http://localhost:4321`; pass the production URL after a deploy.                                                                                                                                                                                                                                                              |
+| `pnpm push:keys`                       | Print a new VAPID key pair as `VAPID_PUBLIC_KEY=` / `VAPID_PRIVATE_KEY=` lines (see _Push notifications for Chairs_).                                                                                                                                                                                                                                                                                                                                                      |
+| `pnpm pwa:kill-switch`                 | Over a local build, replace `/sw.js` with the worker that clears every cache and unregisters itself. On Vercel use `PWA_KILL_SWITCH=1` instead.                                                                                                                                                                                                                                                                                                                            |
+| `pnpm test:coverage`                   | The unit tests with Node's coverage report.                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 ### Deploying to Vercel (runbook)
 
@@ -203,9 +238,11 @@ Use a Neon **branch** so local work never touches production data:
    Keys are prefixed `prod/`, `preview/` or `dev/` by environment, so local and
    preview uploads never mix with production. Mind the Hobby plan's Blob limit:
    going over loses access to Blob rather than billing.
-4. **Migrations run automatically** in every Vercel build
-   (`pnpm db:migrate:deploy && pnpm build`), before the build, which reads the
-   database to prerender the public pages:
+4. **Migrations run automatically** in every Vercel build. The `buildCommand`
+   in `vercel.json` is
+   `pnpm publish:mark && pnpm db:migrate:deploy && pnpm build && pnpm publish:settle`,
+   so the database is migrated before the build reads it to prerender the
+   public pages (keep `publish:mark` first and `publish:settle` last):
    - **Production** (merging to `main`) migrates the production database before
      the new deployment goes live.
    - **Preview** migrates that preview's own Neon branch (see below).
@@ -223,10 +260,11 @@ Use a Neon **branch** so local work never touches production data:
 
 5. **Rebuilds** (once): create a Deploy Hook for `main` under **Settings →
    Git → Deploy Hooks** and save its URL as `DEPLOY_HOOK_URL`, and set
-   `CRON_SECRET`, both for Production only. Then redeploy. The cron in
-   `vercel.json` runs at 00:00 UTC on Thursday, after the bulletin's 23:59
-   Wednesday London issue time all year (Hobby crons fire at some point in the
-   scheduled hour, so it can't be set to the issue minute itself).
+   `CRON_SECRET`, both for Production only. Then redeploy. `vercel.json` has
+   two crons: the weekly bulletin rebuild at 00:00 UTC on Thursday, after the
+   bulletin's 23:59 Wednesday London issue time all year (Hobby crons fire at
+   some point in the scheduled hour, so it can't be set to the issue minute
+   itself), and the pending-changes publish at 05:00 UTC daily.
 6. **First Chair** (once): with production env vars set locally,
    ```bash
    NODE_ENV=production SEED_CHAIR_EMAIL=… SEED_CHAIR_NAME=… SEED_CHAIR_PASSWORD=… pnpm db:seed --force
@@ -237,9 +275,10 @@ Use a Neon **branch** so local work never touches production data:
 8. **Verify**: `pnpm check:security https://<your-domain>`.
 9. **CI** (once): the tests no longer run inside the Vercel build, so a Deploy
    Hook rebuild doesn't re-test an unchanged commit. `.github/workflows/ci.yml`
-   runs them on every pull request and push to `main` instead: unit tests,
-   typecheck, the database integration tests against a Postgres service, a
-   build and `pnpm check:bundle`. In **GitHub → Settings → Branches**, protect
+   runs them on every pull request and push to `main` instead: lint, format
+   check, knip, unit tests, typecheck, the database integration tests against
+   a Postgres service, a build (which fails on any CSP warning),
+   `pnpm check:bundle` and `pnpm check:built`. In **GitHub → Settings → Branches**, protect
    `main` and make **checks** (the CI workflow's job) a required status check, so nothing reaches
    production (or its database migrations) untested.
 
@@ -261,22 +300,24 @@ suggestions and admin saves are all live requests (the server's Europe/London da
   production builds only, so `pnpm dev` never registers one; `pnpm serve:build` and Previews do.
 - **What is cached:** the shell pages and hashed assets are precached. Public HTML is network-first (3 s) then the
   device's copy, then `/offline`. Venue pages are saved as visited and warmed while the browser is idle. Venue photo
-  thumbnails are cache-first (200 entries, 30 days), CARTO tiles cache-first (1,500 tiles, 30 days, requested with CORS).
+  thumbnails are cache-first (200 entries, 30 days), CARTO tiles cache-first (1,500 tiles, 30 days, requested with CORS);
+  a full-size photo is network-only and falls back to its saved thumbnail. Offline Near Me works from the saved page and
+  GPS, and the map keeps its pins on a plain background where tiles are missing.
   `/admin/**`, `/api/**`, `/og/**` and anything but GET are never intercepted for content; a failed navigation into the
   Chairs' Area shows the static `/chairs-offline` page. The rules live in `src/lib/pwa/routing.ts` (unit tested), and
   `e2e/offline.spec.ts` asserts no `/admin` or `/api` URL ever reaches Cache Storage.
 - **Freshness:** a page served from the device carries `data-saved-copy` on `<html>`, and the bar at the top reads
   "Offline · verdicts as of …" from the `mcr-built-at` meta tag. A new worker waits: public pages offer "New verdicts
   published · Refresh"; the Chairs' Area never reloads over a form, and the worker takes over on the next cold launch.
-- **Not built:** bulk pre-download of map tiles. CARTO's basemap terms have to allow offline caching first; until
-  someone checks them, tiles are saved only as they are viewed.
+- **Not planned:** bulk pre-download of map tiles ("Save map for offline"). Tiles are saved only as they are viewed.
 - **Kill switch:** if a bad worker gets stuck in browsers, set `PWA_KILL_SWITCH=1` on the Vercel project and redeploy.
   The build then writes a worker that deletes every cache and unregisters itself instead of the real one (visitors pick
   it up on their next visit). `pnpm pwa:kill-switch` does the same over a local build. Remove the variable afterwards.
 - **Cache versions:** bump `VERSION` in `src/sw/sw.ts` to discard every saved cache; older `mcr-*` caches are deleted on
   activate. `mcrlunchclub.com` and `mcr-lunch-club.vercel.app` are separate origins with separate workers and caches.
-- **Manual checks** (not in CI): install on an iPhone (Home Screen) and on Android, switch to airplane mode, open the
-  app, use Near Me, and check Back everywhere; run Lighthouse's installability audit.
+- **Manual checks** (not in CI; repeat after changing the worker, manifests or layouts): install on an iPhone (Home
+  Screen) and on Android, switch to airplane mode, open the app, use Near Me, and check Back everywhere; run
+  Lighthouse's installability audit.
 
 ### Push notifications for Chairs
 
@@ -402,8 +443,10 @@ not sign you in on the `vercel.app` address; sign in on each separately.
   or **Re-route** replaces them; saving such a venue also tries to route it,
   keeping the estimate if ORS is unavailable. Routed times are credited to
   openrouteservice.org and OpenStreetMap in the site footer. Near Me and the
-  map's walking rings stay straight-line at one shared pace, 80 m a minute
-  (`WALKING_METRES_PER_MINUTE` in `src/lib/map/config.ts`).
+  map's walking rings stay straight-line, at 24 minutes a mile allowing for a
+  1.2× detour over the straight line, about 56 m a minute
+  (`WALKING_METRES_PER_MINUTE` in `src/lib/map/config.ts`). Stored walking
+  times use the same 24 minutes a mile over the routed distance.
 - **Tier changes need two Chairs**: a venue's tier is never edited directly.
   Any Chair proposes a change from the venue page (a new venue's form takes a
   "Proposed tier"); a **different** Chair approves or declines it from the
@@ -412,7 +455,9 @@ not sign you in on the `vercel.app` address; sign in on each separately.
   its proposer can withdraw or replace it. Until approval the public site
   keeps the last approved tier, and a new venue stays hidden. Moving a venue
   into Approved needs a dual-verified inspection. With only one active Chair
-  nothing can be approved; there is no override. No notifications are sent.
+  nothing can be approved; there is no override. Chairs who have turned on
+  push notifications are told about proposals to countersign and decisions on
+  their own (see _Push notifications for Chairs_).
   (`pnpm db:import` still seeds tiers directly, for bootstrapping an empty
   database only.)
 - **Inspections**: a venue's "last inspected" date can't be typed in. Each
@@ -494,29 +539,36 @@ mcr-lunch-club/
 │   │   ├── admin/             # Chairs' Area components (dossier/: the venue form's cards)
 │   │   ├── islands/           # Vue 3 interactive islands for the public site (near-me/: Near Me's pieces)
 │   │   ├── LedgerCanon.astro  # Embeds the public venues for the islands
+│   │   ├── PwaStatus.vue, InstallApp.vue, StandaloneBack.astro  # Offline bar, update notice, install control, Back strip
 │   │   └── WeatherCard.vue
-│   ├── data/                  # Original datasets: import source; inspections still read from here
+│   ├── data/                  # Import source (venues.json, incidents.json) and the FAQ copy (faqs.ts)
 │   ├── db/                    # Drizzle schema (app + Better Auth)
-│   ├── lib/                   # Auth, database, validation, public data, map and admin helpers (see Shared modules)
+│   ├── lib/                   # Auth, database, validation, public data and admin helpers (see Shared modules)
+│   │   ├── map/               # Leaflet config, scene, pins, clusters, framing, labels
+│   │   ├── near-me/           # Near Me's pure rules
+│   │   ├── push/              # Chairs' push notifications: messages, dispatch, delivery
+│   │   └── pwa/               # Service worker routing rules, install and offline helpers
 │   ├── layouts/               # Public and admin page shells
 │   ├── pages/
 │   │   ├── index.astro        # Sovereign Map view
-│   │   ├── hall-of-shame.astro
-│   │   ├── inspections.astro
-│   │   ├── manifesto.astro
-│   │   ├── 404.astro
+│   │   ├── hall-of-shame.astro, inspections.astro, manifesto.astro, faqs.astro, 404.astro
+│   │   ├── offline.astro, chairs-offline.astro  # Offline fallbacks served by the service worker
 │   │   ├── admin/             # Chairs' Area
-│   │   ├── api/               # Public, admin and weather endpoints (admin/venues/[id]/visits.ts, admin/visits/[id]/notes.ts and admin/notes/[id].ts: visits and field notes)
+│   │   ├── api/               # Public, admin, auth, cron, flag and weather endpoints
+│   │   ├── og/venues/[slug].png.ts # Social cards for venues without a photo
 │   │   ├── verdicts/[tier].astro # Verdict pages
 │   │   └── venues/[slug].astro# Venue dossiers
-│   ├── stores/                # Nanostores: filters, modal state and the venue ledger
+│   ├── pwa/                   # Browser side: worker registration, push subscription
+│   ├── sw/                    # The service worker (sw.ts) and the kill-switch worker
+│   ├── stores/                # Nanostores: filters, results, venue ledger, online, PWA and publish state
 │   ├── styles/
 │   │   ├── theme.css          # Colour tokens (@theme) and base styles, shared
 │   │   ├── map.css            # Leaflet pins, HQ marker and popups, shared
 │   │   ├── global.css         # The public site (Layout.astro); Tailwind scans public files only
 │   │   └── admin.css          # The Chairs' Area (AdminLayout.astro); Tailwind scans admin files only
 │   └── types/index.ts         # Shared TypeScript interfaces
-├── drizzle/                   # Committed SQL migrations
+├── drizzle/                   # Committed SQL migrations (data/: one-off import files)
+├── public/                    # Static files: manifests, icons, brand images, self-hosted fonts
 ├── scripts/
 │   ├── migrate.ts             # pnpm db:migrate
 │   ├── migrate-deploy.ts      # pnpm db:migrate:deploy (Vercel builds)
@@ -527,11 +579,17 @@ mcr-lunch-club/
 │   ├── backfill-routes.ts     # pnpm routes:backfill
 │   ├── check-admin-security.ts     # pnpm check:security
 │   ├── check-client-bundle.ts      # pnpm check:bundle
+│   ├── build-sw.ts            # last step of pnpm build: writes /sw.js
+│   ├── kill-switch-sw.ts      # pnpm pwa:kill-switch
+│   ├── generate-vapid-keys.ts # pnpm push:keys
+│   ├── publish-mark.ts, publish-settle.ts # pnpm publish:mark / publish:settle (Vercel builds)
 │   ├── db-local.sh            # pnpm db:local
 │   ├── serve-build.ts         # pnpm serve:build
 │   └── test-db.ts             # pnpm test:db
 ├── e2e/                       # Playwright smoke test of the build (pnpm check:built)
+├── .github/workflows/         # ci.yml (every PR and push to main), preview-smoke.yml (opt-in)
 ├── docker-compose.yml         # Postgres 16 for pnpm db:local -- --docker
+├── vercel.json                # Build command, crons, headers
 ├── manchester_lunch_venues.csv     # The club's original list of lunch spots (reference only)
 └── astro.config.mjs
 ```
