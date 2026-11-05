@@ -155,6 +155,25 @@ describe('the ranking hold', () => {
 });
 
 describe('framing the first fix', () => {
+  it('frames the first fix from the fresh ranking, after a held list settles', () => {
+    const { session } = setup();
+    session.listTouched();
+    session.positionChanged(fix(700));
+    assert.equal(session.takeMove(), null);
+    session.listReleased(5000);
+    session.tick(5000 + LIST_SETTLE_MS);
+    assert.equal(session.view().ranked[0].venue.id, 'd');
+    assert.equal(session.takeMove()?.kind, 'fit-first-fix');
+  });
+
+  it('keeps a waiting first-fix frame when a later fix would only follow', () => {
+    const { session } = setup();
+    session.positionChanged(fix(0));
+    session.positionChanged(fix(50));
+    assert.equal(session.takeMove()?.kind, 'fit-first-fix');
+    assert.equal(session.takeMove(), null);
+  });
+
   it('fits the visitor and the nearest three venues, once', () => {
     const { session } = setup();
     session.positionChanged(fix(0));
@@ -358,6 +377,24 @@ describe('picking a location', () => {
 });
 
 describe('events and reset', () => {
+  it('stays quiet when an event changes nothing', () => {
+    const { session } = setup();
+    let calls = 0;
+    session.subscribe(() => calls++);
+    const before = session.view();
+    session.stopPicking();
+    session.clearSelection();
+    session.listScrolled(0);
+    session.tick(10_000);
+    assert.equal(calls, 0);
+    assert.equal(session.view(), before);
+    // A drag that changes following tells them once; a second one changes nothing.
+    session.userMovedMap();
+    session.userMovedMap();
+    assert.equal(calls, 1);
+    assert.equal(session.view().others, before.others);
+  });
+
   it('tells subscribers after each event, until they stop', () => {
     const { session } = setup();
     let calls = 0;

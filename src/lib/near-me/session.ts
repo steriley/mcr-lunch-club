@@ -107,6 +107,7 @@ export function createNearMeSession(options: NearMeSessionOptions) {
 
   let position: SessionPosition | null = null;
   let ranked: RankedVenue[] = [];
+  let others: RankedVenue[] = [];
   let rankedOrigin: LatLng | null = null;
   let rankedFromBase = true;
   let tiers: TierValue[] = [...NEAR_ME_DEFAULT_TIERS];
@@ -162,6 +163,7 @@ export function createNearMeSession(options: NearMeSessionOptions) {
       venues: options.venues().filter((venue) => matchesCost(venue, costs)),
       tiers,
     });
+    others = ranked.slice(1);
     rankedOrigin = origin;
     rankedFromBase = fromBase;
     buildPins();
@@ -205,7 +207,7 @@ export function createNearMeSession(options: NearMeSessionOptions) {
     cached = {
       ranked,
       nearest: ranked[0] ?? null,
-      others: ranked.slice(1),
+      others,
       rankedFromBase,
       selectedId,
       selectionSource,
@@ -224,12 +226,51 @@ export function createNearMeSession(options: NearMeSessionOptions) {
     return cached;
   }
 
-  /** Runs an event, then tells the listeners. */
+  /** What the view and the pending move are made of: if none of these changed, nobody needs telling. */
+  const snapshot = () => [
+    position,
+    ranked,
+    rankedFromBase,
+    pins,
+    tiers,
+    costs,
+    selectedId,
+    selectionSource,
+    selections,
+    following,
+    picking,
+    fittedFirstFix,
+    far,
+    lowAccuracy,
+    pendingMove,
+  ];
+
+  /** Runs an event, then tells the listeners if it changed anything. */
   function event<T>(run: () => T): T {
+    const before = snapshot();
     const result = run();
-    cached = null;
-    for (const listener of [...listeners]) listener();
+    const after = snapshot();
+    if (before.some((value, i) => value !== after[i])) {
+      cached = null;
+      for (const listener of [...listeners]) listener();
+    }
     return result;
+  }
+
+  function select(id: string, source: SelectionSource) {
+    event(() => {
+      const venue = options.venues().find((candidate) => candidate.id === id);
+      if (!venue) return;
+      selectedId = id;
+      selectionSource = source;
+      selections += 1;
+      // Choosing a venue overrides following the visitor, so a position update doesn't pull the
+      // map back. Recentring (or a manual pick) switches following back on.
+      following = false;
+      if (venue.lat != null && venue.lng != null) {
+        moveTo({ kind: 'focus-venue', id, lat: venue.lat, lng: venue.lng, source });
+      }
+    });
   }
 
   return {
@@ -291,12 +332,15 @@ export function createNearMeSession(options: NearMeSessionOptions) {
           } else {
             // Back inside range after being far away: frame the next fix afresh.
             if (wasFar) fittedFirstFix = false;
-            if (following && fittedFirstFix)
+            // A first-fix frame still waiting for the map is worth more than following.
+            if (following && fittedFirstFix && pendingMove?.kind !== 'fit-first-fix') {
               moveTo({ kind: 'show-point', lat: next.lat, lng: next.lng });
+            }
           }
         }
         rerank(false);
-        frameFirstFix();
+        // While the list is held the ranking is stale: frame once it has caught up (see `tick`).
+        if (!holding()) frameFirstFix();
       });
     },
 
@@ -342,6 +386,7 @@ export function createNearMeSession(options: NearMeSessionOptions) {
         if (touching || releaseAt === null || now < releaseAt) return;
         releaseAt = null;
         rerank(false);
+        frameFirstFix();
       });
     },
 
@@ -418,22 +463,6 @@ export function createNearMeSession(options: NearMeSessionOptions) {
       });
     },
   };
-
-  function select(id: string, source: SelectionSource) {
-    event(() => {
-      const venue = options.venues().find((candidate) => candidate.id === id);
-      if (!venue) return;
-      selectedId = id;
-      selectionSource = source;
-      selections += 1;
-      // Choosing a venue overrides following the visitor, so a position update doesn't pull the
-      // map back. Recentring (or a manual pick) switches following back on.
-      following = false;
-      if (venue.lat != null && venue.lng != null) {
-        moveTo({ kind: 'focus-venue', id, lat: venue.lat, lng: venue.lng, source });
-      }
-    });
-  }
 }
 
 export type NearMeSession = ReturnType<typeof createNearMeSession>;
