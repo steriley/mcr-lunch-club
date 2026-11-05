@@ -3,29 +3,19 @@ import {
   BASE_LAT,
   BASE_LNG,
   DEFAULT_ZOOM,
-  FAR_FROM_BASE_METRES,
   createBaseMarker,
   createMapRemover,
   createTileLayer,
   createUserMarkerLayers,
-  haversineMetres,
   prefersReducedMotion,
-  type RankedVenue,
-  type useGeolocation,
 } from '@/lib/map';
 import { createVenuePinLayer, type VenuePinLayer } from '@/lib/map/pin-layer';
-import type { SheetSnap } from '@/lib/near-me/sheet';
-import type { Venue } from '@/types';
+import type { MoveIntent, NearMeSession } from '@/lib/near-me/session';
+import { snapAfterPinTap, type SheetSnap } from '@/lib/near-me/sheet';
 import type { BottomSheet } from './useBottomSheet';
-
-/** The nearest few pins carry their list number. */
-const PIN_RANK_LIMIT = 5;
 
 /** Share of the uncovered map, from its top edge, where a selected pin sits: the middle. */
 const SELECTED_PIN_VISIBLE_FRACTION = 0.5;
-
-/** Programmatic moves end before this, so they aren't mistaken for the user's own panning. */
-const MOVE_SETTLE_MS = 400;
 
 /** Room on a phone that the floating controls take from the map, in px from its top and right edges. */
 interface OverlayInsets {
@@ -42,29 +32,17 @@ interface NearMeLeafletOptions {
   mapApiKey?: string;
   container: Ref<HTMLElement | null>;
   sheet: BottomSheet;
-  geo: ReturnType<typeof useGeolocation>;
-  /** Venues that get a pin: in the selected tiers and price bands, with a location. */
-  pinnedVenues: () => Venue[];
-  rankedVenues: Ref<RankedVenue[]>;
-  selectedVenueId: Ref<string | null>;
-  isFollowingUser: Ref<boolean>;
-  isPickingLocation: Ref<boolean>;
-  hasFittedFirstFix: Ref<boolean>;
-  isUserFarFromManchester: Ref<boolean>;
-  isLowAccuracy: Ref<boolean>;
-  /** Measures the close button and the control stack, for the phone's padding; zeros on desktop. */
-  overlayInsets: () => OverlayInsets;
-  /** A pin was tapped. */
-  onPinSelect: (venue: Venue) => void;
+  session: NearMeSession;
 }
 
 /**
- * The Near Me Leaflet map: venue pins with their rank badges, the user's
- * marker, first-fix framing, and moves that keep a point clear of the venue
- * panel. Leaflet loads the first time the map opens.
+ * The Near Me Leaflet map. It draws what the session says (venue pins with their
+ * rank badges, the user's marker) and carries out the moves the session asks for,
+ * keeping the point clear of the venue panel. It tells the session about taps and
+ * drags and writes no state of its own. Leaflet loads the first time the map opens.
  */
 export function useNearMeLeaflet(options: NearMeLeafletOptions) {
-  const { sheet, geo } = options;
+  const { sheet, session } = options;
 
   let mapInstance: any = null;
   // Removes the map once any zoom animation has ended (see createMapRemover).
@@ -72,32 +50,26 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
   let leafletModule: any = null;
   let pins: VenuePinLayer | null = null;
   let userLayersGroup: any = null;
-  let isProgrammaticMove = false;
+  let stopListening: (() => void) | null = null;
+  // What was last drawn, so a session event that changes neither isn't redrawn.
+  let drawnPins: unknown = null;
+  let drawnSelection: string | null = null;
+  let drawnPosition: unknown = null;
 
   const leaflet = () => leafletModule.default || leafletModule;
 
-  /** Marks a map move as ours until it settles. */
-  function moveProgrammatically(move: () => void, settleMs = MOVE_SETTLE_MS) {
-    isProgrammaticMove = true;
-    move();
-    setTimeout(() => {
-      isProgrammaticMove = false;
-    }, settleMs);
-  }
-
-  function pinRankFor(venueId: string): number | undefined {
-    const index = options.rankedVenues.value.findIndex((rv) => rv.venue.id === venueId);
-    return index >= 0 && index < PIN_RANK_LIMIT ? index + 1 : undefined;
-  }
-
-  function highlightSelectedPin() {
-    pins?.select(options.selectedVenueId.value);
-  }
-
-  /** Pins for the venues the filters match, each of the nearest few with its number. */
-  function renderVenueMarkers() {
-    pins?.sync(options.pinnedVenues().map((venue) => ({ venue, rank: pinRankFor(venue.id) })));
-    highlightSelectedPin();
+  /** Measures the close button and the control stack for the phone's padding; zeros on desktop. */
+  function overlayInsets(): OverlayInsets {
+    const mapEl = options.container.value;
+    const shell = mapEl?.parentElement;
+    const controls = shell?.querySelector('.near-me-controls-cluster');
+    const close = shell?.querySelector('#btn-near-me-close');
+    if (sheet.isDesktop.value || !mapEl || !controls || !close) return { top: 0, right: 0 };
+    const mapRect = mapEl.getBoundingClientRect();
+    return {
+      top: Math.max(close.getBoundingClientRect().bottom - mapRect.top, 0),
+      right: Math.max(mapRect.right - controls.getBoundingClientRect().left, 0),
+    };
   }
 
   /**
@@ -122,7 +94,7 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
       const mapHeight = mapInstance.getSize().y;
       const visibleHeight = Math.max(mapHeight - sheet.settledHeightPx(sheetState), 0);
       // The controls and the close button take the right and top edges too.
-      const { top, right } = options.overlayInsets();
+      const { top, right } = overlayInsets();
       const visibleTop = Math.min(top, visibleHeight);
       const visibleCentreY = visibleTop + (visibleHeight - visibleTop) * fraction;
       point.y += mapHeight / 2 - visibleCentreY;
@@ -139,116 +111,111 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
     });
   }
 
-  // First-fix bounds fitting: fits user plus top 3 venues
-  function fitFirstFixBounds() {
-    if (options.hasFittedFirstFix.value || !mapInstance || !leafletModule || !geo.position.value)
+  /** Frames the visitor and the nearest venues, clear of the panel and the floating controls. */
+  function fitFirstFix(points: Array<{ lat: number; lng: number }>) {
+    const bounds = leaflet().latLngBounds(points.map(({ lat, lng }) => [lat, lng]));
+    if (sheet.isDesktop.value) {
+      mapInstance.fitBounds(bounds, {
+        paddingTopLeft: [410, 60],
+        paddingBottomRight: [60, 60],
+        maxZoom: 17,
+        animate: !prefersReducedMotion(),
+      });
       return;
-    const L = leaflet();
-
-    const points: [number, number][] = [[geo.position.value.lat, geo.position.value.lng]];
-    options.rankedVenues.value.slice(0, 3).forEach((rv) => {
-      if (rv.venue.lat != null && rv.venue.lng != null) points.push([rv.venue.lat, rv.venue.lng]);
+    }
+    // Fit into the part of the map the sheet, the close button and the controls leave showing.
+    // A pin extends up and to both sides of its point, so its size is kept clear as well.
+    const { top, right } = overlayInsets();
+    const bottomPadding = Math.round(sheet.settledHeightPx()) + 24;
+    mapInstance.fitBounds(bounds, {
+      paddingTopLeft: [30, Math.round(top) + CONTROL_MARGIN_PX + PIN_HEIGHT_PX],
+      paddingBottomRight: [
+        Math.round(right) + CONTROL_MARGIN_PX + PIN_HALF_WIDTH_PX,
+        bottomPadding,
+      ],
+      maxZoom: 17,
+      animate: !prefersReducedMotion(),
     });
-
-    if (points.length < 2) return;
-
-    const bounds = L.latLngBounds(points);
-    options.hasFittedFirstFix.value = true;
-    moveProgrammatically(() => {
-      if (sheet.isDesktop.value) {
-        mapInstance.fitBounds(bounds, {
-          paddingTopLeft: [410, 60],
-          paddingBottomRight: [60, 60],
-          maxZoom: 17,
-          animate: !prefersReducedMotion(),
-        });
-      } else {
-        // Fit into the part of the map the sheet, the close button and the controls leave showing.
-        // A pin extends up and to both sides of its point, so its size is kept clear as well.
-        const { top, right } = options.overlayInsets();
-        const bottomPadding = Math.round(sheet.settledHeightPx()) + 24;
-        mapInstance.fitBounds(bounds, {
-          paddingTopLeft: [30, Math.round(top) + CONTROL_MARGIN_PX + PIN_HEIGHT_PX],
-          paddingBottomRight: [
-            Math.round(right) + CONTROL_MARGIN_PX + PIN_HALF_WIDTH_PX,
-            bottomPadding,
-          ],
-          maxZoom: 17,
-          animate: !prefersReducedMotion(),
-        });
-      }
-    }, 500);
   }
 
   /** Pans so the venue's pin sits in the clear part of the map: above the sheet, or beside the panel. */
-  function focusVenue(venue: Venue, { sheetState }: { sheetState: SheetSnap }) {
-    if (!mapInstance || !pins?.has(venue.id) || venue.lat == null || venue.lng == null) return;
-    moveProgrammatically(() => {
-      const zoom = mapInstance.getZoom();
-      mapInstance.panTo(
-        centreForVisibleMap(
-          venue.lat!,
-          venue.lng!,
-          zoom,
-          sheetState,
-          SELECTED_PIN_VISIBLE_FRACTION
-        ),
-        { animate: !prefersReducedMotion() }
-      );
-    });
-  }
-
-  /** Recentre on the user; false when there is no position yet. */
-  function recenterOnUser(): boolean {
-    if (!geo.position.value || !mapInstance) return false;
-    const { lat, lng } = geo.position.value;
-    moveProgrammatically(() => showPoint(lat, lng));
-    return true;
+  function focusVenue(id: string, lat: number, lng: number, sheetState: SheetSnap) {
+    if (!pins?.has(id)) return;
+    mapInstance.panTo(
+      centreForVisibleMap(
+        lat,
+        lng,
+        mapInstance.getZoom(),
+        sheetState,
+        SELECTED_PIN_VISIBLE_FRACTION
+      ),
+      { animate: !prefersReducedMotion() }
+    );
   }
 
   function showBase() {
-    if (!mapInstance) return;
-    moveProgrammatically(() => {
-      mapInstance.setView(centreForVisibleMap(BASE_LAT, BASE_LNG, DEFAULT_ZOOM), DEFAULT_ZOOM, {
-        animate: !prefersReducedMotion(),
-      });
+    mapInstance.setView(centreForVisibleMap(BASE_LAT, BASE_LNG, DEFAULT_ZOOM), DEFAULT_ZOOM, {
+      animate: !prefersReducedMotion(),
     });
   }
 
-  function updateUserMarker() {
+  /** Carries out a move the session asked for. */
+  function perform(move: MoveIntent) {
+    switch (move.kind) {
+      case 'fit-first-fix':
+        fitFirstFix(move.points);
+        break;
+      case 'show-point':
+        showPoint(move.lat, move.lng);
+        break;
+      case 'focus-venue':
+        // Tapping a pin on a collapsed sheet opens it to half height, so aim for that.
+        focusVenue(
+          move.id,
+          move.lat,
+          move.lng,
+          move.source === 'pin'
+            ? snapAfterPinTap(sheet.snap.value, sheet.isDesktop.value)
+            : sheet.snap.value
+        );
+        break;
+      case 'show-base':
+        showBase();
+        break;
+    }
+  }
+
+  /** The user's marker and accuracy circle, at the session's position. */
+  function drawUserMarker() {
     if (!mapInstance || !leafletModule || !userLayersGroup) return;
-    const L = leaflet();
     userLayersGroup.clearLayers();
-
-    const position = geo.position.value;
+    const position = session.view().position;
     if (!position) return;
-
-    const layers = createUserMarkerLayers(L, position, geo.isManual.value);
+    const layers = createUserMarkerLayers(leaflet(), position, position.manual === true);
     userLayersGroup.addLayer(layers.accuracyCircle);
     userLayersGroup.addLayer(layers.marker);
+  }
 
-    options.isLowAccuracy.value = position.accuracy > 100;
-
-    const distFromBase = haversineMetres(
-      { lat: position.lat, lng: position.lng },
-      { lat: BASE_LAT, lng: BASE_LNG }
-    );
-    const wasFarAway = options.isUserFarFromManchester.value;
-    options.isUserFarFromManchester.value = distFromBase > FAR_FROM_BASE_METRES;
-
-    // Far away: keep the Spinningfields framing rather than following to a useless view,
-    // and count the first fix as fitted so the map doesn't zoom out to include it.
-    if (options.isUserFarFromManchester.value) {
-      options.hasFittedFirstFix.value = true;
-      return;
+  /** Brings the map in line with the session after an event: pins, selection, user marker, then any move. */
+  function render() {
+    if (!mapInstance || !pins) return;
+    const view = session.view();
+    if (view.pins !== drawnPins) {
+      drawnPins = view.pins;
+      pins.sync(view.pins);
+      pins.select(view.selectedId);
+      drawnSelection = view.selectedId;
     }
-
-    // Back inside range after being far away: frame the next fix afresh.
-    if (wasFarAway) options.hasFittedFirstFix.value = false;
-
-    if (options.isFollowingUser.value && options.hasFittedFirstFix.value) {
-      moveProgrammatically(() => showPoint(position.lat, position.lng));
+    if (view.selectedId !== drawnSelection) {
+      drawnSelection = view.selectedId;
+      pins.select(drawnSelection);
     }
+    if (view.position !== drawnPosition) {
+      drawnPosition = view.position;
+      drawUserMarker();
+    }
+    const move = session.takeMove();
+    if (move) perform(move);
   }
 
   /** Stops taps and scrolls on the panel reaching the map underneath. */
@@ -261,14 +228,9 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
 
   /**
    * Builds the map. Returns false when it was superseded (closed or reopened)
-   * while Leaflet was loading. `onReady` runs once the pins and user marker are
-   * on the map.
+   * while Leaflet was loading.
    */
-  async function init(
-    isCurrent: () => boolean,
-    panel: () => HTMLElement | null,
-    onReady: () => void
-  ): Promise<boolean> {
+  async function init(isCurrent: () => boolean, panel: () => HTMLElement | null): Promise<boolean> {
     if (typeof window === 'undefined' || !options.container.value) return false;
 
     if (!leafletModule) leafletModule = await import('leaflet');
@@ -296,29 +258,26 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
     tileLayer.addTo(mapInstance);
 
     // The selected venue's card shows in the panel (Your selection), not on the map.
-    pins = createVenuePinLayer(L, (venue) => options.onPinSelect(venue));
+    pins = createVenuePinLayer(L, (venue) => session.selectFromPin(venue.id));
     pins.layer.addTo(mapInstance);
     userLayersGroup = L.layerGroup().addTo(mapInstance);
     mapInstance.addLayer(createBaseMarker(L));
 
-    renderVenueMarkers();
+    // Stop auto-following when the visitor drags or zooms the map. Our own moves are
+    // told apart by the session (see takeMove).
+    mapInstance.on('dragstart zoomstart', () => session.userMovedMap());
 
-    // Stop auto-following when user drags or zooms the map manually
-    mapInstance.on('dragstart zoomstart', () => {
-      if (!isProgrammaticMove) options.isFollowingUser.value = false;
-    });
+    // Picking a position by hand: the next tap on the map sets it (the session ignores other taps).
+    mapInstance.on('click', (e: any) =>
+      session.pickedLocation({ lat: e.latlng.lat, lng: e.latlng.lng })
+    );
 
-    // Picking a position by hand: the next tap on the map sets it.
-    mapInstance.on('click', (e: any) => {
-      if (!options.isPickingLocation.value) return;
-      geo.setManualPosition({ lat: e.latlng.lat, lng: e.latlng.lng });
-      options.isPickingLocation.value = false;
-      options.isFollowingUser.value = true;
-      showPoint(e.latlng.lat, e.latlng.lng);
-    });
-
-    updateUserMarker();
-    onReady();
+    drawnPins = null;
+    drawnSelection = null;
+    drawnPosition = null;
+    stopListening?.();
+    stopListening = session.subscribe(render);
+    render();
     isolatePanel(panel());
 
     // Invalidate size to guarantee crisp tile render after fullscreen mount
@@ -329,6 +288,8 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
   }
 
   function destroy() {
+    stopListening?.();
+    stopListening = null;
     removeMap?.();
     removeMap = null;
     mapInstance = null;
@@ -339,13 +300,6 @@ export function useNearMeLeaflet(options: NearMeLeafletOptions) {
   return {
     init,
     destroy,
-    renderVenueMarkers,
-    highlightSelectedPin,
-    fitFirstFixBounds,
-    focusVenue,
-    recenterOnUser,
-    showBase,
-    updateUserMarker,
     isolatePanel,
   };
 }

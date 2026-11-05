@@ -56,3 +56,8 @@ export function snapAfterSwipe(snap: SheetSnap, deltaY: number): SheetSnap {
   if (deltaY > SHEET_SWIPE_PX) return collapsedSnap(snap);
   return snap;
 }
+
+/** A pin tapped on a collapsed phone sheet opens it to half height; any other tap leaves the sheet as it is. */
+export function snapAfterPinTap(snap: SheetSnap, isDesktop: boolean): SheetSnap {
+  return !isDesktop && snap === 'collapsed' ? 'half' : snap;
+}
