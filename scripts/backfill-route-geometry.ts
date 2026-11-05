@@ -15,18 +15,13 @@
 import { closeDatabase, db, driver } from '@/lib/db-script';
 import { getOrsApiKey } from '@/lib/env';
 import { backfillRouteGeometry } from '@/lib/route-backfill';
-import { checkScriptTarget } from '@/lib/script-target';
+import { guardScriptTarget } from '@/lib/script-guard';
 
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const delayArg = args.find((arg) => arg.startsWith('--delay-ms='));
 
-const target = checkScriptTarget(process.env, {
-  writes: !dryRun,
-  confirmedProduction: args.includes('--production'),
-});
-console.log(target.message);
-if (!target.proceed) process.exit(1);
+guardScriptTarget(args, { writes: !dryRun });
 
 if (!dryRun && !getOrsApiKey()) {
   console.error('ORS_API_KEY is not set. Add it to .env.local (see .env.example).');

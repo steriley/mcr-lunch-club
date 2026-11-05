@@ -4,7 +4,7 @@
  * last_inspection_date from confirmed inspections.
  *
  *   pnpm inspections:import-legacy --dry-run      show what would change, write nothing
- *   pnpm inspections:import-legacy                import
+ *   pnpm inspections:import-legacy                import (production also needs --production)
  *   pnpm inspections:import-legacy --keep-unlisted  leave venues that are not on the list alone
  *
  * By default venues NOT on the list lose their old (wrong) date, because the
@@ -19,9 +19,12 @@ import {
   UnmatchedVenuesError,
   type LegacyEntry,
 } from '@/lib/legacy-inspections';
+import { guardScriptTarget } from '@/lib/script-guard';
 
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
+
+guardScriptTarget([...args], { writes: !dryRun });
 const keepUnlisted = args.has('--keep-unlisted');
 
 const { inspections: entries } = JSON.parse(
