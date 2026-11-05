@@ -20,7 +20,7 @@ import {
   pendingProposalForVenue,
   serializeProposal,
 } from '@/lib/tier-proposals';
-import { loadVenueTimeline } from '@/lib/venue-history';
+import { loadVenueTimeline, toTimelineView } from '@/lib/venue-history';
 import { listVenueImages, serializeVenueImage } from '@/lib/venue-images';
 import { serializeVenue } from '@/lib/venues';
 import { listVisitsForVenue } from '@/lib/visits';
@@ -83,7 +83,6 @@ export async function loadDashboard(db: Database, viewerId: string) {
     hidden,
   };
 }
-
 
 // ---- Venues ----------------------------------------------------------------
 
@@ -222,13 +221,7 @@ export async function loadVenueDossier(db: Database, venueId: string, viewer: Vi
       today: londonDate(),
       closed: row.closedAt !== null,
       closedText,
-      timeline: timeline.map(({ id, kind, when, text, note }) => ({
-        id,
-        kind,
-        when,
-        text,
-        ...(note ? { note } : {}),
-      })),
+      timeline: timeline.map(toTimelineView),
     },
   };
 }

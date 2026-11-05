@@ -1,12 +1,13 @@
-import { inArray } from 'drizzle-orm';
+import { desc, eq, inArray } from 'drizzle-orm';
 import { user } from '@/db/auth-schema';
+import { venueRevisions } from '@/db/schema';
 import type { InspectionRow, TierProposalRow, VenueEventRow } from '@/db/schema';
 import { cuisineLabel, isCuisineValue } from '@/lib/cuisines';
 import { formatDate, formatDateTime } from '@/lib/dates';
 import type { Database } from '@/lib/db-client';
 import { describeInspection, listConfirmedInspections } from '@/lib/inspections';
 import { describeProposal, listVenueProposals } from '@/lib/tier-proposals';
-import { describeVenueEvent, listVenueEvents } from '@/lib/venue-events';
+import { actorName, describeVenueEvent, listVenueEvents, type Actor } from '@/lib/venue-events';
 import { listVenueRevisions } from '@/lib/venues';
 
 /**
@@ -195,4 +196,35 @@ export async function loadVenueTimeline(db: Database, venueId: string): Promise<
     ...motionEntries(proposals),
     ...inspectionEntries(inspections),
   ]);
+}
+
+/** What the dossier's Audit History drawer shows for one entry; the server builds the text (#111). */
+export interface TimelineView {
+  id: string;
+  kind: TimelineKind;
+  when: string;
+  text: string;
+  note?: string;
+}
+
+export function toTimelineView({ id, kind, when, text, note }: TimelineEntry): TimelineView {
+  return { id, kind, when, text, ...(note ? { note } : {}) };
+}
+
+/** The amendment the Chair's save just wrote, for the form to show at the top of its timeline. */
+export async function latestAmendmentView(
+  db: Database,
+  venueId: string,
+  editor: Actor
+): Promise<TimelineView> {
+  // Two rows: the newest and the version it replaced, which the changes are measured against.
+  const revisions = await db
+    .select()
+    .from(venueRevisions)
+    .where(eq(venueRevisions.venueId, venueId))
+    .orderBy(desc(venueRevisions.changedAt))
+    .limit(2);
+  const names = new Map<string, string>();
+  if (editor.id) names.set(editor.id, actorName(editor));
+  return toTimelineView(revisionEntries(revisions, names)[0]);
 }

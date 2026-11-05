@@ -15,7 +15,6 @@ import PublicDocketModal, { type DocketPreview } from './dossier/PublicDocketMod
 import VenueVisits from './dossier/VenueVisits.vue';
 import { CUISINES, cuisineLabel, isCuisineValue } from '@/lib/cuisines';
 import { formatDate, formatDateTime } from '@/lib/dates';
-import { INSPECTION_OUTCOME_LABELS } from '@/lib/inspection-display';
 import { routeStatus, type RouteStatus } from '@/lib/route-status';
 import { TIERS, isTierValue, tierLabel } from '@/lib/tiers';
 import {
@@ -89,20 +88,6 @@ const textFields = [
   'mapSearchLink',
 ] as const;
 type FormField = (typeof textFields)[number];
-
-const FIELD_LABELS: Record<FormField, string> = {
-  name: 'Name',
-  slug: 'Slug',
-  address: 'Address',
-  latitude: 'Latitude',
-  longitude: 'Longitude',
-  pullQuote: 'Pull quote',
-  lunchSpecial: 'Lunch special',
-  websiteUrl: 'Website',
-  cost: 'Cost',
-  cuisine: 'Cuisine',
-  mapSearchLink: 'Map link',
-};
 
 function toFormState(venue?: SerializedVenue | null): Record<FormField, string> {
   const state = {} as Record<FormField, string>;
@@ -340,13 +325,6 @@ function clearErrors() {
   for (const key of Object.keys(errors)) delete errors[key];
 }
 
-function changedFields(): string[] {
-  const before = JSON.parse(savedSnapshot.value) as Record<FormField, string>;
-  return textFields
-    .filter((field) => before[field] !== form[field])
-    .map((field) => FIELD_LABELS[field]);
-}
-
 async function save() {
   clearErrors();
 
@@ -366,16 +344,16 @@ async function save() {
 
   isSubmitting.value = true;
   try {
-    const changes = changedFields();
     const isNew = props.mode === 'create' && !venueId.value;
-    const response = await apiFetch<{ venue: SerializedVenue; routeWarning?: string | null }>(
-      isNew ? '/api/admin/venues' : `/api/admin/venues/${venueId.value}`,
-      {
-        method: isNew ? 'POST' : 'PUT',
-        body,
-        fallback: 'Unable to save this venue right now.',
-      }
-    );
+    const response = await apiFetch<{
+      venue: SerializedVenue;
+      routeWarning?: string | null;
+      timelineEntry?: AuditEntry;
+    }>(isNew ? '/api/admin/venues' : `/api/admin/venues/${venueId.value}`, {
+      method: isNew ? 'POST' : 'PUT',
+      body,
+      fallback: 'Unable to save this venue right now.',
+    });
 
     if (!response.ok) {
       Object.assign(errors, response.fields);
@@ -394,17 +372,8 @@ async function save() {
     }
     const me = props.dossier?.currentUserName ?? 'you';
     updatedBy.value = me;
-    timeline.value = [
-      {
-        id: `local-${result.venue.updatedAt}`,
-        kind: 'amendment',
-        when: formatDateTime(result.venue.updatedAt),
-        text: changes.length
-          ? `Amended by ${me}: ${changes.join(', ')}`
-          : `Saved by ${me} with no field changes`,
-      },
-      ...timeline.value,
-    ];
+    // The server wrote the timeline line; show it as it is.
+    if (result.timelineEntry) timeline.value = [result.timelineEntry, ...timeline.value];
     justSaved.value = true;
     clearTimeout(savedTimer);
     savedTimer = setTimeout(() => (justSaved.value = false), 2000);
@@ -427,22 +396,10 @@ function discard() {
   notify('success', 'Edits discarded. Back to the last saved version.');
 }
 
-function onConcordConfirmed(status: VisitStatus) {
+function onConcordConfirmed(status: VisitStatus, timelineEntry?: AuditEntry | null) {
   if (!status.confirmed) return;
   lastInspection.value = status.today;
-  timeline.value = [
-    {
-      id: `local-inspection-${status.today}`,
-      kind: 'inspection',
-      when: formatDateTime(status.confirmed.confirmedAt ?? new Date()),
-      text: `Inspection of ${formatDate(status.today)}: Verified by ${status.confirmed.firstAdminName} and ${status.confirmed.secondAdminName}${
-        status.confirmed.outcome
-          ? `, ${INSPECTION_OUTCOME_LABELS[status.confirmed.outcome].toLowerCase()}`
-          : ''
-      }`,
-    },
-    ...timeline.value,
-  ];
+  if (timelineEntry) timeline.value = [timelineEntry, ...timeline.value];
 }
 
 // The press returns the Chair's visit without its notes; the Visits section merges it in.

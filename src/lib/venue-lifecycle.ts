@@ -33,6 +33,7 @@ import {
   type ImageMetaChanges,
   type VenueImageError,
 } from '@/lib/venue-images';
+import { latestAmendmentView, type TimelineView } from '@/lib/venue-history';
 import type { PhotoStore } from '@/lib/venue-image-storage';
 import type { VenueInput } from '@/lib/venue-schema';
 import {
@@ -152,6 +153,8 @@ async function createVenue(
 interface Updated {
   venue: VenueRow;
   route: ResolvedRoute;
+  /** The amendment this save wrote, built by venue-history.ts: the form shows it as is. */
+  timelineEntry: TimelineView;
 }
 
 /** Saves the admin venue form: slug check, walking route (ORS only when the location needs it), then the row. */
@@ -181,7 +184,9 @@ async function updateVenue(
   const route = await resolveRoute(input, existing, lookup);
   try {
     const venue = await writeVenue(db, id, venueValues(input, actor.id, route), actor);
-    return venue ? ok({ venue, route }, publicChange('Update venue', id)) : fail('venue_not_found');
+    if (!venue) return fail('venue_not_found');
+    const timelineEntry = await latestAmendmentView(db, id, actor);
+    return ok({ venue, route, timelineEntry }, publicChange('Update venue', id));
   } catch (error) {
     if (isUniqueViolation(error)) return fail('slug_taken');
     throw error;

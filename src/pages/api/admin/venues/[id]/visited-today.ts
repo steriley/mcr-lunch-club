@@ -6,6 +6,7 @@ import { getVisitStatus, recordVisit } from '@/lib/inspections';
 import { ok } from '@/lib/outcome';
 import { notifyChairs } from '@/lib/push/dispatch';
 import { visitEvent } from '@/lib/push/messages';
+import { inspectionEntries, toTimelineView } from '@/lib/venue-history';
 import { serializeVisit } from '@/lib/visits';
 
 export const prerender = false;
@@ -23,7 +24,7 @@ const visitInputSchema = z.preprocess(
  * today (Europe/London, server clock), with body `{ outcome }`. Two different
  * admins on the same day confirm an inspection; the first press sets the
  * outcome and the cosigner affirms it. Banned admins are refused by
- * adminRoute. The response carries the presser's visit for today (without
+ * adminRoute. A press that confirms the inspection returns its `timelineEntry`. The response carries the presser's visit for today (without
  * its notes) so the dossier can offer a field note.
  */
 export const POST = adminRoute(
@@ -51,6 +52,11 @@ export const POST = adminRoute(
         result: outcome.result,
         confirmedNow: outcome.result === 'confirmed' && outcome.confirmedNow,
         status,
+        // The confirmation's timeline line, built by the server; null for any other press.
+        timelineEntry:
+          outcome.result === 'confirmed' && outcome.confirmedNow
+            ? toTimelineView(inspectionEntries([inspection])[0])
+            : null,
         visit: serializeVisit(visit, visit.inspectionId === inspection.id ? inspection : null),
       },
       recorded.published

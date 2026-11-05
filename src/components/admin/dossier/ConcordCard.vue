@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import type { InspectionOutcome } from '@/types';
 import type { VisitStatus } from '@/lib/inspections';
+import type { AuditEntry } from './AuditHistoryDrawer.vue';
 import DossierCard from './DossierCard.vue';
 import ConcordSignatures from './ConcordSignatures.vue';
 import DossierIcon from './DossierIcon.vue';
@@ -29,7 +30,7 @@ interface PressedVisit {
   id: string;
 }
 const emit = defineEmits<{
-  (event: 'confirmed', status: VisitStatus): void;
+  (event: 'confirmed', status: VisitStatus, timelineEntry: AuditEntry | null): void;
   (event: 'visited', visit: PressedVisit): void;
   (event: 'add-note', visit: PressedVisit): void;
 }>();
@@ -71,6 +72,7 @@ async function press() {
   const result = await apiFetch<{
     status: VisitStatus;
     confirmedNow?: boolean;
+    timelineEntry?: AuditEntry | null;
     visit?: PressedVisit;
   }>(`/api/admin/venues/${props.venueId}/visited-today`, {
     method: 'POST',
@@ -83,7 +85,7 @@ async function press() {
     errorMessage.value = result.error;
     return;
   }
-  const { status: visit, confirmedNow, visit: pressed } = result.data;
+  const { status: visit, confirmedNow, visit: pressed, timelineEntry } = result.data;
   status.value = visit;
   if (pressed) {
     emit('visited', pressed);
@@ -92,7 +94,7 @@ async function press() {
   justConfirmed.value = Boolean(confirmedNow);
   if (confirmedNow && visit.confirmed) {
     latest.value = verifiedVisitSummary(visit.today, visit.confirmed);
-    emit('confirmed', visit);
+    emit('confirmed', visit, timelineEntry ?? null);
   }
 }
 </script>

@@ -35,6 +35,13 @@ const input = { name: 'Chip Shop', slug: 'chip-shop', tier: 'approved', cost: 'Â
 
 afterEach(restoreStubs);
 
+const timelineEntry = {
+  id: 'r1',
+  kind: 'amendment' as const,
+  when: '1 Nov 2026, 10:00',
+  text: 'Amended by Sam: Name',
+};
+
 describe('POST /api/admin/venues', () => {
   const post = (body: unknown) => run(POST, { request: adminRequest('POST', body) });
 
@@ -128,7 +135,10 @@ describe('/api/admin/venues/[id]', () => {
     it('saves through the lifecycle, reports the route and records the change it names', async () => {
       signInAs();
       const calls = stubLifecycle('updateVenue', async () =>
-        ok({ venue: row, route }, { action: 'Update venue', venueId: VENUE_ID, when: 'queue' })
+        ok(
+          { venue: row, route, timelineEntry },
+          { action: 'Update venue', venueId: VENUE_ID, when: 'queue' }
+        )
       );
       const inserts = stubPublishing(3);
       const response = await run(byId.PUT, ctx('PUT', VENUE_ID, input));
@@ -136,6 +146,7 @@ describe('/api/admin/venues/[id]', () => {
       const body = await response.json();
       assert.equal(body.venue.name, 'Chip Shop');
       assert.equal(body.routeWarning, null);
+      assert.deepEqual(body.timelineEntry, timelineEntry);
       assert.equal(calls[0].arguments[1], VENUE_ID);
       assert.equal(response.headers.get('X-Unpublished-Changes'), '3');
       assert.equal(
@@ -146,7 +157,9 @@ describe('/api/admin/venues/[id]', () => {
 
     it('ignores distance and walking time sent by the client', async () => {
       signInAs();
-      const calls = stubLifecycle('updateVenue', async () => ok({ venue: row, route }));
+      const calls = stubLifecycle('updateVenue', async () =>
+        ok({ venue: row, route, timelineEntry })
+      );
       stubPublishing();
       await run(byId.PUT, ctx('PUT', VENUE_ID, { ...input, distanceMiles: 3, walkingTimeMin: 4 }));
       const sent = calls[0].arguments[2] as Record<string, unknown>;
@@ -163,6 +176,7 @@ describe('/api/admin/venues/[id]', () => {
             walkingTimeMin: null,
             error: { kind: 'rate_limited' } as never,
           },
+          timelineEntry,
         })
       );
       stubPublishing();

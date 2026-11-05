@@ -67,6 +67,8 @@ describe('POST /api/admin/venues/[id]/visited-today', () => {
     assert.equal(response.status, 200);
     const body = await response.json();
     assert.equal(body.result, 'waiting');
+    // Only the press that confirms an inspection has a timeline line.
+    assert.equal(body.timelineEntry, null);
     // The press records the Chair's visit, linked to the inspection it started.
     assert.deepEqual(body.visit, {
       id: 'v1',
