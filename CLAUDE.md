@@ -34,6 +34,10 @@ pnpm check:built     # browser smoke test of the real build output
 - **Outcomes.** A domain operation returns an `Outcome` with a domain error code, never an HTTP status or message: `ERROR_HTTP` in `src/lib/admin-api.ts` is the one code-to-response table (`src/test/layering.test.ts` forbids `*_STATUS` exports in `src/lib`). Every operation on a venue is in `src/lib/venue-lifecycle.ts`; route tests stub one `venueLifecycle` function (`stubLifecycle`) and behaviour is tested in `pnpm test:db`.
 - Domain modules in `src/lib` never import `admin-api` or `auth` (`src/test/layering.test.ts`).
 
+## Merging
+
+Merge PRs with **rebase**. Squash and merge commits are disabled on this repo (the API answers 405), so go straight to `rebase`.
+
 ## Before you push
 
 ```bash
