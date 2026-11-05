@@ -30,7 +30,7 @@ const DEFAULT_NEARBY_THRESHOLD_METRES = 4023; // 2.5 miles
 /**
  * Threshold for origin movement before recomputing ranking (anti-flicker).
  */
-export const ORIGIN_MOVE_THRESHOLD_METRES = 18; // 15-20 metres
+const ORIGIN_MOVE_THRESHOLD_METRES = 18; // 15-20 metres
 
 /**
  * Beyond this distance from Spinningfields the user is "outside Manchester",

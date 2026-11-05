@@ -125,7 +125,7 @@
                 :selected-costs="selectedCosts"
                 :far-from-manchester="isUserFarFromManchester"
                 :from-base="isRankedFromBase"
-                @select="(venue) => selectVenueItem(venue, false)"
+                @select="(venue) => session.selectFromList(venue.id)"
                 @details="goToVenuePage"
                 @clear-selection="clearSelection"
                 @toggle-cost="toggleCostFilter"
@@ -139,30 +139,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, shallowRef, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $isNearMeOpen, closeNearMe } from '@/stores/filters';
 import { $inspectionsList, $venuesList } from '@/stores/ledger';
-import {
-  NEAR_ME_DEFAULT_TIERS,
-  NEAR_ME_TIERS,
-  countVenuesByTier,
-  type TierValue,
-} from '@/lib/tiers';
+import { NEAR_ME_TIERS, countVenuesByTier, type TierValue } from '@/lib/tiers';
 import type { CostTier, Inspection, Venue } from '@/types';
 import TierFilterChips from '@/components/TierFilterChips.vue';
-import {
-  rankVenues,
-  toggleNearMeTier,
-  hasOriginMovedSignificantly,
-  resolveRankingOrigin,
-  useGeolocation,
-  ORIGIN_MOVE_THRESHOLD_METRES,
-  type RankedVenue,
-  type LatLng,
-} from '@/lib/map';
-import { matchesCost, toggleCost } from '@/lib/near-me/filters';
+import { toggleNearMeTier, useGeolocation } from '@/lib/map';
+import { toggleCost } from '@/lib/near-me/filters';
 import { trapTabKey } from '@/lib/near-me/focus-trap';
+import { createNearMeSession } from '@/lib/near-me/session';
+import { snapAfterPinTap } from '@/lib/near-me/sheet';
 import { nearMeStatusBanner } from '@/lib/near-me/status-banner';
 import { useOnline } from '@/lib/pwa/useOnline';
 import NearMeCollapsedSummary from './near-me/NearMeCollapsedSummary.vue';
@@ -197,23 +185,22 @@ const isManualLocation = geo.isManual;
 const sheet = useBottomSheet();
 const nearMeHistory = useNearMeHistory(isOpen);
 
-// UI states
-const isFollowingUser = ref<boolean>(true);
-const isPickingLocation = ref<boolean>(false);
-const selectedVenueId = ref<string | null>(null);
-// Where the selection came from: a pin shows it as "Your selection"; a list row is highlighted where it sits.
-const selectedFromPin = ref(false);
-const hasFittedFirstFix = ref<boolean>(false);
-const isInteractingWithList = ref<boolean>(false);
-let interactionTimeout: ReturnType<typeof setTimeout> | null = null;
 let prePermissionTimeout: ReturnType<typeof setTimeout> | null = null;
+let holdTimeout: ReturnType<typeof setTimeout> | null = null;
+
+// The Near Me session owns the ranking, the selection, following and first-fix framing; this
+// island renders its view and tells it what happened.
+const session = createNearMeSession({
+  venues: () => venuesList.value,
+  setManualPosition: (position) => geo.setManualPosition(position),
+});
+const sessionView = shallowRef(session.view());
+session.subscribe(() => {
+  sessionView.value = session.view();
+});
 
 /** Show pre-permission explanation before browser prompt fires */
 const showPrePermission = ref<boolean>(false);
-/** True when user is ≥ ~30km from Spinningfields centre */
-const isUserFarFromManchester = ref<boolean>(false);
-/** Low accuracy detected (radius > 100m) */
-const isLowAccuracy = ref<boolean>(false);
 // GPS and the venue list work without data; only the map tiles need the network.
 const online = useOnline();
 
@@ -225,13 +212,16 @@ const DEV_FORCED_STATE = (() => {
 
 // Tier filter state: separate from the homepage filters. Approved on by default;
 // other eligible tiers are opt-in; Rejected & Gone But Not Forgotten are never offered.
-const selectedTiers = ref<TierValue[]>([...NEAR_ME_DEFAULT_TIERS]);
+const selectedTiers = computed(() => sessionView.value.tiers);
 
 // Price filter: empty means any price.
-const selectedCosts = ref<CostTier[]>([]);
+const selectedCosts = computed(() => sessionView.value.costs);
 
 function toggleCostFilter(cost: CostTier) {
-  selectedCosts.value = toggleCost(selectedCosts.value, cost);
+  session.filtersChanged({
+    tiers: selectedTiers.value,
+    costs: toggleCost(selectedCosts.value, cost),
+  });
 }
 
 // Chip counts only include venues that can be plotted, so they match the pins and list.
@@ -244,76 +234,22 @@ const lastSelectedTier = computed(() =>
   selectedTiers.value.length === 1 ? selectedTiers.value : []
 );
 
-// Ranking state
-const lastRankedOrigin = ref<LatLng | null>(null);
-const rankedVenues = ref<RankedVenue[]>([]);
-// True while distances are measured from Spinningfields rather than the user.
-const isRankedFromBase = ref(true);
-
-const nearestVenue = computed(() => (rankedVenues.value.length > 0 ? rankedVenues.value[0] : null));
-
-// The nearest venue is the hero card, so the list carries the rest.
-const listVenues = computed(() => rankedVenues.value.slice(1));
-
-// The venue picked on the map, with its place in the ranking (null while nothing is selected, or when
-// the pick was a list row, which is highlighted in place instead).
-const selection = computed(() => {
-  if (!selectedFromPin.value) return null;
-  const index = rankedVenues.value.findIndex((rv) => rv.venue.id === selectedVenueId.value);
-  if (index >= 0)
-    return {
-      venue: rankedVenues.value[index].venue,
-      rv: rankedVenues.value[index],
-      rank: index + 1,
-    };
-  const venue = venuesList.value.find((candidate) => candidate.id === selectedVenueId.value);
-  return venue ? { venue, rv: null, rank: undefined } : null;
-});
-
-// What the collapsed sheet shows: the selected venue, else the nearest.
-const previewVenue = computed(() => {
-  if (rankedVenues.value.length === 0) return null;
-  const selected = rankedVenues.value.findIndex((rv) => rv.venue.id === selectedVenueId.value);
-  const index = selected >= 0 ? selected : 0;
-  return { rv: rankedVenues.value[index], rank: index + 1 };
-});
+const nearestVenue = computed(() => sessionView.value.nearest);
+const listVenues = computed(() => sessionView.value.others);
+const selection = computed(() => sessionView.value.selection);
+const selectedVenueId = computed(() => sessionView.value.selectedId);
+const previewVenue = computed(() => sessionView.value.preview);
+const isRankedFromBase = computed(() => sessionView.value.rankedFromBase);
+const isFollowingUser = computed(() => sessionView.value.following);
+const isPickingLocation = computed(() => sessionView.value.picking);
+const isUserFarFromManchester = computed(() => sessionView.value.banner.farFromManchester);
 
 const map = useNearMeLeaflet({
   mapApiKey: props.mapApiKey,
   container: mapContainerRef,
   sheet,
-  geo,
-  pinnedVenues: () =>
-    venuesList.value.filter(
-      (v) =>
-        selectedTiers.value.includes(v.tier) &&
-        matchesCost(v, selectedCosts.value) &&
-        v.lat != null &&
-        v.lng != null
-    ),
-  rankedVenues,
-  selectedVenueId,
-  isFollowingUser,
-  isPickingLocation,
-  hasFittedFirstFix,
-  isUserFarFromManchester,
-  isLowAccuracy,
-  overlayInsets,
-  onPinSelect: (venue) => selectVenueItem(venue, true),
+  session,
 });
-
-/** What the close button and the control stack take from the map's top and right edges on a phone, measured. */
-function overlayInsets() {
-  const mapEl = mapContainerRef.value;
-  const controls = shellRef.value?.querySelector('.near-me-controls-cluster');
-  const close = closeButtonRef.value;
-  if (sheet.isDesktop.value || !mapEl || !controls || !close) return { top: 0, right: 0 };
-  const mapRect = mapEl.getBoundingClientRect();
-  return {
-    top: Math.max(close.getBoundingClientRect().bottom - mapRect.top, 0),
-    right: Math.max(mapRect.right - controls.getBoundingClientRect().left, 0),
-  };
-}
 
 /** The height the peek needs: the handle, the tier chips and the nearest card, with the body's padding. */
 function measurePeekContent() {
@@ -347,58 +283,42 @@ let previousActiveElement: HTMLElement | null = null;
 let previousBodyOverflow: string | null = null;
 let mapInitializationId = 0;
 
-// Hold the ranking still while a finger is on the list or it is still scrolling, so rows don't jump.
-const LIST_SETTLE_MS = 400;
+function toggleTierFilter(tier: TierValue) {
+  session.filtersChanged({
+    tiers: toggleNearMeTier(selectedTiers.value, tier),
+    costs: selectedCosts.value,
+  });
+}
 
-function holdRanking(releaseAfterMs: number | null) {
-  isInteractingWithList.value = true;
-  if (interactionTimeout) clearTimeout(interactionTimeout);
-  interactionTimeout = null;
-  if (releaseAfterMs === null) return;
-  interactionTimeout = setTimeout(() => {
-    interactionTimeout = null;
-    isInteractingWithList.value = false;
-    updateRanking();
-  }, releaseAfterMs);
+// The session holds the ranking while a finger is on the list or it is still scrolling, so rows
+// don't jump; the timer only tells it when time has passed.
+function scheduleRelease() {
+  if (holdTimeout) clearTimeout(holdTimeout);
+  holdTimeout = null;
+  const releaseAt = session.holdReleasesAt();
+  if (releaseAt === null) return;
+  holdTimeout = setTimeout(
+    () => {
+      holdTimeout = null;
+      session.tick(Date.now());
+    },
+    Math.max(releaseAt - Date.now(), 0)
+  );
 }
 
 function onListScroll() {
-  holdRanking(LIST_SETTLE_MS);
+  session.listScrolled(Date.now());
+  scheduleRelease();
 }
 
 function onListTouchStart() {
-  holdRanking(null);
+  session.listTouched();
+  scheduleRelease();
 }
 
 function onListTouchEnd() {
-  holdRanking(LIST_SETTLE_MS);
-}
-
-function toggleTierFilter(tier: TierValue) {
-  selectedTiers.value = toggleNearMeTier(selectedTiers.value, tier);
-}
-
-// Anti-flicker venue ranking calculation
-function updateRanking(force = false) {
-  if (!force && isInteractingWithList.value) {
-    return;
-  }
-
-  const { origin: currentOrigin, fromBase } = resolveRankingOrigin(geo.position.value);
-
-  if (
-    force ||
-    fromBase !== isRankedFromBase.value ||
-    hasOriginMovedSignificantly(lastRankedOrigin.value, currentOrigin, ORIGIN_MOVE_THRESHOLD_METRES)
-  ) {
-    rankedVenues.value = rankVenues({
-      origin: currentOrigin,
-      venues: venuesList.value.filter((venue) => matchesCost(venue, selectedCosts.value)),
-      tiers: selectedTiers.value,
-    });
-    lastRankedOrigin.value = currentOrigin;
-    isRankedFromBase.value = fromBase;
-  }
+  session.listReleased(Date.now());
+  scheduleRelease();
 }
 
 // A venue's page replaces the old dossier panel.
@@ -408,53 +328,40 @@ function goToVenuePage(venue: Venue) {
 
 // Put the selection away; the pin loses its highlight.
 function clearSelection() {
-  selectedVenueId.value = null;
-  map.highlightSelectedPin();
+  session.clearSelection();
 }
 
-// Select a venue item from list or pin click
-function selectVenueItem(venue: Venue, fromPinClick = false) {
-  selectedVenueId.value = venue.id;
-  selectedFromPin.value = fromPinClick;
-  // Choosing a venue overrides following the user, so a position update doesn't pull the
-  // map back. Recentre on me (or a manual pick) switches following back on.
-  isFollowingUser.value = false;
-
-  map.highlightSelectedPin();
-
-  // Tapping a pin on a collapsed sheet opens it to half height (below), so aim for that.
-  const opensSheet = fromPinClick && !sheet.isDesktop.value && sheet.snap.value === 'collapsed';
-  map.focusVenue(venue, { sheetState: opensSheet ? 'half' : sheet.snap.value });
-
-  // "Your selection" is the top of the list: bring it into view.
-  void nextTick(() => listContainerRef.value?.scrollTo({ top: 0, behavior: 'smooth' }));
-
-  // On mobile, expand from collapsed so user can see details
-  if (opensSheet) sheet.snap.value = 'half';
-}
+// A selection, from a list row or a pin tap (the map hands pin taps to the session itself).
+watch(
+  () => sessionView.value.selections,
+  () => {
+    // "Your selection" is the top of the list: bring it into view.
+    void nextTick(() => listContainerRef.value?.scrollTo({ top: 0, behavior: 'smooth' }));
+    // Tapping a pin on a collapsed phone sheet opens it to half height so the details show.
+    if (sessionView.value.selectionSource === 'pin') {
+      sheet.snap.value = snapAfterPinTap(sheet.snap.value, sheet.isDesktop.value);
+    }
+  }
+);
 
 const statusBanner = computed(() =>
   nearMeStatusBanner(
     {
       devForced: DEV_FORCED_STATE,
-      picking: isPickingLocation.value,
+      picking: sessionView.value.banner.picking,
       geoState: geo.state.value,
-      farFromManchester: isUserFarFromManchester.value,
+      farFromManchester: sessionView.value.banner.farFromManchester,
       manual: geo.isManual.value,
-      lowAccuracy: isLowAccuracy.value,
+      lowAccuracy: sessionView.value.banner.lowAccuracy,
       offline: !online.value,
     },
     {
-      startPicking: () => {
-        isPickingLocation.value = true;
-      },
-      stopPicking: () => {
-        isPickingLocation.value = false;
-      },
+      startPicking: () => session.startPicking(),
+      stopPicking: () => session.stopPicking(),
       close,
       resumeLive: () => {
         geo.resumeLive();
-        isFollowingUser.value = true;
+        session.resumeFollowing();
       },
     }
   )
@@ -465,24 +372,23 @@ function close() {
 }
 
 function recenterOnMe() {
-  isFollowingUser.value = true;
-  if (!map.recenterOnUser()) geo.start();
+  if (!session.recentre()) geo.start();
 }
 
 function returnHome() {
-  isFollowingUser.value = false;
-  map.showBase();
+  session.returnToBase();
 }
 
 function togglePickLocation() {
-  isPickingLocation.value = !isPickingLocation.value;
+  if (isPickingLocation.value) session.stopPicking();
+  else session.startPicking();
 }
 
 function handleKeyDown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     event.preventDefault();
     if (isPickingLocation.value) {
-      isPickingLocation.value = false;
+      session.stopPicking();
       return;
     }
     close();
@@ -497,33 +403,10 @@ watch(isPickingLocation, (picking) => {
   mapContainerRef.value?.classList.toggle('is-picking-location', picking);
 });
 
-// Watch user position and manual flag
+// The position (and whether it was set by hand) goes to the session, which decides what follows.
 watch([geo.position, geo.isManual], () => {
-  map.updateUserMarker();
-  updateRanking(false);
-
-  // Fit bounds on first position fix
-  if (!hasFittedFirstFix.value && geo.position.value && rankedVenues.value.length > 0) {
-    void nextTick(() => {
-      map.fitFirstFixBounds();
-    });
-  }
-});
-
-// Watch rankedVenues to fit bounds if first fix position was acquired before ranking finished
-watch(rankedVenues, (venues) => {
-  map.renderVenueMarkers();
-  if (!hasFittedFirstFix.value && geo.position.value && venues.length > 0) {
-    void nextTick(() => {
-      map.fitFirstFixBounds();
-    });
-  }
-});
-
-// Watch selected tiers to update ranking and map markers
-watch([selectedTiers, selectedCosts], () => {
-  map.renderVenueMarkers();
-  updateRanking(true);
+  const position = geo.position.value;
+  session.positionChanged(position ? { ...position, manual: geo.isManual.value } : null);
 });
 
 // Prevent event leakage when panel mounts
@@ -558,21 +441,13 @@ async function onOpenChange(open: boolean) {
       shellRef.value.focus();
     }
 
-    await map.init(
-      isCurrent,
-      () => panelRef.value,
-      () => updateRanking(true)
-    );
+    // A fresh session, ranked from Spinningfields until the first fix.
+    session.reset();
+    await map.init(isCurrent, () => panelRef.value);
     if (!isCurrent()) return;
 
     // Request location ONLY when Near Me opens
-    isFollowingUser.value = true;
-    isPickingLocation.value = false;
-    hasFittedFirstFix.value = false;
-    selectedVenueId.value = null;
     sheet.snap.value = 'peek';
-    isUserFarFromManchester.value = false;
-    isLowAccuracy.value = false;
 
     // Show the pre-permission explanation for a beat, so the user sees it before the
     // blocking OS permission dialog covers the screen.
@@ -591,20 +466,13 @@ async function onOpenChange(open: boolean) {
       clearTimeout(prePermissionTimeout);
       prePermissionTimeout = null;
     }
-    if (interactionTimeout !== null) {
-      clearTimeout(interactionTimeout);
-      interactionTimeout = null;
+    if (holdTimeout !== null) {
+      clearTimeout(holdTimeout);
+      holdTimeout = null;
     }
     geo.stop();
-    isPickingLocation.value = false;
-    selectedTiers.value = [...NEAR_ME_DEFAULT_TIERS];
-    selectedCosts.value = [];
-    lastRankedOrigin.value = null;
-    hasFittedFirstFix.value = false;
-    selectedVenueId.value = null;
+    session.reset();
     showPrePermission.value = false;
-    isUserFarFromManchester.value = false;
-    isLowAccuracy.value = false;
 
     if (previousBodyOverflow !== null) {
       document.body.style.overflow = previousBodyOverflow;
@@ -647,7 +515,7 @@ onUnmounted(() => {
 
   mapInitializationId += 1;
   if (prePermissionTimeout !== null) clearTimeout(prePermissionTimeout);
-  if (interactionTimeout !== null) clearTimeout(interactionTimeout);
+  if (holdTimeout !== null) clearTimeout(holdTimeout);
   window.removeEventListener('resize', sheet.checkScreenSize);
   nearMeHistory.unlisten();
 

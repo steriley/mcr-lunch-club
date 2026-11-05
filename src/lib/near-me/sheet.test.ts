@@ -6,6 +6,7 @@ import {
   expandedSnap,
   sheetHeightCss,
   sheetHeightPx,
+  snapAfterPinTap,
   snapAfterSwipe,
 } from './sheet';
 
@@ -53,5 +54,12 @@ describe('Near Me bottom sheet', () => {
     assert.equal(sheetHeightPx('peek', 1000, 300), 380);
     assert.equal(sheetHeightPx('peek', 600, 410), 410);
     assert.equal(sheetHeightCss('peek', false, 409.2), 'max(38dvh, 410px)');
+  });
+
+  it('opens a collapsed phone sheet to half when a pin is tapped, and leaves every other case alone', () => {
+    assert.equal(snapAfterPinTap('collapsed', false), 'half');
+    assert.equal(snapAfterPinTap('collapsed', true), 'collapsed');
+    assert.equal(snapAfterPinTap('peek', false), 'peek');
+    assert.equal(snapAfterPinTap('full', false), 'full');
   });
 });
