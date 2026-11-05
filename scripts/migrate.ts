@@ -1,6 +1,9 @@
 import { migrate as migrateNeonHttp } from 'drizzle-orm/neon-http/migrator';
 import { migrate as migratePg } from 'drizzle-orm/node-postgres/migrator';
 import { closeDatabase, db, driver } from '@/lib/db-script';
+import { guardScriptTarget } from '@/lib/script-guard';
+
+guardScriptTarget(process.argv.slice(2), { writes: true });
 
 // Applies the committed migrations in ./drizzle using the same bookkeeping
 // table as drizzle-kit, so either tool can be used against a database.

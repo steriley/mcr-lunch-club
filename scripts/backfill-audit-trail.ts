@@ -4,7 +4,7 @@
  * newly listed venues joined, and closures with their tier move.
  *
  *   pnpm venues:backfill-audit-trail --dry-run   show what would change, write nothing
- *   pnpm venues:backfill-audit-trail             write
+ *   pnpm venues:backfill-audit-trail             write (production also needs --production)
  *
  * Anything already recorded is skipped, so a rerun changes nothing. Aborts
  * without writing if a venue or Chair cannot be found. The public pages are
@@ -13,8 +13,12 @@
 import fs from 'node:fs';
 import { closeDatabase, db } from '@/lib/db-script';
 import { backfillAuditTrail, BackfillError, type BackfillData } from '@/lib/audit-trail-backfill';
+import { guardScriptTarget } from '@/lib/script-guard';
 
-const dryRun = process.argv.slice(2).includes('--dry-run');
+const args = process.argv.slice(2);
+const dryRun = args.includes('--dry-run');
+
+guardScriptTarget(args, { writes: !dryRun });
 
 const data = JSON.parse(
   fs.readFileSync('drizzle/data/audit-trail-backfill.json', 'utf8')

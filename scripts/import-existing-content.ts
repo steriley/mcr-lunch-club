@@ -10,6 +10,7 @@
  * Venues match on slug; bribery records match on title + incident date.
  * New venues are imported with their tier, so they are public as soon as they have coordinates.
  * Tiers otherwise change only through two-Chair proposals, which is why --update leaves them alone.
+ * A write to the production database also needs --production (README, "Writing to a database from your machine").
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,9 +19,12 @@ import { briberyRecords } from '@/db/schema';
 import { closeDatabase, db } from '@/lib/db-script';
 import { importVenues, toImportableVenue, type LegacyVenue } from '@/lib/venue-import';
 import type { Incident } from '@/types';
+import { guardScriptTarget } from '@/lib/script-guard';
 
 const args = new Set(process.argv.slice(2));
 const dryRun = args.has('--dry-run');
+
+guardScriptTarget([...args], { writes: !dryRun });
 const updateTiers = args.has('--update-tiers');
 const update = args.has('--update') || updateTiers;
 

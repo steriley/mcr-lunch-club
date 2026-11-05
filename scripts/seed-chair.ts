@@ -1,6 +1,9 @@
 import { closeDatabase, db } from '@/lib/db-script';
 import { createAuth } from '@/lib/auth-config';
 import { getSeedChairEnvironment, isProduction } from '@/lib/env';
+import { guardScriptTarget } from '@/lib/script-guard';
+
+guardScriptTarget(process.argv.slice(2), { writes: true });
 
 const auth = createAuth(db);
 const context = await auth.$context;
