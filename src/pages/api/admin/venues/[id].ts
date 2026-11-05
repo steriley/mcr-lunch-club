@@ -18,7 +18,11 @@ export const PUT = adminRoute(
   async ({ params, body, actor }) =>
     mapOutcome(
       await venueLifecycle.updateVenue(db, params.id, body, actor),
-      ({ venue, route }) => ({ venue: serializeVenue(venue), routeWarning: routeWarning(route) })
+      ({ venue, route, timelineEntry }) => ({
+        venue: serializeVenue(venue),
+        routeWarning: routeWarning(route),
+        timelineEntry,
+      })
     )
 );
 

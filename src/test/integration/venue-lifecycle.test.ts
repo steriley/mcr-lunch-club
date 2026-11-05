@@ -160,6 +160,42 @@ describe('the venue lifecycle (database)', { skip: skipIntegration }, () => {
       assert.equal(revisions.length, 1);
     });
 
+    it('returns the amendment it wrote, built by the server', async () => {
+      const db = await testDb();
+      const id = await createVenue('Chip Shop');
+      const outcome = await venueLifecycle.updateVenue(
+        db,
+        id,
+        input({ name: 'Chippy', slug: 'chippy' }),
+        sam,
+        lookup
+      );
+      assert.ok(outcome.ok);
+      const { timelineEntry } = outcome.value;
+      assert.equal(timelineEntry.kind, 'amendment');
+      assert.match(timelineEntry.text, /^Earliest recorded version, by Sam$/);
+
+      const again = await venueLifecycle.updateVenue(
+        db,
+        id,
+        input({ name: 'Chippy Two', slug: 'chippy' }),
+        sam,
+        lookup
+      );
+      assert.ok(again.ok);
+      assert.match(again.value.timelineEntry.text, /^Amended by Sam: Name$/);
+
+      const same = await venueLifecycle.updateVenue(
+        db,
+        id,
+        input({ name: 'Chippy Two', slug: 'chippy' }),
+        sam,
+        lookup
+      );
+      assert.ok(same.ok);
+      assert.equal(same.value.timelineEntry.text, 'Saved by Sam with no field changes');
+    });
+
     it('refuses a slug another venue has, and an unknown venue', async () => {
       const db = await testDb();
       const id = await createVenue('Chip Shop');

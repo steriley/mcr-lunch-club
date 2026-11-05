@@ -3,8 +3,10 @@ import { after, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { inspections, venueImages, venueSuggestions } from '@/db/schema';
 import { loadDashboard, loadVenueDossier, loadVenueHistory } from '@/lib/admin-read-models';
+import { inspectionEntries, toTimelineView } from '@/lib/venue-history';
 import { proposeTier } from '@/lib/tier-proposals';
 import { venueLifecycle } from '@/lib/venue-lifecycle';
+import { recordVisit as recordInspection } from '@/lib/inspections';
 import { recordVisit } from './visit-helpers';
 import {
   closeTestDb,
@@ -165,6 +167,25 @@ describe('Chairs’ Area read models (database)', { skip: skipIntegration }, () 
       assert.equal(
         await loadVenueHistory(await testDb(), '00000000-0000-4000-8000-000000000000'),
         null
+      );
+    });
+  });
+
+  describe('server-built timeline entries', () => {
+    it('the confirming press builds the same line the dossier lists afterwards', async () => {
+      const db = await testDb();
+      const id = await createVenue('Chip Shop', { tier: 'approved' });
+      await recordVisit(db, id, sam, 'satisfactory');
+      const outcome = await recordInspection(db, id, alex, 'satisfactory');
+      assert.ok(outcome.ok && outcome.value.result === 'confirmed');
+
+      const built = toTimelineView(inspectionEntries([outcome.value.inspection])[0]);
+      const page = await loadVenueDossier(db, id, jo);
+
+      assert.match(built.text, /Verified by Sam and Alex, satisfactory/);
+      assert.deepEqual(
+        page?.dossier.timeline.find((entry) => entry.kind === 'inspection'),
+        built
       );
     });
   });
