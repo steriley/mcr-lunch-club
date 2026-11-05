@@ -88,15 +88,37 @@ export function writeVenue(
   actor: Pick<Actor, 'id'> | null,
   now: Date = new Date()
 ): Promise<VenueRow | null> {
-  return db.transaction(async (tx) => {
-    const [row] = await tx
-      .update(venues)
-      .set(actor ? { ...changes, updatedBy: actor.id, updatedAt: now } : changes)
-      .where(eq(venues.id, id))
-      .returning();
-    if (row) await recordVenueRevision(tx, row, actor?.id ?? null);
-    return row ?? null;
-  });
+  return db.transaction((tx) => writeVenueStatements(tx, id, changes, actor, now));
+}
+
+/**
+ * The same two statements as `writeVenue`, one after the other with no transaction, for the
+ * `neon-http` driver (scripts only). If the revision insert fails the change stays unrecorded.
+ */
+export function writeVenueWithoutTransaction(
+  db: Database | Tx,
+  id: string,
+  changes: Partial<typeof venues.$inferInsert>,
+  actor: Pick<Actor, 'id'> | null,
+  now: Date = new Date()
+): Promise<VenueRow | null> {
+  return writeVenueStatements(db, id, changes, actor, now);
+}
+
+async function writeVenueStatements(
+  db: Pick<Database, 'update' | 'insert'>,
+  id: string,
+  changes: Partial<typeof venues.$inferInsert>,
+  actor: Pick<Actor, 'id'> | null,
+  now: Date
+): Promise<VenueRow | null> {
+  const [row] = await db
+    .update(venues)
+    .set(actor ? { ...changes, updatedBy: actor.id, updatedAt: now } : changes)
+    .where(eq(venues.id, id))
+    .returning();
+  if (row) await recordVenueRevision(db, row, actor?.id ?? null);
+  return row ?? null;
 }
 
 export async function listVenueRevisions(db: Database, venueId: string) {

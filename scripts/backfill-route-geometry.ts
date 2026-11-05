@@ -12,7 +12,7 @@
  * limit; rerun once the ORS quota resets. Needs ORS_API_KEY. Publish afterwards for the pages to
  * pick the lines up.
  */
-import { closeDatabase, db } from '@/lib/db-script';
+import { closeDatabase, db, driver } from '@/lib/db-script';
 import { getOrsApiKey } from '@/lib/env';
 import { backfillRouteGeometry } from '@/lib/route-backfill';
 
@@ -27,6 +27,8 @@ if (!dryRun && !getOrsApiKey()) {
 
 const result = await backfillRouteGeometry(db, {
   dryRun,
+  // neon-http cannot run a transaction.
+  transactions: driver !== 'neon-http',
   all: args.includes('--all'),
   delayMs: delayArg ? Math.max(0, Number(delayArg.split('=')[1]) || 0) : undefined,
   log: (line) => console.log(line),

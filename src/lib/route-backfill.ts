@@ -12,7 +12,7 @@ import {
   type WalkingRoute,
 } from '@/lib/ors';
 import { routeLine, type DriveLookup } from '@/lib/walking-route';
-import { routeColumns, writeVenue } from '@/lib/venues';
+import { routeColumns, writeVenue, writeVenueWithoutTransaction } from '@/lib/venues';
 
 /**
  * Replaces the stored distance and walking time of venues with coordinates
@@ -157,6 +157,8 @@ export interface GeometryBackfillOptions {
   delayMs?: number;
   route?: (to: LatLng) => Promise<WalkingRoute>;
   drive?: DriveLookup;
+  /** False for the neon-http driver, which cannot run a transaction. Default true. */
+  transactions?: boolean;
   sleep?: (ms: number) => Promise<void>;
   log?: (line: string) => void;
 }
@@ -231,7 +233,12 @@ export async function backfillRouteGeometry(
         log(`  ${venue.name}: no line available (left as it is)`);
         continue;
       }
-      await writeVenue(db, venue.id, line, null);
+      await (options.transactions === false ? writeVenueWithoutTransaction : writeVenue)(
+        db,
+        venue.id,
+        line,
+        null
+      );
       result.routed += 1;
       result.remaining -= 1;
       log(`  ${venue.name}: ${line.routeMode} line, ${line.routeDurationMin} min`);

@@ -2,7 +2,7 @@ import '../setup-env';
 import { after, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { eq, isNotNull } from 'drizzle-orm';
-import { venues } from '@/db/schema';
+import { venueRevisions, venues } from '@/db/schema';
 import { OrsError, type LatLng, type WalkingRoute } from '@/lib/ors';
 import { backfillRouteGeometry, backfillRoutes } from '@/lib/route-backfill';
 import { closeTestDb, createVenue, resetTestDb, skipIntegration, testDb } from './db';
@@ -157,6 +157,24 @@ describe('route backfill (database)', { skip: skipIntegration }, () => {
         ['walkline', 'walk', 11, 11]
       );
       assert.equal((await lineOf('No Location')).routeGeometry, null);
+    });
+
+    it('draws lines without a transaction (neon-http) and still records a revision', async () => {
+      const db = await testDb();
+      const result = await backfillRouteGeometry(db, {
+        ...fast,
+        transactions: false,
+        route: async () => line('walkline'),
+        drive: async () => assert.fail('Nobody needs driving here'),
+      });
+      assert.deepEqual([result.todo, result.routed, result.failed], [31, 31, []]);
+      const venue = await lineOf('Venue 00');
+      assert.deepEqual([venue.routeGeometry, venue.walkingTimeMin], ['walkline', 11]);
+      const revisions = await db
+        .select()
+        .from(venueRevisions)
+        .where(eq(venueRevisions.venueId, venue.id));
+      assert.equal(revisions.length, 1);
     });
 
     it('routes a venue over 30 minutes by car, and a rerun only does what is left', async () => {
