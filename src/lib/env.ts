@@ -69,7 +69,7 @@ export function getMigrationDatabaseUrl(): string {
   );
 }
 
-export type ScriptDatabaseTarget = 'preview' | 'production';
+type ScriptDatabaseTarget = 'preview' | 'production';
 
 export interface ScriptDatabase {
   url: string;
