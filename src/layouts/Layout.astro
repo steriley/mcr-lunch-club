@@ -202,15 +202,20 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
       import '@/pwa/register';
     </script>
     <script>
-      import { getWalkingDirectionsUrl } from '@/lib/map/directions';
+      import { getDrivingDirectionsUrl, getWalkingDirectionsUrl } from '@/lib/map/directions';
 
-      // Pages ship Google walking directions; Apple devices get Apple Maps, like the Near Me walk button.
-      document.querySelectorAll<HTMLAnchorElement>('a[data-walk-directions]').forEach((link) => {
-        const lat = Number(link.dataset.lat);
-        const lng = Number(link.dataset.lng);
-        if (Number.isFinite(lat) && Number.isFinite(lng))
-          link.href = getWalkingDirectionsUrl(lat, lng);
-      });
+      // Pages ship Google directions; Apple devices get Apple Maps, like the Near Me walk button.
+      const urlFor = {
+        'data-walk-directions': getWalkingDirectionsUrl,
+        'data-drive-directions': getDrivingDirectionsUrl,
+      };
+      for (const [attribute, directionsUrl] of Object.entries(urlFor)) {
+        document.querySelectorAll<HTMLAnchorElement>(`a[${attribute}]`).forEach((link) => {
+          const lat = Number(link.dataset.lat);
+          const lng = Number(link.dataset.lng);
+          if (Number.isFinite(lat) && Number.isFinite(lng)) link.href = directionsUrl(lat, lng);
+        });
+      }
     </script>
     <script>
       // <details> flips to display:none the moment it closes, so keep it [open] while the

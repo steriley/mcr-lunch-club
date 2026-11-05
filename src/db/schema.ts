@@ -46,6 +46,11 @@ export const venues = pgTable('venues', {
   walkingTimeMin: integer('walking_time_min'),
   // When distance/walking time last came from an ORS route; null for pending or pre-ORS estimates.
   routeUpdatedAt: timestamp('route_updated_at', { withTimezone: true }),
+  // The route line drawn on the venue page: an ORS encoded polyline (precision 5) from HQ, plus the
+  // mode it was routed in and the minutes in that mode. Null while pending; cleared when the location changes.
+  routeGeometry: text('route_geometry'),
+  routeMode: text('route_mode'),
+  routeDurationMin: integer('route_duration_min'),
   // Cached: the latest confirmed inspection (verified or legacy). Never edited by hand.
   lastInspectionDate: date('last_inspection_date'),
   mapSearchLink: text('map_search_link'),

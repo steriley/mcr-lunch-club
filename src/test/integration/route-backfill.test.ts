@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { eq, isNotNull } from 'drizzle-orm';
 import { venues } from '@/db/schema';
 import { OrsError, type LatLng, type WalkingRoute } from '@/lib/ors';
-import { backfillRoutes } from '@/lib/route-backfill';
+import { backfillRouteGeometry, backfillRoutes } from '@/lib/route-backfill';
 import { closeTestDb, createVenue, resetTestDb, skipIntegration, testDb } from './db';
 
 describe('route backfill (database)', { skip: skipIntegration }, () => {
@@ -134,5 +134,69 @@ describe('route backfill (database)', { skip: skipIntegration }, () => {
       matrix: async (destinations) => destinations.map(() => walk),
     });
     assert.equal(result.todo, 31);
+  });
+
+  describe('route lines', () => {
+    const line = (geometry: string): WalkingRoute => ({ ...walk, geometry });
+    const lineOf = async (name: string) => {
+      const [row] = await (await testDb()).select().from(venues).where(eq(venues.name, name));
+      return row;
+    };
+
+    it('draws a walking line per venue and leaves distance and walking time alone', async () => {
+      const db = await testDb();
+      const result = await backfillRouteGeometry(db, {
+        ...fast,
+        route: async () => line('walkline'),
+        drive: async () => assert.fail('Nobody needs driving here'),
+      });
+      assert.deepEqual([result.todo, result.routed, result.failed], [31, 31, []]);
+      const venue = await lineOf('Venue 00');
+      assert.deepEqual(
+        [venue.routeGeometry, venue.routeMode, venue.routeDurationMin, venue.walkingTimeMin],
+        ['walkline', 'walk', 11, 11]
+      );
+      assert.equal((await lineOf('No Location')).routeGeometry, null);
+    });
+
+    it('routes a venue over 30 minutes by car, and a rerun only does what is left', async () => {
+      const db = await testDb();
+      await db.update(venues).set({ walkingTimeMin: 40 }).where(eq(venues.name, 'Venue 00'));
+      await backfillRouteGeometry(db, {
+        ...fast,
+        route: async () => line('walkline'),
+        drive: async () => ({ durationSeconds: 600, geometry: 'driveline' }),
+      });
+      const far = await lineOf('Venue 00');
+      assert.deepEqual(
+        [far.routeGeometry, far.routeMode, far.routeDurationMin, far.walkingTimeMin],
+        ['driveline', 'drive', 10, 40]
+      );
+      const again = await backfillRouteGeometry(db, { ...fast, dryRun: true });
+      assert.equal(again.todo, 0);
+    });
+
+    it('leaves a far venue without a line when driving fails, and stops on a rate limit', async () => {
+      const db = await testDb();
+      await db.update(venues).set({ walkingTimeMin: 40 }).where(eq(venues.name, 'Venue 00'));
+      const failed = await backfillRouteGeometry(db, {
+        ...fast,
+        route: async () => line('walkline'),
+        drive: async () => {
+          throw new OrsError('unavailable', 'down');
+        },
+      });
+      assert.deepEqual(failed.failed, ['Venue 00']);
+      assert.equal((await lineOf('Venue 00')).routeGeometry, null);
+
+      const limited = await backfillRouteGeometry(db, {
+        ...fast,
+        route: async () => line('walkline'),
+        drive: async () => {
+          throw new OrsError('rate_limited', 'quota spent');
+        },
+      });
+      assert.match(limited.stopped ?? '', /quota spent \(stopped at Venue 00\)/);
+    });
   });
 });

@@ -19,7 +19,7 @@ import type { CostBand } from '@/lib/venue-schema';
 import { sortForPublic } from '@/lib/venue-order';
 import { isMappable, isPubliclyVisible } from '@/lib/visibility';
 import { publicVenueCondition } from '@/lib/visibility-sql';
-import type { Incident, Inspection, PublicImage, Venue } from '@/types';
+import type { Incident, Inspection, PublicImage, Venue, VenueRoute } from '@/types';
 
 /**
  * Read-only queries for the public site. Venues are filtered with the shared
@@ -91,11 +91,23 @@ export function toPublicVenue(row: PublicRow, image: VenueImageRow | null = null
   };
 }
 
+/** A stored route line, or null when any part of it is missing: a half-set line is never drawn. */
+function toVenueRoute(
+  row: Pick<VenueRow, 'routeGeometry' | 'routeMode' | 'routeDurationMin'>
+): VenueRoute | null {
+  const { routeGeometry, routeMode, routeDurationMin } = row;
+  if (!routeGeometry || routeDurationMin === null) return null;
+  if (routeMode !== 'walk' && routeMode !== 'drive') return null;
+  return { geometry: routeGeometry, mode: routeMode, durationMin: routeDurationMin };
+}
+
 /** Public venue page extras that the list views don't need. */
 export interface PublicVenueDetail extends PublicVenue {
   pullQuote: string | null;
   /** The venue's own website as the Chairs entered it; null when none. */
   websiteUrl: string | null;
+  /** The route line from HQ for the venue page map; null while it is pending or the venue has no location. */
+  route: VenueRoute | null;
 }
 
 function isPublicRow(row: VenueRow): row is PublicRow {
@@ -145,6 +157,7 @@ const toPublicDetail = (row: VenueWithImage): PublicVenueDetail => ({
   ...toPublic(row),
   pullQuote: row.venue.pullQuote,
   websiteUrl: row.venue.websiteUrl,
+  route: toVenueRoute(row.venue),
 });
 
 export async function getPublicVenue(slug: string): Promise<PublicVenueDetail | null> {

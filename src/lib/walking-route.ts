@@ -1,10 +1,13 @@
 import {
   OrsError,
+  drivingRouteFromBase,
   routeToVenueValues,
   walkingRouteFromBase,
+  type DrivingRoute,
   type LatLng,
   type WalkingRoute,
 } from '@/lib/ors';
+import { routeModeFor, type RouteMode } from '@/lib/route-display';
 
 /**
  * Distance and walking time from HQ for a venue being saved. They are only
@@ -18,6 +21,13 @@ export interface RouteValues {
   walkingTimeMin: number | null;
   /** Set when ORS just supplied the route, null when there is none, undefined to leave as stored. */
   routeUpdatedAt?: Date | null;
+  /**
+   * The line drawn on the venue page. Set together or not at all: an encoded polyline, the mode it
+   * was routed in and the minutes in that mode. Null when there is none; undefined to leave as stored.
+   */
+  routeGeometry?: string | null;
+  routeMode?: RouteMode | null;
+  routeDurationMin?: number | null;
 }
 
 export interface ResolvedRoute extends RouteValues {
@@ -35,8 +45,47 @@ export interface StoredLocation {
 }
 
 export type RouteLookup = (to: LatLng) => Promise<WalkingRoute>;
+export type DriveLookup = (to: LatLng) => Promise<DrivingRoute>;
 
-const NO_ROUTE: RouteValues = { distanceMiles: null, walkingTimeMin: null, routeUpdatedAt: null };
+const NO_ROUTE: RouteValues = {
+  distanceMiles: null,
+  walkingTimeMin: null,
+  routeUpdatedAt: null,
+  routeGeometry: null,
+  routeMode: null,
+  routeDurationMin: null,
+};
+
+type RouteLine = Required<Pick<RouteValues, 'routeGeometry' | 'routeMode' | 'routeDurationMin'>>;
+
+const NO_LINE: RouteLine = { routeGeometry: null, routeMode: null, routeDurationMin: null };
+
+/**
+ * The line for the venue page: the walking path, or the driving path when the walk is long. A long
+ * walk whose driving route cannot be fetched gets no line, never a walking line under "Drive".
+ */
+export async function routeLine(
+  to: LatLng,
+  walk: WalkingRoute,
+  walkingTimeMin: number,
+  driveLookup: DriveLookup = drivingRouteFromBase
+): Promise<RouteLine> {
+  if (routeModeFor(walkingTimeMin) === 'walk') {
+    return walk.geometry
+      ? { routeGeometry: walk.geometry, routeMode: 'walk', routeDurationMin: walkingTimeMin }
+      : NO_LINE;
+  }
+  try {
+    const drive = await driveLookup(to);
+    return {
+      routeGeometry: drive.geometry,
+      routeMode: 'drive',
+      routeDurationMin: Math.max(1, Math.round(drive.durationSeconds / 60)),
+    };
+  } catch {
+    return NO_LINE;
+  }
+}
 
 /** Coordinates as stored (numeric(9,6)), so edits compare like for like. */
 function storedCoordinate(value: number): string {
@@ -59,10 +108,18 @@ export function sameCoordinates(
 /** Calls ORS for the route to `to`, turning any failure into a pending route. */
 export async function computeRoute(
   to: LatLng,
-  lookup: RouteLookup = walkingRouteFromBase
+  lookup: RouteLookup = walkingRouteFromBase,
+  driveLookup: DriveLookup = drivingRouteFromBase
 ): Promise<ResolvedRoute> {
   try {
-    return { ...routeToVenueValues(await lookup(to)), routeUpdatedAt: new Date(), error: null };
+    const walk = await lookup(to);
+    const values = routeToVenueValues(walk);
+    return {
+      ...values,
+      ...(await routeLine(to, walk, values.walkingTimeMin, driveLookup)),
+      routeUpdatedAt: new Date(),
+      error: null,
+    };
   } catch (error) {
     const orsError =
       error instanceof OrsError
@@ -81,7 +138,8 @@ export async function computeRoute(
 export async function resolveRoute(
   input: { latitude: number | null; longitude: number | null },
   existing: StoredLocation | null,
-  lookup: RouteLookup = walkingRouteFromBase
+  lookup: RouteLookup = walkingRouteFromBase,
+  driveLookup: DriveLookup = drivingRouteFromBase
 ): Promise<ResolvedRoute> {
   if (input.latitude === null || input.longitude === null) return { ...NO_ROUTE, error: null };
 
@@ -97,10 +155,14 @@ export async function resolveRoute(
       error: null,
     };
     if (existing.routeUpdatedAt !== null) return kept;
-    const upgraded = await computeRoute({ lat: input.latitude, lng: input.longitude }, lookup);
+    const upgraded = await computeRoute(
+      { lat: input.latitude, lng: input.longitude },
+      lookup,
+      driveLookup
+    );
     return upgraded.error ? { ...kept, error: upgraded.error } : upgraded;
   }
-  return computeRoute({ lat: input.latitude, lng: input.longitude }, lookup);
+  return computeRoute({ lat: input.latitude, lng: input.longitude }, lookup, driveLookup);
 }
 
 /**

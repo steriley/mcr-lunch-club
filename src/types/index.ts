@@ -18,6 +18,13 @@ export interface PublicImage {
   focalY: number | null;
 }
 
+/** The line from HQ drawn on a venue's page: an ORS encoded polyline (precision 5) and its mode and minutes. */
+export interface VenueRoute {
+  geometry: string;
+  mode: 'walk' | 'drive';
+  durationMin: number;
+}
+
 export interface Venue {
   id: string;
   name: string;

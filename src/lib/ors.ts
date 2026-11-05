@@ -14,6 +14,7 @@ import type { LatLng } from '@/lib/map/ranking';
  *        -> GeoJSON FeatureCollection; coordinates are [lon, lat]
  *   POST /v2/directions/foot-walking  { coordinates: [[lon, lat], [lon, lat]] }
  *        -> { routes: [{ summary: { distance (m), duration (s) } }] }
+ *   POST /v2/directions/driving-car  same body -> routes[0].geometry is an encoded polyline (precision 5)
  *   POST /v2/matrix/foot-walking  { locations, sources: [0], destinations, metrics, units: 'm' }
  *        -> { distances: [[m, ...]], durations: [[s, ...]] } (null where there is no route)
  * Free-plan quotas are per endpoint and per minute/day; a 429 means the
@@ -50,6 +51,14 @@ export interface PlaceCandidate extends LatLng {
 export interface WalkingRoute {
   distanceMetres: number;
   durationSeconds: number;
+  /** ORS encoded polyline (precision 5) of the path; absent from Matrix results. */
+  geometry?: string;
+}
+
+/** A driving route from HQ: the line and the ORS drive time. */
+export interface DrivingRoute {
+  durationSeconds: number;
+  geometry: string;
 }
 
 export interface OrsOptions {
@@ -177,18 +186,20 @@ export async function searchPlaces(
   return candidates;
 }
 
-/** Foot-walking route between two points. */
-export async function walkingRoute(
+type OrsProfile = 'foot-walking' | 'driving-car';
+
+/** Directions between two points for a profile. ORS takes [lon, lat] pairs and returns an encoded polyline by default. */
+async function directions(
+  profile: OrsProfile,
   from: LatLng,
   to: LatLng,
-  options: OrsOptions = {}
+  options: OrsOptions
 ): Promise<WalkingRoute> {
   const body = await orsRequest(
-    '/v2/directions/foot-walking',
+    `/v2/directions/${profile}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // ORS takes [lon, lat] pairs.
       body: JSON.stringify({
         coordinates: [
           [from.lng, from.lat],
@@ -199,11 +210,40 @@ export async function walkingRoute(
     options
   );
 
-  const summary = (body as { routes?: { summary?: { distance?: number; duration?: number } }[] })
-    ?.routes?.[0]?.summary;
-  if (!summary) throw new OrsError('no_result', 'OpenRouteService found no walking route.');
+  const route = (
+    body as {
+      routes?: { summary?: { distance?: number; duration?: number }; geometry?: unknown }[];
+    }
+  )?.routes?.[0];
+  if (!route?.summary)
+    throw new OrsError('no_result', `OpenRouteService found no ${profile} route.`);
   // A zero-length route (venue at HQ) comes back without distance/duration.
-  return { distanceMetres: summary.distance ?? 0, durationSeconds: summary.duration ?? 0 };
+  return {
+    distanceMetres: route.summary.distance ?? 0,
+    durationSeconds: route.summary.duration ?? 0,
+    ...(typeof route.geometry === 'string' && route.geometry ? { geometry: route.geometry } : {}),
+  };
+}
+
+/** Foot-walking route between two points. */
+export function walkingRoute(
+  from: LatLng,
+  to: LatLng,
+  options: OrsOptions = {}
+): Promise<WalkingRoute> {
+  return directions('foot-walking', from, to, options);
+}
+
+/** Driving route between two points. */
+async function drivingRoute(
+  from: LatLng,
+  to: LatLng,
+  options: OrsOptions = {}
+): Promise<DrivingRoute> {
+  const route = await directions('driving-car', from, to, options);
+  if (!route.geometry)
+    throw new OrsError('no_result', 'OpenRouteService returned no driving line.');
+  return { durationSeconds: route.durationSeconds, geometry: route.geometry };
 }
 
 /** Destinations per Matrix request; well inside the public API's per-request limits. */
@@ -252,6 +292,11 @@ export async function walkingMatrixFromBase(
       ? { distanceMetres: distance, durationSeconds: duration }
       : null;
   });
+}
+
+/** Driving route from HQ (Spinningfields) to a venue. */
+export function drivingRouteFromBase(to: LatLng, options: OrsOptions = {}): Promise<DrivingRoute> {
+  return drivingRoute(BASE_COORDINATES, to, options);
 }
 
 /** Walking route from HQ (Spinningfields) to a venue. */

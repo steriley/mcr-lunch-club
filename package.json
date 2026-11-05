@@ -30,6 +30,7 @@
     "check:built": "playwright test",
     "check:bundle": "tsx ./scripts/check-client-bundle.ts",
     "routes:backfill": "tsx ./scripts/backfill-routes.ts",
+    "routes:geometry": "tsx ./scripts/backfill-route-geometry.ts",
     "inspections:import-legacy": "tsx ./scripts/import-legacy-inspections.ts",
     "venues:backfill-audit-trail": "tsx ./scripts/backfill-audit-trail.ts",
     "test:db": "tsx ./scripts/test-db.ts",
