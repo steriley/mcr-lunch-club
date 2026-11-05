@@ -17,6 +17,13 @@ export function routeColumns(route: RouteValues) {
     distanceMiles: route.distanceMiles === null ? null : route.distanceMiles.toFixed(2),
     walkingTimeMin: route.walkingTimeMin,
     ...(route.routeUpdatedAt === undefined ? {} : { routeUpdatedAt: route.routeUpdatedAt }),
+    ...(route.routeGeometry === undefined
+      ? {}
+      : {
+          routeGeometry: route.routeGeometry,
+          routeMode: route.routeMode ?? null,
+          routeDurationMin: route.routeDurationMin ?? null,
+        }),
   };
 }
 

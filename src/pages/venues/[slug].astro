@@ -17,8 +17,10 @@ import {
   serializeForScript,
   type PublicVenueDetail,
 } from '@/lib/public-data';
-import { getWalkingDirectionsUrl } from '@/lib/map/directions';
-import { walkText } from '@/lib/route-display';
+import VenueRouteMap from '@/components/islands/VenueRouteMap.vue';
+import { getPublicMapApiKey } from '@/lib/env';
+import { getDrivingDirectionsUrl, getWalkingDirectionsUrl } from '@/lib/map/directions';
+import { routeModeFor, walkText } from '@/lib/route-display';
 import { COST_LABELS } from '@/lib/cost-display';
 import { nearbyAlternatives } from '@/lib/nearby-venues';
 import { toCard, type BenchCard } from '@/lib/sovereign-bench';
@@ -65,6 +67,17 @@ const hasLocation = venue.lat !== null && venue.lng !== null;
 const websiteHref = venue.closed ? null : safeWebsiteUrl(venue.websiteUrl);
 const websiteHost = websiteHostname(venue.websiteUrl);
 const cuisine = venue.cuisine && venue.cuisine !== 'Other' ? venue.cuisine : null;
+// Walk up to 30 minutes from HQ, drive beyond. The stored walking time decides, so every walk time
+// on the site agrees with the button and the map.
+const driving = routeModeFor(venue.walkingTimeMin) === 'drive';
+// A line routed in the other mode (a stale one) is never drawn: no walking line under "Drive there".
+const route = venue.route && venue.route.mode === (driving ? 'drive' : 'walk') ? venue.route : null;
+const showMap = hasLocation && !venue.closed;
+const routeCaption = !route
+  ? 'Route not yet charted'
+  : route.mode === 'drive'
+    ? `Drive · ${route.durationMin} min from Spinningfields · ${walkText(venue.walkingTimeMin)}`
+    : `Walk · ${route.durationMin} min from Spinningfields`;
 const showActions = (hasLocation && !venue.closed) || websiteHref !== null;
 // The link preview when someone drops this page into the lunch chat.
 const walk =
@@ -206,19 +219,35 @@ function truncate(text: string, max: number): string {
           <div class="dossier-actions">
             {hasLocation && !venue.closed && (
               <>
-                <a
-                  class="dossier-action is-primary"
-                  href={getWalkingDirectionsUrl(venue.lat!, venue.lng!, 'server')}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  data-walk-directions
-                  data-lat={venue.lat}
-                  data-lng={venue.lng}
-                >
-                  <Icon name="directions_walk" />
-                  Walk there
-                  {venue.walkingTimeMin !== null && ` · ${walkText(venue.walkingTimeMin)}`}
-                </a>
+                {driving ? (
+                  <a
+                    class="dossier-action is-primary"
+                    href={getDrivingDirectionsUrl(venue.lat!, venue.lng!, 'server')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-drive-directions
+                    data-lat={venue.lat}
+                    data-lng={venue.lng}
+                  >
+                    <Icon name="directions_car" />
+                    Drive there
+                    {route && ` · ${route.durationMin} min`}
+                  </a>
+                ) : (
+                  <a
+                    class="dossier-action is-primary"
+                    href={getWalkingDirectionsUrl(venue.lat!, venue.lng!, 'server')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-walk-directions
+                    data-lat={venue.lat}
+                    data-lng={venue.lng}
+                  >
+                    <Icon name="directions_walk" />
+                    Walk there
+                    {venue.walkingTimeMin !== null && ` · ${walkText(venue.walkingTimeMin)}`}
+                  </a>
+                )}
                 <a class="dossier-action" href={`/?venue=${encodeURIComponent(venue.slug)}`}>
                   <Icon name="explore" />
                   Show on the map
@@ -254,6 +283,26 @@ function truncate(text: string, max: number): string {
           onerror="this.remove()"
           class="w-full max-h-96 object-cover rounded-xl border border-hairline bg-paper"
         />
+      )}
+
+      {showMap && (
+        <section class="space-y-3" aria-labelledby="route-heading">
+          <h2
+            id="route-heading"
+            class="text-xl font-bold tracking-tight text-ink flex items-center gap-2"
+          >
+            <Icon name={driving ? 'directions_car' : 'directions_walk'} class="icon-md" />
+            <span>Getting there</span>
+          </h2>
+          <VenueRouteMap
+            client:visible
+            venue={venue}
+            route={route}
+            label={`Map from Lunch Club HQ in Spinningfields to ${venue.name}. ${routeCaption}.`}
+            mapApiKey={getPublicMapApiKey()}
+          />
+          <p class="text-sm text-graphite font-sans">{routeCaption}</p>
+        </section>
       )}
 
       {venue.pullQuote && (

@@ -20,3 +20,23 @@ export function getWalkingDirectionsUrl(
   }
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
 }
+
+/**
+ * Driving directions to a venue, for the ones too far to walk.
+ * - Default: https://www.google.com/maps/dir/?api=1&destination={lat},{lng}&travelmode=driving
+ * - Apple devices: https://maps.apple.com/?daddr={lat},{lng}&dirflg=d
+ */
+export function getDrivingDirectionsUrl(
+  lat: number,
+  lng: number,
+  platformOverride?: string
+): string {
+  const isApple = platformOverride
+    ? /Mac|iPhone|iPod|iPad/.test(platformOverride)
+    : typeof navigator !== 'undefined' && /Macintosh|iPhone|iPad/.test(navigator.userAgent || '');
+
+  if (isApple) {
+    return `https://maps.apple.com/?daddr=${lat},${lng}&dirflg=d`;
+  }
+  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+}

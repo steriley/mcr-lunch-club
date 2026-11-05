@@ -4,12 +4,14 @@ import type { Database } from '@/lib/db-client';
 import {
   MATRIX_BATCH_SIZE,
   OrsError,
+  drivingRouteFromBase,
   routeToVenueValues,
   walkingMatrixFromBase,
   walkingRouteFromBase,
   type LatLng,
   type WalkingRoute,
 } from '@/lib/ors';
+import { routeLine, type DriveLookup } from '@/lib/walking-route';
 import { routeColumns, writeVenue } from '@/lib/venues';
 
 /**
@@ -141,6 +143,105 @@ export async function backfillRoutes(
           `  ${venue.name}: ${error instanceof Error ? error.message : 'failed'} (left as it is)`
         );
       }
+    }
+  }
+  result.remaining = result.failed.length;
+  return result;
+}
+
+export interface GeometryBackfillOptions {
+  /** Redraw venues that already have a line. */
+  all?: boolean;
+  dryRun?: boolean;
+  /** Pause between ORS requests (free plan: 40 directions a minute). */
+  delayMs?: number;
+  route?: (to: LatLng) => Promise<WalkingRoute>;
+  drive?: DriveLookup;
+  sleep?: (ms: number) => Promise<void>;
+  log?: (line: string) => void;
+}
+
+/**
+ * Stores the route line shown on each venue page. One Directions request per
+ * venue (Matrix has no geometry), plus a driving request for venues beyond
+ * the walking cut-off. Distance and walking time are left exactly as they are:
+ * the stored walking time decides walk or drive. A venue whose line cannot be
+ * fetched is left without one and retried on the next run. A rate limit or
+ * missing key stops the run straight away.
+ */
+export async function backfillRouteGeometry(
+  db: Database,
+  options: GeometryBackfillOptions = {}
+): Promise<BackfillResult> {
+  const route = options.route ?? ((to: LatLng) => walkingRouteFromBase(to));
+  const sleep =
+    options.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
+  const log = options.log ?? (() => {});
+  const delayMs = options.delayMs ?? 2000;
+
+  const hasCoordinates = and(isNotNull(venues.latitude), isNotNull(venues.longitude));
+  const todo = await db
+    .select({
+      id: venues.id,
+      name: venues.name,
+      latitude: venues.latitude,
+      longitude: venues.longitude,
+      walkingTimeMin: venues.walkingTimeMin,
+    })
+    .from(venues)
+    .where(options.all ? hasCoordinates : and(hasCoordinates, isNull(venues.routeGeometry)))
+    .orderBy(asc(venues.name));
+
+  const result: BackfillResult = {
+    todo: todo.length,
+    routed: 0,
+    failed: [],
+    stopped: null,
+    remaining: todo.length,
+  };
+  if (options.dryRun) {
+    for (const venue of todo) log(`  would draw ${venue.name}`);
+    return result;
+  }
+
+  const stopsRun = (error: unknown) =>
+    error instanceof OrsError && (error.kind === 'rate_limited' || error.kind === 'not_configured');
+  let requests = 0;
+  for (const venue of todo) {
+    const to: LatLng = { lat: Number(venue.latitude), lng: Number(venue.longitude) };
+    try {
+      if (requests > 0 && delayMs) await sleep(delayMs);
+      requests += 1;
+      const walk = await route(to);
+      const walkingTimeMin = venue.walkingTimeMin ?? routeToVenueValues(walk).walkingTimeMin;
+      // The driving request, when one is needed, comes straight after the walking one.
+      const stopped: { error: OrsError | null } = { error: null };
+      const drive = options.drive ?? ((point: LatLng) => drivingRouteFromBase(point));
+      const line = await routeLine(to, walk, walkingTimeMin, async (point) => {
+        try {
+          return await drive(point);
+        } catch (error) {
+          if (stopsRun(error)) stopped.error = error as OrsError;
+          throw error;
+        }
+      });
+      if (stopped.error) throw stopped.error;
+      if (line.routeGeometry === null) {
+        result.failed.push(venue.name);
+        log(`  ${venue.name}: no line available (left as it is)`);
+        continue;
+      }
+      await writeVenue(db, venue.id, line, null);
+      result.routed += 1;
+      result.remaining -= 1;
+      log(`  ${venue.name}: ${line.routeMode} line, ${line.routeDurationMin} min`);
+    } catch (error) {
+      if (stopsRun(error)) {
+        result.stopped = `${(error as OrsError).message} (stopped at ${venue.name})`;
+        return result;
+      }
+      result.failed.push(venue.name);
+      log(`  ${venue.name}: ${error instanceof Error ? error.message : 'failed'} (left as it is)`);
     }
   }
   result.remaining = result.failed.length;

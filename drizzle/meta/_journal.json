@@ -134,6 +134,13 @@
       "when": 1793820588329,
       "tag": "0018_pending_change_venue_name",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793908085667,
+      "tag": "0019_venue_route_geometry",
+      "breakpoints": true
     }
   ]
 }
