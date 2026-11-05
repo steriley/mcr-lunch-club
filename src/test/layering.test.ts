@@ -49,4 +49,21 @@ describe('layering', () => {
       }
     }
   });
+
+  it('Chairs’ Area pages read through src/lib, not the database directly (#111)', () => {
+    const pages = path.resolve('src/pages/admin');
+    const files = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+        const full = path.join(dir, entry.name);
+        return entry.isDirectory() ? files(full) : entry.name.endsWith('.astro') ? [full] : [];
+      });
+    for (const file of files(pages)) {
+      const source = readFileSync(file, 'utf8');
+      const frontmatter = source.split('---')[1] ?? '';
+      assert.ok(
+        !/from '(drizzle-orm|@\/db\/schema|@\/db\/auth-schema)'/.test(frontmatter),
+        `${path.relative(pages, file)} queries the database: add a read model to src/lib/admin-read-models.ts`
+      );
+    }
+  });
 });

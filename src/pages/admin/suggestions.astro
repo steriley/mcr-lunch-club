@@ -1,11 +1,9 @@
 ---
-import { count, desc, eq } from 'drizzle-orm';
 import SuggestionInbox from '@/components/admin/SuggestionInbox.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
-import { venueSuggestions } from '@/db/schema';
+import { loadSuggestions } from '@/lib/admin-read-models';
 import { db } from '@/lib/db';
 import { SUGGESTION_STATUSES, type SuggestionStatus } from '@/lib/suggestion-schema';
-import { serializeSuggestion } from '@/lib/suggestions';
 
 export const prerender = false;
 
@@ -14,20 +12,7 @@ const status: SuggestionStatus = SUGGESTION_STATUSES.includes(requested as Sugge
   ? (requested as SuggestionStatus)
   : 'new';
 
-const [rows, counts] = await Promise.all([
-  db
-    .select()
-    .from(venueSuggestions)
-    .where(eq(venueSuggestions.status, status))
-    .orderBy(desc(venueSuggestions.createdAt))
-    .limit(200),
-  db
-    .select({ status: venueSuggestions.status, total: count() })
-    .from(venueSuggestions)
-    .groupBy(venueSuggestions.status),
-]);
-
-const totals = new Map(counts.map((row) => [row.status, row.total]));
+const { suggestions, totals } = await loadSuggestions(db, status);
 const tabs = [
   { status: 'new', label: 'Inbox' },
   { status: 'accepted', label: 'Accepted' },
@@ -70,6 +55,6 @@ const tabs = [
       ))}
     </nav>
 
-    <SuggestionInbox client:load suggestions={rows.map(serializeSuggestion)} />
+    <SuggestionInbox client:load suggestions={suggestions} />
   </div>
 </AdminLayout>

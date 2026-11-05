@@ -1,16 +1,12 @@
 ---
-import { asc } from 'drizzle-orm';
 import BriberyForm from '@/components/admin/BriberyForm.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
-import { venues } from '@/db/schema';
+import { loadVenueOptions } from '@/lib/admin-read-models';
 import { db } from '@/lib/db';
 
 export const prerender = false;
 
-const venueOptions = await db
-  .select({ id: venues.id, name: venues.name })
-  .from(venues)
-  .orderBy(asc(venues.name));
+const venueOptions = await loadVenueOptions(db);
 ---
 
 <AdminLayout title="New bribery record">
