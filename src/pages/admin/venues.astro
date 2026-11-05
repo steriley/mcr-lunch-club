@@ -1,46 +1,12 @@
 ---
-import { asc } from 'drizzle-orm';
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import VenueTable from '@/components/admin/VenueTable.vue';
-import { venues } from '@/db/schema';
+import { loadVenueList } from '@/lib/admin-read-models';
 import { db } from '@/lib/db';
-import { routeStatus } from '@/lib/route-status';
-import { hiddenReason } from '@/lib/visibility';
 
 export const prerender = false;
 
-const rows = await db
-  .select({
-    id: venues.id,
-    name: venues.name,
-    slug: venues.slug,
-    tier: venues.tier,
-    latitude: venues.latitude,
-    longitude: venues.longitude,
-    distanceMiles: venues.distanceMiles,
-    closedAt: venues.closedAt,
-    lastInspectionDate: venues.lastInspectionDate,
-    walkingTimeMin: venues.walkingTimeMin,
-    routeUpdatedAt: venues.routeUpdatedAt,
-    updatedAt: venues.updatedAt,
-  })
-  .from(venues)
-  .orderBy(asc(venues.name));
-const tableRows = rows.map(
-  ({ latitude, longitude, distanceMiles, walkingTimeMin, routeUpdatedAt, closedAt, ...venue }) => ({
-    ...venue,
-    hiddenReason: hiddenReason({ tier: venue.tier, latitude, longitude, closedAt }),
-    closed: closedAt !== null,
-    routeStatus: routeStatus({
-      latitude,
-      longitude,
-      distanceMiles,
-      walkingTimeMin,
-      routeUpdatedAt,
-    }),
-    updatedAt: venue.updatedAt.toISOString(),
-  })
-);
+const tableRows = await loadVenueList(db);
 ---
 
 <AdminLayout title="Venues">

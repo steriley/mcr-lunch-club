@@ -1,26 +1,17 @@
 ---
-import { eq } from 'drizzle-orm';
 import AdminLayout from '@/layouts/AdminLayout.astro';
-import { venues } from '@/db/schema';
 import { uuidParam } from '@/lib/admin-api';
+import { loadVenueHistory } from '@/lib/admin-read-models';
 import { db } from '@/lib/db';
-import { loadVenueTimeline } from '@/lib/venue-history';
 
 export const prerender = false;
 
 const id = uuidParam.safeParse(Astro.params.id);
-const [venue] = id.success
-  ? await db
-      .select({ id: venues.id, name: venues.name })
-      .from(venues)
-      .where(eq(venues.id, id.data))
-      .limit(1)
-  : [];
-if (!venue) {
+const history = id.success ? await loadVenueHistory(db, id.data) : null;
+if (!history) {
   return new Response('Venue not found', { status: 404, headers: { 'Cache-Control': 'no-store' } });
 }
-
-const timeline = await loadVenueTimeline(db, venue.id);
+const { venue, timeline } = history;
 ---
 
 <AdminLayout title={`History — ${venue.name}`}>

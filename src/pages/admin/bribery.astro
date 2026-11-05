@@ -1,23 +1,12 @@
 ---
-import { desc } from 'drizzle-orm';
 import BriberyTable from '@/components/admin/BriberyTable.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
-import { briberyRecords } from '@/db/schema';
+import { loadBriberyRecords } from '@/lib/admin-read-models';
 import { db } from '@/lib/db';
 
 export const prerender = false;
 
-const records = await db
-  .select({
-    id: briberyRecords.id,
-    title: briberyRecords.title,
-    venueNameText: briberyRecords.venueNameText,
-    incidentDate: briberyRecords.incidentDate,
-    description: briberyRecords.description,
-    published: briberyRecords.published,
-  })
-  .from(briberyRecords)
-  .orderBy(desc(briberyRecords.incidentDate), desc(briberyRecords.createdAt));
+const records = await loadBriberyRecords(db);
 ---
 
 <AdminLayout title="Bribery Records">

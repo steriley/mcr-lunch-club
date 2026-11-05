@@ -1,27 +1,17 @@
 ---
-import { eq } from 'drizzle-orm';
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import VenueForm from '@/components/admin/VenueForm.vue';
-import { venueSuggestions } from '@/db/schema';
 import { uuidParam } from '@/lib/admin-api';
+import { loadSuggestionPrefill } from '@/lib/admin-read-models';
 import { db } from '@/lib/db';
 import { getPublicMapApiKey } from '@/lib/env';
-import { suggestionPrefill } from '@/lib/suggestions';
 
 export const prerender = false;
 
 // ?fromSuggestion=<id>: accept a member's suggestion through this form.
 const requested = Astro.url.searchParams.get('fromSuggestion');
 const suggestionId = requested ? uuidParam.safeParse(requested) : null;
-const [suggestion] = suggestionId?.success
-  ? await db
-      .select()
-      .from(venueSuggestions)
-      .where(eq(venueSuggestions.id, suggestionId.data))
-      .limit(1)
-  : [];
-const usable = suggestion && suggestion.status === 'new' && !suggestion.venueId;
-const prefill = usable ? suggestionPrefill(suggestion) : null;
+const prefill = suggestionId?.success ? await loadSuggestionPrefill(db, suggestionId.data) : null;
 ---
 
 <AdminLayout title={prefill ? 'Accept suggestion' : 'New venue'}>

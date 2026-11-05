@@ -1,49 +1,23 @@
 ---
-import { count, desc, eq, not } from 'drizzle-orm';
 import NotificationPrompt from '@/components/admin/NotificationPrompt.vue';
 import TierBadge from '@/components/admin/TierBadge.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
-import { user } from '@/db/auth-schema';
-import { tierProposals, venueSuggestions, venues } from '@/db/schema';
+import { loadDashboard } from '@/lib/admin-read-models';
 import { formatDateTime } from '@/lib/dates';
 import { db } from '@/lib/db';
 import { getPushEnvironment } from '@/lib/env';
-import { listPendingInspections } from '@/lib/inspections';
 import { getPreferences, listDevices } from '@/lib/push/store';
-import { isPubliclyVisible } from '@/lib/visibility';
-import { publicVenueCondition } from '@/lib/visibility-sql';
 
 export const prerender = false;
 
 const currentUser = Astro.locals.user;
 
-const [hiddenVenues, recent, [suggestions], [pendingChanges], pendingInspections] =
-  await Promise.all([
-    db
-      .select({ id: venues.id, name: venues.name, tier: venues.tier, updatedAt: venues.updatedAt })
-      .from(venues)
-      .where(not(publicVenueCondition()))
-      .orderBy(desc(venues.updatedAt))
-      .limit(10),
-    db
-      .select({
-        id: venues.id,
-        name: venues.name,
-        tier: venues.tier,
-        latitude: venues.latitude,
-        longitude: venues.longitude,
-        closedAt: venues.closedAt,
-        updatedAt: venues.updatedAt,
-        editor: user.name,
-      })
-      .from(venues)
-      .leftJoin(user, eq(user.id, venues.updatedBy))
-      .orderBy(desc(venues.updatedAt))
-      .limit(8),
-    db.select({ total: count() }).from(venueSuggestions).where(eq(venueSuggestions.status, 'new')),
-    db.select({ total: count() }).from(tierProposals).where(eq(tierProposals.status, 'pending')),
-    listPendingInspections(db, currentUser!.id),
-  ]);
+const {
+  recent,
+  hidden: hiddenVenues,
+  awaitingCountersign,
+  newSuggestions,
+} = await loadDashboard(db, currentUser!.id);
 
 // A one-time nudge towards notifications, for a Chair with no device subscribed (#115).
 const showNotificationPrompt =
@@ -56,13 +30,13 @@ const showNotificationPrompt =
 const stats = [
   {
     label: 'Awaiting countersign',
-    value: pendingChanges.total + pendingInspections.length,
+    value: awaitingCountersign,
     href: '/admin/pending',
     tone: 'bg-warning-tint text-ochre-fixed',
   },
   {
     label: 'New suggestions',
-    value: suggestions.total,
+    value: newSuggestions,
     href: '/admin/suggestions',
     tone: 'bg-plum-tint text-plum',
   },
@@ -117,7 +91,7 @@ const stats = [
                 >
                   {venue.name}
                 </a>
-                {!isPubliclyVisible(venue) && (
+                {venue.hidden && (
                   <span class="text-xs font-semibold uppercase tracking-[0.12em] text-stone-600">
                     Hidden
                   </span>

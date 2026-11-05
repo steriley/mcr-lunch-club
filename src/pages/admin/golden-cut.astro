@@ -1,34 +1,13 @@
 ---
-import { asc, eq } from 'drizzle-orm';
 import GoldenCutEditor from '@/components/admin/GoldenCutEditor.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
-import { venues } from '@/db/schema';
+import { loadGoldenCutEditor } from '@/lib/admin-read-models';
 import { db } from '@/lib/db';
-import { listGoldenCut, notShownReason } from '@/lib/golden-cut';
 import { GOLDEN_CUT_SIZE } from '@/lib/golden-cut-schema';
 
 export const prerender = false;
 
-const [entries, approved] = await Promise.all([
-  listGoldenCut(db),
-  db
-    .select({
-      id: venues.id,
-      name: venues.name,
-      tier: venues.tier,
-      latitude: venues.latitude,
-      longitude: venues.longitude,
-      closedAt: venues.closedAt,
-    })
-    .from(venues)
-    .where(eq(venues.tier, 'approved'))
-    .orderBy(asc(venues.name)),
-]);
-const approvedVenues = approved.map((venue) => ({
-  id: venue.id,
-  name: venue.name,
-  notShownReason: notShownReason(venue),
-}));
+const { entries, approvedVenues } = await loadGoldenCutEditor(db);
 ---
 
 <AdminLayout title="The Golden Cut">
