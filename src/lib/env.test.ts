@@ -11,6 +11,7 @@ import {
   getPublicMapApiKey,
   getPushEnvironment,
   getRuntimeDatabaseUrl,
+  getScriptDatabase,
   getSeedChairEnvironment,
   getWeatherApiKey,
   isDevelopment,
@@ -21,6 +22,12 @@ const KEYS = [
   'DATABASE_URL',
   'DATABASE_URL_UNPOOLED',
   'DATABASE_DRIVER',
+  'DB_TARGET',
+  'CONFIRM_PRODUCTION',
+  'PREVIEW_DATABASE_URL',
+  'PREVIEW_DATABASE_URL_UNPOOLED',
+  'PRODUCTION_DATABASE_URL',
+  'PRODUCTION_DATABASE_URL_UNPOOLED',
   'BETTER_AUTH_SECRET',
   'BETTER_AUTH_URL',
   'SEED_CHAIR_EMAIL',
@@ -80,6 +87,53 @@ describe('database URLs', () => {
     assert.equal(getMigrationDatabaseUrl(), 'postgres://direct/db');
     process.env.DATABASE_URL_UNPOOLED = 'http://direct/db';
     assert.throws(() => getMigrationDatabaseUrl(), /DATABASE_URL_UNPOOLED must use/);
+  });
+});
+
+describe('getScriptDatabase', () => {
+  beforeEach(() => {
+    process.env.DATABASE_URL_UNPOOLED = 'postgres://current/db';
+    process.env.PREVIEW_DATABASE_URL_UNPOOLED = 'postgres://preview-direct/db';
+    process.env.PRODUCTION_DATABASE_URL_UNPOOLED = 'postgres://production-direct/db';
+  });
+
+  it('is the migration URL when DB_TARGET is unset, so Vercel builds are unchanged', () => {
+    assert.deepEqual(getScriptDatabase(), { url: 'postgres://current/db', target: null });
+  });
+
+  it('picks the saved preview URL, falling back to the pooled one', () => {
+    process.env.DB_TARGET = 'preview';
+    assert.deepEqual(getScriptDatabase(), {
+      url: 'postgres://preview-direct/db',
+      target: 'preview',
+    });
+    delete process.env.PREVIEW_DATABASE_URL_UNPOOLED;
+    process.env.PREVIEW_DATABASE_URL = 'postgres://preview-pooled/db';
+    assert.equal(getScriptDatabase().url, 'postgres://preview-pooled/db');
+    delete process.env.PREVIEW_DATABASE_URL;
+    assert.throws(() => getScriptDatabase(), /PREVIEW_DATABASE_URL/);
+  });
+
+  it('needs confirmation for production, by flag or CONFIRM_PRODUCTION', () => {
+    process.env.DB_TARGET = 'production';
+    assert.throws(() => getScriptDatabase(), /--production or set CONFIRM_PRODUCTION=1/);
+    assert.deepEqual(getScriptDatabase(true), {
+      url: 'postgres://production-direct/db',
+      target: 'production',
+    });
+    process.env.CONFIRM_PRODUCTION = '1';
+    assert.equal(getScriptDatabase().target, 'production');
+  });
+
+  it('never falls through to production on an unknown target', () => {
+    process.env.DB_TARGET = 'prod';
+    assert.throws(() => getScriptDatabase(true), /must be "preview" or "production"/);
+  });
+
+  it('does not use the other target when its own URL is missing', () => {
+    process.env.DB_TARGET = 'production';
+    delete process.env.PRODUCTION_DATABASE_URL_UNPOOLED;
+    assert.throws(() => getScriptDatabase(true), /PRODUCTION_DATABASE_URL/);
   });
 });
 

@@ -1,9 +1,13 @@
 import { createDatabase } from '@/lib/db-client';
-import { getDatabaseDriver, getMigrationDatabaseUrl } from '@/lib/env';
+import { getDatabaseDriver, getScriptDatabase } from '@/lib/env';
 
-// Scripts use the direct (unpooled) connection.
+// Scripts use the direct (unpooled) connection. DB_TARGET picks a saved preview or production URL.
+const database = getScriptDatabase(process.argv.includes('--production'));
+if (database.target) {
+  console.log(`[db] target: ${database.target} (${new URL(database.url).hostname})`);
+}
 const client = createDatabase({
-  url: getMigrationDatabaseUrl(),
+  url: database.url,
   driver: getDatabaseDriver(),
   maxConnections: 1,
   // Migrations report what they changed with RAISE NOTICE.

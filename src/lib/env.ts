@@ -69,6 +69,41 @@ export function getMigrationDatabaseUrl(): string {
   );
 }
 
+export type ScriptDatabaseTarget = 'preview' | 'production';
+
+export interface ScriptDatabase {
+  url: string;
+  /** The DB_TARGET that picked the URL; null when DB_TARGET is unset. */
+  target: ScriptDatabaseTarget | null;
+}
+
+/**
+ * The database a `pnpm` script talks to. With DB_TARGET unset this is exactly
+ * `getMigrationDatabaseUrl()`, which is what Vercel builds rely on. With
+ * DB_TARGET=preview or production it reads PREVIEW_ or PRODUCTION_
+ * DATABASE_URL_UNPOOLED (falling back to the same prefix + DATABASE_URL), so
+ * one variable switches between saved URLs. Production must also be confirmed
+ * (`--production` or CONFIRM_PRODUCTION=1), and a missing or misspelled
+ * target never falls through to production.
+ */
+export function getScriptDatabase(confirmedProduction = false): ScriptDatabase {
+  const target = optional('DB_TARGET');
+  if (target === undefined) return { url: getMigrationDatabaseUrl(), target: null };
+  if (target !== 'preview' && target !== 'production') {
+    throw new Error('Invalid environment variable: DB_TARGET must be "preview" or "production".');
+  }
+  if (target === 'production' && !confirmedProduction && optional('CONFIRM_PRODUCTION') !== '1') {
+    throw new Error(
+      'DB_TARGET=production needs confirmation: pass --production or set CONFIRM_PRODUCTION=1.'
+    );
+  }
+  const prefix = target.toUpperCase();
+  const direct = `${prefix}_DATABASE_URL_UNPOOLED`;
+  const pooled = `${prefix}_DATABASE_URL`;
+  const name = optional(direct) ? direct : pooled;
+  return { url: validateDatabaseUrl(name, required(name)), target };
+}
+
 export type DatabaseDriver = 'pg' | 'neon-http';
 
 /**
