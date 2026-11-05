@@ -301,6 +301,8 @@ function scheduleRelease() {
     () => {
       holdTimeout = null;
       session.tick(Date.now());
+      // A timer can fire a hair early; if the hold is still on, arm it again.
+      scheduleRelease();
     },
     Math.max(releaseAt - Date.now(), 0)
   );
