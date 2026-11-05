@@ -4,6 +4,7 @@ import SiteNav, { type NavItem } from '@/components/SiteNav.astro';
 import '@/styles/global.css';
 import Fonts from '@/components/Fonts.astro';
 import ThemeScript from '@/components/ThemeScript.astro';
+import WebAnalytics from '@/components/WebAnalytics.astro';
 import ThemeToggle from '@/components/ThemeToggle.astro';
 import Snow from '@/components/Snow.astro';
 import PwaStatus from '@/components/PwaStatus.vue';
@@ -64,6 +65,7 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <ThemeScript />
+    {!noindex && <WebAnalytics />}
     <Fonts />
     <link rel="icon" type="image/png" href="/brand/favicon-64.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

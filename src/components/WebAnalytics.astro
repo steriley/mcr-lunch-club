@@ -1,0 +1,12 @@
+---
+// Vercel Web Analytics: cookieless, first-party page views. The script is served by Vercel itself
+// at /_vercel/insights/script.js (it exists only on a Vercel deployment) and reports to
+// /_vercel/insights/*, so the CSP's 'self' covers both and no inline script or new host is needed.
+// It is external on purpose: an inline snippet would need a hash in astro.config.mjs for
+// the on-demand pages.
+// Public pages only: AdminLayout does not include this, so the Chairs' Area is never measured.
+// Off elsewhere (local builds, `pnpm dev`, the smoke test) because the script would 404 there.
+const enabled = import.meta.env.PROD && process.env.VERCEL === '1';
+---
+
+{enabled && <script is:inline defer src="/_vercel/insights/script.js" />}
