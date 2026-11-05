@@ -18,10 +18,18 @@
 import { closeDatabase, db } from '@/lib/db-script';
 import { getOrsApiKey } from '@/lib/env';
 import { backfillRoutes } from '@/lib/route-backfill';
+import { checkScriptTarget } from '@/lib/script-target';
 
 const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const delayArg = args.find((arg) => arg.startsWith('--delay-ms='));
+
+const target = checkScriptTarget(process.env, {
+  writes: !dryRun,
+  confirmedProduction: args.includes('--production'),
+});
+console.log(target.message);
+if (!target.proceed) process.exit(1);
 
 if (!dryRun && !getOrsApiKey()) {
   console.error('ORS_API_KEY is not set. Add it to .env.local (see .env.example).');
@@ -48,6 +56,11 @@ if (result.stopped) {
 } else if (!dryRun) {
   console.log(
     `Done: ${result.routed} routed, ${result.failed.length} failed${result.failed.length ? ` (${result.failed.join(', ')}; rerun to retry them)` : ''}.`
+  );
+}
+if (!dryRun && result.routed > 0) {
+  console.log(
+    "The public pages are prerendered: publish (Chairs' Area, or redeploy production) to show the change."
   );
 }
 await closeDatabase();
