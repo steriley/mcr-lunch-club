@@ -38,7 +38,7 @@ Every public page carries a canonical URL and Open Graph / Twitter card tags (`s
   - `/venues/[slug]` — Dossiers for every public establishment
   - `/verdicts/[tier]` — Registry verdicts (`approved`, `under-consideration`, `to-be-assessed`, `if-we-must`, `rejected`, `gone-but-not-forgotten`). The old URLs redirect with a 301: `/tiers` to `/verdicts/approved`, `/tiers/[tier]` to `/verdicts/[tier]` (`redirects` in `astro.config.mjs`)
   - `/hall-of-shame` — The Bribery & Improper Benefit Attempt Record
-  - `/manifesto` — The Constitutional Articles of Governance
+  - `/manifesto` — The Constitutional Code (Preamble, Articles I–XVIII, Codex of Verdicts, Schedule A, Oath)
   - `/faqs` — Questions and answers (copy in `src/data/faqs.ts`)
   - `/inspections` — The Complete Chronological Audit Log: every confirmed inspection (dual-verified or legacy) of a public venue
   - `/offline`, `/chairs-offline` — What the service worker shows offline for a page that isn't saved, and for the Chairs' Area (left out of the sitemap)
