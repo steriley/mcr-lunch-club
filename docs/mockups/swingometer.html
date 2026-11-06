@@ -61,7 +61,7 @@ blockquote footer{font-size:11px;letter-spacing:.14em;text-transform:uppercase;c
 .phone .layout{grid-template-columns:1fr;gap:14px}
 .gauge{width:100%;height:auto;display:block}
 .headline{font:700 22px/1.2 'Playfair Display',serif;margin:0 0 4px}
-.headline em{font-style:italic;color:var(--uc)}
+.headline em{font-style:italic;color:var(--ifm)}
 .explain{font-size:13px;color:var(--graphite);margin:0 0 14px;line-height:1.5}
 .counts{display:flex;gap:18px;margin:0 0 16px;font-size:12px;color:var(--dim)}
 .counts b{display:block;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
@@ -75,7 +75,7 @@ blockquote footer{font-size:11px;letter-spacing:.14em;text-transform:uppercase;c
 .spark .t{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;white-space:nowrap}
 .spark svg{flex:1;height:34px}
 .fine{font-size:11px;color:var(--dim);margin:12px 0 0;line-height:1.5}
-.legend{display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--dim);margin-top:2px;flex-wrap:wrap}
+.legend{display:flex;gap:10px 16px;justify-content:center;font-size:11px;color:var(--dim);margin-top:2px;flex-wrap:wrap}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
 .polls{text-align:center;padding:10px 0 4px}
@@ -89,57 +89,51 @@ blockquote footer{font-size:11px;letter-spacing:.14em;text-transform:uppercase;c
 .venue-card b{font:700 16px 'Playfair Display',serif}.card-chip{font-family:'Plus Jakarta Sans',sans-serif}
 .venue-card small{display:block;color:var(--dim);font-size:12px;margin-top:2px}
 .notes{max-width:1220px;margin:0 auto;padding:0 32px 32px;font-size:13px;line-height:1.6;color:#2d2d2d}
+.legend .on{font-weight:700;color:var(--ink)}.legend .seal{width:14px;height:14px;border-radius:50%;background:var(--navy);color:var(--surface);font-size:8px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}.stats{display:flex;gap:18px}
 </style>
 </head>
 <body>
 <div class="stage" id="stage"></div>
 
 <script>
-// Scale constants from the spec (src/lib/swing.ts).
+// Three verdicts, no Chairs' score: the Chairs' verdict is a BAND, not a point.
 const CX = 200, CY = 190, R = 150, RI = 118;
-const pt = (score, r) => {
-  const a = Math.PI * (1 - score / 100);
-  return [CX + r * Math.cos(a), CY - r * Math.sin(a)];
-};
+const pt = (score, r) => { const a = Math.PI * (1 - score / 100); return [CX + r * Math.cos(a), CY - r * Math.sin(a)]; };
 const arc = (a, b, r1, r2) => {
   const [x1, y1] = pt(a, r2), [x2, y2] = pt(b, r2), [x3, y3] = pt(b, r1), [x4, y4] = pt(a, r1);
   return `M${x1},${y1} A${r2},${r2} 0 0 1 ${x2},${y2} L${x3},${y3} A${r1},${r1} 0 0 0 ${x4},${y4}Z`;
 };
-const bands = [
-  [0, 20, 'var(--rej)', 'Rejected'],
-  [20, 40, 'var(--ifm)', 'If We Must'],
-  [40, 70, 'var(--uc)', 'Under Consideration'],
-  [70, 100, 'var(--approved)', 'Approved'],
+const BANDS = [
+  { key: 'rejected', label: 'Rejected', lo: 0, hi: 30, c: 'var(--rej)' },
+  { key: 'ifwemust', label: 'If We Must', lo: 30, hi: 65, c: 'var(--ifm)' },
+  { key: 'approved', label: 'Approved', lo: 65, hi: 100, c: 'var(--approved)' },
 ];
+const band = (key) => BANDS.find(b => b.key === key);
 
-function gauge({ chairs, people, quorate = true, id }) {
+// chairs: a band key, or null for a venue with no verdict yet (Under Consideration / To Be Assessed)
+function gauge({ chairs, people, quorate = true, id, alt }) {
   const gap = 0.6;
-  let s = `<svg class="gauge" viewBox="0 0 400 250" role="img" aria-labelledby="${id}-t">`;
-  s += `<title id="${id}-t">${quorate
-    ? `People's score ${people}, a swing of ${Math.abs(people - chairs)} against the Chairs. The Chairs' position is ${chairs}.`
-    : `Polls open. The Chairs' position is ${chairs}.`}</title>`;
-  for (const [a, b, c] of bands) s += `<path d="${arc(a + gap, b - gap, RI, R)}" fill="${c}" opacity="${quorate ? 1 : .55}"/>`;
-  // band tick labels
-  for (const v of [0, 20, 40, 70, 100]) {
-    const [x, y] = pt(v, R + 14);
+  let s = `<svg class="gauge" viewBox="0 0 400 250" role="img" aria-labelledby="${id}-t"><title id="${id}-t">${alt}</title>`;
+  for (const b of BANDS) {
+    const mine = chairs === b.key;
+    const dim = chairs && !mine ? 0.32 : (quorate ? 1 : 0.55);
+    s += `<path d="${arc(b.lo + gap, b.hi - gap, RI, R)}" fill="${b.c}" opacity="${dim}"/>`;
+    if (mine) s += `<path d="${arc(b.lo + gap, b.hi - gap, RI - 8, R + 8)}" fill="none" stroke="var(--navy)" stroke-width="2.5" stroke-linejoin="round"/>`;
+    const [lx, ly] = pt((b.lo + b.hi) / 2, RI + (R - RI) / 2);
+    s += `<text x="${lx}" y="${ly + 3}" text-anchor="middle" font-size="${b.key==='ifwemust'?9.5:9}" font-weight="700" fill="#fff" opacity="${chairs && !mine ? .0 : 1}" style="paint-order:stroke;stroke:rgba(0,0,0,.25);stroke-width:2px">${mine ? '' : (chairs ? '' : '')}</text>`;
+  }
+  for (const v of [0, 30, 65, 100]) {
+    const [x, y] = pt(v, R + 15);
     s += `<text x="${x}" y="${y + 4}" text-anchor="middle" font-size="10" font-weight="600" fill="var(--dim)">${v}</text>`;
   }
-  // swing arc between chairs and people
-  if (quorate) {
-    const lo = Math.min(chairs, people), hi = Math.max(chairs, people);
-    const [x1, y1] = pt(lo, RI - 10), [x2, y2] = pt(hi, RI - 10);
-    s += `<path d="M${x1},${y1} A${RI-10},${RI-10} 0 0 1 ${x2},${y2}" fill="none" stroke="var(--ink)" stroke-width="3" stroke-dasharray="2 5" stroke-linecap="round"/>`;
+  if (chairs) {
+    const b = band(chairs), [bx, by] = pt((b.lo + b.hi) / 2, R + 30);
+    s += `<g transform="translate(${bx},${by})"><circle r="11" fill="var(--navy)"/><text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="var(--surface)">C</text></g>`;
   }
-  // chairs marker: ghost needle + seal
-  const [cx1, cy1] = pt(chairs, RI - 4), [cx2, cy2] = pt(chairs, R + 4);
-  s += `<line x1="${cx1}" y1="${cy1}" x2="${cx2}" y2="${cy2}" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>`;
-  const [bx, by] = pt(chairs, R + 28);
-  s += `<g transform="translate(${bx},${by})"><circle r="11" fill="var(--navy)"/><text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="${'var(--surface)'}">C</text></g>`;
-  // people's needle
   if (quorate) {
     const [nx, ny] = pt(people, RI - 22);
-    s += `<g><line x1="${CX}" y1="${CY}" x2="${nx}" y2="${ny}" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>`;
-    s += `<circle cx="${CX}" cy="${CY}" r="11" fill="var(--ink)"/><circle cx="${CX}" cy="${CY}" r="4" fill="var(--surface)"/></g>`;
+    s += `<line x1="${CX}" y1="${CY}" x2="${nx}" y2="${ny}" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>`;
+    s += `<circle cx="${CX}" cy="${CY}" r="11" fill="var(--ink)"/><circle cx="${CX}" cy="${CY}" r="4" fill="var(--surface)"/>`;
     s += `<text x="${CX}" y="${CY + 44}" text-anchor="middle" font-family="Playfair Display" font-weight="700" font-size="30" fill="var(--ink)">${people}</text>`;
   } else {
     s += `<circle cx="${CX}" cy="${CY}" r="9" fill="var(--hairline)"/>`;
@@ -148,82 +142,95 @@ function gauge({ chairs, people, quorate = true, id }) {
   return s + '</svg>';
 }
 
-const legend = `<div class="legend"><span><i style="background:var(--ink)"></i>The People</span><span><i style="background:var(--navy)"></i>The Chairs' position (85)</span></div>`;
-
-function swingCard({ variant = 'desktop', id }) {
-  return `
-  <section class="swing" aria-labelledby="${id}-h">
-    <div class="swing-head">
-      <h2 id="${id}-h">The Swing-o-meter</h2>
-      <span class="chip">Unofficial · not a verdict</span>
-    </div>
-    <div class="sub">How far public opinion has swung from the Chairs' verdict</div>
-    <div class="layout">
-      <div>${gauge({ chairs: 85, people: 68, id })}${legend}</div>
-      <div>
-        <p class="headline">The People would have it <em>Under Consideration</em></p>
-        <p class="explain">People's score <b>68</b>, a swing of <b>17 against the Chairs</b>. Approved sits at 85.</p>
-        <div class="counts"><div><b>23</b>members</div><div><b>41</b>logs</div><div><b>78%</b>would return</div></div>
-        <ul class="bars" aria-label="Per-Article averages">
-          <li><span>Quality</span><span class="track"><span class="fill" style="width:72%;display:block"></span></span><span class="v">3.6</span></li>
-          <li><span>Value</span><span class="track"><span class="fill" style="width:58%;display:block"></span></span><span class="v">2.9</span></li>
-          <li><span>Would return</span><span class="track"><span class="fill" style="width:78%;display:block"></span></span><span class="v">78%</span></li>
-        </ul>
-      </div>
-    </div>
-    <div class="spark">
-      <span class="t">Last 90 days</span>
-      <svg viewBox="0 0 300 34" preserveAspectRatio="none" aria-label="People's score over 90 days: 74 falling to 68">
-        <line x1="0" x2="300" y1="6" y2="6" stroke="var(--navy)" stroke-width="1.5" stroke-dasharray="3 4"/>
-        <polyline fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linejoin="round" points="0,14 30,13 60,16 90,15 120,19 150,18 180,22 210,21 240,25 270,24 300,26"/>
-        <circle cx="300" cy="26" r="3.5" fill="var(--ink)"/>
-      </svg>
-      <span class="sub">74 → 68</span>
-    </div>
-    <p class="fine">Based on logs from members who have eaten here. The Chairs' verdict stands; this is the People's opinion, shown alongside it.</p>
-  </section>`;
+function legend(chairs) {
+  const items = BANDS.map(b => {
+    const mine = chairs === b.key;
+    return `<span class="${mine ? 'on' : ''}"><i style="background:${b.c}"></i>${b.label}${mine ? ' <i class="seal" style="background:var(--navy)">C</i>' : ''}</span>`;
+  }).join('');
+  return `<div class="legend">${items}</div>` +
+    (chairs ? `<div class="legend" style="margin-top:4px"><span><i class="seal" style="border-radius:50%">C</i>The Chairs' verdict: <b>${band(chairs).label}</b></span></div>` : '');
 }
 
-function pollsCard(id) {
-  return `
-  <section class="swing" aria-labelledby="${id}-h">
-    <div class="swing-head">
-      <h2 id="${id}-h">The Swing-o-meter</h2>
-      <span class="chip">Polls Open</span>
-    </div>
-    <div class="layout">
-      <div>${gauge({ chairs: 85, people: 0, quorate: false, id })}</div>
-      <div class="polls">
-        <p class="big">Polls Open</p>
-        <p class="explain">3 of 5 members have logged a visit. The needle appears once five different members have.</p>
-        <div class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
-        <a style="font-size:13px;font-weight:700;color:var(--navy)">Log your visit →</a>
-      </div>
-    </div>
-  </section>`;
+function series(people, chairs) {
+  const start = people === 52 ? 72 : people - 4, w = [0,.5,-.5,1,.2,.9,.6,1.2,1,1.1,1];
+  const out = Array.from({length: 11}, (_, i) => Math.round(start + (people - start) * (i / 10)));
+  out[10] = people; return out;
+}
+function spark(chairs, people) {
+  const sparkPts = series(people, chairs), first = sparkPts[0];
+  const H = 44, y = s => H - (s - 20) * 0.55;
+  const pts = sparkPts.map((v, i) => `${(i * 30)},${y(v).toFixed(1)}`).join(' ');
+  let g = '';
+  if (chairs) { const b = band(chairs); g = `<rect x="0" width="300" y="${y(b.hi).toFixed(1)}" height="${(y(b.lo) - y(b.hi)).toFixed(1)}" fill="${b.c}" opacity=".16"/><line x1="0" x2="300" y1="${y(b.lo).toFixed(1)}" y2="${y(b.lo).toFixed(1)}" stroke="var(--navy)" stroke-width="1.2" stroke-dasharray="3 4"/>`; }
+  return `<div class="spark"><span class="t">Last 90 days</span>
+   <svg viewBox="0 0 300 ${H}" preserveAspectRatio="none" style="height:44px" aria-label="People's score over 90 days: ${first} to ${people}${chairs && people < band(chairs).lo ? ", leaving the Chairs' band" : ''}">${g}
+   <polyline fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linejoin="round" points="${pts}"/><circle cx="300" cy="${y(people).toFixed(1)}" r="3.5" fill="var(--ink)"/></svg>
+   <span class="sub">${first} → ${people}</span></div>`;
 }
 
-function page({ variant, dark = false, inner, id }) {
+const bars = `<ul class="bars" aria-label="Per-Article averages">
+  <li><span>Quality</span><span class="track"><span class="fill" style="width:62%;display:block"></span></span><span class="v">3.1</span></li>
+  <li><span>Value</span><span class="track"><span class="fill" style="width:50%;display:block"></span></span><span class="v">2.5</span></li>
+  <li><span>Would return</span><span class="track"><span class="fill" style="width:44%;display:block"></span></span><span class="v">44%</span></li></ul>`;
+const counts = `<div class="counts"><div><b>23</b>members</div><div><b>41</b>logs</div><div><b>44%</b>would return</div></div>`;
+
+// state: 'dissent' (People outside the Chairs' band), 'concur' (inside), 'straw' (no verdict yet), 'polls' (below quorum)
+function card({ id, state, chairs, people }) {
+  const head = (chip) => `<div class="swing-head"><h2 id="${id}-h">${state === 'straw' ? "The People's Straw Poll" : 'The Swing-o-meter'}</h2><span class="chip">${chip}</span></div>`;
+  if (state === 'polls') return `<section class="swing" aria-labelledby="${id}-h">${head('Polls Open')}
+    <div class="layout"><div>${gauge({ chairs, people: 0, quorate: false, id, alt: `Polls open: 3 of 5 members. The Chairs approved this venue.` })}${legend(chairs)}</div>
+    <div class="polls"><p class="big">Polls Open</p><p class="explain">3 of 5 members have logged a visit. The needle appears once five different members have.</p>
+    <div class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div><a style="font-size:13px;font-weight:700;color:var(--navy)">Log your visit →</a></div></div></section>`;
+  const pb = BANDS.find(b => people >= b.lo && people < b.hi || (people === 100 && b.hi === 100));
+  let headline, explain, alt;
+  if (state === 'straw') {
+    headline = `The People lean <em style="color:${pb.c}">${pb.label}</em>`;
+    explain = `People's score <b>${people}</b>. The Chairs have not ruled yet, so there is nothing to swing against. This is an early read, not a verdict.`;
+    alt = `Straw poll: People's score ${people}, leaning ${pb.label}. The Chairs have not given a verdict.`;
+  } else if (state === 'concur') {
+    headline = `The People Concur`;
+    explain = `People's score <b>${people}</b>, inside the Chairs' <b>${band(chairs).label}</b> band.`;
+    alt = `People's score ${people}, inside the ${band(chairs).label} band. The People concur with the Chairs.`;
+  } else {
+    headline = `The People would have it <em style="color:${pb.c}">${pb.label}</em>`;
+    explain = `People's score <b>${people}</b>, in the <b>${pb.label}</b> band. The Chairs approved it. <span class="sub">(Think: a rainy-day lunch, not a destination.)</span>`;
+    alt = `People's score ${people}, in the ${pb.label} band. The Chairs' verdict is ${band(chairs).label}, so the People would rank it lower.`;
+  }
+  return `<section class="swing" aria-labelledby="${id}-h">${head(state === 'straw' ? 'Not a verdict' : 'Unofficial · not a verdict')}
+   <div class="sub">${state === 'straw' ? 'Where members would place it while the Chairs decide' : "Where public opinion sits against the Chairs' verdict"}</div>
+   <div class="layout"><div>${gauge({ chairs, people, id, alt })}${legend(chairs)}</div>
+   <div><p class="headline">${headline}</p><p class="explain">${explain}</p>${counts}${bars}</div></div>
+   ${spark(chairs, people)}
+   <p class="fine">Based on logs from members who have eaten here. ${chairs ? "The Chairs' verdict stands; this is the People's opinion, shown alongside it." : 'The People can inform the Chairs, never decide for them.'}</p></section>`;
+}
+
+function page({ variant, dark = false, inner, tier = 'approved' }) {
+  const t = tier === 'approved'
+    ? { name: 'Approved', quote: 'The Highest Honour in Manchester Lunching: The Right to be Returned To', g: 'linear-gradient(135deg,#155b39,#1e7a4e)' }
+    : { name: 'Under Consideration', quote: 'The Waiting Chamber of Judgement', g: 'linear-gradient(135deg,#714501,#975e02)' };
   return `<div><p class="label">${variant}</p>
   <div class="frame ${variant.includes('Phone') ? 'phone' : 'desktop'} ${dark ? 'dark' : ''}">
-    <div class="banner"><div><b>Approved</b><i>“Worth the walk, and then some.”</i></div><div class="cost">££<span>Mid-range</span></div></div>
-    <div class="body">
-      <div class="crumbs">Home › Approved › Kiln &amp; Co.</div>
-      <h1>Kiln &amp; Co.</h1>
-      <div class="meta">Northern Quarter · Wood-fired Italian</div>
+    <div class="banner" style="background:${t.g}"><div><b>${t.name}</b><i>“${t.quote}”</i></div><div class="cost">££<span>Mid-range</span></div></div>
+    <div class="body"><div class="crumbs">Home › ${t.name} › Kiln &amp; Co.</div>
+      <h1>Kiln &amp; Co.</h1><div class="meta">Northern Quarter · Wood-fired Italian</div>
       <blockquote><p>“Pizza worth leaving the desk for. The dough alone justifies the queue.”</p><footer>— The Chairs</footer></blockquote>
-      ${inner}
-      <div class="ledger-h">Inspection Ledger</div>
-    </div></div></div>`;
+      ${inner}<div class="ledger-h">Inspection Ledger</div></div></div></div>`;
 }
 
+const chip = (txt, tone) => `<span class="card-chip" style="background:var(--surface);color:${tone};border-color:${tone}">${txt}</span>`;
 document.getElementById('stage').innerHTML =
-  page({ variant: 'Desktop · light · quorum reached', inner: swingCard({ id: 'a' }) }) +
-  page({ variant: 'Phone · light', inner: swingCard({ variant: 'phone', id: 'b' }) }) +
-  page({ variant: 'Desktop · dark', dark: true, inner: swingCard({ id: 'c' }) }) +
-  page({ variant: 'Phone · below quorum', inner: pollsCard('d') }) +
-  `<div style="width:820px"><p class="label">Ledger card chip (only above quorum)</p>
-   <div class="frame desktop" style="padding:18px"><div class="venue-card"><div><b>Kiln &amp; Co.<span class="card-chip">−17 against the Chairs</span></b><small>Northern Quarter · Wood-fired Italian</small></div><span style="font-weight:700">££</span></div></div></div>`;
+  page({ variant: 'Desktop · light · People outside the Chairs’ band', inner: card({ id: 'a', state: 'dissent', chairs: 'approved', people: 52 }) }) +
+  page({ variant: 'Phone · light', inner: card({ id: 'b', state: 'dissent', chairs: 'approved', people: 52 }) }) +
+  page({ variant: 'Desktop · dark', dark: true, inner: card({ id: 'c', state: 'dissent', chairs: 'approved', people: 52 }) }) +
+  page({ variant: 'Phone · People concur', inner: card({ id: 'd', state: 'concur', chairs: 'approved', people: 81 }) }) +
+  page({ variant: 'Desktop · no verdict yet (Under Consideration)', tier: 'uc', inner: card({ id: 'e', state: 'straw', chairs: null, people: 71 }) }) +
+  page({ variant: 'Phone · below quorum', inner: card({ id: 'f', state: 'polls', chairs: 'approved' }) }) +
+  `<div style="width:820px"><p class="label">Ledger / Near Me chips (quorate venues with a verdict only)</p>
+   <div class="frame desktop" style="padding:18px;display:grid;gap:10px">
+    <div class="venue-card"><div><b>Kiln &amp; Co.${chip('People: If We Must', 'var(--ifm)')}</b><small>Approved by the Chairs</small></div><span style="font-weight:700">££</span></div>
+    <div class="venue-card"><div><b>Salt Yard${chip('The People Concur', 'var(--approved)')}</b><small>Approved by the Chairs</small></div><span style="font-weight:700">£</span></div>
+    <div class="venue-card"><div><b>Dough Bros${chip('People: Approved', 'var(--approved)')}</b><small>If We Must · the People would promote it</small></div><span style="font-weight:700">£</span></div>
+   </div></div>`;
 </script>
 </body>
 </html>
