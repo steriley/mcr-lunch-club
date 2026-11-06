@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Swing-o-meter mockup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+@font-face{font-family:'Plus Jakarta Sans';font-weight:400;src:url('../../public/fonts/plus-jakarta-sans-latin-400-normal.woff2') format('woff2')}
+@font-face{font-family:'Plus Jakarta Sans';font-weight:600;src:url('../../public/fonts/plus-jakarta-sans-latin-600-normal.woff2') format('woff2')}
+@font-face{font-family:'Plus Jakarta Sans';font-weight:700;src:url('../../public/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2')}
+@font-face{font-family:'Playfair Display';font-weight:700;src:url('../../public/fonts/playfair-display-latin-700-normal.woff2') format('woff2')}
+@font-face{font-family:'Playfair Display';font-weight:600;font-style:italic;src:url('../../public/fonts/playfair-display-latin-600-italic.woff2') format('woff2')}
+
+:root{
+  --ink:#1e1b17;--graphite:#535353;--dim:#666974;--parchment:#fbf6ea;--paper:#f7f0df;--card:#f3ecdb;
+  --ivory:#fdfcf9;--hairline:#d9cfb8;--navy:#1b2f6b;--gold:#f29a2e;--brass:#c59b27;
+  --approved:#1e7a4e;--approved-edge:#155b39;--approved-tint:#e8f5ee;
+  --uc:#975e02;--uc-tint:#fef5e7;--ifm:#7c3a82;--rej:#b92b27;
+  --surface:#fffcf4;--track:#e4dcc6;
+}
+.dark{
+  --ink:#f4efe6;--graphite:#cfc8ba;--dim:#a9a396;--parchment:#14161c;--paper:#1b1e26;--card:#20242d;
+  --ivory:#1b1e26;--hairline:#363b48;--navy:#9db4ff;--gold:#f29a2e;--brass:#e0b94a;
+  --approved:#4fc08a;--approved-edge:#2f8f62;--approved-tint:#16301f;
+  --uc:#e8a33a;--uc-tint:#2d2412;--ifm:#c78bce;--rej:#ef6f6a;
+  --surface:#1b1e26;--track:#2c313d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#cfc8b8;font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink)}
+.stage{display:flex;gap:32px;padding:32px;align-items:flex-start;justify-content:center;flex-wrap:wrap}
+.label{font:700 12px/1 'Plus Jakarta Sans';letter-spacing:.12em;text-transform:uppercase;color:#3d3d3d;margin:0 0 10px}
+.frame{background:var(--parchment);color:var(--ink);border-radius:14px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.18)}
+.frame.desktop{width:820px}
+.frame.phone{width:375px}
+.banner{background:linear-gradient(135deg,#155b39,#1e7a4e);color:#fff;padding:22px 24px;display:flex;justify-content:space-between;align-items:center}
+.banner b{font-size:13px;letter-spacing:.14em;text-transform:uppercase;text-decoration:underline;text-decoration-color:rgba(255,255,255,.4);text-underline-offset:4px}
+.banner i{display:block;font-size:12px;margin-top:4px;color:#e7efe9}
+.banner .cost{font-size:24px;font-weight:700;text-align:right}
+.banner .cost span{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#e7efe9;font-weight:600}
+.body{padding:20px 24px 28px}
+.phone .body{padding:16px}
+.crumbs{font-size:12px;color:var(--dim);margin-bottom:14px}
+h1{font:700 34px/1.1 'Playfair Display',serif;margin:0 0 6px}
+.phone h1{font-size:28px}
+.meta{font-size:13px;color:var(--graphite);padding-bottom:16px;border-bottom:1px solid var(--hairline);margin-bottom:18px}
+blockquote{margin:0 0 20px;border-left:4px solid var(--gold);padding:2px 0 2px 18px}
+blockquote p{font:600 italic 22px/1.35 'Playfair Display',serif;margin:0}
+.phone blockquote p{font-size:19px}
+blockquote footer{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-top:6px}
+.faded{opacity:.55}
+.faded .row{height:12px;border-radius:6px;background:var(--hairline);margin:8px 0}
+
+/* --- the Swing-o-meter --- */
+.swing{border:1px solid var(--hairline);border-radius:14px;background:var(--surface);padding:20px 22px 18px;margin:0 0 22px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.phone .swing{padding:16px 14px}
+.swing-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:12px}
+.swing h2{white-space:nowrap;font:700 20px/1.2 'Playfair Display',serif;margin:0;display:flex;align-items:center;gap:8px}
+.swing .sub{font-size:12px;color:var(--dim)}
+.chip{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:999px;padding:4px 10px;border:1px solid var(--hairline);color:var(--graphite);white-space:nowrap}
+.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:26px;align-items:center;margin-top:8px}
+.phone .layout{grid-template-columns:1fr;gap:14px}
+.gauge{width:100%;height:auto;display:block}
+.headline{font:700 22px/1.2 'Playfair Display',serif;margin:0 0 4px}
+.headline em{font-style:italic;color:var(--uc)}
+.explain{font-size:13px;color:var(--graphite);margin:0 0 14px;line-height:1.5}
+.counts{display:flex;gap:18px;margin:0 0 16px;font-size:12px;color:var(--dim)}
+.counts b{display:block;font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums}
+.bars{display:grid;gap:9px;margin:0;padding:0;list-style:none}
+.bars li{display:grid;grid-template-columns:96px 1fr 34px;gap:10px;align-items:center;font-size:12px;font-weight:600}
+.phone .bars li{grid-template-columns:84px 1fr 34px}
+.bars .track{height:8px;border-radius:99px;background:var(--track);overflow:hidden}
+.bars .fill{height:100%;border-radius:99px;background:var(--navy)}
+.bars .v{text-align:right;font-variant-numeric:tabular-nums;color:var(--graphite)}
+.spark{margin-top:16px;padding-top:14px;border-top:1px dashed var(--hairline);display:flex;align-items:center;gap:14px}
+.spark .t{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:700;white-space:nowrap}
+.spark svg{flex:1;height:34px}
+.fine{font-size:11px;color:var(--dim);margin:12px 0 0;line-height:1.5}
+.legend{display:flex;gap:16px;justify-content:center;font-size:11px;color:var(--dim);margin-top:2px;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.polls{text-align:center;padding:10px 0 4px}
+.polls .big{font:700 26px/1.2 'Playfair Display',serif;margin:0 0 6px}
+.dots{display:flex;gap:8px;justify-content:center;margin:12px 0}
+.dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--hairline)}
+.dots i.on{background:var(--navy);border-color:var(--navy)}
+.ledger-h{border-top:1px solid var(--hairline);padding-top:16px;font:700 20px 'Playfair Display',serif}
+.card-chip{display:inline-block;background:var(--approved-tint);color:var(--approved);border:1px solid var(--approved);border-radius:999px;font-size:11px;font-weight:700;padding:3px 10px;margin-left:8px}
+.venue-card{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--hairline);background:var(--surface);border-radius:12px;padding:12px 14px;width:100%}
+.venue-card b{font:700 16px 'Playfair Display',serif}.card-chip{font-family:'Plus Jakarta Sans',sans-serif}
+.venue-card small{display:block;color:var(--dim);font-size:12px;margin-top:2px}
+.notes{max-width:1220px;margin:0 auto;padding:0 32px 32px;font-size:13px;line-height:1.6;color:#2d2d2d}
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+
+<script>
+// Scale constants from the spec (src/lib/swing.ts).
+const CX = 200, CY = 190, R = 150, RI = 118;
+const pt = (score, r) => {
+  const a = Math.PI * (1 - score / 100);
+  return [CX + r * Math.cos(a), CY - r * Math.sin(a)];
+};
+const arc = (a, b, r1, r2) => {
+  const [x1, y1] = pt(a, r2), [x2, y2] = pt(b, r2), [x3, y3] = pt(b, r1), [x4, y4] = pt(a, r1);
+  return `M${x1},${y1} A${r2},${r2} 0 0 1 ${x2},${y2} L${x3},${y3} A${r1},${r1} 0 0 0 ${x4},${y4}Z`;
+};
+const bands = [
+  [0, 20, 'var(--rej)', 'Rejected'],
+  [20, 40, 'var(--ifm)', 'If We Must'],
+  [40, 70, 'var(--uc)', 'Under Consideration'],
+  [70, 100, 'var(--approved)', 'Approved'],
+];
+
+function gauge({ chairs, people, quorate = true, id }) {
+  const gap = 0.6;
+  let s = `<svg class="gauge" viewBox="0 0 400 250" role="img" aria-labelledby="${id}-t">`;
+  s += `<title id="${id}-t">${quorate
+    ? `People's score ${people}, a swing of ${Math.abs(people - chairs)} against the Chairs. The Chairs' position is ${chairs}.`
+    : `Polls open. The Chairs' position is ${chairs}.`}</title>`;
+  for (const [a, b, c] of bands) s += `<path d="${arc(a + gap, b - gap, RI, R)}" fill="${c}" opacity="${quorate ? 1 : .55}"/>`;
+  // band tick labels
+  for (const v of [0, 20, 40, 70, 100]) {
+    const [x, y] = pt(v, R + 14);
+    s += `<text x="${x}" y="${y + 4}" text-anchor="middle" font-size="10" font-weight="600" fill="var(--dim)">${v}</text>`;
+  }
+  // swing arc between chairs and people
+  if (quorate) {
+    const lo = Math.min(chairs, people), hi = Math.max(chairs, people);
+    const [x1, y1] = pt(lo, RI - 10), [x2, y2] = pt(hi, RI - 10);
+    s += `<path d="M${x1},${y1} A${RI-10},${RI-10} 0 0 1 ${x2},${y2}" fill="none" stroke="var(--ink)" stroke-width="3" stroke-dasharray="2 5" stroke-linecap="round"/>`;
+  }
+  // chairs marker: ghost needle + seal
+  const [cx1, cy1] = pt(chairs, RI - 4), [cx2, cy2] = pt(chairs, R + 4);
+  s += `<line x1="${cx1}" y1="${cy1}" x2="${cx2}" y2="${cy2}" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>`;
+  const [bx, by] = pt(chairs, R + 28);
+  s += `<g transform="translate(${bx},${by})"><circle r="11" fill="var(--navy)"/><text y="4" text-anchor="middle" font-size="9" font-weight="700" fill="${'var(--surface)'}">C</text></g>`;
+  // people's needle
+  if (quorate) {
+    const [nx, ny] = pt(people, RI - 22);
+    s += `<g><line x1="${CX}" y1="${CY}" x2="${nx}" y2="${ny}" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>`;
+    s += `<circle cx="${CX}" cy="${CY}" r="11" fill="var(--ink)"/><circle cx="${CX}" cy="${CY}" r="4" fill="var(--surface)"/></g>`;
+    s += `<text x="${CX}" y="${CY + 44}" text-anchor="middle" font-family="Playfair Display" font-weight="700" font-size="30" fill="var(--ink)">${people}</text>`;
+  } else {
+    s += `<circle cx="${CX}" cy="${CY}" r="9" fill="var(--hairline)"/>`;
+    s += `<text x="${CX}" y="${CY + 40}" text-anchor="middle" font-family="Playfair Display" font-weight="700" font-size="20" fill="var(--dim)">No needle yet</text>`;
+  }
+  return s + '</svg>';
+}
+
+const legend = `<div class="legend"><span><i style="background:var(--ink)"></i>The People</span><span><i style="background:var(--navy)"></i>The Chairs' position (85)</span></div>`;
+
+function swingCard({ variant = 'desktop', id }) {
+  return `
+  <section class="swing" aria-labelledby="${id}-h">
+    <div class="swing-head">
+      <h2 id="${id}-h">The Swing-o-meter</h2>
+      <span class="chip">Unofficial · not a verdict</span>
+    </div>
+    <div class="sub">How far public opinion has swung from the Chairs' verdict</div>
+    <div class="layout">
+      <div>${gauge({ chairs: 85, people: 68, id })}${legend}</div>
+      <div>
+        <p class="headline">The People would have it <em>Under Consideration</em></p>
+        <p class="explain">People's score <b>68</b>, a swing of <b>17 against the Chairs</b>. Approved sits at 85.</p>
+        <div class="counts"><div><b>23</b>members</div><div><b>41</b>logs</div><div><b>78%</b>would return</div></div>
+        <ul class="bars" aria-label="Per-Article averages">
+          <li><span>Quality</span><span class="track"><span class="fill" style="width:72%;display:block"></span></span><span class="v">3.6</span></li>
+          <li><span>Value</span><span class="track"><span class="fill" style="width:58%;display:block"></span></span><span class="v">2.9</span></li>
+          <li><span>Would return</span><span class="track"><span class="fill" style="width:78%;display:block"></span></span><span class="v">78%</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="spark">
+      <span class="t">Last 90 days</span>
+      <svg viewBox="0 0 300 34" preserveAspectRatio="none" aria-label="People's score over 90 days: 74 falling to 68">
+        <line x1="0" x2="300" y1="6" y2="6" stroke="var(--navy)" stroke-width="1.5" stroke-dasharray="3 4"/>
+        <polyline fill="none" stroke="var(--ink)" stroke-width="2.2" stroke-linejoin="round" points="0,14 30,13 60,16 90,15 120,19 150,18 180,22 210,21 240,25 270,24 300,26"/>
+        <circle cx="300" cy="26" r="3.5" fill="var(--ink)"/>
+      </svg>
+      <span class="sub">74 → 68</span>
+    </div>
+    <p class="fine">Based on logs from members who have eaten here. The Chairs' verdict stands; this is the People's opinion, shown alongside it.</p>
+  </section>`;
+}
+
+function pollsCard(id) {
+  return `
+  <section class="swing" aria-labelledby="${id}-h">
+    <div class="swing-head">
+      <h2 id="${id}-h">The Swing-o-meter</h2>
+      <span class="chip">Polls Open</span>
+    </div>
+    <div class="layout">
+      <div>${gauge({ chairs: 85, people: 0, quorate: false, id })}</div>
+      <div class="polls">
+        <p class="big">Polls Open</p>
+        <p class="explain">3 of 5 members have logged a visit. The needle appears once five different members have.</p>
+        <div class="dots" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+        <a style="font-size:13px;font-weight:700;color:var(--navy)">Log your visit →</a>
+      </div>
+    </div>
+  </section>`;
+}
+
+function page({ variant, dark = false, inner, id }) {
+  return `<div><p class="label">${variant}</p>
+  <div class="frame ${variant.includes('Phone') ? 'phone' : 'desktop'} ${dark ? 'dark' : ''}">
+    <div class="banner"><div><b>Approved</b><i>“Worth the walk, and then some.”</i></div><div class="cost">££<span>Mid-range</span></div></div>
+    <div class="body">
+      <div class="crumbs">Home › Approved › Kiln &amp; Co.</div>
+      <h1>Kiln &amp; Co.</h1>
+      <div class="meta">Northern Quarter · Wood-fired Italian</div>
+      <blockquote><p>“Pizza worth leaving the desk for. The dough alone justifies the queue.”</p><footer>— The Chairs</footer></blockquote>
+      ${inner}
+      <div class="ledger-h">Inspection Ledger</div>
+    </div></div></div>`;
+}
+
+document.getElementById('stage').innerHTML =
+  page({ variant: 'Desktop · light · quorum reached', inner: swingCard({ id: 'a' }) }) +
+  page({ variant: 'Phone · light', inner: swingCard({ variant: 'phone', id: 'b' }) }) +
+  page({ variant: 'Desktop · dark', dark: true, inner: swingCard({ id: 'c' }) }) +
+  page({ variant: 'Phone · below quorum', inner: pollsCard('d') }) +
+  `<div style="width:820px"><p class="label">Ledger card chip (only above quorum)</p>
+   <div class="frame desktop" style="padding:18px"><div class="venue-card"><div><b>Kiln &amp; Co.<span class="card-chip">−17 against the Chairs</span></b><small>Northern Quarter · Wood-fired Italian</small></div><span style="font-weight:700">££</span></div></div></div>`;
+</script>
+</body>
+</html>
