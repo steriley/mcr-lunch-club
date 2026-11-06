@@ -5,11 +5,251 @@ import Icon from '@/components/Icon.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
 
 export const prerender = true;
+
+interface Article {
+  id: string;
+  title: string;
+  /** Prose paragraphs before any list. */
+  paras?: string[];
+  /** Italic provisional notice. */
+  provisional?: string;
+  /** A bulleted list with a bold lead-in (the cost key). */
+  bullets?: { lead: string; text: string }[];
+  /** Numbered clauses. */
+  clauses?: string[];
+  /** A footnote link to the Hall of Shame. */
+  shame?: boolean;
+}
+
+const founding: Article[] = [
+  {
+    id: 'I',
+    title: 'Independence, Originality & Quality',
+    paras: [
+      'Independent venues shall be favoured over large chains, now and forever. An exception may be granted where a new chain enters the area and the Chairs personally verify that it is not soulless.',
+    ],
+  },
+  {
+    id: 'II',
+    title: 'Consistency & the Two-Visit Rule',
+    paras: [
+      'Every venue must be visited on at least two separate occasions, with satisfactory outcomes both times. A single sub-par visit may result in immediate ejection from the approved list. Lightning may strike twice; lunch must.',
+    ],
+  },
+  {
+    id: 'III',
+    title: 'Value',
+    paras: [
+      'Price shall be weighed alongside quality, portion and experience. There shall be no extravagance without merit. A £14 sandwich must justify itself as if on trial, because it is.',
+    ],
+    bullets: [
+      { lead: '£ — Under £10.', text: 'Everyday budget and grab.' },
+      { lead: '££ — Above £10.', text: 'Standard municipal protocol.' },
+      { lead: '£££ — Payday treat.', text: 'Special celebration feast.' },
+    ],
+  },
+  {
+    id: 'IV',
+    title: 'Jurisdiction & the 2.5-Mile Radius',
+    paras: [
+      'No distance is too far within the city centre. Beyond it, venues within 2.5 miles may be inducted, but only if exceptional. The Club does not do Rusholme on a whim.',
+    ],
+  },
+  {
+    id: 'V',
+    title: 'Impartial Authority',
+    paras: [
+      'Members shall respect the Chairs and shall not attempt to influence verdicts. Violations shall be logged in the Hall of Shame, in perpetuity, in a large font.',
+    ],
+    shame: true,
+  },
+];
+
+const supplementary: Article[] = [
+  {
+    id: 'VI',
+    title: 'Of the Chairs & the Sacred Countersign',
+    clauses: [
+      'The Chairs are the Club’s sole judicial authority. Their word is final, their forks are ceremonial, and their lunch hour is non-negotiable.',
+      'No Chair may approve their own motion. Every change of tier, including the induction of a new venue, must be countersigned by a different Chair. A Chair caught countersigning themselves shall be accused of Narcissus Dining and made to eat at a desk.',
+      'A motion may be declined, but never in silence. Every refusal must carry a written reason, so that History may judge the judges.',
+      'Chairs serve for life, or until they move to a job in Salford Quays, whichever comes first. New Chairs are appointed by unanimous nod over a modest £-rated lunch.',
+      'Should the Founding Chairs depart with no successor already appointed by the lunchtime nod, the Club shall be abolished forthwith. No caretaker, no interregnum, no pretender with a loyalty card. The Ledger, the Gazette and every verdict shall be sealed as they stand and left to the historians, who will doubtless call it the Golden Age of Lunch.',
+    ],
+  },
+  {
+    id: 'VII',
+    title: 'Of the Conduct of Inspection',
+    clauses: [
+      'An inspection counts as Dual-Verified only when two different Chairs attend the venue on the same calendar day, London time. A lone Chair lunching is merely a person having a sandwich.',
+      'No venue may ascend to the Sovereign Rotation without at least one Dual-Verified inspection to its name.',
+      'Where a venue offers a signature lunch deal, the inspecting party must order it at least once. To dodge the house special is to judge the venue with one eye shut.',
+      'Inspectors shall not announce themselves, wear lanyards, or say “we’re from a lunch club” in a loud voice to get extra chips.',
+      'Photographic evidence is encouraged. Photographs of other diners’ food are not evidence; they are snooping.',
+    ],
+  },
+  {
+    id: 'VIII',
+    title: 'Of the Sticker',
+    clauses: [
+      'The official Club sticker is awarded only to venues in the Sovereign Rotation. It is to be regarded as Manchester’s lunchtime Michelin star, and its bearers as lunchtime aristocracy.',
+      'The sticker is presented in person, by a Chair, with a firm handshake and no explanation unless asked.',
+      'Should a venue fall from the Rotation, the Chairs reserve the right to request the sticker’s return. Enforcement is not expected. Disappointment is.',
+      'Forging, photocopying or self-awarding a sticker is High Treason under Schedule A.',
+    ],
+  },
+  {
+    id: 'IX',
+    title: 'Of Bribery, Improper Benefit & the Hall of Shame',
+    clauses: [
+      'No Chair shall accept any gift, discount, free side, “one on the house”, or suspiciously generous portion offered with intent to sway a verdict.',
+      'Every such attempt shall be entered in the Bribery & Improper Benefit Attempt Record, naming the venue, the date, and the offending item, be it brownie or bottomless chips.',
+      'A complimentary item received in innocence (a birthday dessert, a staff mistake) must be declared to the other Chairs before the verdict, and may be eaten only after the paperwork is done.',
+      'Members who lobby, whinge, or send passive-aggressive links in the group chat shall be logged in the Hall of Shame, which never forgets and is never cleared.',
+    ],
+    shame: true,
+  },
+  {
+    id: 'X',
+    title: 'Of Redemption & Appeals',
+    clauses: [
+      'A Rejected venue may seek redemption only through extraordinary circumstances: a new owner, a new chef, or a documented miracle.',
+      'A petition for redemption must be raised by a Chair, not by the venue, and certainly not by a member who “knows the owner”.',
+      'A redeemed venue re-enters as To Be Assessed and must survive the full Two-Visit Rule again, as though born anew.',
+      'There is no limit on redemptions, but each must be earned on its own merit. A venue seeking a second or later redemption must show a greater change than the last, and the Chairs shall weigh its record of falls with a raised eyebrow. The Club forgives, but it keeps count.',
+    ],
+  },
+  {
+    id: 'XI',
+    title: 'Of Closures & the Rites of In Memoriam',
+    clauses: [
+      'A venue that closes its doors is not demoted. It is either mourned or forgotten. Closure is a state of being, not a verdict, and requires no countersign.',
+      'Upon confirmed closure, the Chairs shall decide whether the venue deserves a memorial. If so, it passes into Gone But Not Forgotten, its final tier preserved like a fly in amber. If not, it simply vanishes from the Ledger, unmourned, as though it never served a soul.',
+      'A Chair shall observe one minute’s silence outside the shuttered premises at the next convenient lunchtime. Eating a substitute meal during the silence is permitted but frowned upon.',
+      'Should the same premises reopen under the same name and ownership, it is a resurrection, and re-enters as Under Consideration. Under a new name, it is a stranger, and starts at To Be Assessed.',
+    ],
+  },
+  {
+    id: 'XII',
+    title: 'Of the Gazette & the Weekly Summons',
+    clauses: [
+      'The Gazette is the Club’s official organ of record. What is printed in the Gazette has happened; what is not, merely occurred.',
+      'Each week the Gazette shall issue the Weekly Summons: one Tuesday venue drawn from those Under Consideration and those in the Rotation longest uninspected, and one Wednesday venue drawn from those longest languishing in To Be Assessed.',
+      'Venues Under Consideration shall be treated as sixty days staler than they are, for the Club abhors a backlog.',
+      'The Summons is a call to arms, not a court order. Members may ignore it, but the Gazette will remember who did.',
+      'Any venue in the Rotation left uninspected too long shall be served an Overdue Sovereign Inspection Notice, and its sticker shall be eyed with suspicion.',
+    ],
+  },
+  {
+    id: 'XIII',
+    title: 'Of the People’s Ledger',
+    provisional:
+      'Provisional Article. The People’s Ledger is still under construction in the Club’s workshops. This Article is held in reserve and takes no effect until the Chairs declare the Ledger open.',
+    clauses: [
+      'The Public may log their own inspections and record their own verdicts. This is their right, and the Chairs are delighted, mostly.',
+      'The gap between the Public’s verdict and the Chairs’ shall be measured by the Swing-o-Meter, an instrument of great precision and no legal force.',
+      'The People speak; the Chairs decide. A public uprising in favour of a Rejected venue may prompt a Chair to raise a petition under Article X, but may not force one.',
+      'Any member of the Public caught stuffing the ballot shall be shown the Hall of Shame, and invited to stay.',
+    ],
+  },
+  {
+    id: 'XIV',
+    title: 'Of Acts of God & Weather',
+    clauses: [
+      'In rain heavy enough to be personal, sleet, or any weather the Met Office describes in yellow, the If We Must tier is unlocked.',
+      'Whether a visit under this Article counts toward the Two-Visit Rule is for the Chairs alone to decide. No member, venue or weather forecaster shall have any say in the matter.',
+      'Proximity emergencies (a meeting at 1:15, a boss lurking) shall be treated as weather for the purposes of this Article.',
+    ],
+  },
+  {
+    id: 'XV',
+    title: 'Of the Bill',
+    clauses: [
+      'The bill shall be split evenly unless a member ordered conspicuously more, in which case they pay the difference and a small penalty in dignity.',
+      'Staff shall be tipped fairly, regardless of verdict. The Club punishes kitchens with words, never with waiters.',
+      'Any member found to have “forgotten their card” on three occasions shall be entered in the Hall of Shame under the heading Chronic Wallet Amnesia.',
+    ],
+  },
+  {
+    id: 'XVI',
+    title: 'Of the Regalia',
+    clauses: [
+      'Official Club merchandise shall be of the highest quality, or not at all. A tote bag that falls apart in the rain is an insult to the institution.',
+      'Wearing Club regalia during an inspection is forbidden under Article VII(4). Wearing it everywhere else is encouraged.',
+      'No item of regalia shall bear the name of a venue, for the Club endorses lunches, not landlords.',
+    ],
+  },
+  {
+    id: 'XVII',
+    title: 'Of Dietary Conscience',
+    clauses: [
+      'The Chairs eat everything, fear nothing, and judge accordingly. A venue’s verdict rests solely on what lands on the Chairs’ plates; the breadth of its dietary provision forms no part of the assessment.',
+      'Members with requirements of their own are welcome to attend, but must navigate the menu at their own risk. The Club shall not reroute, revise or reconsider on their account.',
+    ],
+  },
+  {
+    id: 'XVIII',
+    title: 'Of Amendments & Interpretation',
+    clauses: [
+      'This Code may be amended by agreement of all Chairs, ratified over a lunch rated ££ or above.',
+      'Where the Code is silent, the Chairs shall interpret its spirit. Where the Chairs disagree, the matter goes to a further lunch. Where that fails, a coin is tossed, and the coin is then logged in the Hall of Shame for its arrogance.',
+      'No amendment shall ever repeal the Two-Visit Rule. It is the Club’s North Star, its Magna Carta, its bread.',
+    ],
+  },
+];
+
+const offences: { offence: string; article: string; penalty: string }[] = [
+  {
+    offence: 'Lobbying a Chair',
+    article: 'V',
+    penalty: 'Hall of Shame entry; banished from the next vote',
+  },
+  {
+    offence: 'Self-countersigning (Narcissus Dining)',
+    article: 'VI',
+    penalty: 'One week of desk lunches',
+  },
+  {
+    offence: 'Ordering off-menu to dodge the house special',
+    article: 'VII',
+    penalty: 'Inspection voided; must return and order correctly',
+  },
+  {
+    offence: 'Announcing oneself as a critic',
+    article: 'VII',
+    penalty: 'Inspection voided; Hall of Shame',
+  },
+  {
+    offence: 'Accepting an undeclared freebie',
+    article: 'IX',
+    penalty: 'Verdict suspended; entry in the Bribery Record',
+  },
+  {
+    offence: 'Forging or self-awarding a Sticker',
+    article: 'VIII',
+    penalty: 'High Treason: expulsion and a strongly worded Gazette editorial',
+  },
+  {
+    offence: 'Ballot-stuffing the People’s Ledger',
+    article: 'XIII',
+    penalty: 'Votes struck; permanent Hall of Shame residency',
+  },
+  {
+    offence: 'Chronic Wallet Amnesia (three strikes)',
+    article: 'XV',
+    penalty: 'Pays the next round in full',
+  },
+  {
+    offence: 'Eating a meal deal at one’s desk while a Summons stands',
+    article: 'XII',
+    penalty: 'Read aloud at the next lunch, slowly',
+  },
+];
 ---
 
 <Layout
-  title="The Manifesto & Articles of Governance — MCR Lunch Club"
-  description="How the MCR Lunch Club judges Manchester lunch: the two-visit rule for Approved status, the six verdicts, the cost key and the Chairs’ code of conduct."
+  title="The Manifesto & Constitutional Code — MCR Lunch Club"
+  description="The Constitutional Code of the MCR Lunch Club: the Founding and Supplementary Articles, the two-visit rule, the cost key, the six verdicts, the schedule of offences and the Oath of Membership."
 >
   <PageRibbon
     icon="scroll"
@@ -28,121 +268,133 @@ export const prerender = true;
   <div class="max-w-4xl mx-auto px-4 pt-4 pb-8 sm:pt-6 sm:pb-12 w-full space-y-10">
     <Breadcrumbs items={[{ label: 'Map', href: '/' }, { label: 'Manifesto' }]} />
 
-    <!-- The 5 Articles of the Manifesto -->
-    <div class="space-y-6">
-      <div class="border-b border-hairline pb-2 space-y-1">
-        <h2 class="text-2xl font-bold text-ink flex items-center gap-2">
-          <span>Articles of Governance</span>
-        </h2>
-        <p class="text-xs tabular-nums text-stone-500">Official Standards of Sustenance</p>
+    <!-- Preamble, Mission & Motto -->
+    <section class="bg-card rounded-2xl border border-hairline p-6 sm:p-8 space-y-6 shadow-sm">
+      <div class="space-y-3">
+        <h2 class="text-2xl font-bold text-ink border-b border-hairline pb-2">Preamble</h2>
+        <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
+          WE, the Chairs of the MCR Lunch Club, being of sound appetite and unimpeachable palate,
+          having surveyed the sandwich-strewn wilderness of the city centre and found it wanting in
+          governance, do hereby ordain and establish this Constitutional Code. Let it be read aloud
+          at inductions, quoted at tribunals, and consulted whenever a member is tempted by a meal
+          deal.
+        </p>
+        <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
+          This Code supersedes all prior verbal agreements, napkin scribblings, and anything said
+          after a second pint at Crazy Pedro’s.
+        </p>
       </div>
-
-      <!-- Article I: The Mission & Commitment to Independents -->
-      <section class="bg-card rounded-2xl border border-hairline p-6 sm:p-8 space-y-3 shadow-sm">
-        <div class="flex items-center justify-between border-b border-hairline pb-2">
-          <h3 class="text-lg sm:text-xl font-bold text-navy">
-            Article I: Independence, Originality & Quality
-          </h3>
-        </div>
+      <div class="space-y-3">
+        <h2 class="text-2xl font-bold text-ink border-b border-hairline pb-2">Mission</h2>
         <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
           The MCR Lunch Club exists to seek out, assess, and celebrate the finest lunch offerings
-          Manchester has to offer. We are committed to independent venues first and foremost,
-          championing originality, quality, and local character over the predictability of large
-          chains. Exceptions may be made where a new chain enters the area and warrants official
-          verification by the Lunch Club Chairs.
+          Manchester has to offer.
         </p>
-      </section>
-
-      <!-- Article II: Consistency & The Two-Visit Rule -->
-      <section class="bg-card rounded-2xl border border-hairline p-6 sm:p-8 space-y-3 shadow-sm">
-        <div class="flex items-center justify-between border-b border-hairline pb-2">
-          <h3 class="text-lg sm:text-xl font-bold text-navy">
-            Article II: Consistency & The Two-Visit Rule
-          </h3>
-        </div>
+      </div>
+      <div class="space-y-3">
+        <h2 class="text-2xl font-bold text-ink border-b border-hairline pb-2">Motto</h2>
         <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
-          No venue earns its place in the Lunch Club rotation lightly. Each must be visited on at
-          least two separate occasions and deliver satisfactory outcomes on both. Consistency is
-          king. A single sub-par performance constitutes desecration of the Chairs and may result in
-          immediate ejection from the approved list.
+          <strong>
+            We lunch with purpose. We judge with integrity. We return only where deserved.
+          </strong>
         </p>
-      </section>
-
-      <!-- Article III: Value as a Core Principle & Cost Key -->
-      <section class="bg-card rounded-2xl border border-hairline p-6 sm:p-8 space-y-4 shadow-sm">
-        <div class="flex items-center justify-between border-b border-hairline pb-2">
-          <h3 class="text-lg sm:text-xl font-bold text-navy">
-            Article III: Value as a Core Principle
-          </h3>
-        </div>
         <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
-          Value is a core principle. Price range will always be considered alongside quality,
-          portion, and overall experience. We recognise excellence at all price points, but
-          extravagance without merit will not pass inspection.
+          The Motto shall be recited in full before any formal inspection. Mumbling it through a
+          mouthful of crisps is permitted only under Article XIV (Acts of God and Weather).
         </p>
+      </div>
+    </section>
 
-        <!-- Official Cost Key: plain copy -->
-        <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">The Official Cost Key:</p>
-        <ul class="text-base text-stone-800 leading-relaxed max-w-[70ch] space-y-1 list-disc pl-6">
-          <li>
-            <strong>£</strong> under £10: everyday budget and grab
-          </li>
-          <li>
-            <strong>££</strong> above £10: standard municipal protocol
-          </li>
-          <li>
-            <strong>£££</strong> payday treat: special celebration feast
-          </li>
-        </ul>
-      </section>
-
-      <!-- Article IV: Geographical Jurisdiction & Radius -->
-      <section class="bg-card rounded-2xl border border-hairline p-6 sm:p-8 space-y-3 shadow-sm">
-        <div class="flex items-center justify-between border-b border-hairline pb-2">
-          <h3 class="text-lg sm:text-xl font-bold text-navy">
-            Article IV: City Centre Jurisdiction & The 2.5-Mile Radius
-          </h3>
+    {[
+      {
+        heading: 'Part the First: The Founding Articles',
+        sub: 'Articles I to V',
+        intro:
+          'Articles I to V are the bedrock of the Club, ratified in 2023 and not to be tampered with by anyone holding a Greggs bag.',
+        articles: founding,
+      },
+      {
+        heading: 'Part the Second: The Supplementary Articles',
+        sub: 'Articles VI to XVIII',
+        intro:
+          'Articles VI onwards close the loopholes that the Founding Articles, in their youthful optimism, left open.',
+        articles: supplementary,
+      },
+    ].map((part) => (
+      <div class="space-y-6">
+        <div class="border-b border-hairline pb-2 space-y-1">
+          <h2 class="text-2xl font-bold text-ink">{part.heading}</h2>
+          <p class="text-xs tabular-nums text-stone-500">{part.sub}</p>
         </div>
-        <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
-          Within Manchester city centre, no distance is too far for proper evaluation. Beyond the
-          centre, noteworthy venues within a 2.5-mile radius may be inducted where they demonstrate
-          exceptional standards worthy of special recognition.
-        </p>
-      </section>
+        <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">{part.intro}</p>
 
-      <!-- Article V: Impartial Authority of the Chairs & Non-Influence -->
-      <section class="bg-card rounded-2xl border border-hairline p-6 sm:p-8 space-y-3 shadow-sm">
-        <div class="flex items-center justify-between border-b border-hairline pb-2">
-          <h3 class="text-lg sm:text-xl font-bold text-navy">
-            Article V: Impartial Authority & Integrity of the Chairs
-          </h3>
-        </div>
-        <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
-          The Club is open to all who wish to join in the pursuit of lunchtime excellence. However,
-          members must respect the impartial authority of the Lunch Club Chairs and refrain from
-          attempting to unduly influence their verdicts.
-        </p>
-        <div class="pt-2 text-xs text-stone-600 flex items-center gap-2">
-          <Icon name="scales" class="icon-md" />
-          <span>
-            Violations of this principle are logged in the&nbsp;
-            <a href="/hall-of-shame" class="text-navy underline font-bold">
-              Hall of Shame
-            </a>
-          </span>
-        </div>
-      </section>
-    </div>
+        {part.articles.map((a) => (
+          <section
+            id={`article-${a.id.toLowerCase()}`}
+            class="bg-card rounded-2xl border border-hairline p-6 sm:p-8 space-y-3 shadow-sm"
+          >
+            <div class="flex items-center justify-between border-b border-hairline pb-2">
+              <h3 class="text-lg sm:text-xl font-bold text-navy">
+                Article {a.id}: {a.title}
+              </h3>
+            </div>
+            {a.provisional && (
+              <p class="text-base text-stone-800 leading-relaxed max-w-[70ch] italic">
+                {a.provisional}
+              </p>
+            )}
+            {a.paras?.map((p) => (
+              <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">{p}</p>
+            ))}
+            {a.bullets && (
+              <>
+                <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
+                  The Official Cost Key:
+                </p>
+                <ul class="text-base text-stone-800 leading-relaxed max-w-[70ch] space-y-1 list-disc pl-6">
+                  {a.bullets.map((b) => (
+                    <li>
+                      <strong>{b.lead}</strong> {b.text}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+            {a.clauses && (
+              <ol class="text-base text-stone-800 leading-relaxed max-w-[70ch] space-y-2 list-decimal pl-6">
+                {a.clauses.map((c) => (
+                  <li>{c}</li>
+                ))}
+              </ol>
+            )}
+            {a.shame && (
+              <div class="pt-2 text-xs text-stone-600 flex items-center gap-2">
+                <Icon name="scales" class="icon-md" />
+                <span>
+                  Violations of this principle are logged in the&nbsp;
+                  <a href="/hall-of-shame" class="text-navy underline font-bold">
+                    Hall of Shame
+                  </a>
+                </span>
+              </div>
+            )}
+          </section>
+        ))}
+      </div>
+    ))}
 
-    <!-- The Official Codex of Verdicts -->
+    <!-- Part the Third: The Codex of Verdicts -->
     <div class="space-y-6">
       <div class="border-b border-hairline pb-2 space-y-1">
         <h2 class="text-2xl font-bold text-ink flex items-center gap-2">
-          <span>The Codex of Verdicts</span>
+          <span>Part the Third: The Codex of Verdicts</span>
         </h2>
         <p class="text-xs tabular-nums text-stone-500">Official Status Classifications</p>
       </div>
-
+      <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
+        Every venue known to the Club shall hold exactly one status. Closure (Article XI) overrides
+        all.
+      </p>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Approved -->
         <div class="bg-card rounded-2xl p-6 space-y-4 shadow-sm flex flex-col justify-between">
@@ -302,6 +554,57 @@ export const prerender = true;
         </div>
       </div>
     </div>
+
+    <!-- Schedule A: Offences & Penalties -->
+    <div class="space-y-6">
+      <div class="border-b border-hairline pb-2 space-y-1">
+        <h2 class="text-2xl font-bold text-ink">Schedule A: Offences &amp; Penalties</h2>
+        <p class="text-xs tabular-nums text-stone-500">
+          Cumulative, public, and served with a side of judgement
+        </p>
+      </div>
+      <div class="bg-card rounded-2xl border border-hairline shadow-sm overflow-x-auto">
+        <table class="w-full text-left text-sm text-stone-800">
+          <thead class="border-b border-hairline text-xs uppercase tracking-wider text-stone-500">
+            <tr>
+              <th scope="col" class="px-4 py-3 font-bold">
+                Offence
+              </th>
+              <th scope="col" class="px-4 py-3 font-bold">
+                Article
+              </th>
+              <th scope="col" class="px-4 py-3 font-bold">
+                Penalty
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-hairline">
+            {offences.map((o) => (
+              <tr>
+                <td class="px-4 py-3">{o.offence}</td>
+                <td class="px-4 py-3 whitespace-nowrap">{o.article}</td>
+                <td class="px-4 py-3">{o.penalty}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- The Oath of Membership -->
+    <section class="bg-card rounded-2xl border border-hairline p-6 sm:p-8 space-y-3 shadow-sm">
+      <h2 class="text-2xl font-bold text-ink border-b border-hairline pb-2">
+        The Oath of Membership
+      </h2>
+      <p class="text-base text-stone-800 leading-relaxed max-w-[70ch]">
+        To be spoken, hand on a menu, at induction:
+      </p>
+      <p class="text-base text-stone-800 leading-relaxed max-w-[70ch] italic">
+        I swear to lunch with purpose and judge with integrity. I will order the special, declare
+        the freebie, and respect the Chairs. I will return only where deserved, and I will never,
+        ever, settle for a sad desk sandwich when a better lunch lies within 2.5 miles.
+      </p>
+    </section>
 
     <!-- Sign-off seal -->
     <div class="flex flex-col items-center text-center py-6 text-stone-600 text-xs space-y-1 border-t border-hairline">
