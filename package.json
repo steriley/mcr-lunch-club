@@ -21,6 +21,7 @@
     "publish:mark": "tsx ./scripts/publish-mark.ts",
     "publish:settle": "tsx ./scripts/publish-settle.ts",
     "db:seed": "tsx ./scripts/seed-chair.ts",
+    "db:seed:member": "tsx ./scripts/seed-member.ts",
     "push:keys": "tsx ./scripts/generate-vapid-keys.ts",
     "auth:generate": "pnpm dlx auth@1.7.19 generate --config src/lib/auth.ts --output src/db/auth-schema.ts",
     "db:local": "bash scripts/db-local.sh",

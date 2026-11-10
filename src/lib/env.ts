@@ -196,6 +196,15 @@ export function getSeedChairEnvironment() {
   };
 }
 
+/** The seeded test member (#136): local development and CI only, never a real account. */
+export function getSeedMemberEnvironment() {
+  return {
+    email: required('SEED_MEMBER_EMAIL'),
+    password: required('SEED_MEMBER_PASSWORD'),
+    name: optional('SEED_MEMBER_NAME') ?? 'Test Member',
+  };
+}
+
 export function isProduction(): boolean {
   return env.NODE_ENV === 'production';
 }

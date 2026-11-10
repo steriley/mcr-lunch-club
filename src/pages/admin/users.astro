@@ -2,22 +2,34 @@
 import UserManagement from '@/components/admin/UserManagement.vue';
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import { auth } from '@/lib/auth';
+import { hasAdminRole } from '@/lib/roles';
 
 export const prerender = false;
 
 const currentUser = Astro.locals.user!;
+// Chairs only (#136): members sign up themselves and would otherwise fill this list. The query
+// narrows to roles mentioning admin; hasAdminRole applies the exact sign-in rule.
 const { users: entries } = await auth.api.listUsers({
   headers: Astro.request.headers,
-  query: { limit: 200, sortBy: 'createdAt', sortDirection: 'desc' },
+  query: {
+    limit: 200,
+    sortBy: 'createdAt',
+    sortDirection: 'desc',
+    filterField: 'role',
+    filterOperator: 'contains',
+    filterValue: 'admin',
+  },
 });
-const users = entries.map((entry) => ({
-  id: entry.id,
-  email: entry.email,
-  name: entry.name,
-  role: entry.role ?? 'user',
-  banned: Boolean(entry.banned),
-  createdAt: entry.createdAt ? new Date(entry.createdAt).toISOString() : null,
-}));
+const users = entries
+  .filter((entry) => hasAdminRole(entry.role))
+  .map((entry) => ({
+    id: entry.id,
+    email: entry.email,
+    name: entry.name,
+    role: entry.role ?? 'user',
+    banned: Boolean(entry.banned),
+    createdAt: entry.createdAt ? new Date(entry.createdAt).toISOString() : null,
+  }));
 ---
 
 <AdminLayout title="Users">

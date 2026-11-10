@@ -8,6 +8,7 @@ import {
   venueSuggestions,
   type NotificationPreferencesRow,
 } from '@/db/schema';
+import { roleMentionsAdmin } from '@/lib/chair-accounts';
 import type { Database } from '@/lib/db-client';
 import { londonDate } from '@/lib/london-date';
 import {
@@ -215,7 +216,10 @@ export async function claimSuggestionSlots(
   return rows.map((row) => row.userId);
 }
 
-/** Every account with its preferences; selectRecipients keeps the active Chairs. */
+/**
+ * Chairs' accounts with their preferences; members are never loaded (#136). selectRecipients
+ * keeps the active Chairs among them.
+ */
 export async function loadChairs(db: Database): Promise<ChairCandidate[]> {
   const rows = await db
     .select({
@@ -226,7 +230,8 @@ export async function loadChairs(db: Database): Promise<ChairCandidate[]> {
       preferences: notificationPreferences,
     })
     .from(user)
-    .leftJoin(notificationPreferences, eq(notificationPreferences.userId, user.id));
+    .leftJoin(notificationPreferences, eq(notificationPreferences.userId, user.id))
+    .where(roleMentionsAdmin);
   return rows.map((row) => ({
     id: row.id,
     role: row.role,

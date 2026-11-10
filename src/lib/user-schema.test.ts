@@ -23,6 +23,11 @@ describe('createUserSchema', () => {
       createUserSchema.safeParse({ name: 'A', email: 'a@b.co', password, role: 'root' }).success,
       false
     );
+    // Chairs only: the Users page never creates a member account (#136).
+    assert.equal(
+      createUserSchema.safeParse({ name: 'A', email: 'a@b.co', password, role: 'user' }).success,
+      false
+    );
     assert.equal(
       createUserSchema.safeParse({ name: 'A', email: 'a@b.co', password: 'short' }).success,
       false

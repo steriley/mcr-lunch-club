@@ -26,6 +26,12 @@ const ctx = (id: string | undefined, body?: unknown) => ({
   request: adminRequest('POST', body),
   params: { id },
 });
+/** Signs in as a Chair acting on another Chair's account (the target's role is looked up). */
+function signInWithChairTarget(role = 'admin') {
+  signInAs();
+  return stubDb('select', [{ role }]);
+}
+
 const newUser = { name: 'Ann', email: 'ann@example.com', password: 'a-long-enough-password' };
 
 describe('/api/admin/users', () => {
@@ -55,19 +61,19 @@ describe('/api/admin/users', () => {
 
 describe('POST /api/admin/users/[id]/ban', () => {
   it('refuses to deactivate yourself', async () => {
-    signInAs();
+    signInWithChairTarget();
     const response = await run(ban, ctx(ADMIN.id));
     assert.equal(response.status, 400);
   });
 
   it('rejects blank ids', async () => {
-    signInAs();
+    signInWithChairTarget();
     assert.equal((await run(ban, ctx('  '))).status, 404);
     assert.equal((await run(ban, ctx(undefined))).status, 404);
   });
 
   it('bans another user and maps errors', async () => {
-    signInAs();
+    signInWithChairTarget();
     const calls = stubAuthApi('banUser', () => ({ user: { id: 'u2', banned: true } }));
     const deletes = stubDb('delete', []);
     const response = await run(ban, ctx('u2'));
@@ -93,7 +99,7 @@ describe('POST /api/admin/users/[id]/ban', () => {
 
 describe('POST /api/admin/users/[id]/unban', () => {
   it('unbans, rejects blank ids and maps errors', async () => {
-    signInAs();
+    signInWithChairTarget();
     assert.equal((await run(unban, ctx(' '))).status, 404);
 
     const calls = stubAuthApi('unbanUser', () => ({ user: { id: 'u2', banned: false } }));
@@ -111,13 +117,13 @@ describe('POST /api/admin/users/[id]/reset-password', () => {
   const password = { password: 'a-brand-new-password' };
 
   it('validates the id and password', async () => {
-    signInAs();
+    signInWithChairTarget();
     assert.equal((await run(resetPassword, ctx(' ', password))).status, 404);
     assert.equal((await run(resetPassword, ctx('u2', { password: 'short' }))).status, 400);
   });
 
   it('sets the password, removes their passkeys and signs another user out everywhere', async () => {
-    signInAs();
+    signInWithChairTarget();
     const deletes = stubDb('delete', []);
     const setPassword = stubAuthApi('setUserPassword', () => ({ status: true }));
     const revoke = stubAuthApi('revokeUserSessions', () => ({ success: true }));
@@ -134,7 +140,7 @@ describe('POST /api/admin/users/[id]/reset-password', () => {
   });
 
   it('keeps your own session when you reset your own password', async () => {
-    signInAs();
+    signInWithChairTarget();
     stubDb('delete', []);
     stubAuthApi('setUserPassword', () => ({ status: true }));
     const revoke = stubAuthApi('revokeUserSessions', () => ({ success: true }));
@@ -143,7 +149,7 @@ describe('POST /api/admin/users/[id]/reset-password', () => {
   });
 
   it('maps Better Auth failures', async () => {
-    signInAs();
+    signInWithChairTarget();
     stubAuthApi('setUserPassword', () => {
       throw new APIError('BAD_REQUEST', { message: 'Password too weak' });
     });
@@ -158,12 +164,12 @@ describe('POST /api/admin/users/[id]/reset-password', () => {
 
 describe('POST /api/admin/users/[id]/remove-passkeys', () => {
   it('rejects blank ids', async () => {
-    signInAs();
+    signInWithChairTarget();
     assert.equal((await run(removePasskeys, ctx(' '))).status, 404);
   });
 
   it('deletes their passkeys and signs another Chair out everywhere', async () => {
-    signInAs();
+    signInWithChairTarget();
     const deletes = stubDb('delete', [{ id: 'p1' }, { id: 'p2' }]);
     const revoke = stubAuthApi('revokeUserSessions', () => ({ success: true }));
     const response = await run(removePasskeys, ctx('u2'));
@@ -179,7 +185,7 @@ describe('POST /api/admin/users/[id]/remove-passkeys', () => {
   });
 
   it('keeps your own session when you remove your own passkeys', async () => {
-    signInAs();
+    signInWithChairTarget();
     stubDb('delete', []);
     const revoke = stubAuthApi('revokeUserSessions', () => ({ success: true }));
     assert.equal((await run(removePasskeys, ctx(ADMIN.id))).status, 200);
@@ -189,6 +195,30 @@ describe('POST /api/admin/users/[id]/remove-passkeys', () => {
   it('is for Chairs only', async () => {
     signInAs({ ...ADMIN, role: 'user' });
     assert.equal((await run(removePasskeys, ctx('u2'))).status, 403);
+  });
+});
+
+describe('Users page actions on a member account (#136)', () => {
+  const actions = { ban, unban, resetPassword, removePasskeys };
+
+  for (const [name, route] of Object.entries(actions)) {
+    it(`${name} answers 404 for a member and leaves them alone`, async () => {
+      signInWithChairTarget('user');
+      const calls = ['banUser', 'unbanUser', 'setUserPassword', 'revokeUserSessions'].map(
+        (method) => stubAuthApi(method, () => ({}))
+      );
+      const deletes = stubDb('delete', []);
+      const response = await run(route, ctx('member-1', { password: 'a-brand-new-password' }));
+      assert.equal(response.status, 404);
+      assert.equal(calls.flat().length, 0);
+      assert.equal(deletes.length, 0);
+    });
+  }
+
+  it('also answers 404 for an account that does not exist', async () => {
+    signInAs();
+    stubDb('select', []);
+    assert.equal((await run(ban, ctx('nobody'))).status, 404);
   });
 });
 
