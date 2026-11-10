@@ -88,6 +88,15 @@ test.describe('public pages for a signed-out visitor', () => {
       if (response.request().resourceType() === 'script') scripts.push(response);
     });
     await visit(fresh, venue);
+    // Below-the-fold islands (client:visible, e.g. the route map) load only when scrolled to, and a
+    // visitor who scrolls downloads them too, so they count.
+    await fresh.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += window.innerHeight / 2) {
+        window.scrollTo(0, y);
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    });
+    await fresh.waitForLoadState('networkidle');
 
     let total = 0;
     for (const response of scripts) {

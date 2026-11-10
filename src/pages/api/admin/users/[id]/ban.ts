@@ -25,9 +25,9 @@ export const POST = adminRoute(
     onError: (error) => authApiError('Ban user', error),
   },
   async ({ request, params, actor }) => {
+    if (params.id === actor.id) return jsonError(400, 'You cannot deactivate your own account.');
     const notChair = await unlessChairAccount(params.id);
     if (notChair) return notChair;
-    if (params.id === actor.id) return jsonError(400, 'You cannot deactivate your own account.');
     const result = await auth.api.banUser({
       headers: request.headers,
       body: { userId: params.id, banReason: 'Deactivated by a Chair.' },

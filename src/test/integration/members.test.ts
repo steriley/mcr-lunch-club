@@ -123,14 +123,30 @@ describe('the seeded test member (database)', { skip: skipIntegration }, () => {
     assert.equal(credentials.length, 1);
   });
 
-  it('turns an existing admin with that email back into a member', async () => {
+  it('never demotes a Chair who has that email', async () => {
     const db = await testDb();
     await db
       .insert(user)
-      .values({ id: 'was-admin', name: 'X', email: 'member@lunch.test', role: 'admin' });
+      .values({ id: 'real-chair', name: 'X', email: 'member@lunch.test', role: 'admin' });
+    const refused = seed();
+    assert.equal(refused.status, 1);
+    assert.match(refused.stderr, /belongs to a Chair/);
+    const [row] = await db.select().from(user).where(eq(user.id, 'real-chair'));
+    assert.equal(row.role, 'admin');
+  });
+
+  it('gives an existing member without a password the seeded one, so sign-in works', async () => {
+    const db = await testDb();
+    await db
+      .insert(user)
+      .values({ id: 'magic-link-member', name: 'X', email: 'member@lunch.test', role: 'user' });
     assert.equal(seed().status, 0);
-    const [row] = await db.select().from(user).where(eq(user.id, 'was-admin'));
-    assert.equal(row.role, 'user');
+    const credentials = await db
+      .select()
+      .from(account)
+      .where(eq(account.userId, 'magic-link-member'));
+    assert.equal(credentials.length, 1);
+    assert.equal(credentials[0].providerId, 'credential');
   });
 
   it('refuses to run in production without --force', async () => {
