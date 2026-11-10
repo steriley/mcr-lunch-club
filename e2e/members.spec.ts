@@ -42,6 +42,11 @@ test.describe('the test member', () => {
     });
     expect(signIn.status(), 'the seeded member signs in locally').toBe(200);
 
+    // The readable signed-in hint follows the session (epic #135), for page scripts to check.
+    const hint = (await page.context().cookies()).find((cookie) => cookie.name === 'signed_in');
+    expect(hint?.value).toBe('1');
+    expect(hint?.httpOnly).toBe(false);
+
     for (const path of ['/admin', '/admin/venues', '/admin/users', '/admin/account']) {
       const response = await page.goto(path);
       expect(response?.status(), `${path} for a member`).toBe(403);
@@ -56,6 +61,15 @@ test.describe('the test member', () => {
     // The Chairs' sign-in page doesn't treat a member as signed in.
     await visit(page, '/admin/login');
     expect(new URL(page.url()).pathname).toBe('/admin/login');
+
+    // Signing out clears it.
+    const signOut = await page.request.post('/api/auth/sign-out', {
+      data: {},
+      headers: { origin: baseURL! },
+    });
+    expect(signOut.status()).toBe(200);
+    const cleared = (await page.context().cookies()).find((cookie) => cookie.name === 'signed_in');
+    expect(cleared).toBeUndefined();
     monitor.clear();
   });
 });
@@ -113,5 +127,37 @@ test.describe('public pages for a signed-out visitor', () => {
     console.log(`[budget] venue page JavaScript: ${total} bytes (budget ${VENUE_PAGE_JS_BUDGET})`);
     expect(total, 'venue page JavaScript, bytes').toBeLessThanOrEqual(VENUE_PAGE_JS_BUDGET);
     await fresh.close();
+  });
+});
+
+test.describe('member sign-in with the members flag off (#136)', () => {
+  test.skip(
+    Boolean(process.env.SMOKE_BASE_URL) || process.env.MEMBERS_FLAG === 'on',
+    'the local build runs with the members flag off'
+  );
+
+  test('every member page, member API and email sign-in endpoint answers 404', async ({
+    page,
+    baseURL,
+  }) => {
+    const headers = { origin: baseURL! };
+    for (const path of ['/members', '/members/me']) {
+      expect((await page.request.get(path)).status(), path).toBe(404);
+    }
+    expect((await page.request.get('/api/member/sign-in')).status()).toBe(404);
+    for (const path of [
+      '/api/member/sign-in',
+      '/api/auth/sign-in/magic-link',
+      '/api/auth/email-otp/send-verification-otp',
+      '/api/auth/email-otp/request-password-reset',
+      '/api/auth/sign-in/email-otp',
+    ]) {
+      const response = await page.request.post(path, {
+        data: { email: 'someone@example.com' },
+        headers,
+      });
+      expect(response.status(), path).toBe(404);
+    }
+    expect((await page.request.get('/api/auth/magic-link/verify?token=x')).status()).toBe(404);
   });
 });

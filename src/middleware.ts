@@ -7,6 +7,8 @@ import {
   jsonError,
 } from '@/lib/admin-api';
 import { auth } from '@/lib/auth';
+import { isMemberRoute } from '@/lib/members/auth-paths';
+import { isMembersEnabled } from '@/lib/members/flag';
 
 const ADMIN_PAGE_HEADERS = {
   'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
@@ -33,6 +35,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   locals.user = null;
   locals.session = null;
+
+  // Member pages and API routes exist only while the `members` flag is on (#136); checked on the
+  // server, so hiding links is never the only thing between the public and an unfinished feature.
+  if (isMemberRoute(pathname)) {
+    if (!(await isMembersEnabled())) {
+      return new Response('Not found', {
+        status: 404,
+        headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' },
+      });
+    }
+    const response = await next();
+    response.headers.set('Cache-Control', 'no-store');
+    return response;
+  }
 
   const isAdminPage = pathname === '/admin' || pathname.startsWith('/admin/');
   const isAdminApi = pathname.startsWith('/api/admin/') || pathname === '/api/admin';

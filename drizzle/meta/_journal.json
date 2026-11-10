@@ -148,6 +148,13 @@
       "when": 1794332459421,
       "tag": "0020_passkeys",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794348634600,
+      "tag": "0021_member_sign_in_requests",
+      "breakpoints": true
     }
   ]
 }

@@ -196,6 +196,29 @@ export function getSeedChairEnvironment() {
   };
 }
 
+/**
+ * Email delivery through Resend (#136). Real email goes out only from the Production deployment
+ * (VERCEL_ENV=production), so Previews never spend the production quota or sender reputation,
+ * even though the Resend integration also gives them the key. Elsewhere the sender logs what it
+ * would have sent. Production never logs a message, even when misconfigured. `from` is MAIL_FROM, else noreply@ the integration's
+ * RESEND_EMAIL_DOMAIN; null when neither is set.
+ */
+export function getMailEnvironment(): {
+  mode: 'send' | 'log';
+  apiKey: string | null;
+  from: string | null;
+} {
+  const apiKey = optional('RESEND_API_KEY') ?? null;
+  const domain = optional('RESEND_EMAIL_DOMAIN');
+  const from = optional('MAIL_FROM') ?? (domain ? `MCR Lunch Club <noreply@${domain}>` : null);
+  return { mode: env.VERCEL_ENV === 'production' ? 'send' : 'log', apiKey, from };
+}
+
+/** `MEMBER_SIGNUP_ENABLED=false` stops sign-in emails without a deploy (#136). On by default. */
+export function isMemberSignupEnabled(): boolean {
+  return (optional('MEMBER_SIGNUP_ENABLED') ?? 'true').toLowerCase() !== 'false';
+}
+
 /** The seeded test member (#136): local development and CI only, never a real account. */
 export function getSeedMemberEnvironment() {
   return {
