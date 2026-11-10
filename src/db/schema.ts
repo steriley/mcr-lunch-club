@@ -465,6 +465,25 @@ export const notificationPreferences = pgTable('notification_preferences', {
     .$onUpdate(() => new Date()),
 });
 
+/**
+ * Member sign-in email requests (#136), kept only to rate-limit them: per email, per sender and
+ * site-wide. Both hashes are keyed HMACs (src/lib/members/sign-in.ts); no address or IP is
+ * stored. Rows older than two days are deleted as new requests arrive.
+ */
+export const memberSignInRequests = pgTable(
+  'member_sign_in_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    emailHash: text('email_hash').notNull(),
+    senderHash: text('sender_hash'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('member_sign_in_requests_created_idx').on(table.createdAt),
+    index('member_sign_in_requests_email_idx').on(table.emailHash, table.createdAt),
+  ]
+);
+
 export type VenueRow = typeof venues.$inferSelect;
 export type BriberyRow = typeof briberyRecords.$inferSelect;
 export type SuggestionRow = typeof venueSuggestions.$inferSelect;

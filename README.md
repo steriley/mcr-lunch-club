@@ -192,6 +192,11 @@ Environment Variables**. Never commit real values.
 | `BETTER_AUTH_URL`                                                 | Main site origin: `http://localhost:4321` locally, `https://mcrlunchclub.com` on Vercel Production. Not needed for Preview, which uses its own Vercel URL. See _Signing in on more than one domain_ below.                                                                                                                                                                                                                                                                                                                      |
 | `BETTER_AUTH_ALLOWED_HOSTS`                                       | Optional, comma-separated: extra hosts the Chairs' Area works on, e.g. the production `mcr-lunch-club.vercel.app` alias.                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `PASSKEY_ORIGIN` / `PASSKEY_RP_ID`                                | Optional. Where Chairs' passkeys work. Default to `BETTER_AUTH_URL` and its host name, which is right when that is the custom domain. Passkeys are bound to this one domain, so Previews and `vercel.app` addresses use passwords. See "Passkeys for Chairs".                                                                                                                                                                                                                                                                   |
+| `MEMBERS_FLAG`                                                    | Local and CI only: `on` or `off` forces the `members` flag (Vercel Flags) outside production. Deployments always read Vercel Flags. Off when unset.                                                                                                                                                                                                                                                                                                                                                                             |
+| `RESEND_API_KEY` / `RESEND_EMAIL_DOMAIN`                          | Set by the Resend integration. Sign-in email is sent only from the Production deployment; everywhere else (Previews included) the message is logged instead.                                                                                                                                                                                                                                                                                                                                                                    |
+| `MAIL_FROM`                                                       | Optional sender, e.g. `MCR Lunch Club <noreply@mail.example.com>`. Defaults to `noreply@` the `RESEND_EMAIL_DOMAIN`.                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `MEMBER_SIGNUP_ENABLED`                                           | Kill switch: `false` stops member sign-in emails without a deploy (the request answers 503). On by default.                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `MEMBER_SIGNIN_DAILY_CAP`                                         | Optional site-wide limit on sign-in emails per day. Default 80, below Resend's free 100 a day.                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `PRODUCTION_DATABASE_HOST`                                        | Preview builds: the production Neon host (e.g. `ep-calm-river-123456.eu-west-2.aws.neon.tech`, pooled or direct). Preview builds refuse to migrate a database on that endpoint. See _Preview deployments_ below.                                                                                                                                                                                                                                                                                                                |
 | `BLOB_READ_WRITE_TOKEN` / `BLOB_STORE_ID`                         | Vercel Blob credentials for venue photo uploads. Connecting a Blob store to the project adds one or the other: older stores set the token, newer stores set `BLOB_STORE_ID` and authenticate with the deployment's OIDC token (no secret to manage). Either works; without both the photo section is read-only. Server-only: `pnpm check:bundle` fails if it reaches the browser bundle.                                                                                                                                        |
 | `SEED_CHAIR_EMAIL` / `SEED_CHAIR_NAME` / `SEED_CHAIR_PASSWORD`    | Only for `pnpm db:seed`. Remove them from your machine afterwards.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -425,6 +430,36 @@ trusted origin, and anyone can deploy to `vercel.app`.
 
 Sign-in cookies belong to one host, so signing in on `mcrlunchclub.com` does
 not sign you in on the `vercel.app` address; sign in on each separately.
+
+### Member sign-in (#136)
+
+Members sign in by email: one request sends one email with a magic link and a 6-digit code (for
+reading the email on another device). Everything is behind the `members` Vercel Flags flag, which
+fails closed and is checked on the server; Production turns it on only after Turnstile lands.
+
+- **Requests** go only through `POST /api/member/sign-in` (`GET` hands the form its time-trap
+  token): the flag, the `MEMBER_SIGNUP_ENABLED` kill switch, a trusted origin, the honeypot and
+  time trap, then rate limits per email, per IP and site-wide (`src/lib/members/sign-in.ts`, table
+  `member_sign_in_requests`, hashes only, two days' history). The answer never says whether an
+  email has an account.
+- **Better Auth's own request endpoints are closed to the web**, and so is every email-code
+  endpoint the club doesn't use, password reset by email included (`src/lib/members/auth-paths.ts`).
+  Verifying a link (`/api/auth/magic-link/verify`) or code (`/api/auth/sign-in/email-otp`) is
+  open while the flag is on.
+- **Chairs never sign in by email.** No link or code is made for a Chair's address, and a session
+  created by email for a Chair is refused (`databaseHooks` in `src/lib/auth-config.ts`).
+- **Links and codes** work once, for 10 minutes; a code allows 5 wrong guesses. Both are stored
+  hashed.
+- **Member passkeys** can be added only within five minutes of an email sign-in, while the flag is
+  on. Chairs still confirm their password.
+- **Email** goes through Resend from the Production deployment only (`src/lib/mail/send.ts`), never
+  awaited. Locally, in CI and on Previews the message is logged, so the link and code appear in the
+  server log.
+- A readable `signed_in=1` cookie follows the session, so public pages can tell whether to ask the
+  server who is signed in (epic #135, "Performance budget").
+
+Locally: `MEMBERS_FLAG=on pnpm dev`, request a sign-in at `/api/member/sign-in`, and copy the link
+or code from the terminal.
 
 ### Passkeys for Chairs
 

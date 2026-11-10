@@ -16,3 +16,13 @@ export async function isChairAccount(db: Database, userId: string): Promise<bool
   const [row] = await db.select({ role: user.role }).from(user).where(eq(user.id, userId)).limit(1);
   return Boolean(row) && hasAdminRole(row.role);
 }
+
+/** Whether this email belongs to a Chair's account (#136: Chairs never sign in by email). */
+export async function isChairEmail(db: Database, email: string): Promise<boolean> {
+  const [row] = await db
+    .select({ role: user.role })
+    .from(user)
+    .where(eq(user.email, email.trim().toLowerCase()))
+    .limit(1);
+  return Boolean(row) && hasAdminRole(row.role);
+}
