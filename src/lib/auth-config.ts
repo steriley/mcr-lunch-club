@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { drizzleAdapter } from '@better-auth/drizzle-adapter';
 import { passkey } from '@better-auth/passkey';
 import { betterAuth } from 'better-auth';
@@ -68,8 +69,37 @@ const UNUSED_EMAIL_OTP_PATHS = new Set([
   '/email-otp/change-email',
 ]);
 
+const CHAIR_EMAIL_SIGN_IN = {
+  message: 'Chairs sign in with their password or passkey.',
+  code: 'CHAIR_EMAIL_SIGN_IN',
+} as const;
+
 /** A readable hint that someone is signed in, so public pages can skip auth requests (#135). */
 const SIGNED_IN_COOKIE = 'signed_in';
+
+/** How magic-link tokens are stored: SHA-256, base64url (the same as Better Auth's 'hashed'). */
+function hashMagicLinkToken(token: string): string {
+  return createHash('sha256').update(token).digest('base64url');
+}
+
+/**
+ * The address a magic link was made for, read from its record without using it up, so a Chair's
+ * link is refused before Better Auth acts on the account (#136). Better Auth keys the record as
+ * `magic-link:<stored token>`; src/test/integration/member-sign-in.test.ts would catch a change.
+ */
+async function magicLinkEmail(ctx: AuthMiddlewareContext): Promise<string | null> {
+  const token = (ctx.query as { token?: unknown } | undefined)?.token;
+  if (typeof token !== 'string' || !token) return null;
+  const record = await ctx.context.internalAdapter.findVerificationValue(
+    `magic-link:${hashMagicLinkToken(token)}`
+  );
+  try {
+    const email = (JSON.parse(record?.value ?? 'null') as { email?: unknown } | null)?.email;
+    return typeof email === 'string' ? email : null;
+  } catch {
+    return null;
+  }
+}
 
 type RoleFields = { role?: string | null; banned?: boolean | null; banExpires?: Date | null };
 
@@ -129,6 +159,25 @@ export function createAuth(database: Database, authHooks: AuthHooks = {}) {
           await refuseMemberPasswordInProduction(ctx);
           return;
         }
+        if (EMAIL_SIGN_IN_PATHS.has(ctx.path)) {
+          // Before Better Auth uses up the link or code, creates an account or changes one: with
+          // the flag off nothing happens, and a Chair's address is refused (the session hook
+          // below refuses a Chair's magic link too, whose address is only known after lookup).
+          if (!(await membersEnabled())) throw new APIError('NOT_FOUND', { message: 'Not found' });
+          const email =
+            ctx.path === '/magic-link/verify'
+              ? await magicLinkEmail(ctx)
+              : (ctx.body as { email?: unknown } | undefined)?.email;
+          if (typeof email === 'string') {
+            const found = await ctx.context.internalAdapter.findUserByEmail(
+              email.trim().toLowerCase()
+            );
+            if (found && hasAdminRole((found.user as RoleFields).role)) {
+              throw new APIError('FORBIDDEN', CHAIR_EMAIL_SIGN_IN);
+            }
+          }
+          return;
+        }
         if (ctx.path !== PASSKEY_REGISTRATION_START && ctx.path !== PASSKEY_REGISTRATION_FINISH) {
           return;
         }
@@ -154,12 +203,14 @@ export function createAuth(database: Database, authHooks: AuthHooks = {}) {
       after: createAuthMiddleware(async (ctx) => {
         // The readable signed-in hint follows the session cookie (epic #135, performance budget).
         if (ctx.context.newSession) {
+          // Lasts as long as the session cookie: a browser session for "don't remember me".
+          const remember = (ctx.body as { rememberMe?: unknown } | undefined)?.rememberMe !== false;
           ctx.setCookie(SIGNED_IN_COOKIE, '1', {
             path: '/',
             sameSite: 'lax',
             secure: isProduction(),
             httpOnly: false,
-            maxAge: SESSION_SETTINGS.expiresIn,
+            ...(remember ? { maxAge: SESSION_SETTINGS.expiresIn } : {}),
           });
         } else if (ctx.path === '/sign-out') {
           ctx.setCookie(SIGNED_IN_COOKIE, '', { path: '/', maxAge: 0 });
@@ -189,12 +240,7 @@ export function createAuth(database: Database, authHooks: AuthHooks = {}) {
               session.userId
             )) as RoleFields | null;
             const chair = hasAdminRole(user?.role);
-            if (viaEmail && chair) {
-              throw new APIError('FORBIDDEN', {
-                message: 'Chairs sign in with their password or passkey.',
-                code: 'CHAIR_EMAIL_SIGN_IN',
-              });
-            }
+            if (viaEmail && chair) throw new APIError('FORBIDDEN', CHAIR_EMAIL_SIGN_IN);
             if (!chair && !(await membersEnabled())) {
               throw new APIError('NOT_FOUND', { message: 'Not found' });
             }
@@ -249,7 +295,8 @@ export function createAuth(database: Database, authHooks: AuthHooks = {}) {
       // which sends one email with the link and the code (src/lib/members/sign-in.ts).
       magicLink({
         expiresIn: SIGN_IN_EXPIRES_SECONDS,
-        storeToken: 'hashed',
+        // Our own SHA-256 hasher, so the hook below can find a link's record before it's used.
+        storeToken: { type: 'custom-hasher', hash: async (token) => hashMagicLinkToken(token) },
         sendMagicLink: async ({ url }) => {
           if (!recordSignInEmailPart({ url }))
             console.warn('[members] Magic link not sent: no request.');

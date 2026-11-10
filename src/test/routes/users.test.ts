@@ -49,6 +49,8 @@ describe('/api/admin/users', () => {
     assert.equal((await response.json()).user.id, 'u2');
     assert.equal(calls[0].body.email, 'ann@example.com');
     assert.equal(calls[0].body.role, 'admin');
+    // Chairs never sign in by email, so their address counts as verified (#136).
+    assert.deepEqual(calls[0].body.data, { emailVerified: true });
 
     stubAuthApi('createUser', () => {
       throw new APIError('BAD_REQUEST', { message: 'User already exists' });

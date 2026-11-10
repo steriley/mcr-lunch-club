@@ -219,6 +219,15 @@ export function isMemberSignupEnabled(): boolean {
   return (optional('MEMBER_SIGNUP_ENABLED') ?? 'true').toLowerCase() !== 'false';
 }
 
+/**
+ * Site-wide member sign-in emails per day (#136): below Resend's free 100 a day, so a flood can't
+ * use up the quota or the domain's reputation. `MEMBER_SIGNIN_DAILY_CAP` overrides it.
+ */
+export function getMemberSignInDailyCap(): number {
+  const configured = Number.parseInt(optional('MEMBER_SIGNIN_DAILY_CAP') ?? '', 10);
+  return Number.isFinite(configured) && configured > 0 ? configured : 80;
+}
+
 /** The seeded test member (#136): local development and CI only, never a real account. */
 export function getSeedMemberEnvironment() {
   return {

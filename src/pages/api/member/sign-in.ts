@@ -16,11 +16,10 @@ import { sendMail } from '@/lib/mail/send';
 import { isMembersEnabled } from '@/lib/members/flag';
 import {
   checkFormToken,
-  checkSignInLimits,
   collectSignInEmail,
   emailHash,
   issueFormToken,
-  recordSignInRequest,
+  reserveSignIn,
   senderHash,
   signInEmail,
 } from '@/lib/members/sign-in';
@@ -41,6 +40,30 @@ function clientIp(request: Request, readClientAddress: () => string): string | n
     return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
   }
 }
+
+/**
+ * Makes and sends the sign-in email. Chairs never sign in by email, so nothing is made for a
+ * Chair's address. Runs after the response; failures are logged, never shown. Swapped out by the
+ * route tests.
+ */
+export const signInDelivery = {
+  async deliver(email: string, headers: Headers): Promise<void> {
+    try {
+      if (await isChairEmail(db, email)) return;
+      const parts = await collectSignInEmail(async () => {
+        await auth.api.signInMagicLink({ headers, body: { email, callbackURL: '/' } });
+        await auth.api.sendVerificationOTP({ body: { email, type: 'sign-in' } });
+      });
+      if (!parts.url || !parts.otp) throw new Error('The sign-in link or code was not made.');
+      await sendMail(signInEmail(email, { url: parts.url, otp: parts.otp }));
+    } catch (error) {
+      console.error(
+        '[members] Sign-in email not sent:',
+        error instanceof Error ? error.message : 'unknown error'
+      );
+    }
+  },
+};
 
 /** The time-trap token for the sign-in form, fetched when the form opens. */
 export const GET: APIRoute = async () => {
@@ -77,7 +100,7 @@ export const POST: APIRoute = async (context) => {
       email: emailHash(email),
       sender: senderHash(clientIp(request, () => context.clientAddress)),
     };
-    const limited = await checkSignInLimits(db, hashes);
+    const limited = await reserveSignIn(db, hashes);
     if (limited !== 'ok') {
       return jsonError(
         429,
@@ -86,24 +109,12 @@ export const POST: APIRoute = async (context) => {
           : 'Too many sign-in emails. Please wait a few minutes and try again.'
       );
     }
-    await recordSignInRequest(db, hashes);
-
-    // Chairs never sign in by email: no link or code is made for them (src/lib/auth-config.ts).
-    if (await isChairEmail(db, email)) return accepted();
-
-    const parts = await collectSignInEmail(async () => {
-      await auth.api.signInMagicLink({
-        headers: request.headers,
-        body: { email, callbackURL: '/' },
-      });
-      await auth.api.sendVerificationOTP({ body: { email, type: 'sign-in' } });
-    });
-    if (!parts.url || !parts.otp) throw new Error('The sign-in link or code was not made.');
-
-    // Not awaited, so the response time never depends on the mail service.
-    waitUntil(sendMail(signInEmail(email, { url: parts.url, otp: parts.otp })));
-    return accepted();
   } catch (error) {
     return serverError('Member sign-in request', error);
   }
+
+  // Everything that depends on who the email belongs to runs after the response, so the answer
+  // and its timing are the same for a member, a stranger and a Chair.
+  waitUntil(signInDelivery.deliver(email, new Headers(request.headers)));
+  return accepted();
 };

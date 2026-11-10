@@ -12,7 +12,12 @@ export const POST = adminRoute(
     onError: (error) => authApiError('Create user', error),
   },
   async ({ request, body }) => {
-    const result = await auth.api.createUser({ headers: request.headers, body });
+    // A Chair's email counts as verified: a Chair never signs in by email, and an unverified
+    // account would let Better Auth's email sign-in strip its password before refusing it (#136).
+    const result = await auth.api.createUser({
+      headers: request.headers,
+      body: { ...body, data: { emailVerified: true } },
+    });
     return jsonResponse({ user: result.user }, 201);
   }
 );

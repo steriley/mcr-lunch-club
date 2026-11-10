@@ -1,5 +1,5 @@
-import { flagsClient, Reason } from '@vercel/flags-core';
 import { isProduction } from '@/lib/env';
+import { isFlagOn } from '@/lib/flags';
 
 /**
  * The Vercel Flags flag behind member accounts (#136). Toggle it per environment in the Vercel
@@ -25,10 +25,5 @@ function localOverride(): boolean | null {
 export async function isMembersEnabled(): Promise<boolean> {
   const override = localOverride();
   if (override !== null) return override;
-  try {
-    const result = await flagsClient.evaluate(MEMBERS_FLAG, false);
-    return result.reason !== Reason.ERROR && result.value === true;
-  } catch {
-    return false;
-  }
+  return isFlagOn(MEMBERS_FLAG);
 }
