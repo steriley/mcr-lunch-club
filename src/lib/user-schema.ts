@@ -20,3 +20,8 @@ export const createUserSchema = z.object({
 });
 
 export const resetPasswordSchema = z.object({ password });
+
+/** Confirming your own password, e.g. before adding a passkey (#153). Any length the account may have. */
+export const confirmPasswordSchema = z.object({
+  password: z.string().min(1, 'Enter your password.').max(128),
+});

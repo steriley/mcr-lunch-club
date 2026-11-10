@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   blobEnvPrefix,
   getAuthEnvironment,
+  getPasskeyEnvironment,
   getBlobToken,
   isBlobConfigured,
   getDatabaseDriver,
@@ -40,6 +41,8 @@ const KEYS = [
   'VAPID_PUBLIC_KEY',
   'VAPID_PRIVATE_KEY',
   'VAPID_SUBJECT',
+  'PASSKEY_RP_ID',
+  'PASSKEY_ORIGIN',
 ];
 
 let saved: Record<string, string | undefined>;
@@ -136,6 +139,55 @@ describe('getAuthEnvironment', () => {
     assert.throws(() => getAuthEnvironment(), /BETTER_AUTH_URL/);
     process.env.BETTER_AUTH_URL = 'https://preview.example.com';
     assert.equal(getAuthEnvironment().url, 'https://preview.example.com');
+  });
+});
+
+describe('getPasskeyEnvironment', () => {
+  it('defaults to BETTER_AUTH_URL, locally and in production', () => {
+    assert.throws(() => getPasskeyEnvironment(), /BETTER_AUTH_URL/);
+    process.env.BETTER_AUTH_URL = 'http://localhost:4321';
+    assert.deepEqual(getPasskeyEnvironment(), {
+      rpID: 'localhost',
+      origin: 'http://localhost:4321',
+      host: 'localhost:4321',
+    });
+    process.env.BETTER_AUTH_URL = 'https://MCRLunch.club/';
+    assert.deepEqual(getPasskeyEnvironment(), {
+      rpID: 'mcrlunch.club',
+      origin: 'https://mcrlunch.club',
+      host: 'mcrlunch.club',
+    });
+  });
+
+  it('never follows a preview URL, so Previews do not match the passkey host', () => {
+    process.env.BETTER_AUTH_URL = 'https://mcrlunch.club';
+    process.env.VERCEL_ENV = 'preview';
+    process.env.VERCEL_BRANCH_URL = 'app-git-feature.vercel.app';
+    assert.equal(getPasskeyEnvironment().host, 'mcrlunch.club');
+  });
+
+  it('takes PASSKEY_ORIGIN and PASSKEY_RP_ID, with the origin on the RP ID or a subdomain', () => {
+    process.env.PASSKEY_ORIGIN = 'https://www.mcrlunch.club';
+    process.env.PASSKEY_RP_ID = 'mcrlunch.club';
+    assert.deepEqual(getPasskeyEnvironment(), {
+      rpID: 'mcrlunch.club',
+      origin: 'https://www.mcrlunch.club',
+      host: 'www.mcrlunch.club',
+    });
+    process.env.PASSKEY_RP_ID = 'example.com';
+    assert.throws(() => getPasskeyEnvironment(), /subdomain/);
+    process.env.PASSKEY_RP_ID = 'evilmcrlunch.club';
+    process.env.PASSKEY_ORIGIN = 'https://mcrlunch.club';
+    assert.throws(() => getPasskeyEnvironment(), /subdomain/);
+  });
+
+  it('rejects http away from localhost, IP addresses and malformed values', () => {
+    process.env.PASSKEY_ORIGIN = 'http://mcrlunch.club';
+    assert.throws(() => getPasskeyEnvironment(), /https/);
+    process.env.PASSKEY_ORIGIN = 'https://127.0.0.1:4321';
+    assert.throws(() => getPasskeyEnvironment(), /domain name/);
+    process.env.PASSKEY_ORIGIN = 'not a url';
+    assert.throws(() => getPasskeyEnvironment(), /valid absolute URL/);
   });
 });
 

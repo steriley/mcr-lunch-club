@@ -53,7 +53,7 @@ function hostOf(endpoint: string): string {
 }
 
 async function venueName(db: Database, event: PushEvent): Promise<string | null> {
-  if (event.type === 'suggestion') return null;
+  if (event.type === 'suggestion' || event.type === 'passkey_added') return null;
   const [row] = await db
     .select({ name: venues.name })
     .from(venues)

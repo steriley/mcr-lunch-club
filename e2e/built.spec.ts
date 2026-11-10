@@ -1,4 +1,4 @@
-import { expect, test, visit } from './fixtures';
+import { expect, signIn, test, visit } from './fixtures';
 
 /** The smallest valid WebAssembly module. */
 const EMPTY_WASM = [0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00];
@@ -7,9 +7,6 @@ const PNG_1X1 = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
   'base64'
 );
-
-const chairEmail = process.env.SMOKE_CHAIR_EMAIL ?? process.env.SEED_CHAIR_EMAIL;
-const chairPassword = process.env.SMOKE_CHAIR_PASSWORD ?? process.env.SEED_CHAIR_PASSWORD;
 
 test.describe('public pages', () => {
   test('home: map marker, theme toggle, Where to today?, suggest form', async ({
@@ -308,29 +305,6 @@ test.describe('Content-Security-Policy', () => {
     expect(monitor.violations).toEqual([]);
   });
 });
-
-async function signIn(page: import('@playwright/test').Page) {
-  expect(
-    chairEmail && chairPassword,
-    'SEED_CHAIR_EMAIL / SEED_CHAIR_PASSWORD (or SMOKE_CHAIR_*) must name a Chair'
-  ).toBeTruthy();
-  await page.goto('/admin/login');
-  await page.waitForLoadState('networkidle');
-  await page.getByLabel(/email/i).fill(chairEmail!);
-  await page.getByLabel(/password/i).fill(chairPassword!);
-  // Better Auth allows a few sign-ins per ten seconds, and several tests sign in back to back:
-  // when it answers 429, wait out the window and press again.
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const answer = page.waitForResponse((response) => response.url().includes('/api/auth/sign-in'));
-    await page.getByRole('button', { name: /sign in/i }).click();
-    const response = await answer;
-    if (response.status() !== 429) break;
-    const retryAfter = Number(response.headers()['x-retry-after']) || 10;
-    await page.waitForTimeout(retryAfter * 1000 + 500);
-  }
-  await page.waitForURL((url) => !url.pathname.startsWith('/admin/login'));
-  await page.waitForLoadState('networkidle');
-}
 
 test.describe('Chairs’ notifications', () => {
   test.skip(

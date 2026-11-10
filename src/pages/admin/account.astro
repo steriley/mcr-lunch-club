@@ -2,9 +2,10 @@
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import ChangePasswordForm from '@/components/admin/ChangePasswordForm.vue';
 import NotificationSettings from '@/components/admin/NotificationSettings.vue';
+import PasskeySettings from '@/components/admin/PasskeySettings.vue';
 import SessionControls from '@/components/admin/SessionControls.vue';
 import { db } from '@/lib/db';
-import { getPushEnvironment } from '@/lib/env';
+import { getPasskeyEnvironment, getPushEnvironment } from '@/lib/env';
 import { getPreferences, listDevices } from '@/lib/push/store';
 
 export const prerender = false;
@@ -16,6 +17,7 @@ const [preferences, devices] =
   user && pushKey
     ? await Promise.all([getPreferences(db, user.id), listDevices(db, user.id)])
     : [null, []];
+const { host: passkeyHost } = getPasskeyEnvironment();
 ---
 
 <AdminLayout title="Account">
@@ -41,6 +43,7 @@ const [preferences, devices] =
         initialDevices={devices}
       />
     )}
+    <PasskeySettings client:load passkeyHost={passkeyHost} />
     <ChangePasswordForm client:load />
     <SessionControls client:load />
   </div>

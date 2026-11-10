@@ -141,6 +141,13 @@
       "when": 1793908085667,
       "tag": "0019_venue_route_geometry",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794332459421,
+      "tag": "0020_passkeys",
+      "breakpoints": true
     }
   ]
 }

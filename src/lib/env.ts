@@ -146,6 +146,42 @@ export function getAuthEnvironment() {
   };
 }
 
+const PASSKEY_RP_ID_PATTERN = /^(localhost|([a-z0-9-]+\.)+[a-z]{2,})$/;
+
+/**
+ * Where passkeys work (#153). A passkey is bound to one domain (its relying party ID), so unlike
+ * the auth URL this never follows the request host: Preview URLs keep using passwords. Both
+ * default to BETTER_AUTH_URL (never a preview's own URL); `PASSKEY_ORIGIN` and `PASSKEY_RP_ID`
+ * override them. The origin must be https, except on localhost, and sit on the RP ID or a
+ * subdomain of it. `host` is what the sign-in page compares with `location.host`.
+ */
+export function getPasskeyEnvironment(): { rpID: string; origin: string; host: string } {
+  const originValue = optional('PASSKEY_ORIGIN') ?? validateAuthUrl(required('BETTER_AUTH_URL'));
+  let origin: URL;
+  try {
+    origin = new URL(originValue);
+  } catch {
+    throw new Error('Invalid environment variable: PASSKEY_ORIGIN must be a valid absolute URL.');
+  }
+  const rpID = (optional('PASSKEY_RP_ID') ?? origin.hostname).toLowerCase();
+  if (!PASSKEY_RP_ID_PATTERN.test(rpID)) {
+    throw new Error(
+      'Invalid environment variable: PASSKEY_RP_ID must be a domain name such as mcrlunch.club or localhost.'
+    );
+  }
+  if (origin.protocol !== 'https:' && !(origin.protocol === 'http:' && rpID === 'localhost')) {
+    throw new Error(
+      'Invalid environment variable: PASSKEY_ORIGIN must use https (http only on localhost).'
+    );
+  }
+  if (origin.hostname !== rpID && !origin.hostname.endsWith(`.${rpID}`)) {
+    throw new Error(
+      'Invalid environment variable: the passkey origin must be on PASSKEY_RP_ID or a subdomain of it.'
+    );
+  }
+  return { rpID, origin: origin.origin, host: origin.host };
+}
+
 export function getSeedChairEnvironment() {
   return {
     email: required('SEED_CHAIR_EMAIL'),
