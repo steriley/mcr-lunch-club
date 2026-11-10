@@ -9,7 +9,6 @@ interface UserRow {
   id: string;
   email: string;
   name: string;
-  role: string;
   banned: boolean;
   createdAt: string | null;
 }
@@ -51,7 +50,6 @@ async function createUser() {
       id: string;
       email: string;
       name: string;
-      role?: string | null;
       createdAt?: string | null;
     };
   }>('/api/admin/users', {
@@ -70,7 +68,6 @@ async function createUser() {
     id: user.id,
     email: user.email,
     name: user.name,
-    role: user.role ?? checked.data.role,
     banned: false,
     createdAt: user.createdAt ?? null,
   });

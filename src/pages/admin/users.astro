@@ -26,7 +26,6 @@ const users = entries
     id: entry.id,
     email: entry.email,
     name: entry.name,
-    role: entry.role ?? 'user',
     banned: Boolean(entry.banned),
     createdAt: entry.createdAt ? new Date(entry.createdAt).toISOString() : null,
   }));
