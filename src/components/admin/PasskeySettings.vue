@@ -10,7 +10,7 @@ import { browserHasWebAuthn, canOfferPasskey } from '@/lib/passkey-support';
  * A Chair's passkeys (#153): add, rename and remove. Adding one needs the Chair's password first
  * (POST /api/admin/account/passkey-grant), and only works on the passkey host.
  */
-const props = defineProps<{ passkeyHost: string }>();
+const props = defineProps<{ passkeyHost: string | null }>();
 
 interface PasskeyRow {
   id: string;
@@ -291,8 +291,11 @@ const smallButton =
         Add a passkey
       </button>
     </template>
-    <p v-else-if="!isLoading" class="text-sm text-soot">
+    <p v-else-if="!isLoading && passkeyHost" class="text-sm text-soot">
       Passkeys can be added and used on <strong>{{ passkeyHost }}</strong> only.
+    </p>
+    <p v-else-if="!isLoading" class="text-sm text-soot">
+      Passkeys are not available on this deployment. Sign in with your password here.
     </p>
 
     <ConfirmDialog
