@@ -1,9 +1,9 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { and, count, eq, gte, lt } from 'drizzle-orm';
+import { and, eq, gte, lt, lte, sql } from 'drizzle-orm';
 import { memberSignInRequests } from '@/db/schema';
 import type { Database } from '@/lib/db-client';
-import { getAuthEnvironment } from '@/lib/env';
+import { getAuthEnvironment, getMemberSignInDailyCap } from '@/lib/env';
 import type { MailMessage } from '@/lib/mail/send';
 
 /**
@@ -28,15 +28,6 @@ const SIGN_IN_LIMITS = {
   perSenderHour: { max: 10, windowMs: HOUR },
 } as const;
 
-/**
- * Site-wide sign-in emails per day: below Resend's free 100 a day, so a flood can't use up the
- * quota or the domain's reputation. `MEMBER_SIGNIN_DAILY_CAP` overrides it.
- */
-export function siteDailyCap(): number {
-  const configured = Number.parseInt(process.env.MEMBER_SIGNIN_DAILY_CAP ?? '', 10);
-  return Number.isFinite(configured) && configured > 0 ? configured : 80;
-}
-
 function keyed(purpose: string, value: string): string {
   return createHmac('sha256', getAuthEnvironment().secret)
     .update(`${purpose}:${value}`)
@@ -55,60 +46,52 @@ function normaliseEmail(email: string): string {
 
 export type LimitResult = 'ok' | 'email' | 'sender' | 'site';
 
-/** Which limit, if any, a new request would break. Counts requests already recorded. */
-export async function checkSignInLimits(
+/**
+ * Reserves a sign-in email against the limits (#136): the request is recorded first and then
+ * counted together with everything before it, in one query, so requests sent at the same moment
+ * can't all pass a check that none of them has been recorded against yet. A refused request
+ * takes its row back out, so refusals never use up anyone's allowance. Rows older than two days
+ * are dropped.
+ */
+export async function reserveSignIn(
   db: Database,
   hashes: { email: string; sender: string | null },
   now: Date = new Date()
 ): Promise<LimitResult> {
+  const [reserved] = await db
+    .insert(memberSignInRequests)
+    .values({ emailHash: hashes.email, senderHash: hashes.sender, createdAt: now })
+    .returning({ id: memberSignInRequests.id });
+
   const since = (ms: number) => new Date(now.getTime() - ms);
-  const total = async (...conditions: Parameters<typeof and>) => {
-    const [row] = await db
-      .select({ total: count() })
-      .from(memberSignInRequests)
-      .where(and(...conditions));
-    return row?.total ?? 0;
-  };
-
-  if ((await total(gte(memberSignInRequests.createdAt, since(DAY)))) >= siteDailyCap()) {
-    return 'site';
-  }
-  const byEmail = eq(memberSignInRequests.emailHash, hashes.email);
   const { perEmailShort, perEmailDay, perSenderHour } = SIGN_IN_LIMITS;
-  if (
-    (await total(byEmail, gte(memberSignInRequests.createdAt, since(perEmailShort.windowMs)))) >=
-      perEmailShort.max ||
-    (await total(byEmail, gte(memberSignInRequests.createdAt, since(perEmailDay.windowMs)))) >=
-      perEmailDay.max
-  ) {
-    return 'email';
-  }
-  if (
-    hashes.sender &&
-    (await total(
-      eq(memberSignInRequests.senderHash, hashes.sender),
-      gte(memberSignInRequests.createdAt, since(perSenderHour.windowMs))
-    )) >= perSenderHour.max
-  ) {
-    return 'sender';
-  }
-  return 'ok';
-}
+  const { createdAt, emailHash: email, senderHash: sender } = memberSignInRequests;
+  const within = (ms: number) => sql`${createdAt} >= ${since(ms)}`;
+  const [counts] = await db
+    .select({
+      site: sql<number>`count(*)::int`,
+      emailShort: sql<number>`count(*) filter (where ${email} = ${hashes.email} and ${within(perEmailShort.windowMs)})::int`,
+      emailDay: sql<number>`count(*) filter (where ${email} = ${hashes.email})::int`,
+      senderHour: sql<number>`count(*) filter (where ${sender} = ${hashes.sender} and ${within(perSenderHour.windowMs)})::int`,
+    })
+    .from(memberSignInRequests)
+    .where(and(gte(createdAt, since(DAY)), lte(createdAt, now)));
 
-/** Records a request that passed the checks, and drops rows older than two days. */
-export async function recordSignInRequest(
-  db: Database,
-  hashes: { email: string; sender: string | null },
-  now: Date = new Date()
-): Promise<void> {
-  await db.insert(memberSignInRequests).values({
-    emailHash: hashes.email,
-    senderHash: hashes.sender,
-    createdAt: now,
-  });
-  await db
-    .delete(memberSignInRequests)
-    .where(lt(memberSignInRequests.createdAt, new Date(now.getTime() - 2 * DAY)));
+  const result: LimitResult =
+    (counts?.site ?? 0) > getMemberSignInDailyCap()
+      ? 'site'
+      : (counts?.emailShort ?? 0) > perEmailShort.max || (counts?.emailDay ?? 0) > perEmailDay.max
+        ? 'email'
+        : hashes.sender && (counts?.senderHour ?? 0) > perSenderHour.max
+          ? 'sender'
+          : 'ok';
+
+  if (result !== 'ok') {
+    await db.delete(memberSignInRequests).where(eq(memberSignInRequests.id, reserved.id));
+  } else {
+    await db.delete(memberSignInRequests).where(lt(createdAt, since(2 * DAY)));
+  }
+  return result;
 }
 
 /**

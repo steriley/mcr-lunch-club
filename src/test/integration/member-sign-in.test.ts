@@ -2,17 +2,11 @@ import '../setup-env';
 import { after, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { eq, like } from 'drizzle-orm';
-import { rateLimit, session, user, verification } from '@/db/auth-schema';
+import { account, rateLimit, session, user, verification } from '@/db/auth-schema';
 import { memberSignInRequests } from '@/db/schema';
 import { createAuth } from '@/lib/auth-config';
-import {
-  checkSignInLimits,
-  collectSignInEmail,
-  emailHash,
-  recordSignInRequest,
-  senderHash,
-  siteDailyCap,
-} from '@/lib/members/sign-in';
+import { getMemberSignInDailyCap } from '@/lib/env';
+import { collectSignInEmail, emailHash, reserveSignIn, senderHash } from '@/lib/members/sign-in';
 import { closeTestDb, createAdmin, resetTestDb, skipIntegration, testDb } from './db';
 
 /** Member email sign-in against real Better Auth (#136, PR b). */
@@ -85,6 +79,36 @@ describe('member email sign-in (database)', { skip: skipIntegration }, () => {
     assert.equal(row.emailVerified, true);
   });
 
+  it('keeps the signed-in hint to the browser session for “don’t remember me”', async () => {
+    const auth = await freshAuth();
+    await auth.api.createUser({
+      body: {
+        email: 'brief@example.com',
+        password: 'a-long-enough-password',
+        name: 'B',
+        role: 'user',
+      },
+    });
+    const signIn = (rememberMe: boolean) =>
+      auth.handler(
+        new Request(`${origin}/api/auth/sign-in/email`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', origin },
+          body: JSON.stringify({
+            email: 'brief@example.com',
+            password: 'a-long-enough-password',
+            rememberMe,
+          }),
+        })
+      );
+    const hint = (response: Response) =>
+      response.headers.getSetCookie().find((cookie) => cookie.startsWith('signed_in=')) ?? '';
+    assert.match(hint(await signIn(true)), /Max-Age=\d+/i);
+    const brief = hint(await signIn(false));
+    assert.match(brief, /signed_in=1/);
+    assert.doesNotMatch(brief, /Max-Age/i);
+  });
+
   it('signs a member in with the link instead', async () => {
     const auth = await freshAuth();
     const { url } = await requestEmail(auth, 'link@example.com');
@@ -121,11 +145,41 @@ describe('member email sign-in (database)', { skip: skipIntegration }, () => {
     assert.equal((await db.select().from(session)).length, 0);
   });
 
+  it('never strips a Chair’s password, even one whose email isn’t marked verified', async () => {
+    const db = await testDb();
+    const auth = await freshAuth();
+    // A link made for an address before its Chair account existed.
+    const { otp, url } = await requestEmail(auth, 'late@example.com');
+    const created = await auth.api.createUser({
+      body: {
+        email: 'late@example.com',
+        password: 'a-long-enough-password',
+        name: 'Late',
+        role: 'admin',
+      },
+    });
+    await db.update(user).set({ emailVerified: false }).where(eq(user.id, created.user.id));
+
+    assert.equal((await verifyCode(auth, 'late@example.com', otp)).status, 403);
+    const byLink = await auth.handler(new Request(url, { headers: { origin } }));
+    assert.notEqual(byLink.status, 200);
+    const credentials = await db.select().from(account).where(eq(account.userId, created.user.id));
+    assert.equal(credentials.length, 1, 'the Chair keeps their password');
+  });
+
   it('refuses member sign-in while the members flag is off', async () => {
     const on = await freshAuth(true);
     const { otp } = await requestEmail(on, 'off@example.com');
     const off = await freshAuth(false);
     assert.equal((await verifyCode(off, 'off@example.com', otp)).status, 404);
+    // Refused before Better Auth acts: no account was made.
+    const made = await (
+      await testDb()
+    )
+      .select()
+      .from(user)
+      .where(eq(user.email, 'off@example.com'));
+    assert.equal(made.length, 0);
   });
 
   it('lets a member add a passkey just after an email sign-in, and not otherwise', async () => {
@@ -181,60 +235,70 @@ describe('sign-in rate limits (database)', { skip: skipIntegration }, () => {
 
   after(closeTestDb);
 
-  it('counts per email, per sender and site-wide, and forgets requests after two days', async () => {
+  const sam = () => ({ email: emailHash('sam@example.com'), sender: senderHash('203.0.113.1') });
+
+  it('allows three per email in fifteen minutes, and a refused request uses up nothing', async () => {
     const db = await testDb();
     const now = new Date();
-    const sam = { email: emailHash('sam@example.com'), sender: senderHash('203.0.113.1') };
-
-    for (let i = 0; i < 3; i++) await recordSignInRequest(db, sam, now);
-    assert.equal(await checkSignInLimits(db, sam, now), 'email');
+    for (let i = 0; i < 3; i++) assert.equal(await reserveSignIn(db, sam(), now), 'ok');
+    assert.equal(await reserveSignIn(db, sam(), now), 'email');
+    assert.equal((await db.select().from(memberSignInRequests)).length, 3);
     // Fifteen minutes later the short limit has passed.
-    assert.equal(await checkSignInLimits(db, sam, new Date(now.getTime() + 16 * 60_000)), 'ok');
-    assert.equal(
-      await checkSignInLimits(db, { email: emailHash('jo@example.com'), sender: sam.sender }, now),
-      'ok'
-    );
+    assert.equal(await reserveSignIn(db, sam(), new Date(now.getTime() + 16 * 60_000)), 'ok');
+  });
 
-    for (let i = 0; i < 7; i++) {
-      await recordSignInRequest(
-        db,
-        { email: emailHash(`p${i}@example.com`), sender: sam.sender },
-        now
+  it('allows ten per IP an hour, whatever the emails', async () => {
+    const db = await testDb();
+    const now = new Date();
+    const sender = senderHash('203.0.113.1');
+    for (let i = 0; i < 10; i++) {
+      assert.equal(
+        await reserveSignIn(db, { email: emailHash(`p${i}@example.com`), sender }, now),
+        'ok'
       );
     }
     assert.equal(
-      await checkSignInLimits(db, { email: emailHash('new@example.com'), sender: sam.sender }, now),
+      await reserveSignIn(db, { email: emailHash('new@example.com'), sender }, now),
       'sender'
     );
+  });
 
-    const old = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
-    await db
-      .insert(memberSignInRequests)
-      .values({ emailHash: 'old', senderHash: null, createdAt: old });
-    await recordSignInRequest(db, { email: emailHash('x@example.com'), sender: null }, now);
-    assert.equal(
-      (
-        await db
-          .select()
-          .from(memberSignInRequests)
-          .where(eq(memberSignInRequests.emailHash, 'old'))
-      ).length,
-      0
+  it('can’t be beaten by sending many requests at once', async () => {
+    const db = await testDb();
+    const now = new Date();
+    const results = await Promise.all(
+      Array.from({ length: 12 }, () => reserveSignIn(db, sam(), now))
     );
+    assert.ok(results.filter((result) => result === 'ok').length <= 3, results.join(','));
   });
 
   it('stops everyone once the site-wide daily cap is reached', async () => {
     const db = await testDb();
     const now = new Date();
-    const rows = Array.from({ length: siteDailyCap() }, (_, i) => ({
+    const rows = Array.from({ length: getMemberSignInDailyCap() }, (_, i) => ({
       emailHash: `e${i}`,
       senderHash: `s${i}`,
       createdAt: now,
     }));
     await db.insert(memberSignInRequests).values(rows);
     assert.equal(
-      await checkSignInLimits(db, { email: emailHash('anyone@example.com'), sender: null }, now),
+      await reserveSignIn(db, { email: emailHash('anyone@example.com'), sender: null }, now),
       'site'
     );
+  });
+
+  it('forgets requests after two days', async () => {
+    const db = await testDb();
+    const now = new Date();
+    const old = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+    await db
+      .insert(memberSignInRequests)
+      .values({ emailHash: 'old', senderHash: null, createdAt: old });
+    await reserveSignIn(db, { email: emailHash('x@example.com'), sender: null }, now);
+    const left = await db
+      .select()
+      .from(memberSignInRequests)
+      .where(eq(memberSignInRequests.emailHash, 'old'));
+    assert.equal(left.length, 0);
   });
 });
