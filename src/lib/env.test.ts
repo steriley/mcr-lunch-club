@@ -166,6 +166,16 @@ describe('getPasskeyEnvironment', () => {
     assert.equal(getPasskeyEnvironment().host, 'mcrlunch.club');
   });
 
+  it('is off on a Preview without BETTER_AUTH_URL, rather than failing the build', () => {
+    process.env.VERCEL_ENV = 'preview';
+    process.env.VERCEL_BRANCH_URL = 'app-git-feature.vercel.app';
+    assert.deepEqual(getPasskeyEnvironment(), {
+      rpID: 'app-git-feature.vercel.app',
+      origin: 'https://app-git-feature.vercel.app',
+      host: null,
+    });
+  });
+
   it('takes PASSKEY_ORIGIN and PASSKEY_RP_ID, with the origin on the RP ID or a subdomain', () => {
     process.env.PASSKEY_ORIGIN = 'https://www.mcrlunch.club';
     process.env.PASSKEY_RP_ID = 'mcrlunch.club';

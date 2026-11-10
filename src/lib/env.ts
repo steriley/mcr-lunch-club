@@ -153,10 +153,16 @@ const PASSKEY_RP_ID_PATTERN = /^(localhost|([a-z0-9-]+\.)+[a-z]{2,})$/;
  * the auth URL this never follows the request host: Preview URLs keep using passwords. Both
  * default to BETTER_AUTH_URL (never a preview's own URL); `PASSKEY_ORIGIN` and `PASSKEY_RP_ID`
  * override them. The origin must be https, except on localhost, and sit on the RP ID or a
- * subdomain of it. `host` is what the sign-in page compares with `location.host`.
+ * subdomain of it. `host` is what the sign-in page compares with `location.host`; it is null on a
+ * Preview without BETTER_AUTH_URL, where passkeys are off.
  */
-export function getPasskeyEnvironment(): { rpID: string; origin: string; host: string } {
-  const originValue = optional('PASSKEY_ORIGIN') ?? validateAuthUrl(required('BETTER_AUTH_URL'));
+export function getPasskeyEnvironment(): { rpID: string; origin: string; host: string | null } {
+  const configured = optional('PASSKEY_ORIGIN') ?? optional('BETTER_AUTH_URL');
+  // A Preview without BETTER_AUTH_URL: the plugin still needs a domain, but no page offers
+  // passkeys there (host null), so Chairs use their password as on every other Preview.
+  const [previewOrigin] = configured ? [] : getPreviewOrigins();
+  const originValue = configured ?? previewOrigin ?? required('BETTER_AUTH_URL');
+  if (!optional('PASSKEY_ORIGIN')) validateAuthUrl(originValue);
   let origin: URL;
   try {
     origin = new URL(originValue);
@@ -179,7 +185,7 @@ export function getPasskeyEnvironment(): { rpID: string; origin: string; host: s
       'Invalid environment variable: the passkey origin must be on PASSKEY_RP_ID or a subdomain of it.'
     );
   }
-  return { rpID, origin: origin.origin, host: origin.host };
+  return { rpID, origin: origin.origin, host: previewOrigin ? null : origin.host };
 }
 
 export function getSeedChairEnvironment() {
