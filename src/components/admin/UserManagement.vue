@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-policy';
 import { USER_ROLES, createUserSchema, resetPasswordSchema } from '@/lib/user-schema';
@@ -24,7 +24,7 @@ const message = ref('');
 const errorMessage = ref('');
 const isCreating = ref(false);
 const busy = ref<Record<string, boolean>>({});
-const pending = ref<{ user: UserRow; action: 'ban' | 'unban' } | null>(null);
+const pending = ref<{ user: UserRow; action: 'ban' | 'unban' | 'remove-passkeys' } | null>(null);
 
 const resetTarget = ref<UserRow | null>(null);
 const resetPassword = ref('');
@@ -102,9 +102,45 @@ async function performAction() {
     errorMessage.value = result.error;
     return;
   }
+  if (target.action === 'remove-passkeys') {
+    message.value =
+      target.user.id === props.currentUserId
+        ? 'Your passkeys have been removed. Sign in with your password from now on.'
+        : `${target.user.email}’s passkeys have been removed and they have been signed out everywhere.`;
+    return;
+  }
   target.user.banned = target.action === 'ban';
   message.value = `${target.user.email} has been ${target.action === 'ban' ? 'deactivated and signed out' : 'reactivated'}.`;
 }
+
+const pendingCopy = computed(() => {
+  const target = pending.value;
+  if (!target) return { title: '', message: '', confirm: '' };
+  const { email, id } = target.user;
+  switch (target.action) {
+    case 'ban':
+      return {
+        title: 'Deactivate account',
+        message: `${email} will be signed out and unable to sign in until reactivated. Their passkeys are removed.`,
+        confirm: 'Deactivate',
+      };
+    case 'unban':
+      return {
+        title: 'Reactivate account',
+        message: `${email} will be able to sign in again.`,
+        confirm: 'Reactivate',
+      };
+    case 'remove-passkeys':
+      return {
+        title: 'Remove passkeys',
+        message:
+          id === props.currentUserId
+            ? 'Every passkey on your account will stop working. You can still sign in with your password.'
+            : `Every passkey on ${email}’s account will stop working and they will be signed out everywhere. They can still sign in with their password.`,
+        confirm: 'Remove passkeys',
+      };
+  }
+});
 
 function openReset(user: UserRow) {
   resetTarget.value = user;
@@ -134,7 +170,7 @@ async function submitReset() {
     return;
   }
   resetTarget.value = null;
-  message.value = `Temporary password set for ${user.email}. They have been signed out everywhere.`;
+  message.value = `Temporary password set for ${user.email}. Their passkeys have been removed and they have been signed out everywhere.`;
 }
 
 const inputClass =
@@ -203,6 +239,14 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
                     @click="openReset(user)"
                   >
                     Reset password
+                  </button>
+                  <button
+                    type="button"
+                    class="whitespace-nowrap rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60"
+                    :disabled="busy[user.id]"
+                    @click="pending = { user, action: 'remove-passkeys' }"
+                  >
+                    Remove passkeys
                   </button>
                   <template v-if="user.id !== currentUserId">
                     <button
@@ -295,13 +339,9 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
 
     <ConfirmDialog
       :open="Boolean(pending)"
-      :title="pending?.action === 'ban' ? 'Deactivate account' : 'Reactivate account'"
-      :message="
-        pending?.action === 'ban'
-          ? `${pending?.user.email} will be signed out and unable to sign in until reactivated.`
-          : `${pending?.user.email} will be able to sign in again.`
-      "
-      :confirm-label="pending?.action === 'ban' ? 'Deactivate' : 'Reactivate'"
+      :title="pendingCopy.title"
+      :message="pendingCopy.message"
+      :confirm-label="pendingCopy.confirm"
       @cancel="pending = null"
       @confirm="performAction"
     />

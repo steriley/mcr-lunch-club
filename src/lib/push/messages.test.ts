@@ -105,6 +105,19 @@ describe('selectRecipients', () => {
     assert.deepEqual(selectRecipients({ type: 'suggestion' }, keen), ['jo']);
   });
 
+  it('tells only the owner when a passkey is added, whatever their preferences (#153)', () => {
+    const event: PushEvent = { type: 'passkey_added', userId: 'muted' };
+    assert.deepEqual(selectRecipients(event, chairs), ['muted']);
+    const allOff = chair('quiet', {
+      preferences: { proposals: false, decisions: false, visits: false, suggestions: false },
+    });
+    assert.deepEqual(selectRecipients({ type: 'passkey_added', userId: 'quiet' }, [allOff]), [
+      'quiet',
+    ]);
+    assert.deepEqual(selectRecipients({ type: 'passkey_added', userId: 'banned' }, chairs), []);
+    assert.deepEqual(selectRecipients({ type: 'passkey_added', userId: 'member' }, chairs), []);
+  });
+
   it('has nobody to tell when there is only one active Chair', () => {
     assert.deepEqual(selectRecipients(proposal, [chair('sam'), chair('x', { banned: true })]), []);
   });
@@ -222,6 +235,13 @@ describe('buildMessage', () => {
       'url',
       'v',
     ]);
+  });
+
+  it('says a passkey was added without naming the device, and links to Account', () => {
+    const message = buildMessage({ type: 'passkey_added', userId: 'sam' }, { badge: 0 });
+    assert.equal(message.title, 'A passkey was added to your account');
+    assert.equal(message.url, '/admin/account#passkeys');
+    assert.equal(message.renotify, true);
   });
 
   it('stays far under 4 KB with the longest names', () => {

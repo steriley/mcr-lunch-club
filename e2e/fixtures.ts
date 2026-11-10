@@ -62,3 +62,30 @@ export async function visit(page: Page, path: string, expectedStatus = 200): Pro
   expect(response?.status(), `${path} status`).toBe(expectedStatus);
   await page.waitForLoadState('networkidle');
 }
+
+export const chairEmail = process.env.SMOKE_CHAIR_EMAIL ?? process.env.SEED_CHAIR_EMAIL;
+export const chairPassword = process.env.SMOKE_CHAIR_PASSWORD ?? process.env.SEED_CHAIR_PASSWORD;
+
+/** Signs in as the seeded (or smoke) Chair with their password. */
+export async function signIn(page: Page) {
+  expect(
+    chairEmail && chairPassword,
+    'SEED_CHAIR_EMAIL / SEED_CHAIR_PASSWORD (or SMOKE_CHAIR_*) must name a Chair'
+  ).toBeTruthy();
+  await page.goto('/admin/login');
+  await page.waitForLoadState('networkidle');
+  await page.getByLabel(/email/i).fill(chairEmail!);
+  await page.getByLabel(/password/i).fill(chairPassword!);
+  // Better Auth allows a few sign-ins per ten seconds, and several tests sign in back to back:
+  // when it answers 429, wait out the window and press again.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const answer = page.waitForResponse((response) => response.url().includes('/api/auth/sign-in'));
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+    const response = await answer;
+    if (response.status() !== 429) break;
+    const retryAfter = Number(response.headers()['x-retry-after']) || 10;
+    await page.waitForTimeout(retryAfter * 1000 + 500);
+  }
+  await page.waitForURL((url) => !url.pathname.startsWith('/admin/login'));
+  await page.waitForLoadState('networkidle');
+}

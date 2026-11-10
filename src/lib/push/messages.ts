@@ -64,7 +64,9 @@ export type PushEvent =
       secondChairId: string | null;
       secondChairName: string | null;
     }
-  | { type: 'suggestion' };
+  | { type: 'suggestion' }
+  /** A passkey was added to this Chair's account (#153): for them only, and always sent. */
+  | { type: 'passkey_added'; userId: string };
 
 /** The event for a pending proposal just made (or made to replace the proposer's own). */
 export function proposalEvent(proposal: TierProposalRow): PushEvent {
@@ -110,12 +112,14 @@ export function visitEvent(inspection: InspectionRow): PushEvent {
       };
 }
 
-const EVENT_KIND: Record<PushEvent['type'], PushEventKind> = {
+/** The preference each event is filed under; null for security notices, which cannot be turned off. */
+const EVENT_KIND: Record<PushEvent['type'], PushEventKind | null> = {
   proposal: 'proposals',
   decision: 'decisions',
   visit_waiting: 'visits',
   visit_confirmed: 'visits',
   suggestion: 'suggestions',
+  passkey_added: null,
 };
 
 export interface ChairCandidate {
@@ -136,7 +140,8 @@ export function selectRecipients(
   now: Date = new Date()
 ): string[] {
   const kind = EVENT_KIND[event.type];
-  const wants = (chair: ChairCandidate) => isActiveChair(chair, now) && chair.preferences[kind];
+  const wants = (chair: ChairCandidate) =>
+    isActiveChair(chair, now) && (kind === null || chair.preferences[kind]);
 
   let eligible: ChairCandidate[];
   switch (event.type) {
@@ -157,6 +162,9 @@ export function selectRecipients(
       break;
     case 'suggestion':
       eligible = chairs;
+      break;
+    case 'passkey_added':
+      eligible = chairs.filter((chair) => chair.id === event.userId);
       break;
   }
   return eligible.filter(wants).map((chair) => chair.id);
@@ -270,6 +278,15 @@ export function buildMessage(
         badge,
       };
     }
+    case 'passkey_added':
+      return {
+        title: 'A passkey was added to your account',
+        body: 'If this wasn’t you, remove it in Account and change your password.',
+        tag: 'passkey-added',
+        url: '/admin/account#passkeys',
+        badge,
+        renotify: true,
+      };
   }
 }
 

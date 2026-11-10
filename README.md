@@ -180,6 +180,7 @@ Environment Variables**. Never commit real values.
 | `BETTER_AUTH_SECRET`                                           | Signing/encryption secret, at least 32 characters (`openssl rand -base64 32`). Different per environment.                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `BETTER_AUTH_URL`                                              | Main site origin: `http://localhost:4321` locally, `https://mcrlunchclub.com` on Vercel Production. Not needed for Preview, which uses its own Vercel URL. See _Signing in on more than one domain_ below.                                                                                                                                                                                                                                                                                                                      |
 | `BETTER_AUTH_ALLOWED_HOSTS`                                    | Optional, comma-separated: extra hosts the Chairs' Area works on, e.g. the production `mcr-lunch-club.vercel.app` alias.                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `PASSKEY_ORIGIN` / `PASSKEY_RP_ID`                             | Optional. Where Chairs' passkeys work. Default to `BETTER_AUTH_URL` and its host name, which is right when that is the custom domain. Passkeys are bound to this one domain, so Previews and `vercel.app` addresses use passwords. See "Passkeys for Chairs".                                                                                                                                                                                                                                                                   |
 | `PRODUCTION_DATABASE_HOST`                                     | Preview builds: the production Neon host (e.g. `ep-calm-river-123456.eu-west-2.aws.neon.tech`, pooled or direct). Preview builds refuse to migrate a database on that endpoint. See _Preview deployments_ below.                                                                                                                                                                                                                                                                                                                |
 | `BLOB_READ_WRITE_TOKEN` / `BLOB_STORE_ID`                      | Vercel Blob credentials for venue photo uploads. Connecting a Blob store to the project adds one or the other: older stores set the token, newer stores set `BLOB_STORE_ID` and authenticate with the deployment's OIDC token (no secret to manage). Either works; without both the photo section is read-only. Server-only: `pnpm check:bundle` fails if it reaches the browser bundle.                                                                                                                                        |
 | `SEED_CHAIR_EMAIL` / `SEED_CHAIR_NAME` / `SEED_CHAIR_PASSWORD` | Only for `pnpm db:seed`. Remove them from your machine afterwards.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -411,6 +412,30 @@ trusted origin, and anyone can deploy to `vercel.app`.
 
 Sign-in cookies belong to one host, so signing in on `mcrlunchclub.com` does
 not sign you in on the `vercel.app` address; sign in on each separately.
+
+### Passkeys for Chairs
+
+Chairs can sign in with a passkey (#153), with their password as the fallback.
+A Chair signs in with their password, opens **Account → Passkeys**, confirms
+their password and follows the browser's prompt; synced passkeys (iCloud
+Keychain, Google Password Manager) then work on their other devices, and
+"use a phone" in the browser prompt signs in on a computer that has none.
+
+- **One domain.** A passkey belongs to the domain it was made on: the
+  `BETTER_AUTH_URL` host (or `PASSKEY_ORIGIN` / `PASSKEY_RP_ID`) in Production,
+  `localhost` locally. Elsewhere, including Previews, the passkey button is
+  hidden and Chairs use their password.
+- **Adding one needs the password**, checked by
+  `POST /api/admin/account/passkey-grant` (five wrong passwords in 15 minutes
+  lock the check). The grant lasts five minutes and allows one passkey, so a
+  stolen session cookie alone cannot add a passkey.
+- **Recovery removes passkeys.** Resetting a Chair's password, deactivating them,
+  or **Remove passkeys** on `/admin/users` deletes every passkey on the account
+  and signs them out everywhere.
+- The Chair gets a push notification whenever a passkey is added to their
+  account (always on, whatever their notification settings).
+- Every Chair keeps a password. Logic: `src/lib/passkeys.ts` and the hooks in
+  `src/lib/auth-config.ts`.
 
 ### Operating notes
 
