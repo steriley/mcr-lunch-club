@@ -3,6 +3,7 @@ import { isAPIError } from 'better-auth/api';
 import { z } from 'zod';
 import { waitUntil } from '@vercel/functions';
 import { auth, type AuthSession } from '@/lib/auth';
+import { isChairAccount } from '@/lib/chair-accounts';
 import { db } from '@/lib/db';
 import { getAuthEnvironment } from '@/lib/env';
 import { MAX_IMAGES_PER_VENUE, CAPTION_MAX } from '@/lib/image-upload';
@@ -110,6 +111,14 @@ export function authApiError(context: string, error: unknown): Response {
 }
 
 export const userIdParam = z.string().trim().min(1).max(100);
+
+/**
+ * For the Users page's account actions (#136): they act on Chairs only. A member's id answers
+ * 404, as if the account did not exist; members are moderated from the Members list.
+ */
+export async function unlessChairAccount(userId: string): Promise<Response | null> {
+  return (await isChairAccount(db, userId)) ? null : errorResponse('user_not_found');
+}
 
 /** How a domain error code answers over HTTP. `fields` point the form at the input to correct. */
 export interface ErrorHttp {

@@ -2,11 +2,6 @@ import '@/lib/zod-browser';
 import { z } from 'zod';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-policy';
 
-export const USER_ROLES = [
-  { value: 'admin', label: 'Chair (full access)' },
-  { value: 'user', label: 'No admin access' },
-] as const;
-
 const password = z
   .string()
   .min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`)
@@ -16,7 +11,9 @@ export const createUserSchema = z.object({
   name: z.string().trim().min(1, 'Name is required.').max(120),
   email: z.email({ error: 'Enter a valid email address.' }).trim().toLowerCase(),
   password,
-  role: z.enum(['admin', 'user']).default('admin'),
+  // The Users page manages Chairs only (#136). Members sign up themselves and are moderated from
+  // the Members list, so this form can never make a member account.
+  role: z.literal('admin').default('admin'),
 });
 
 export const resetPasswordSchema = z.object({ password });

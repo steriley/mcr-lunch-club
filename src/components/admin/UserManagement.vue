@@ -2,7 +2,7 @@
 import { computed, reactive, ref } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-policy';
-import { USER_ROLES, createUserSchema, resetPasswordSchema } from '@/lib/user-schema';
+import { createUserSchema, resetPasswordSchema } from '@/lib/user-schema';
 import { apiFetch } from '@/lib/api-fetch';
 
 interface UserRow {
@@ -17,7 +17,7 @@ interface UserRow {
 const props = defineProps<{ users: UserRow[]; currentUserId: string }>();
 
 const rows = ref<UserRow[]>(props.users.map((user) => ({ ...user })));
-const form = reactive({ name: '', email: '', password: '', role: 'admin' });
+const form = reactive({ name: '', email: '', password: '' });
 const errors = reactive<Record<string, string>>({});
 const formError = ref('');
 const message = ref('');
@@ -33,10 +33,6 @@ const resetError = ref('');
 function clearErrors() {
   for (const key of Object.keys(errors)) delete errors[key];
   formError.value = '';
-}
-
-function roleLabel(role: string) {
-  return USER_ROLES.find((option) => option.value === role)?.label ?? role;
 }
 
 async function createUser() {
@@ -79,7 +75,7 @@ async function createUser() {
     createdAt: user.createdAt ?? null,
   });
   message.value = `Account created for ${user.email}. Share the password with them securely; they can change it under Account.`;
-  Object.assign(form, { name: '', email: '', password: '', role: 'admin' });
+  Object.assign(form, { name: '', email: '', password: '' });
 }
 
 async function performAction() {
@@ -201,7 +197,6 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
           <thead class="bg-card text-ink">
             <tr>
               <th scope="col" class="px-4 py-3 font-semibold">Name</th>
-              <th scope="col" class="px-4 py-3 font-semibold">Access</th>
               <th scope="col" class="px-4 py-3 font-semibold">Status</th>
               <th scope="col" class="px-4 py-3 text-right font-semibold">Actions</th>
             </tr>
@@ -219,7 +214,6 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
                 </div>
                 <div class="text-xs text-graphite">{{ user.email }}</div>
               </td>
-              <td class="px-4 py-3 text-xs">{{ roleLabel(user.role) }}</td>
               <td class="px-4 py-3">
                 <span
                   :class="[
@@ -300,14 +294,6 @@ const errorClass = 'mt-1 block text-xs font-medium text-red-700';
           <span class="mb-2 block">Name</span>
           <input v-model="form.name" autocomplete="off" :class="inputClass" />
           <span v-if="errors.name" :class="errorClass">{{ errors.name }}</span>
-        </label>
-        <label class="block text-sm font-semibold text-ink">
-          <span class="mb-2 block">Access</span>
-          <select v-model="form.role" :class="inputClass">
-            <option v-for="role in USER_ROLES" :key="role.value" :value="role.value">
-              {{ role.label }}
-            </option>
-          </select>
         </label>
         <label class="block text-sm font-semibold text-ink">
           <span class="mb-2 block">Email</span>

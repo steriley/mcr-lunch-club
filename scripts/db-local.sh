@@ -2,7 +2,8 @@
 # One-command local database: `pnpm db:local`.
 #
 # Starts a local Postgres 16 (installed binaries, or Docker with --docker), creates `lunch` (dev) and
-# `lunch_test` (integration tests), migrates and imports the site content into `lunch`, seeds a Chair,
+# `lunch_test` (integration tests), migrates and imports the site content into `lunch`, seeds a Chair
+# and a test member,
 # and writes .env.local if there isn't one. Safe to run again: every step checks before it acts.
 #
 #   pnpm db:local             installed postgres binaries (also what the cloud container uses)
@@ -17,6 +18,8 @@ PORT="${LUNCH_PGPORT:-5432}"
 HOST=127.0.0.1
 CHAIR_EMAIL="${SEED_CHAIR_EMAIL:-chair@lunch.test}"
 CHAIR_PASSWORD="${SEED_CHAIR_PASSWORD:-local-chair-password}"
+MEMBER_EMAIL="${SEED_MEMBER_EMAIL:-member@lunch.test}"
+MEMBER_PASSWORD="${SEED_MEMBER_PASSWORD:-local-member-password}"
 DEV_URL="postgres://postgres@$HOST:$PORT/lunch"
 TEST_URL="postgres://postgres@$HOST:$PORT/lunch_test"
 USE_DOCKER=0
@@ -76,17 +79,23 @@ export DATABASE_URL="$DEV_URL" DATABASE_URL_UNPOOLED="$DEV_URL" DATABASE_DRIVER=
 export BETTER_AUTH_SECRET="${BETTER_AUTH_SECRET:-local-only-secret-at-least-32-characters-long}"
 export BETTER_AUTH_URL="${BETTER_AUTH_URL:-http://localhost:4321}"
 export SEED_CHAIR_EMAIL="$CHAIR_EMAIL" SEED_CHAIR_PASSWORD="$CHAIR_PASSWORD" SEED_CHAIR_NAME=Chair
+export SEED_MEMBER_EMAIL="$MEMBER_EMAIL" SEED_MEMBER_PASSWORD="$MEMBER_PASSWORD" SEED_MEMBER_NAME="Test Member"
 unset NODE_ENV
 
 pnpm --silent db:migrate
 pnpm --silent db:import
 pnpm --silent db:seed
+pnpm --silent db:seed:member
 
 # ---- 4. .env.local -----------------------------------------------------------------------------------
 if [ -e .env.local ]; then
   log ".env.local exists; leaving it alone. For this database use:"
   printf '  DATABASE_URL=%s\n  TEST_DATABASE_URL=%s\n' "$DEV_URL" "$TEST_URL"
   grep -q '^VAPID_PUBLIC_KEY=' .env.local || log "For push notifications, add the lines from: pnpm push:keys"
+  if ! grep -q '^SEED_MEMBER_EMAIL=' .env.local; then
+    log "For the test member (pnpm check:built signs in as it), add:"
+    printf '  SEED_MEMBER_EMAIL=%s\n  SEED_MEMBER_PASSWORD=%s\n' "$MEMBER_EMAIL" "$MEMBER_PASSWORD"
+  fi
 else
   cat > .env.local <<ENV
 # Written by pnpm db:local. Local-only values; never reuse them anywhere real.
@@ -97,6 +106,9 @@ BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET
 BETTER_AUTH_URL=$BETTER_AUTH_URL
 SEED_CHAIR_EMAIL=$CHAIR_EMAIL
 SEED_CHAIR_PASSWORD=$CHAIR_PASSWORD
+# The test member: a user-role account, never a Chair. Its password works only outside production.
+SEED_MEMBER_EMAIL=$MEMBER_EMAIL
+SEED_MEMBER_PASSWORD=$MEMBER_PASSWORD
 # Not a real token: it only switches the photo uploader on so pnpm check:built can exercise the WebP encoder
 # (the test stubs the upload request, so nothing reaches Vercel Blob).
 BLOB_READ_WRITE_TOKEN=local-only-not-a-real-token
@@ -107,3 +119,4 @@ ENV
 fi
 
 log "Ready. Sign in at $BETTER_AUTH_URL/admin/login as $CHAIR_EMAIL / $CHAIR_PASSWORD (local only)"
+log "Test member (never a Chair): $MEMBER_EMAIL / $MEMBER_PASSWORD (local only)"

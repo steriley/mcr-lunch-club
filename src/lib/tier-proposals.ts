@@ -4,6 +4,7 @@ import { tierProposals, venues, type TierProposalRow, type VenueRow } from '@/db
 import type { Database, Tx } from '@/lib/db-client';
 import { latestVerifiedInspection } from '@/lib/inspections';
 import { fail, ok, publicChange, type Outcome } from '@/lib/outcome';
+import { roleMentionsAdmin } from '@/lib/chair-accounts';
 import { isActiveChair } from '@/lib/roles';
 import { tierLabel, type TierValue } from '@/lib/tiers';
 import { actorName, type Actor } from '@/lib/venue-events';
@@ -221,14 +222,15 @@ export function withdrawProposal(
 }
 
 /**
- * Chairs who can sign things off (see isActiveChair in src/lib/roles.ts).
- * Filtered in code, not SQL, so comma-separated roles and expired bans count
- * exactly as they do at sign-in. There are only ever a handful of accounts.
+ * Chairs who can sign things off (see isActiveChair in src/lib/roles.ts). SQL narrows the
+ * accounts to those whose role mentions admin, so members are never loaded (#136); the exact rule
+ * then runs in code, so comma-separated roles and expired bans count as they do at sign-in.
  */
 export async function countActiveAdmins(db: Database, now: Date = new Date()): Promise<number> {
   const accounts = await db
     .select({ role: user.role, banned: user.banned, banExpires: user.banExpires })
-    .from(user);
+    .from(user)
+    .where(roleMentionsAdmin);
   return accounts.filter((account) => isActiveChair(account, now)).length;
 }
 

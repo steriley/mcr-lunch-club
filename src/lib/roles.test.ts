@@ -33,7 +33,9 @@ describe('countActiveAdmins', () => {
       { role: 'admin', banned: true, banExpires: past },
       { role: 'user', banned: false, banExpires: null },
     ];
-    const db = { select: () => ({ from: async () => accounts }) } as unknown as Database;
+    const db = {
+      select: () => ({ from: () => ({ where: async () => accounts }) }),
+    } as unknown as Database;
     assert.equal(await countActiveAdmins(db, now), 3);
   });
 });

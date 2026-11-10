@@ -8,7 +8,7 @@ import * as authSchema from '@/db/auth-schema';
 import { getAuthEnvironment, getPasskeyEnvironment, isProduction } from '@/lib/env';
 import { consumePasskeyGrant, hasPasskeyGrant } from '@/lib/passkeys';
 import { MIN_PASSWORD_LENGTH } from '@/lib/password-policy';
-import { isActiveChair } from '@/lib/roles';
+import { hasAdminRole, isActiveChair } from '@/lib/roles';
 
 /** Session lifetime and sliding refresh, in seconds. Change here only. */
 const SESSION_SETTINGS = {
@@ -19,6 +19,31 @@ const SESSION_SETTINGS = {
 /** The passkey plugin's registration endpoints, which need a fresh password check (#153). */
 const PASSKEY_REGISTRATION_START = '/passkey/generate-register-options';
 const PASSKEY_REGISTRATION_FINISH = '/passkey/verify-registration';
+
+/** The answer to a wrong password, so a refused member looks exactly like a failed sign-in. */
+const INVALID_EMAIL_OR_PASSWORD = {
+  message: 'Invalid email or password',
+  code: 'INVALID_EMAIL_OR_PASSWORD',
+} as const;
+
+/**
+ * Members have no passwords outside local development and CI (#136): only the seeded test member
+ * has one, so it can be signed in as without an inbox. When NODE_ENV is production (every Vercel
+ * deployment) a password sign-in for any account that is not a Chair's is refused with the same
+ * error as a wrong password, after hashing the password so the refusal takes as long as a real
+ * check and doesn't reveal that the email belongs to a member.
+ */
+async function refuseMemberPasswordInProduction(ctx: AuthMiddlewareContext): Promise<void> {
+  if (!isProduction()) return;
+  const body = ctx.body as { email?: unknown; password?: unknown } | undefined;
+  if (typeof body?.email !== 'string') return;
+  const found = await ctx.context.internalAdapter.findUserByEmail(body.email.trim().toLowerCase());
+  if (!found || hasAdminRole((found.user as { role?: string | null }).role)) return;
+  await ctx.context.password.hash(typeof body.password === 'string' ? body.password : '');
+  throw new APIError('UNAUTHORIZED', INVALID_EMAIL_OR_PASSWORD);
+}
+
+type AuthMiddlewareContext = Parameters<Parameters<typeof createAuthMiddleware>[0]>[0];
 
 export interface AuthHooks {
   /** A passkey was added to this account. Called once it is saved; never awaited. */
@@ -60,6 +85,10 @@ export function createAuth(database: Database, authHooks: AuthHooks = {}) {
     },
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path === '/sign-in/email') {
+          await refuseMemberPasswordInProduction(ctx);
+          return;
+        }
         if (ctx.path !== PASSKEY_REGISTRATION_START && ctx.path !== PASSKEY_REGISTRATION_FINISH) {
           return;
         }

@@ -13,7 +13,9 @@ pnpm check:built     # browser smoke test of the real build output
 
 - `pnpm db:local` is idempotent and never overwrites an existing `.env.local`. It uses installed Postgres binaries (the cloud container has no Docker); `pnpm db:local -- --docker` uses `docker-compose.yml` instead.
 - **The build reads the database.** Without `pnpm db:local` first, `pnpm build` fails or builds a site with no venues.
-- Local Chair: `chair@lunch.test` / `local-chair-password` (local-only, from `.env.local`).
+- Local logins (local-only, from `.env.local`):
+  - Chair: `chair@lunch.test` / `local-chair-password` (`admin`).
+  - Test member: `member@lunch.test` / `local-member-password` (`user`, never a Chair; its password is refused whenever `NODE_ENV` is production).
 
 ## Verify against the build, not `pnpm dev`
 
@@ -33,6 +35,7 @@ pnpm check:built     # browser smoke test of the real build output
 - **Visits and field notes** are Chairs-only. No public page, component or `public-data.ts` touches `venue_visits` / `visit_notes` or their modules (`src/test/public-safety.test.ts`); only the visit's own Chair writes a note (`src/lib/field-notes.ts`); their operations never return `published` for notes (a visit press does, as it can confirm an inspection); the `visit_notes_internal_only` check stays until a reviewed public release.
 - **Passkeys (Chairs only).** Registration needs a password grant (`src/lib/passkeys.ts`), enforced by the hooks in `src/lib/auth-config.ts`; that is why `session.freshAge` is `0`, so any new "fresh session" endpoint needs its own re-check. Password reset, ban and "Remove passkeys" delete a Chair's passkeys. The passkey domain is fixed (`getPasskeyEnvironment`), never the request host. Every Chair keeps a password.
 - **Outcomes.** A domain operation returns an `Outcome` with a domain error code, never an HTTP status or message: `ERROR_HTTP` in `src/lib/admin-api.ts` is the one code-to-response table (`src/test/layering.test.ts` forbids `*_STATUS` exports in `src/lib`). Every operation on a venue is in `src/lib/venue-lifecycle.ts`; route tests stub one `venueLifecycle` function (`stubLifecycle`) and behaviour is tested in `pnpm test:db`.
+- **Members vs Chairs.** Members are the `user` role. Anything that lists or counts Chairs narrows in SQL with `roleMentionsAdmin` (`src/lib/chair-accounts.ts`) and then applies `isActiveChair`; the Users page and its account actions are Chairs-only (`unlessChairAccount`). Public pages make no `/api/member/**` or `/api/auth/**` request for a signed-out visitor and stay within the venue-page JavaScript budget (`e2e/members.spec.ts`, epic #135 "Performance budget").
 - Domain modules in `src/lib` never import `admin-api` or `auth` (`src/test/layering.test.ts`).
 
 ## Merging
