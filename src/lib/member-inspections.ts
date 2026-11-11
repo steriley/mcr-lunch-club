@@ -31,6 +31,7 @@ import {
   type ScoreWindow,
 } from '@/lib/member-inspection-rules';
 import type {
+  MemberCost,
   MemberHoldReason,
   MemberInspectionStatus,
   MemberVerdictVote,
@@ -113,10 +114,7 @@ export interface MemberInspectionView {
   venue: { id: string; slug: string; name: string };
   visitDate: string;
   dish: string;
-  pricePaidPence: number | null;
-  qualityScore: number;
-  valueScore: number;
-  wouldReturn: boolean;
+  cost: MemberCost;
   verdictVote: MemberVerdictVote;
   pullQuote: string | null;
   verifiedOnSite: boolean;
@@ -136,10 +134,7 @@ const ownColumns = {
   venueName: venues.name,
   visitDate: memberInspections.visitDate,
   dish: memberInspections.dish,
-  pricePaidPence: memberInspections.pricePaidPence,
-  qualityScore: memberInspections.qualityScore,
-  valueScore: memberInspections.valueScore,
-  wouldReturn: memberInspections.wouldReturn,
+  cost: memberInspections.cost,
   verdictVote: memberInspections.verdictVote,
   pullQuote: memberInspections.pullQuote,
   verifiedOnSite: memberInspections.verifiedOnSite,
@@ -155,10 +150,7 @@ type OwnRow = {
   venueName: string;
   visitDate: string;
   dish: string;
-  pricePaidPence: number | null;
-  qualityScore: number;
-  valueScore: number;
-  wouldReturn: boolean;
+  cost: MemberCost;
   verdictVote: MemberVerdictVote;
   pullQuote: string | null;
   verifiedOnSite: boolean;
@@ -173,10 +165,7 @@ function toView(row: OwnRow, now: Date): MemberInspectionView {
     venue: { id: row.venueId, slug: row.venueSlug, name: row.venueName },
     visitDate: row.visitDate,
     dish: row.dish,
-    pricePaidPence: row.pricePaidPence,
-    qualityScore: row.qualityScore,
-    valueScore: row.valueScore,
-    wouldReturn: row.wouldReturn,
+    cost: row.cost,
     verdictVote: row.verdictVote,
     pullQuote: row.pullQuote,
     verifiedOnSite: row.verifiedOnSite,
@@ -348,10 +337,7 @@ async function createLog(
           memberId,
           visitDate: input.visitDate,
           dish: input.dish,
-          pricePaidPence: input.pricePaidPence,
-          qualityScore: input.qualityScore,
-          valueScore: input.valueScore,
-          wouldReturn: input.wouldReturn,
+          cost: input.cost,
           verdictVote: input.verdictVote,
           pullQuote: input.pullQuote,
           verification,
@@ -435,7 +421,7 @@ async function deleteLog(
 /**
  * Checks a venue's last week of logs after a save and holds the logs behind a suspicious pattern:
  * - more than five eligible logs from accounts under 14 days old (those logs are held);
- * - the week's mean score more than 1.5 points from the 90 days before it (the week's logs are
+ * - the week's mean verdict score more than 1.5 points from the 90 days before it (the week's logs are
  *   held).
  * Only visible logs no Chair has reviewed are held: a log a Chair approved stays visible. Held
  * logs still count towards the checks, so later logs in the same pattern are held too.
@@ -446,8 +432,7 @@ async function holdIfGaming(tx: Tx, venueId: string, now: Date): Promise<void> {
   const rows = await tx
     .select({
       id: memberInspections.id,
-      qualityScore: memberInspections.qualityScore,
-      valueScore: memberInspections.valueScore,
+      verdictVote: memberInspections.verdictVote,
       status: memberInspections.status,
       reviewedAt: memberInspections.reviewedAt,
       createdAt: memberInspections.createdAt,
@@ -491,7 +476,7 @@ async function holdIfGaming(tx: Tx, venueId: string, now: Date): Promise<void> {
   }
 }
 
-function scoreWindow(logs: { qualityScore: number; valueScore: number }[]): ScoreWindow {
+function scoreWindow(logs: { verdictVote: MemberVerdictVote }[]): ScoreWindow {
   if (!logs.length) return { mean: null, count: 0 };
   const total = logs.reduce((sum, log) => sum + logScore(log), 0);
   return { mean: total / logs.length, count: logs.length };
@@ -507,10 +492,7 @@ const PUBLIC_RECENT_LIMIT = 5;
 interface PublicMemberInspection {
   visitDate: string;
   dish: string;
-  pricePaidPence: number | null;
-  qualityScore: number;
-  valueScore: number;
-  wouldReturn: boolean;
+  cost: MemberCost;
   verdictVote: MemberVerdictVote;
   pullQuote: string | null;
   verifiedOnSite: boolean;
@@ -544,10 +526,7 @@ async function recentPublic(db: Database, slug: string): Promise<PublicInspectio
       .select({
         visitDate: memberInspections.visitDate,
         dish: memberInspections.dish,
-        pricePaidPence: memberInspections.pricePaidPence,
-        qualityScore: memberInspections.qualityScore,
-        valueScore: memberInspections.valueScore,
-        wouldReturn: memberInspections.wouldReturn,
+        cost: memberInspections.cost,
         verdictVote: memberInspections.verdictVote,
         pullQuote: memberInspections.pullQuote,
         verifiedOnSite: memberInspections.verifiedOnSite,
@@ -561,8 +540,7 @@ async function recentPublic(db: Database, slug: string): Promise<PublicInspectio
       .limit(PUBLIC_RECENT_LIMIT),
     db
       .select({
-        qualityScore: memberInspections.qualityScore,
-        valueScore: memberInspections.valueScore,
+        verdictVote: memberInspections.verdictVote,
         venuesLogged,
       })
       .from(memberInspections)
@@ -593,10 +571,7 @@ export interface HeldLogView {
   venue: { id: string; slug: string; name: string };
   visitDate: string;
   dish: string;
-  pricePaidPence: number | null;
-  qualityScore: number;
-  valueScore: number;
-  wouldReturn: boolean;
+  cost: MemberCost;
   verdictVote: MemberVerdictVote;
   pullQuote: string | null;
   verifiedOnSite: boolean;
@@ -619,10 +594,7 @@ async function listHeld(db: Database, limit = HELD_LIST_LIMIT): Promise<HeldLogV
       venueName: venues.name,
       visitDate: memberInspections.visitDate,
       dish: memberInspections.dish,
-      pricePaidPence: memberInspections.pricePaidPence,
-      qualityScore: memberInspections.qualityScore,
-      valueScore: memberInspections.valueScore,
-      wouldReturn: memberInspections.wouldReturn,
+      cost: memberInspections.cost,
       verdictVote: memberInspections.verdictVote,
       pullQuote: memberInspections.pullQuote,
       verifiedOnSite: memberInspections.verifiedOnSite,
@@ -780,10 +752,7 @@ export async function exportOwnLogs(db: Database, memberId: string) {
       venue: venues.name,
       visitDate: memberInspections.visitDate,
       dish: memberInspections.dish,
-      pricePaidPence: memberInspections.pricePaidPence,
-      qualityScore: memberInspections.qualityScore,
-      valueScore: memberInspections.valueScore,
-      wouldReturn: memberInspections.wouldReturn,
+      cost: memberInspections.cost,
       verdictVote: memberInspections.verdictVote,
       pullQuote: memberInspections.pullQuote,
       verification: memberInspections.verification,

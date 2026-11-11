@@ -93,7 +93,7 @@ const routeCaption = !route
   : route.mode === 'drive'
     ? `Drive · ${route.durationMin} min from Spinningfields · ${walkText(venue.walkingTimeMin)}`
     : `Walk · ${route.durationMin} min from Spinningfields`;
-const showActions = (hasLocation && !venue.closed) || websiteHref !== null;
+const showActions = (hasLocation && !venue.closed) || websiteHref !== null || canLog;
 // The link preview when someone drops this page into the lunch chat.
 const walk =
   venue.walkingTimeMin == null ? null : `${walkText(venue.walkingTimeMin)} from Spinningfields`;
@@ -280,9 +280,17 @@ function truncate(text: string, max: number): string {
                 Website<span class="sr-only"> ({websiteHost}, opens in a new tab)</span>
               </a>
             )}
+            {canLog && (
+              <a class="dossier-action" href={`/log/${encodeURIComponent(venue.slug)}`}>
+                <Icon name="restaurant" />
+                Log your lunch
+              </a>
+            )}
           </div>
         )}
       </div>
+
+      {venue.tier === 'approved' && <ApprovedSticker variant="compact" />}
 
       {venue.image && (
         <img
@@ -298,6 +306,17 @@ function truncate(text: string, max: number): string {
           onerror="this.remove()"
           class="w-full max-h-96 object-cover rounded-xl border border-hairline bg-paper"
         />
+      )}
+
+      <!-- Eat Like Us Box (Wax Seal Styling) -->
+      {venue.tier === 'approved' && venue.eatLikeUs && (
+        <div class="relative bg-ochre-wash/90 border-2 border-gold p-6 rounded-xl shadow-md">
+          <div class="flex items-center gap-2 text-xs font-bold text-navy uppercase tracking-wider">
+            <Icon name="shield" class="icon-md" />
+            <span>Eat like us — what to order</span>
+          </div>
+          <p class="text-lg italic text-ink mt-2 leading-relaxed">“{venue.eatLikeUs}”</p>
+        </div>
       )}
 
       {showMap && (
@@ -328,19 +347,6 @@ function truncate(text: string, max: number): string {
             — The Chairs
           </footer>
         </blockquote>
-      )}
-
-      {venue.tier === 'approved' && <ApprovedSticker variant="compact" />}
-
-      <!-- Eat Like Us Box (Wax Seal Styling) -->
-      {venue.tier === 'approved' && venue.eatLikeUs && (
-        <div class="relative bg-ochre-wash/90 border-2 border-gold p-6 rounded-xl shadow-md">
-          <div class="flex items-center gap-2 text-xs font-bold text-navy uppercase tracking-wider">
-            <Icon name="shield" class="icon-md" />
-            <span>Eat like us — what to order</span>
-          </div>
-          <p class="text-lg italic text-ink mt-2 leading-relaxed">“{venue.eatLikeUs}”</p>
-        </div>
       )}
 
       <!-- Formal Inspection History Ledger -->
@@ -409,7 +415,7 @@ function truncate(text: string, max: number): string {
                 data-log-lunch
               >
                 <Icon name="restaurant" />
-                Log a lunch
+                Log your lunch
               </a>
             )}
           </div>

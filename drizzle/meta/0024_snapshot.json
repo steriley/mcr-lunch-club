@@ -1,5 +1,5 @@
 {
-  "id": "45ce5791-390d-4ed3-8c7a-7e0da5890d9c",
+  "id": "383b8f0b-2287-43d3-8d94-63fdb3a957e6",
   "prevId": "4a4a15ec-e662-44c5-bc40-64a22cc919b8",
   "version": "7",
   "dialect": "postgresql",
@@ -574,27 +574,10 @@
           "primaryKey": false,
           "notNull": true
         },
-        "price_paid_pence": {
-          "name": "price_paid_pence",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "quality_score": {
-          "name": "quality_score",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "value_score": {
-          "name": "value_score",
-          "type": "smallint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "would_return": {
-          "name": "would_return",
-          "type": "boolean",
+        "cost": {
+          "name": "cost",
+          "type": "member_cost",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true
         },
@@ -828,18 +811,6 @@
         "member_inspections_dish_length": {
           "name": "member_inspections_dish_length",
           "value": "char_length(\"member_inspections\".\"dish\") between 1 and 120"
-        },
-        "member_inspections_price_range": {
-          "name": "member_inspections_price_range",
-          "value": "\"member_inspections\".\"price_paid_pence\" is null or \"member_inspections\".\"price_paid_pence\" between 0 and 10000"
-        },
-        "member_inspections_quality_range": {
-          "name": "member_inspections_quality_range",
-          "value": "\"member_inspections\".\"quality_score\" between 1 and 5"
-        },
-        "member_inspections_value_range": {
-          "name": "member_inspections_value_range",
-          "value": "\"member_inspections\".\"value_score\" between 1 and 5"
         },
         "member_inspections_quote_length": {
           "name": "member_inspections_quote_length",
@@ -3207,6 +3178,15 @@
         "lapsed"
       ]
     },
+    "public.member_cost": {
+      "name": "member_cost",
+      "schema": "public",
+      "values": [
+        "£",
+        "££",
+        "£££"
+      ]
+    },
     "public.member_event_action": {
       "name": "member_event_action",
       "schema": "public",
@@ -3247,7 +3227,6 @@
       "schema": "public",
       "values": [
         "approve",
-        "consider",
         "if_we_must",
         "reject"
       ]

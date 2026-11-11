@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import TierChip from '@/components/TierChip.vue';
 import { apiFetch } from '@/lib/api-fetch';
 import {
+  MEMBER_COSTS,
   MEMBER_VERDICT_VOTES,
-  VERDICT_VOTE_LABELS,
+  VERDICT_VOTE_TIERS,
+  type MemberCost,
   type MemberVerdictVote,
 } from '@/lib/member-inspection-display';
 import {
@@ -11,9 +14,9 @@ import {
   PULL_QUOTE_MAX,
   memberInspectionInputSchema,
   memberInspectionUpdateSchema,
-  parsePounds,
 } from '@/lib/member-inspection-rules';
 import type { LoggableVenue, MemberInspectionView } from '@/lib/member-inspections';
+import { tierInfo } from '@/lib/tiers';
 
 /**
  * "Log a lunch" (#137): one screen, no steps, phone first. The same form edits a log within 24
@@ -37,12 +40,7 @@ const editing = computed(() => Boolean(props.existing));
 const venueId = ref(props.existing?.venue.id ?? props.venueId ?? '');
 const visitDate = ref(props.existing?.visitDate ?? props.dates.max);
 const dish = ref(props.existing?.dish ?? '');
-const price = ref(
-  props.existing?.pricePaidPence != null ? (props.existing.pricePaidPence / 100).toFixed(2) : ''
-);
-const qualityScore = ref(props.existing?.qualityScore ?? 0);
-const valueScore = ref(props.existing?.valueScore ?? 0);
-const wouldReturn = ref<boolean | null>(props.existing?.wouldReturn ?? null);
+const cost = ref<MemberCost | ''>(props.existing?.cost ?? '');
 const verdictVote = ref<MemberVerdictVote | ''>(props.existing?.verdictVote ?? '');
 const pullQuote = ref(props.existing?.pullQuote ?? '');
 const checkOnSite = ref(false);
@@ -51,18 +49,6 @@ const fieldErrors = ref<Record<string, string>>({});
 const errorMessage = ref('');
 const isSaving = ref(false);
 const statusText = ref('');
-
-const STARS = [1, 2, 3, 4, 5] as const;
-type ScoreKey = 'qualityScore' | 'valueScore';
-const SCORE_ROWS: { key: ScoreKey; label: string }[] = [
-  { key: 'qualityScore', label: 'The food' },
-  { key: 'valueScore', label: 'Value for money' },
-];
-const scoreRefs = { qualityScore, valueScore };
-const scoreOf = (key: ScoreKey) => scoreRefs[key].value;
-const setScore = (key: ScoreKey, stars: number) => {
-  scoreRefs[key].value = stars;
-};
 
 /** The browser's position once, or null if it can't or won't give one in time. */
 function currentPosition(): Promise<{ lat: number; lng: number } | null> {
@@ -77,14 +63,9 @@ function currentPosition(): Promise<{ lat: number; lng: number } | null> {
 }
 
 function draft() {
-  const pence = parsePounds(price.value);
   return {
     dish: dish.value,
-    // Anything the pound parser can't read goes through as a string, so the schema names the field.
-    pricePaidPence: pence === null || Number.isFinite(pence) ? pence : price.value,
-    qualityScore: qualityScore.value || undefined,
-    valueScore: valueScore.value || undefined,
-    wouldReturn: wouldReturn.value ?? undefined,
+    cost: cost.value || undefined,
     verdictVote: verdictVote.value || undefined,
     pullQuote: pullQuote.value,
   };
@@ -146,6 +127,12 @@ async function submit() {
   window.location.assign(`/members/me/inspections?${notes.join('&')}`);
 }
 
+/** Each vote reads as the verdict tier it points at, so the buttons carry the club's own wording, colour and mark. */
+const VOTE_OPTIONS = MEMBER_VERDICT_VOTES.map((vote) => ({
+  vote,
+  tier: tierInfo(VERDICT_VOTE_TIERS[vote]),
+}));
+
 const inputClass =
   'w-full rounded-lg border border-hairline bg-surface px-3 py-2.5 text-base text-ink outline-none focus:border-navy disabled:opacity-60';
 const labelClass = 'mb-2 block text-sm font-semibold text-ink';
@@ -169,7 +156,7 @@ const choiceClass =
       {{ errorMessage }}
     </p>
 
-    <div class="grid gap-4 sm:grid-cols-[2fr_1fr]">
+    <div class="grid gap-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
       <label class="block">
         <span :class="labelClass">Venue</span>
         <select
@@ -206,98 +193,39 @@ const choiceClass =
       </label>
     </div>
 
-    <div class="grid gap-4 sm:grid-cols-[2fr_1fr]">
-      <label class="block">
-        <span :class="labelClass">What you ate</span>
-        <input
-          v-model="dish"
-          name="dish"
-          autocomplete="off"
-          :maxlength="DISH_MAX + 10"
-          :class="inputClass"
-          placeholder="e.g. Steak pie, chips and gravy"
-          :aria-invalid="Boolean(fieldErrors.dish)"
-        />
-        <span v-if="fieldErrors.dish" role="alert" :class="errorClass">{{ fieldErrors.dish }}</span>
-      </label>
-      <label class="block">
-        <span :class="labelClass"
-          >Price paid <span class="font-normal text-soot">(optional)</span></span
-        >
-        <input
-          v-model="price"
-          name="price"
-          inputmode="decimal"
-          autocomplete="off"
-          :class="inputClass"
-          placeholder="£8.50"
-          :aria-invalid="Boolean(fieldErrors.pricePaidPence)"
-        />
-        <span v-if="fieldErrors.pricePaidPence" role="alert" :class="errorClass">{{
-          fieldErrors.pricePaidPence
-        }}</span>
-      </label>
-    </div>
-
-    <fieldset v-for="row in SCORE_ROWS" :key="row.key">
-      <legend :class="labelClass">{{ row.label }}</legend>
-      <div class="flex gap-1">
-        <label
-          v-for="star in STARS"
-          :key="star"
-          class="star-choice"
-          :class="{ 'is-lit': star <= scoreOf(row.key) }"
-        >
-          <input
-            type="radio"
-            class="sr-only"
-            :name="row.key"
-            :value="star"
-            :checked="scoreOf(row.key) === star"
-            @change="setScore(row.key, star)"
-          />
-          <span aria-hidden="true">★</span>
-          <span class="sr-only">{{ star }} {{ star === 1 ? 'star' : 'stars' }}</span>
-        </label>
-      </div>
-      <span v-if="fieldErrors[row.key]" role="alert" :class="errorClass">{{
-        fieldErrors[row.key]
-      }}</span>
-    </fieldset>
+    <label class="block">
+      <span :class="labelClass">What you ate</span>
+      <input
+        v-model="dish"
+        name="dish"
+        autocomplete="off"
+        :maxlength="DISH_MAX + 10"
+        :class="inputClass"
+        placeholder="e.g. Steak pie, chips and gravy"
+        :aria-invalid="Boolean(fieldErrors.dish)"
+      />
+      <span v-if="fieldErrors.dish" role="alert" :class="errorClass">{{ fieldErrors.dish }}</span>
+    </label>
 
     <fieldset>
-      <legend :class="labelClass">Would you go back?</legend>
-      <div class="grid grid-cols-2 gap-2 sm:max-w-xs">
-        <label :class="choiceClass">
-          <input
-            v-model="wouldReturn"
-            class="sr-only"
-            type="radio"
-            name="wouldReturn"
-            :value="true"
-          />
-          Yes
-        </label>
-        <label :class="choiceClass">
-          <input
-            v-model="wouldReturn"
-            class="sr-only"
-            type="radio"
-            name="wouldReturn"
-            :value="false"
-          />
-          No
+      <legend :class="labelClass">What it cost</legend>
+      <div class="grid grid-cols-3 gap-2">
+        <label v-for="option in MEMBER_COSTS" :key="option" :class="choiceClass">
+          <input v-model="cost" class="sr-only" type="radio" name="cost" :value="option" />
+          {{ option }}
         </label>
       </div>
-      <span v-if="fieldErrors.wouldReturn" role="alert" :class="errorClass">{{
-        fieldErrors.wouldReturn
-      }}</span>
+      <span v-if="fieldErrors.cost" role="alert" :class="errorClass">{{ fieldErrors.cost }}</span>
     </fieldset>
 
     <fieldset>
       <legend :class="labelClass">Your verdict</legend>
-      <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <label v-for="vote in MEMBER_VERDICT_VOTES" :key="vote" :class="choiceClass">
+      <div class="grid gap-2 sm:grid-cols-3">
+        <label
+          v-for="{ vote, tier } in VOTE_OPTIONS"
+          :key="vote"
+          class="flex min-h-11 cursor-pointer rounded-lg [&_.is-static]:cursor-pointer [&_.ledger-tier-chip]:h-full [&_.ledger-tier-chip]:min-h-11 [&_.ledger-tier-chip]:w-full [&_.ledger-tier-chip]:justify-center [&_.ledger-tier-chip]:rounded-lg [&_.ledger-tier-chip]:px-3 [&_.ledger-tier-chip]:py-2.5 [&_.ledger-tier-chip]:text-base has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-navy has-[:focus-visible]:ring-offset-2"
+        >
           <input
             v-model="verdictVote"
             class="sr-only"
@@ -305,7 +233,14 @@ const choiceClass =
             name="verdictVote"
             :value="vote"
           />
-          {{ VERDICT_VOTE_LABELS[vote] }}
+          <TierChip
+            is-static
+            show-check
+            :name="tier.label"
+            :color="tier.color"
+            :glyph="tier.glyph"
+            :selected="verdictVote === vote"
+          />
         </label>
       </div>
       <span v-if="fieldErrors.verdictVote" role="alert" :class="errorClass">{{
@@ -349,43 +284,15 @@ const choiceClass =
     </label>
     <p v-else-if="existing?.verifiedOnSite" class="text-sm text-soot">Verified on site.</p>
 
-    <div class="flex flex-wrap items-center gap-3 border-t border-hairline pt-5">
+    <div class="border-t border-hairline pt-5">
       <button
         type="submit"
         data-testid="log-lunch-save"
         :disabled="isSaving"
-        class="inline-flex min-h-11 items-center justify-center rounded-lg bg-navy-fixed px-5 py-2.5 text-sm font-semibold text-white hover:bg-deep disabled:opacity-70"
+        class="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-navy-fixed px-5 py-2.5 text-sm font-semibold text-white hover:bg-deep disabled:opacity-70"
       >
         {{ isSaving ? statusText || 'Saving…' : editing ? 'Save changes' : 'Log this lunch' }}
       </button>
-      <a
-        href="/members/me/inspections"
-        class="inline-flex min-h-11 items-center rounded-lg border border-hairline bg-surface px-4 text-sm font-semibold text-ink hover:bg-linen"
-        >Your lunches</a
-      >
     </div>
   </form>
 </template>
-
-<style scoped>
-.star-choice {
-  display: inline-grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  cursor: pointer;
-  color: var(--ledger-border);
-  font-size: 28px;
-  line-height: 1;
-}
-
-.star-choice.is-lit {
-  color: var(--color-gold);
-}
-
-.star-choice:has(:focus-visible) {
-  outline: 2px solid var(--color-navy);
-  outline-offset: 2px;
-}
-</style>

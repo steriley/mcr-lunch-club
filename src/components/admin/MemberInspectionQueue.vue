@@ -2,11 +2,7 @@
 import { computed, ref } from 'vue';
 import { apiFetch } from '@/lib/api-fetch';
 import { formatDate, formatDateTime } from '@/lib/dates';
-import {
-  HOLD_REASON_LABELS,
-  VERDICT_VOTE_LABELS,
-  formatPence,
-} from '@/lib/member-inspection-display';
+import { HOLD_REASON_LABELS, VERDICT_VOTE_LABELS } from '@/lib/member-inspection-display';
 import type { HeldLogView } from '@/lib/member-inspections';
 
 /**
@@ -133,7 +129,6 @@ const accountAge = (log: HeldLogView) => {
   );
   return days < 1 ? 'joined that day' : `joined ${days} ${days === 1 ? 'day' : 'days'} before`;
 };
-const stars = (count: number) => '★'.repeat(count) + '☆'.repeat(5 - count);
 const buttonClass =
   'whitespace-nowrap rounded-lg border border-hairline bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-linen disabled:opacity-60';
 const inputClass =
@@ -244,14 +239,7 @@ const inputClass =
           Held: {{ HOLD_REASON_LABELS[log.heldReason] }}
         </p>
         <p class="text-sm text-ink">
-          {{ log.dish
-          }}<template v-if="log.pricePaidPence !== null">
-            · {{ formatPence(log.pricePaidPence) }}</template
-          >
-          · Food <span class="text-ochre">{{ stars(log.qualityScore) }}</span> · Value
-          <span class="text-ochre">{{ stars(log.valueScore) }}</span> ·
-          {{ VERDICT_VOTE_LABELS[log.verdictVote] }} ·
-          {{ log.wouldReturn ? 'would go back' : 'wouldn’t go back' }}
+          {{ log.dish }} · {{ log.cost }} · {{ VERDICT_VOTE_LABELS[log.verdictVote] }}
           <template v-if="log.verifiedOnSite"> · verified on site</template>
         </p>
         <p v-if="log.pullQuote" class="text-sm italic text-ink">“{{ log.pullQuote }}”</p>

@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { apiFetch } from '@/lib/api-fetch';
 import { formatDate, formatDateTime } from '@/lib/dates';
-import { VERDICT_VOTE_LABELS, formatPence } from '@/lib/member-inspection-display';
+import { VERDICT_VOTE_LABELS } from '@/lib/member-inspection-display';
 import type { MemberInspectionView } from '@/lib/member-inspections';
 
 /**
@@ -35,7 +35,6 @@ async function remove(log: MemberInspectionView) {
   message.value = `Your lunch at ${log.venue.name} is deleted.`;
 }
 
-const stars = (count: number) => '★'.repeat(count) + '☆'.repeat(5 - count);
 const badgeClass =
   'inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em]';
 const buttonClass =
@@ -99,29 +98,14 @@ const buttonClass =
         </div>
       </div>
 
-      <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
-        <div>
-          <dt class="text-soot">Food</dt>
-          <dd class="text-ochre" :aria-label="`${log.qualityScore} of 5`">
-            {{ stars(log.qualityScore) }}
-          </dd>
-        </div>
-        <div>
-          <dt class="text-soot">Value</dt>
-          <dd class="text-ochre" :aria-label="`${log.valueScore} of 5`">
-            {{ stars(log.valueScore) }}
-          </dd>
-        </div>
+      <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
         <div>
           <dt class="text-soot">Verdict</dt>
           <dd class="font-semibold text-ink">{{ VERDICT_VOTE_LABELS[log.verdictVote] }}</dd>
         </div>
         <div>
-          <dt class="text-soot">Go back?</dt>
-          <dd class="font-semibold text-ink">
-            {{ log.wouldReturn ? 'Yes' : 'No'
-            }}{{ log.pricePaidPence !== null ? ` · ${formatPence(log.pricePaidPence)}` : '' }}
-          </dd>
+          <dt class="text-soot">Cost</dt>
+          <dd class="font-semibold text-ink">{{ log.cost }}</dd>
         </div>
       </dl>
       <p v-if="log.pullQuote" class="italic text-ink">“{{ log.pullQuote }}”</p>

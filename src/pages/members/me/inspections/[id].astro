@@ -1,5 +1,6 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import LogLunchForm from '@/components/islands/LogLunchForm.vue';
 import { db } from '@/lib/db';
 import { londonDate } from '@/lib/london-date';
@@ -20,9 +21,12 @@ const venues = [{ id: log.venue.id, slug: log.venue.slug, name: log.venue.name }
 <Layout title="Edit your lunch — MCR Lunch Club" description="Edit a logged lunch." noindex>
   <section class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8 sm:py-10">
     <div>
-      <a href="/members/me/inspections" class="text-sm font-semibold text-navy hover:underline">
-        ← Your lunches
-      </a>
+      <Breadcrumbs
+        items={[
+          { label: 'Your lunches', href: '/members/me/inspections' },
+          { label: 'Edit lunch' },
+        ]}
+      />
       <h1 class="mt-3 text-3xl font-bold text-ink">Edit your lunch at {log.venue.name}</h1>
     </div>
     {log.canEdit ? (
