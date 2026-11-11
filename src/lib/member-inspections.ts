@@ -41,6 +41,8 @@ import { fail, ok, outcomeTransaction, publicChange, type Outcome } from '@/lib/
 import { hasAdminRole } from '@/lib/roles';
 import { CLOSED_BUT_LISTED_TIER } from '@/lib/visibility';
 import { publicVenueCondition } from '@/lib/visibility-sql';
+import { daysAtVenue, notBanned, notRemoved, venuesLogged } from '@/lib/member-inspection-sql';
+import { recomputeVenueScore } from '@/lib/public-scores';
 
 /**
  * People's Inspections (#137): members log their own lunches. Apart from the Chairs'
@@ -81,34 +83,6 @@ function loggableVenueCondition(): SQL {
     ne(venues.tier, CLOSED_BUT_LISTED_TIER)
   )!;
 }
-
-/** How many days the log's member has logged (and not had removed) at the log's venue. */
-const daysAtVenue = sql<number>`(
-  select count(*)::int from ${memberInspections} as "other"
-  where "other"."member_id" = ${memberInspections.memberId}
-    and "other"."venue_id" = ${memberInspections.venueId}
-    and "other"."status" <> 'removed'
-)`;
-
-/** How many different venues the log's member has logged at, for their weight. */
-const venuesLogged = sql<number>`(
-  select count(distinct "w"."venue_id")::int from ${memberInspections} as "w"
-  where "w"."member_id" = ${memberInspections.memberId}
-    and "w"."status" <> 'removed'
-)`;
-
-const notRemoved = ne(memberInspections.status, 'removed');
-
-/**
- * The log's member is not banned now (the rule in `isBanned`, src/lib/roles.ts). A banned
- * member's logs leave the public feed and the people's score, and come back if the ban is lifted.
- */
-const notBanned = sql`not exists (
-  select 1 from ${user} as "banned_member"
-  where "banned_member"."id" = ${memberInspections.memberId}
-    and "banned_member"."banned"
-    and ("banned_member"."ban_expires" is null or "banned_member"."ban_expires" > now())
-)`;
 
 /** A display name the public may see: opted in, and not hidden by a Chair. */
 const publicName = sql<string | null>`case
@@ -371,6 +345,7 @@ async function createLog(
         .returning({ id: memberInspections.id });
 
       await holdIfGaming(tx, venue.id, now);
+      await recomputeVenueScore(tx, venue.id, now);
       return ok((await findOwn(tx, memberId, saved.id, now))!);
     });
   } catch (error) {
@@ -418,6 +393,7 @@ async function updateLog(
       .set({ ...input, updatedAt: now })
       .where(eq(memberInspections.id, id));
     await holdIfGaming(tx, row.venueId, now);
+    await recomputeVenueScore(tx, row.venueId, now);
     return ok((await findOwn(tx, memberId, id, now))!);
   });
 }
@@ -433,6 +409,7 @@ async function deleteLog(
     const row = await lockOwnForChange(tx, memberId, id, now);
     if (typeof row === 'string') return fail(row);
     await tx.delete(memberInspections).where(eq(memberInspections.id, id));
+    await recomputeVenueScore(tx, row.venueId, now);
     return ok({ deleted: true as const });
   });
 }
@@ -656,7 +633,7 @@ async function approveLog(
 ): Promise<Outcome<{ id: string; status: 'visible' }, 'member_inspection_not_found' | 'not_held'>> {
   return outcomeTransaction(db, async (tx) => {
     const [row] = await tx
-      .select({ status: memberInspections.status })
+      .select({ status: memberInspections.status, venueId: memberInspections.venueId })
       .from(memberInspections)
       .where(eq(memberInspections.id, id))
       .for('update');
@@ -666,6 +643,7 @@ async function approveLog(
       .update(memberInspections)
       .set({ status: 'visible', reviewedBy: actorId, reviewedAt: now })
       .where(eq(memberInspections.id, id));
+    await recomputeVenueScore(tx, row.venueId, now);
     return ok({ id, status: 'visible' as const });
   });
 }
@@ -685,7 +663,7 @@ async function removeLog(
   if (!why) return fail('removal_reason_required');
   return outcomeTransaction(db, async (tx) => {
     const [row] = await tx
-      .select({ status: memberInspections.status })
+      .select({ status: memberInspections.status, venueId: memberInspections.venueId })
       .from(memberInspections)
       .where(eq(memberInspections.id, id))
       .for('update');
@@ -695,6 +673,7 @@ async function removeLog(
       .update(memberInspections)
       .set({ status: 'removed', reviewedBy: actorId, reviewedAt: now, reviewReason: why })
       .where(eq(memberInspections.id, id));
+    await recomputeVenueScore(tx, row.venueId, now);
     return ok({ id, status: 'removed' as const });
   });
 }
@@ -763,6 +742,7 @@ async function recordStuffing(
         briberyRecordId: record.id,
       })
       .where(inArray(memberInspections.id, ids));
+    await recomputeVenueScore(tx, input.venueId, now);
     const value = { briberyRecordId: record.id, removed: ids.length };
     // The Hall of Shame is prerendered: a published record waits for the Chairs to publish it.
     return input.published ? ok(value, publicChange('Create bribery record', null)) : ok(value);

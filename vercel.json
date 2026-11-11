@@ -3,7 +3,8 @@
   "regions": ["lhr1"],
   "crons": [
     { "path": "/api/cron/weekly-bulletin", "schedule": "0 0 * * 4" },
-    { "path": "/api/cron/publish-pending", "schedule": "0 5 * * *" }
+    { "path": "/api/cron/publish-pending", "schedule": "0 5 * * *" },
+    { "path": "/api/cron/refresh-scores", "schedule": "20 3 * * *" }
   ],
   "headers": [
     {

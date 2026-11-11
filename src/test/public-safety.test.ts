@@ -141,6 +141,35 @@ describe('public code never touches visits or field notes', () => {
  * People's Inspections (#137): the public feed (the venue page island and its endpoint) never
  * reads or shows a member's id, email or position, or the Chairs' review notes.
  */
+describe('the Swing-o-meter leaks nothing about members', () => {
+  // "position" is the People's score on the 0 to 100 line here, not anyone's location.
+  const swingFiles = [
+    path.join(ROOT, 'components/islands/SwingOMeter.vue'),
+    path.join(ROOT, 'pages/api/public/venues/[slug]/swing.ts'),
+    path.join(ROOT, 'pages/api/public/the-count.ts'),
+    path.join(ROOT, 'pages/the-count.astro'),
+    path.join(ROOT, 'lib/swing.ts'),
+  ];
+  const LEAKS = [/email/i, /memberId/, /member_id/, /latitude|longitude/, /review_?reason/i];
+
+  for (const file of swingFiles) {
+    it(path.relative(ROOT, file), () => {
+      const source = readFileSync(file, 'utf8');
+      for (const pattern of LEAKS) {
+        // swing.ts handles member ids while summarising logs, server side, and never returns them.
+        if (file.endsWith('lib/swing.ts') && pattern.source === 'memberId') continue;
+        assert.doesNotMatch(source, pattern);
+      }
+    });
+  }
+
+  it('the public meter type names no member', () => {
+    const source = readFileSync(path.join(ROOT, 'lib/swing.ts'), 'utf8');
+    const block = source.slice(source.indexOf('export interface VenueSwing'));
+    assert.doesNotMatch(block, /memberId|email/i);
+  });
+});
+
 describe('the public lunch-log feed leaks nothing about members', () => {
   const feedFiles = [
     path.join(ROOT, 'components/islands/PublicInspections.vue'),

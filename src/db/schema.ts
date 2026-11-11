@@ -4,11 +4,13 @@ import {
   check,
   date,
   decimal,
+  doublePrecision,
   index,
   integer,
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   smallint,
   text,
   timestamp,
@@ -661,6 +663,46 @@ export const memberInspections = pgTable(
   ]
 );
 
+/**
+ * The Swing-o-meter's stored aggregates (#138), one row per venue, recomputed in the same
+ * transaction as every log write, edit, delete and moderation change (src/lib/public-scores.ts)
+ * and daily by the cron (bans and account deletions). They hold everything the People's score
+ * needs except the venue's tier, so a tier change needs no recompute: the score is finished at
+ * read time against the current tier (src/lib/swing.ts). Nothing here identifies a member.
+ */
+export const venuePublicScores = pgTable('venue_public_scores', {
+  venueId: uuid('venue_id')
+    .primaryKey()
+    .references(() => venues.id, { onDelete: 'cascade' }),
+  eligibleMembers: integer('eligible_members').notNull().default(0),
+  eligibleLogs: integer('eligible_logs').notNull().default(0),
+  weightTotal: doublePrecision('weight_total').notNull().default(0),
+  weightedSum: doublePrecision('weighted_sum').notNull().default(0),
+  variance: doublePrecision('variance').notNull().default(0),
+  approveCount: integer('approve_count').notNull().default(0),
+  ifWeMustCount: integer('if_we_must_count').notNull().default(0),
+  rejectCount: integer('reject_count').notNull().default(0),
+  typicalCost: memberCostEnum('typical_cost'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** One position per venue per London day, for the 90-day sparkline. Quorate days only. */
+export const venuePublicScoreHistory = pgTable(
+  'venue_public_score_history',
+  {
+    venueId: uuid('venue_id')
+      .notNull()
+      .references(() => venues.id, { onDelete: 'cascade' }),
+    day: date('day').notNull(),
+    position: smallint('position').notNull(),
+    eligibleMembers: integer('eligible_members').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.venueId, table.day] }),
+    check('venue_public_score_history_position', sql`${table.position} between 0 and 100`),
+  ]
+);
+
 export type VenueRow = typeof venues.$inferSelect;
 export type BriberyRow = typeof briberyRecords.$inferSelect;
 export type SuggestionRow = typeof venueSuggestions.$inferSelect;
@@ -674,3 +716,4 @@ export type PushSubscriptionRow = typeof pushSubscriptions.$inferSelect;
 export type NotificationPreferencesRow = typeof notificationPreferences.$inferSelect;
 export type MemberProfileRow = typeof memberProfiles.$inferSelect;
 export type MemberInspectionRow = typeof memberInspections.$inferSelect;
+export type VenuePublicScoreRow = typeof venuePublicScores.$inferSelect;
