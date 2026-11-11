@@ -10,7 +10,7 @@ const freshSignIn = isFreshSignIn(Astro.locals.session!.session.createdAt);
 ---
 
 <Layout title="Your data — MCR Lunch Club" description="Download or delete your data." noindex>
-  <section class="mx-auto w-full max-w-2xl space-y-6 px-4 py-10">
+  <section class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
     <div>
       <a href="/members/me" class="text-sm font-semibold text-navy hover:underline">
         ← Your account

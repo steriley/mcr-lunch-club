@@ -45,6 +45,10 @@ test('the member names themselves, chooses privacy and downloads their data', as
   await signInAsMember(page, baseURL!);
   await visit(page, '/members/me');
   await expect(page.getByTestId('member-profile')).toBeVisible();
+  // The cards are islands (display: contents wrappers), so the page spaces them with a gap.
+  const profileBox = (await page.getByTestId('member-profile').boundingBox())!;
+  const passkeysBox = (await page.getByTestId('member-passkeys').boundingBox())!;
+  expect(passkeysBox.y - (profileBox.y + profileBox.height)).toBeGreaterThanOrEqual(16);
 
   // Letters only, so it passes the shape rules, and new each run so it is never taken.
   const unique = Date.now()
