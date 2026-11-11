@@ -136,3 +136,39 @@ describe('public code never touches visits or field notes', () => {
     ]);
   });
 });
+
+/**
+ * People's Inspections (#137): the public feed (the venue page island and its endpoint) never
+ * reads or shows a member's id, email or position, or the Chairs' review notes.
+ */
+describe('the public lunch-log feed leaks nothing about members', () => {
+  const feedFiles = [
+    path.join(ROOT, 'components/islands/PublicInspections.vue'),
+    path.join(ROOT, 'pages/api/venues/[slug]/public-inspections.ts'),
+  ];
+  const LEAKS = [
+    /email/i,
+    /memberId/,
+    /member_id/,
+    /position/,
+    /latitude|longitude/,
+    /review_?reason/i,
+  ];
+
+  for (const file of feedFiles) {
+    it(path.relative(ROOT, file), () => {
+      const source = readFileSync(file, 'utf8');
+      for (const pattern of LEAKS) assert.doesNotMatch(source, pattern);
+    });
+  }
+
+  it('the public feed type names no identifying or locating field', () => {
+    const source = readFileSync(path.join(ROOT, 'lib/member-inspections.ts'), 'utf8');
+    const block = source.slice(
+      source.indexOf('interface PublicMemberInspection'),
+      source.indexOf('export interface PublicInspectionsFeed')
+    );
+    assert.ok(block.includes('displayName'));
+    for (const pattern of LEAKS) assert.doesNotMatch(block, pattern);
+  });
+});

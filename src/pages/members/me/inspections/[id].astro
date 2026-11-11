@@ -1,0 +1,43 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import LogLunchForm from '@/components/islands/LogLunchForm.vue';
+import { db } from '@/lib/db';
+import { londonDate } from '@/lib/london-date';
+import { loggableDates } from '@/lib/member-inspection-rules';
+import { memberInspectionsApi } from '@/lib/member-inspections';
+
+export const prerender = false;
+
+// Edit one of the member's own lunch logs (#137), within 24 hours of saving it.
+const id = Astro.params.id ?? '';
+const log = /^[0-9a-f-]{36}$/i.test(id)
+  ? await memberInspectionsApi.findOwn(db, Astro.locals.user!.id, id)
+  : null;
+if (!log) return Astro.redirect('/members/me/inspections');
+const venues = [{ id: log.venue.id, slug: log.venue.slug, name: log.venue.name }];
+---
+
+<Layout title="Edit your lunch — MCR Lunch Club" description="Edit a logged lunch." noindex>
+  <section class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8 sm:py-10">
+    <div>
+      <a href="/members/me/inspections" class="text-sm font-semibold text-navy hover:underline">
+        ← Your lunches
+      </a>
+      <h1 class="mt-3 text-3xl font-bold text-ink">Edit your lunch at {log.venue.name}</h1>
+    </div>
+    {log.canEdit ? (
+      <LogLunchForm
+        client:load
+        venues={venues}
+        dates={loggableDates(londonDate())}
+        existing={log}
+      />
+    ) : (
+      <p class="rounded-2xl border border-hairline bg-parchment p-6 text-sm text-soot shadow-sm">
+        {log.status === 'removed'
+          ? 'The Chairs removed this lunch, so it can’t be changed.'
+          : 'Lunches can be changed for 24 hours after you log them, and this one’s time is up.'}
+      </p>
+    )}
+  </section>
+</Layout>

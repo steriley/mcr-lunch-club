@@ -125,6 +125,7 @@
                 :selected-costs="selectedCosts"
                 :far-from-manchester="isUserFarFromManchester"
                 :from-base="isRankedFromBase"
+                :member-logging="memberLogging"
                 @select="(venue) => session.selectFromList(venue.id)"
                 @details="goToVenuePage"
                 @clear-selection="clearSelection"
@@ -165,6 +166,8 @@ import { useNearMeLeaflet } from './near-me/useNearMeLeaflet';
 
 const props = defineProps<{
   mapApiKey?: string;
+  /** Offer "Log a lunch here" for the nearest venue (the `members` flag, #137). */
+  memberLogging?: boolean;
 }>();
 
 const isOpen = useStore($isNearMeOpen);

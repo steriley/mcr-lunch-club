@@ -51,10 +51,24 @@ describe('memberAuthPathAccess', () => {
 
 describe('isMemberRoute', () => {
   it('covers the member pages and API, nothing else', () => {
-    for (const path of ['/members', '/members/me', '/api/member', '/api/member/sign-in']) {
+    for (const path of [
+      '/members',
+      '/members/me',
+      '/api/member',
+      '/api/member/sign-in',
+      '/log',
+      '/log/chip-shop',
+    ]) {
       assert.equal(isMemberRoute(path), true, path);
     }
-    for (const path of ['/membership', '/api/members-list', '/admin/members', '/']) {
+    for (const path of [
+      '/membership',
+      '/api/members-list',
+      '/admin/members',
+      '/',
+      '/logo.png',
+      '/api/venues/chip-shop/public-inspections',
+    ]) {
       assert.equal(isMemberRoute(path), false, path);
     }
   });
@@ -62,10 +76,16 @@ describe('isMemberRoute', () => {
 
 describe('isMemberAccountPage', () => {
   it('covers the signed-in member’s own pages only', () => {
-    for (const path of ['/members/me', '/members/me/data']) {
+    for (const path of ['/members/me', '/members/me/data', '/members/me/inspections', '/log/x']) {
       assert.equal(isMemberAccountPage(path), true, path);
     }
-    for (const path of ['/members', '/members/sign-in', '/members/meal', '/api/member/session']) {
+    for (const path of [
+      '/members',
+      '/members/sign-in',
+      '/members/meal',
+      '/api/member/session',
+      '/logo',
+    ]) {
       assert.equal(isMemberAccountPage(path), false, path);
     }
   });
@@ -75,6 +95,8 @@ describe('safeMemberRedirect', () => {
   it('keeps the member on their own pages', () => {
     assert.equal(safeMemberRedirect('/members/me/data'), '/members/me/data');
     assert.equal(safeMemberRedirect('/members/me?welcome=1'), '/members/me?welcome=1');
+    // "Log a lunch" from a venue page comes back to the form once signed in (#137).
+    assert.equal(safeMemberRedirect('/log/chip-shop'), '/log/chip-shop');
     for (const next of [
       null,
       '',
@@ -88,6 +110,8 @@ describe('safeMemberRedirect', () => {
       '/members/me/../../admin',
       '/members/me/%2e%2e/%2E%2E/admin',
       '/members/me/./../../admin',
+      '/log/../admin',
+      '/logout',
     ]) {
       assert.equal(safeMemberRedirect(next), '/members/me', String(next));
     }

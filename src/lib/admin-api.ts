@@ -244,6 +244,53 @@ export const ERROR_HTTP = {
   no_display_name: { status: 409, message: 'This member has no display name to hide.' },
   name_already_hidden: { status: 409, message: 'This name is already hidden.' },
   name_not_locked: { status: 409, message: 'This member can already choose a name.' },
+  // People's Inspections (#137)
+  member_inspection_not_found: { status: 404, message: 'Lunch log not found.' },
+  venue_not_loggable: {
+    status: 409,
+    message: 'That venue isn’t taking lunch logs.',
+    fields: { venueId: 'Choose a venue from the list.' },
+  },
+  visit_date_out_of_range: {
+    status: 400,
+    message: 'Please correct the highlighted fields.',
+    fields: { visitDate: 'Choose today or a day in the last week.' },
+  },
+  already_logged_that_day: {
+    status: 409,
+    message: 'You’ve already logged a lunch for that day. Edit it instead.',
+    fields: { visitDate: 'You’ve already logged a lunch for that day.' },
+  },
+  daily_log_limit: {
+    status: 429,
+    message: 'You’ve already logged a lunch today. Log the next one tomorrow.',
+  },
+  dish_offensive: {
+    status: 400,
+    message: 'Please correct the highlighted fields.',
+    fields: { dish: 'That isn’t allowed. Describe the dish another way.' },
+  },
+  quote_offensive: {
+    status: 400,
+    message: 'Please correct the highlighted fields.',
+    fields: { pullQuote: 'That isn’t allowed. Say it another way.' },
+  },
+  edit_window_closed: {
+    status: 409,
+    message: 'Lunch logs can be changed for 24 hours after you add them.',
+  },
+  log_removed: { status: 409, message: 'The Chairs removed this log, so it can’t be changed.' },
+  not_held: { status: 409, message: 'This log isn’t waiting for review.' },
+  already_removed: { status: 409, message: 'This log has already been removed.' },
+  removal_reason_required: {
+    status: 400,
+    message: 'Give a reason for removing it. It stays internal.',
+    fields: { reason: 'Give a reason. It stays internal.' },
+  },
+  stuffing_logs_mismatch: {
+    status: 400,
+    message: 'Choose logs from this venue. Reload the page and try again.',
+  },
   // Bribery
   bribery_venue_unknown: {
     status: 400,

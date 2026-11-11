@@ -93,8 +93,8 @@ jobs:
       - run: pnpm check:built
       # The same build served with the members flag on (#136): the member pages render on demand,
       # so they follow the server's flag without a second build.
-      - name: Member accounts with the flag on
-        run: pnpm check:built e2e/member-accounts.spec.ts
+      - name: Member accounts and lunch logs with the flag on
+        run: pnpm check:built e2e/member-accounts.spec.ts e2e/member-inspections.spec.ts
         env:
           MEMBERS_FLAG: 'on'
       - uses: actions/upload-artifact@v4

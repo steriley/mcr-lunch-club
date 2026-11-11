@@ -18,6 +18,12 @@ import {
 import { user } from './auth-schema';
 import { CUISINE_VALUES } from '../lib/cuisines';
 import { GOLDEN_CUT_SIZE } from '../lib/golden-cut-schema';
+import {
+  MEMBER_HOLD_REASONS,
+  MEMBER_INSPECTION_STATUSES,
+  MEMBER_VERDICT_VOTES,
+  MEMBER_VERIFICATIONS,
+} from '../lib/member-inspection-display';
 import { TIER_VALUES } from '../lib/tiers';
 
 export const tierEnum = pgEnum('tier', TIER_VALUES);
@@ -573,6 +579,95 @@ export const memberEvents = pgTable(
   (table) => [index('member_events_user_idx').on(table.userId, table.createdAt)]
 );
 
+export const memberVerdictVoteEnum = pgEnum('member_verdict_vote', MEMBER_VERDICT_VOTES);
+export const memberInspectionVerificationEnum = pgEnum(
+  'member_inspection_verification',
+  MEMBER_VERIFICATIONS
+);
+export const memberInspectionStatusEnum = pgEnum(
+  'member_inspection_status',
+  MEMBER_INSPECTION_STATUSES
+);
+export const memberInspectionHoldReasonEnum = pgEnum(
+  'member_inspection_hold_reason',
+  MEMBER_HOLD_REASONS
+);
+
+/**
+ * People's Inspections (#137): a member's log of one lunch. Deliberately apart from the Chairs'
+ * `inspections`, which feed tiers; nothing here changes a venue's tier. Member-owned, so
+ * `member_id` cascades (the rule above `memberProfiles`). The rules are in
+ * src/lib/member-inspections.ts.
+ *
+ * - One per member per Europe/London day, across all venues: nobody eats two lunches a day.
+ * - `verification` is `gps` when the browser put the member within 150 m of the venue when they
+ *   saved it. Their position is never stored, only the result.
+ * - `status`: `held` while the anti-gaming checks wait for a Chair; `removed` by a Chair, with a
+ *   reason that stays internal. `held_reason` says which check held it.
+ */
+export const memberInspections = pgTable(
+  'member_inspections',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    venueId: uuid('venue_id')
+      .notNull()
+      .references(() => venues.id, { onDelete: 'cascade' }),
+    memberId: text('member_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    visitDate: date('visit_date').notNull(),
+    dish: text('dish').notNull(),
+    pricePaidPence: integer('price_paid_pence'),
+    qualityScore: smallint('quality_score').notNull(),
+    valueScore: smallint('value_score').notNull(),
+    wouldReturn: boolean('would_return').notNull(),
+    verdictVote: memberVerdictVoteEnum('verdict_vote').notNull(),
+    pullQuote: text('pull_quote'),
+    verifiedOnSite: boolean('verified_on_site').notNull().default(false),
+    verification: memberInspectionVerificationEnum('verification').notNull().default('none'),
+    status: memberInspectionStatusEnum('status').notNull().default('visible'),
+    heldReason: memberInspectionHoldReasonEnum('held_reason'),
+    // The Chair's review: approving a held log, or removing any log. Kept if the Chair's account goes.
+    reviewedBy: text('reviewed_by').references(() => user.id, { onDelete: 'set null' }),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    // Why a Chair removed it. Internal: never shown publicly or sent in a notification.
+    reviewReason: text('review_reason'),
+    // A confirmed stuffing attempt this log was part of (the Hall of Shame).
+    briberyRecordId: uuid('bribery_record_id').references(() => briberyRecords.id, {
+      onDelete: 'set null',
+    }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('member_inspections_one_per_member_day').on(table.memberId, table.visitDate),
+    index('member_inspections_venue_idx').on(table.venueId, table.status, table.createdAt),
+    index('member_inspections_member_venue_idx').on(table.memberId, table.venueId),
+    index('member_inspections_held_idx')
+      .on(table.createdAt)
+      .where(sql`${table.status} = 'held'`),
+    check('member_inspections_dish_length', sql`char_length(${table.dish}) between 1 and 120`),
+    check(
+      'member_inspections_price_range',
+      sql`${table.pricePaidPence} is null or ${table.pricePaidPence} between 0 and 10000`
+    ),
+    check('member_inspections_quality_range', sql`${table.qualityScore} between 1 and 5`),
+    check('member_inspections_value_range', sql`${table.valueScore} between 1 and 5`),
+    check(
+      'member_inspections_quote_length',
+      sql`${table.pullQuote} is null or char_length(${table.pullQuote}) between 1 and 140`
+    ),
+    check(
+      'member_inspections_verified_matches',
+      sql`${table.verifiedOnSite} = (${table.verification} <> 'none')`
+    ),
+    check(
+      'member_inspections_removal_reason',
+      sql`${table.status} <> 'removed' or char_length(trim(${table.reviewReason})) > 0`
+    ),
+  ]
+);
+
 export type VenueRow = typeof venues.$inferSelect;
 export type BriberyRow = typeof briberyRecords.$inferSelect;
 export type SuggestionRow = typeof venueSuggestions.$inferSelect;
@@ -585,3 +680,4 @@ export type VenueImageRow = typeof venueImages.$inferSelect;
 export type PushSubscriptionRow = typeof pushSubscriptions.$inferSelect;
 export type NotificationPreferencesRow = typeof notificationPreferences.$inferSelect;
 export type MemberProfileRow = typeof memberProfiles.$inferSelect;
+export type MemberInspectionRow = typeof memberInspections.$inferSelect;

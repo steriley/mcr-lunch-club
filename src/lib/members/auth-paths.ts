@@ -34,9 +34,16 @@ export function memberAuthPathAccess(path: string, membersEnabled: boolean): Aut
 /** Sign-in paths whose sessions belong to members only: Chairs never sign in by email. */
 export const EMAIL_SIGN_IN_PATHS: ReadonlySet<string> = VERIFY_PATHS;
 
-/** The signed-in member's own pages; a signed-out visitor is sent to sign in. */
+/** Under one of these prefixes, at the prefix itself or below it ("/log", "/log/x"; not "/logo"). */
+const underPrefix = (pathname: string, prefix: string) =>
+  pathname === prefix || pathname.startsWith(`${prefix}/`);
+
+/**
+ * The signed-in member's own pages, and "Log a lunch" (/log, /log/<slug>, #137); a signed-out
+ * visitor is sent to sign in and comes back here.
+ */
 export function isMemberAccountPage(pathname: string): boolean {
-  return pathname === '/members/me' || pathname.startsWith('/members/me/');
+  return underPrefix(pathname, '/members/me') || underPrefix(pathname, '/log');
 }
 
 /** Where a member goes after signing in: their own pages only, so `?next=` can't send them away. */
@@ -54,9 +61,8 @@ export function safeMemberRedirect(next: string | null | undefined): string {
 /** Member-only pages and API routes, closed while the flag is off. */
 export function isMemberRoute(pathname: string): boolean {
   return (
-    pathname === '/members' ||
-    pathname.startsWith('/members/') ||
-    pathname === '/api/member' ||
-    pathname.startsWith('/api/member/')
+    underPrefix(pathname, '/members') ||
+    underPrefix(pathname, '/api/member') ||
+    underPrefix(pathname, '/log')
   );
 }

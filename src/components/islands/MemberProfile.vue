@@ -161,6 +161,11 @@ const inputClass =
 
     <div class="flex flex-wrap gap-3 border-t border-hairline pt-5">
       <a
+        href="/members/me/inspections"
+        class="inline-flex min-h-11 items-center rounded-lg border border-hairline bg-surface px-4 text-sm font-semibold text-ink hover:bg-linen"
+        >Your lunches</a
+      >
+      <a
         href="/members/me/data"
         class="inline-flex min-h-11 items-center rounded-lg border border-hairline bg-surface px-4 text-sm font-semibold text-ink hover:bg-linen"
         >Your data</a
