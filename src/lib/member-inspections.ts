@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, isNull, ne, sql, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, ne, or, sql, type SQL } from 'drizzle-orm';
 import { user } from '@/db/auth-schema';
 import {
   briberyRecords,
@@ -36,7 +36,7 @@ import type {
   MemberInspectionStatus,
   MemberVerdictVote,
 } from '@/lib/member-inspection-display';
-import { isOffensiveName } from '@/lib/members/display-name-filter';
+import { isOffensiveFoodText } from '@/lib/members/display-name-filter';
 import { fail, ok, outcomeTransaction, publicChange, type Outcome } from '@/lib/outcome';
 import { hasAdminRole } from '@/lib/roles';
 import { CLOSED_BUT_LISTED_TIER } from '@/lib/visibility';
@@ -62,7 +62,7 @@ import { publicVenueCondition } from '@/lib/visibility-sql';
  * - Pull quotes and dishes pass the server-side profanity filter. Removal reasons are internal.
  *
  * The public read (`recentPublic`) returns no member id, email or position, and a display name
- * only when the member opted in and no Chair hid it.
+ * only when the member opted in and no Chair hid it. A banned member's logs are left out of it.
  */
 
 type Db = Database | Tx;
@@ -98,6 +98,17 @@ const venuesLogged = sql<number>`(
 )`;
 
 const notRemoved = ne(memberInspections.status, 'removed');
+
+/**
+ * The log's member is not banned now (the rule in `isBanned`, src/lib/roles.ts). A banned
+ * member's logs leave the public feed and the people's score, and come back if the ban is lifted.
+ */
+const notBanned = sql`not exists (
+  select 1 from ${user} as "banned_member"
+  where "banned_member"."id" = ${memberInspections.memberId}
+    and "banned_member"."banned"
+    and ("banned_member"."ban_expires" is null or "banned_member"."ban_expires" > now())
+)`;
 
 /** A display name the public may see: opted in, and not hidden by a Chair. */
 const publicName = sql<string | null>`case
@@ -212,17 +223,29 @@ async function findOwn(
   return row ? toView(row, now) : null;
 }
 
-/** The member's log for a day, if any: "you've already logged today". */
-async function findForDate(
+/**
+ * What blocks a new log today, if anything: the member's log for today's lunch, or else the log
+ * they already saved today for an earlier day (one new log per London day, see `createLog`).
+ */
+async function findBlockingToday(
   db: Database,
   memberId: string,
-  visitDate: string,
   now: Date = new Date()
 ): Promise<MemberInspectionView | null> {
+  const today = londonDate(now);
   const [row] = await ownQuery(
     db,
-    and(eq(memberInspections.memberId, memberId), eq(memberInspections.visitDate, visitDate))!
-  ).limit(1);
+    and(
+      eq(memberInspections.memberId, memberId),
+      or(
+        eq(memberInspections.visitDate, today),
+        sql`(${memberInspections.createdAt} at time zone 'Europe/London')::date = ${today}::date`
+      )
+    )!
+  )
+    // Today's lunch first, if there is one.
+    .orderBy(desc(eq(memberInspections.visitDate, today)), desc(memberInspections.createdAt))
+    .limit(1);
   return row ? toView(row, now) : null;
 }
 
@@ -259,8 +282,8 @@ async function listLoggableVenues(db: Database): Promise<LoggableVenue[]> {
 type TextError = 'dish_offensive' | 'quote_offensive';
 
 function checkText(input: { dish: string; pullQuote: string | null }): TextError | null {
-  if (isOffensiveName(input.dish)) return 'dish_offensive';
-  if (input.pullQuote && isOffensiveName(input.pullQuote)) return 'quote_offensive';
+  if (isOffensiveFoodText(input.dish)) return 'dish_offensive';
+  if (input.pullQuote && isOffensiveFoodText(input.pullQuote)) return 'quote_offensive';
   return null;
 }
 
@@ -518,7 +541,8 @@ async function recentPublic(db: Database, slug: string): Promise<PublicInspectio
   if (!venue) return null;
   const visibleHere = and(
     eq(memberInspections.venueId, venue.id),
-    eq(memberInspections.status, 'visible')
+    eq(memberInspections.status, 'visible'),
+    notBanned
   );
 
   const [recent, scored] = await Promise.all([
@@ -779,7 +803,7 @@ export async function exportOwnLogs(db: Database, memberId: string) {
 export const memberInspectionsApi = {
   listOwn,
   findOwn,
-  findForDate,
+  findBlockingToday,
   listLoggableVenues,
   create: createLog,
   update: updateLog,
