@@ -10,6 +10,7 @@ import { roleMentionsAdmin } from '@/lib/chair-accounts';
 import { isUniqueViolation } from '@/lib/db-errors';
 import type { Database, Tx } from '@/lib/db-client';
 import { displayNameKey, type ProfileUpdate } from '@/lib/members/display-name';
+import { exportOwnLogs } from '@/lib/member-inspections';
 import { isOffensiveName } from '@/lib/members/display-name-filter';
 import { emailHash } from '@/lib/members/sign-in';
 import { fail, ok, outcomeTransaction, type Outcome } from '@/lib/outcome';
@@ -364,7 +365,7 @@ async function exportMemberData(db: Database, userId: string) {
     .where(eq(user.id, userId));
   if (!account || hasAdminRole(account.role)) return null;
 
-  const [[profile], reservedNames, passkeys, sessions, events] = await Promise.all([
+  const [[profile], reservedNames, passkeys, sessions, events, lunchLogs] = await Promise.all([
     db.select().from(memberProfiles).where(eq(memberProfiles.userId, userId)),
     db
       .select({ reservedAt: memberReservedNames.reservedAt })
@@ -397,6 +398,7 @@ async function exportMemberData(db: Database, userId: string) {
       .from(memberEvents)
       .where(eq(memberEvents.userId, userId))
       .orderBy(memberEvents.createdAt),
+    exportOwnLogs(db, userId),
   ]);
 
   return {
@@ -425,6 +427,7 @@ async function exportMemberData(db: Database, userId: string) {
       expiresAt: row.expiresAt.toISOString(),
     })),
     moderation: events.map((row) => ({ ...row, at: row.at.toISOString() })),
+    lunchLogs,
   };
 }
 

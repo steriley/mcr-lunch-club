@@ -18,6 +18,9 @@ import {
   type PublicVenueDetail,
 } from '@/lib/public-data';
 import VenueRouteMap from '@/components/islands/VenueRouteMap.vue';
+import PublicInspections from '@/components/islands/PublicInspections.vue';
+import { isLoggableVenue } from '@/lib/member-inspection-rules';
+import { isMembersEnabled } from '@/lib/members/flag';
 import { getPublicMapApiKey } from '@/lib/env';
 import { getDrivingDirectionsUrl, getWalkingDirectionsUrl } from '@/lib/map/directions';
 import { routeModeFor, walkText } from '@/lib/route-display';
@@ -61,6 +64,18 @@ interface Props {
 }
 
 const { venue, venueInspections, nearby } = Astro.props;
+
+// People's Inspections (#137) exist only while the `members` flag is on at build time. The
+// section fetches its logs when scrolled to; "Log a lunch" sends a signed-out visitor to sign in.
+const membersEnabled = await isMembersEnabled().catch(() => false);
+const canLog =
+  membersEnabled &&
+  isLoggableVenue({
+    tier: venue.tier,
+    latitude: venue.lat,
+    longitude: venue.lng,
+    closedAt: venue.closed ? 'closed' : null,
+  });
 
 const tier = tierInfo(venue.tier);
 const hasLocation = venue.lat !== null && venue.lng !== null;
@@ -373,6 +388,34 @@ function truncate(text: string, max: number): string {
           </div>
         )}
       </div>
+
+      {membersEnabled && (
+        <section
+          class="border-t border-hairline pt-6 space-y-4"
+          aria-labelledby="public-inspections-heading"
+        >
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2
+              id="public-inspections-heading"
+              class="text-xl font-bold tracking-tight text-ink flex items-center gap-2"
+            >
+              <Icon name="plate" class="icon-md" />
+              <span>Recent inspections from the public</span>
+            </h2>
+            {canLog && (
+              <a
+                class="dossier-action"
+                href={`/log/${encodeURIComponent(venue.slug)}`}
+                data-log-lunch
+              >
+                <Icon name="restaurant" />
+                Log a lunch
+              </a>
+            )}
+          </div>
+          <PublicInspections client:visible slug={venue.slug} venueName={venue.name} />
+        </section>
+      )}
 
       {nearby.length > 0 && (
         <section class="border-t border-hairline pt-6 space-y-4" aria-labelledby="nearby-heading">

@@ -10,5 +10,6 @@ export const ADMIN_NAV = [
   { href: '/admin/bribery', label: 'Bribery Records' },
   { href: '/admin/users', label: 'Users' },
   { href: '/admin/members', label: 'Members' },
+  { href: '/admin/member-inspections', label: 'Lunch Logs' },
   { href: '/admin/account', label: 'Account' },
 ] as const;

@@ -17,6 +17,7 @@ import BenchWalk from '@/components/BenchWalk.astro';
 import LedgerCanon from '@/components/LedgerCanon.astro';
 import { focalStyle, imageSrcset } from '@/lib/image-upload';
 import { getPublicMapApiKey } from '@/lib/env';
+import { isMembersEnabled } from '@/lib/members/flag';
 import { getGoldenCut, getMapVenues, getPublicInspections } from '@/lib/public-data';
 import { getRecentTierChanges } from '@/lib/recent-tier-changes';
 import { buildSovereignBench, toCard } from '@/lib/sovereign-bench';
@@ -57,6 +58,8 @@ const initialResultsCount = venuesData.filter((venue) =>
 ).length;
 
 const publicMapApiKey = getPublicMapApiKey();
+// Near Me offers "Log a lunch here" for the nearest venue while the `members` flag is on (#137).
+const memberLogging = await isMembersEnabled().catch(() => false);
 const bulletin = bulletinText(changesInIssue(recentTierChanges, issue));
 // Open venues only: the map venues leave out the permanently closed, who need no visit.
 const backlog = backlogText(backlogFor(venuesData));
@@ -89,7 +92,7 @@ const summonsColumns = [
     <div class="home-workspace-grid">
       <section class="home-map-stage relative w-full flex flex-col">
         <LunchMap client:load mapApiKey={publicMapApiKey} />
-        <NearMeLoader client:only="vue" mapApiKey={publicMapApiKey} />
+        <NearMeLoader client:only="vue" mapApiKey={publicMapApiKey} memberLogging={memberLogging} />
         <WhereToday client:idle />
         <SuggestModal client:idle />
       </section>

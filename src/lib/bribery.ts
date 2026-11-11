@@ -1,11 +1,11 @@
 import { eq } from 'drizzle-orm';
 import { briberyRecords, venues, type BriberyRow } from '@/db/schema';
 import type { BriberyInput } from '@/lib/bribery-schema';
-import type { Database } from '@/lib/db-client';
+import type { Database, Tx } from '@/lib/db-client';
 import { fail, ok, publicChange, type Outcome } from '@/lib/outcome';
 
 /** Builds the stored values, resolving the linked venue's name; fails if the venue id is unknown. */
-export async function briberyValues(db: Database, input: BriberyInput) {
+export async function briberyValues(db: Database | Tx, input: BriberyInput) {
   let venueNameText = input.venueNameText;
   if (input.venueId) {
     const [venue] = await db

@@ -1,5 +1,5 @@
 <template>
-  <NearMeMap v-if="requested" :map-api-key="mapApiKey" />
+  <NearMeMap v-if="requested" :map-api-key="mapApiKey" :member-logging="memberLogging" />
 </template>
 
 <script setup lang="ts">
@@ -9,6 +9,8 @@ import { $isNearMeOpen } from '@/stores/filters';
 
 defineProps<{
   mapApiKey?: string;
+  /** Offer "Log a lunch here" for the nearest venue (the `members` flag, #137). */
+  memberLogging?: boolean;
 }>();
 
 // Near Me stays hidden until someone opens it, so its code and styles load then

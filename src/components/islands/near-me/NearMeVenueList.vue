@@ -32,6 +32,15 @@
       </span>
       <span v-if="farFromManchester" class="near-me-far-note">You are outside Manchester</span>
       <span v-else-if="nearest.isFarAway" class="near-me-far-note">None nearby</span>
+      <!-- People's Inspections (issue 137): only when the visitor is genuinely near it. -->
+      <a
+        v-else-if="memberLogging && !fromBase"
+        class="near-me-log-lunch"
+        :href="`/log/${encodeURIComponent(nearest.venue.slug)}`"
+        data-near-me-log-lunch
+      >
+        Log a lunch here<span class="sr-only">: {{ nearest.venue.name }}</span>
+      </a>
     </div>
     <BenchPillar
       :id="`near-me-row-${nearest.venue.id}`"
@@ -123,6 +132,8 @@ const props = defineProps<{
   farFromManchester: boolean;
   /** Distances are measured from Spinningfields rather than the user. */
   fromBase: boolean;
+  /** Offer "Log a lunch here" for the nearest venue (the `members` flag, #137). */
+  memberLogging?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -143,6 +154,26 @@ function rowWalkUrl(rv: RankedVenue): string | null {
 </script>
 
 <style scoped>
+.near-me-log-lunch {
+  /* A 44px tap target that takes no more room in the row than the heading beside it. */
+  margin: -12px -8px;
+  padding: 12px 8px;
+  color: var(--color-deep-ink);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+.near-me-log-lunch:hover {
+  color: var(--ledger-navy);
+}
+
+.near-me-log-lunch:focus-visible {
+  outline: 2px solid var(--ledger-navy);
+  outline-offset: -8px;
+}
+
 /* =====================================================   Ranked List Section & Cards
    ============================================================ */
 .near-me-list-section {

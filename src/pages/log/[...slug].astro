@@ -1,0 +1,82 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import LogLunchForm from '@/components/islands/LogLunchForm.vue';
+import { db } from '@/lib/db';
+import { formatDate } from '@/lib/dates';
+import { londonDate } from '@/lib/london-date';
+import { loggableDates } from '@/lib/member-inspection-rules';
+import { memberInspectionsApi } from '@/lib/member-inspections';
+
+export const prerender = false;
+
+// "Log a lunch" (#137): /log, or /log/<slug> from a venue page or Near Me. The middleware has
+// checked the flag and that a member (not a Chair) is signed in.
+const member = Astro.locals.user!;
+const slug = Astro.params.slug ?? null;
+const now = new Date();
+const today = londonDate(now);
+const [venues, loggedToday] = await Promise.all([
+  memberInspectionsApi.listLoggableVenues(db),
+  memberInspectionsApi.findForDate(db, member.id, today, now),
+]);
+const selected = slug ? (venues.find((venue) => venue.slug === slug) ?? null) : null;
+---
+
+<Layout title="Log a lunch — MCR Lunch Club" description="Log your lunch for the ledger." noindex>
+  <section class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8 sm:py-10">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">People’s Inspections</p>
+      <h1 class="mt-2 text-3xl font-bold text-ink">
+        {selected ? `Log a lunch at ${selected.name}` : 'Log a lunch'}
+      </h1>
+    </div>
+
+    {loggedToday ? (
+      <div
+        class="space-y-3 rounded-2xl border border-hairline bg-parchment p-6 shadow-sm"
+        data-testid="logged-today"
+      >
+        <p class="text-ink">
+          You’ve already logged today’s lunch: <strong>{loggedToday.dish}</strong> at{' '}
+          <a href={`/venues/${loggedToday.venue.slug}`} class="font-semibold hover:underline">
+            {loggedToday.venue.name}
+          </a>{' '}
+          ({formatDate(loggedToday.visitDate)}). One lunch a day, as the Constitution intends.
+        </p>
+        <div class="flex flex-wrap gap-3">
+          {loggedToday.canEdit && (
+            <a
+              href={`/members/me/inspections/${loggedToday.id}`}
+              class="inline-flex min-h-11 items-center rounded-lg bg-navy-fixed px-4 text-sm font-semibold text-white hover:bg-deep"
+            >
+              Edit it
+            </a>
+          )}
+          <a
+            href="/members/me/inspections"
+            class="inline-flex min-h-11 items-center rounded-lg border border-hairline bg-surface px-4 text-sm font-semibold text-ink hover:bg-linen"
+          >
+            Your lunches
+          </a>
+        </div>
+      </div>
+    ) : (
+      <>
+        {slug && !selected && (
+          <p
+            role="note"
+            class="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+          >
+            That venue isn’t taking lunch logs. Choose another from the list.
+          </p>
+        )}
+        <LogLunchForm
+          client:load
+          venues={venues}
+          venueId={selected?.id ?? null}
+          dates={loggableDates(today)}
+        />
+      </>
+    )}
+  </section>
+</Layout>

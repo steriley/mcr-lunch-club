@@ -1,0 +1,26 @@
+---
+import MemberInspectionQueue from '@/components/admin/MemberInspectionQueue.vue';
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { db } from '@/lib/db';
+import { HELD_LIST_LIMIT, memberInspectionsApi } from '@/lib/member-inspections';
+
+export const prerender = false;
+
+// People's Inspections (#137): logs the anti-gaming checks held for a Chair to review.
+const held = await memberInspectionsApi.listHeld(db);
+---
+
+<AdminLayout title="Lunch logs">
+  <div class="flex flex-col gap-6">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">The People’s Ledger</p>
+      <h1 class="mt-2 text-3xl font-bold text-ink">Lunch logs to review</h1>
+      <p class="mt-2 text-sm text-soot">
+        Held when, in a week, more than five eligible logs at a venue come from accounts under two
+        weeks old, or its scores jump more than 1.5 points against the 90 days before.
+        {held.length >= HELD_LIST_LIMIT && ` The oldest ${HELD_LIST_LIMIT} are shown.`}
+      </p>
+    </div>
+    <MemberInspectionQueue client:load logs={held} />
+  </div>
+</AdminLayout>

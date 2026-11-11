@@ -61,6 +61,8 @@ export interface MemberRouteSpec<S extends z.ZodType | undefined> {
 
 export interface MemberRouteContext<B> {
   request: Request;
+  /** The route's raw params; validate before use. */
+  params: Record<string, string | undefined>;
   body: B;
   session: AuthSession;
 }
@@ -72,7 +74,7 @@ export function memberRoute<S extends z.ZodType | undefined = undefined>(
     context: MemberRouteContext<S extends z.ZodType ? z.output<S> : undefined>
   ) => Promise<Response | Outcome<unknown>>
 ): APIRoute {
-  return async ({ request }) => {
+  return async ({ request, params }) => {
     const session = await requireMember(request);
     if (session instanceof Response) return session;
 
@@ -84,7 +86,7 @@ export function memberRoute<S extends z.ZodType | undefined = undefined>(
     }
 
     try {
-      const result = await handler({ request, body: body as never, session });
+      const result = await handler({ request, params: params ?? {}, body: body as never, session });
       if (result instanceof Response) return result;
       return result.ok
         ? jsonResponse(result.value)
