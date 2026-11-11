@@ -1,108 +1,90 @@
 ---
 /**
- * "Sign in" or the member's account link, in the site header (#136). Layout renders it only while
- * the `members` flag is on; with the flag off there is nothing here at all.
+ * "Sign in", or the member's account link, as the last item of the site nav (#136): at the far
+ * right of the nav pill on wide screens, and at the bottom of the burger menu on phones. Layout
+ * renders it (once in each nav) only while the `members` flag is on; with the flag off there is
+ * nothing here at all.
  *
  * Prerendered pages ship the signed-out state. The script asks /api/member/session who is signed
- * in only when the readable `signed_in` hint cookie is set (src/lib/auth-config.ts), so a
- * signed-out visitor makes no member or auth request (epic #135, "Performance budget";
- * e2e/members.spec.ts). A Chair gets a link to the Chairs' Area instead of a member link. The
- * script is bundled, so it needs no CSP hash, and it loads no auth code.
+ * in only when the readable `signed_in` hint cookie is set (src/lib/auth-config.ts), and only once
+ * for both navs, so a signed-out visitor makes no member or auth request (epic #135, "Performance
+ * budget"; e2e/members.spec.ts). A Chair gets a link to the Chairs' Area instead of a member link.
+ * The script is bundled, so it needs no CSP hash, and it loads no auth code.
  */
+import Icon from '@/components/Icon.astro';
+
+interface Props {
+  /** Which nav it sits in: the main one (wide screens) or the burger menu (phones). */
+  placement: 'main' | 'menu';
+}
+
+const { placement } = Astro.props;
 ---
 
-<div class="member-header" data-member-header>
-  <a href="/members/sign-in" class="member-header-link" data-member-signed-out>
-    Sign in
+<div class="member-nav" data-member-header={placement}>
+  <a href="/members/sign-in" class="site-nav-link" data-member-signed-out>
+    <Icon name="lock" class="nav-icon" />
+    <span>Sign in</span>
   </a>
-  <a href="/members/me" class="member-header-link" data-member-account hidden>
-    <span class="member-header-initial" aria-hidden="true" data-member-initial></span>
-    <span data-member-name>Your account</span>
+  <a href="/members/me" class="site-nav-link" data-member-account hidden>
+    <span class="member-initial" aria-hidden="true" data-member-initial></span>
+    <span class="member-name" data-member-name>
+      Your account
+    </span>
   </a>
-  <a href="/admin" class="member-header-link" data-member-chair hidden>
-    Chairs’ Area
+  <a href="/admin" class="site-nav-link" data-member-chair hidden>
+    <Icon name="landmark" class="nav-icon" />
+    <span>Chairs’ Area</span>
   </a>
 </div>
 
 <style>
-  .member-header {
+  .member-nav {
     display: flex;
-    flex: 0 0 auto;
     align-items: center;
   }
 
-  .member-header[data-state='checking'] .member-header-link {
+  /* In the pill: a hairline between the site's pages and the visitor's own link. */
+  .member-nav[data-member-header='main'] {
+    margin-left: 4px;
+    padding-left: 4px;
+    border-left: 1px solid var(--ledger-border);
+  }
+
+  /* In the burger menu: the last item, set off by a rule above it. */
+  .member-nav[data-member-header='menu'] {
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top: 1px solid var(--ledger-border);
+  }
+
+  .member-nav[data-state='checking'] .site-nav-link {
     visibility: hidden;
   }
 
-  .member-header-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 44px;
-    max-width: 14rem;
-    padding: 6px 14px;
-    border: 1px solid color-mix(in srgb, var(--color-hairline) 80%, transparent);
-    border-radius: 999px;
-    background: var(--ledger-card);
-    color: var(--color-deep-ink);
-    font-size: 12px;
-    font-weight: 600;
-    text-decoration: none;
-    white-space: nowrap;
-  }
-
-  .member-header-link[hidden] {
+  .member-nav .site-nav-link[hidden] {
     display: none;
   }
 
-  .member-header-link:hover {
-    background: var(--ledger-parchment);
-  }
-
-  .member-header-link > span:last-child {
+  .member-name {
+    max-width: 12rem;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .member-header-initial {
+  .member-initial {
     display: inline-grid;
     flex: none;
     place-items: center;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     border-radius: 999px;
     background: var(--color-navy-fixed);
     color: var(--color-white);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
-  }
-
-  /* Phones and tablets: the main nav folds into the menu; this sits just before it. */
-  @media (max-width: 1000px) {
-    .member-header {
-      margin-left: auto;
-    }
-
-    .member-header + :global(.mobile-menu) {
-      margin-left: 0;
-    }
-  }
-
-  /* Small phones: the member is their initial, so the club's name keeps its room. */
-  @media (max-width: 480px) {
-    [data-member-account] {
-      padding: 9px;
-    }
-
-    [data-member-name] {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-      white-space: nowrap;
-    }
   }
 </style>
 
@@ -140,16 +122,20 @@
     } else if (session?.state === 'chair' && chair) {
       chair.hidden = false;
       if (signedOut) signedOut.hidden = true;
-    } else if (session?.state === 'signed_out') {
-      // The server cleared the hint too; this covers a response that was cached on the way.
-      document.cookie = 'signed_in=; Path=/; Max-Age=0; SameSite=Lax';
     }
     delete root.dataset.state;
   }
 
-  for (const root of document.querySelectorAll<HTMLElement>('[data-member-header]')) {
-    if (!HINT.test(document.cookie)) continue;
-    root.dataset.state = 'checking';
-    void readSession().then((session) => show(root, session));
+  const roots = [...document.querySelectorAll<HTMLElement>('[data-member-header]')];
+  if (roots.length && HINT.test(document.cookie)) {
+    for (const root of roots) root.dataset.state = 'checking';
+    // One request for both navs.
+    void readSession().then((session) => {
+      if (session?.state === 'signed_out') {
+        // The server cleared the hint too; this covers a response that was cached on the way.
+        document.cookie = 'signed_in=; Path=/; Max-Age=0; SameSite=Lax';
+      }
+      for (const root of roots) show(root, session);
+    });
   }
 </script>

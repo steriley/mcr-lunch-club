@@ -11,6 +11,9 @@ import { expect, memberEmail, signIn, signInAsMember, test, visit } from './fixt
  * local password; email sign-in is covered by the database tests (no inbox here).
  */
 
+/** The member link in the main nav, the one shown on wide screens (the tests run at desktop size). */
+const mainNav = (selector: string) => `[data-member-header="main"] ${selector}`;
+
 test.skip(
   process.env.MEMBERS_FLAG !== 'on' || Boolean(process.env.SMOKE_BASE_URL),
   'runs against the local build with MEMBERS_FLAG=on'
@@ -27,8 +30,12 @@ test('a signed-out visitor is sent to sign in, and the form asks for an email', 
   await expect(page.getByRole('heading', { name: 'Confirm it’s you' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Sign in or join' })).toBeVisible();
   await expect(page.getByTestId('member-send-email')).toBeEnabled();
-  // The header on this on-demand page offers sign-in.
-  await expect(page.locator('[data-member-signed-out]')).toBeVisible();
+  // The nav on this on-demand page offers sign-in, at the far right of the pill.
+  const signInLink = page.locator(mainNav('[data-member-signed-out]'));
+  await expect(signInLink).toBeVisible();
+  // The last item (Astro renders the component's script after it).
+  const lastInNav = page.locator('.site-header-inner > .site-nav > :not(script)').last();
+  await expect(lastInNav).toHaveAttribute('data-member-header', 'main');
 });
 
 test('the member names themselves, chooses privacy and downloads their data', async ({
@@ -56,7 +63,7 @@ test('the member names themselves, chooses privacy and downloads their data', as
 
   // The header (hydrated from /api/member/session because of the signed_in hint) shows the name.
   await visit(page, '/members/me');
-  await expect(page.locator('[data-member-account]')).toContainText(name);
+  await expect(page.locator(mainNav('[data-member-account]'))).toContainText(name);
 
   await visit(page, '/members/me/data');
   const download = page.waitForEvent('download');
@@ -81,7 +88,7 @@ test('the Chairs see members in their list, and the header links a Chair to the 
   // Prerendered pages carry the header only when the site was built with the flag on.
   await visit(page, '/');
   const builtWithFlag = (await page.locator('[data-member-header]').count()) > 0;
-  if (builtWithFlag) await expect(page.locator('[data-member-signed-out]')).toBeVisible();
+  if (builtWithFlag) await expect(page.locator(mainNav('[data-member-signed-out]'))).toBeVisible();
 
   await signIn(page);
   await visit(page, '/admin/members');
@@ -96,7 +103,25 @@ test('the Chairs see members in their list, and the header links a Chair to the 
 
   if (builtWithFlag) {
     await visit(page, '/');
-    await expect(page.locator('[data-member-chair]')).toBeVisible();
-    await expect(page.locator('[data-member-signed-out]')).toBeHidden();
+    await expect(page.locator(mainNav('[data-member-chair]'))).toBeVisible();
+    await expect(page.locator(mainNav('[data-member-signed-out]'))).toBeHidden();
   }
+});
+
+test('on a phone, sign-in is the last item of the burger menu, not in the header bar', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await visit(page, '/members/sign-in');
+  // Nothing member-related shows in the bar itself.
+  await expect(page.locator(mainNav('[data-member-signed-out]'))).toBeHidden();
+
+  await page.locator('.mobile-menu-trigger').click();
+  const menu = page.locator('.mobile-menu-panel .site-nav');
+  const signInLink = menu.locator('[data-member-header="menu"] [data-member-signed-out]');
+  await expect(signInLink).toBeVisible();
+  await expect(menu.locator(':scope > :not(script)').last()).toHaveAttribute(
+    'data-member-header',
+    'menu'
+  );
 });
