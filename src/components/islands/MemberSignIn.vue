@@ -34,6 +34,7 @@ const formToken = ref('');
 const turnstileToken = ref('');
 const turnstileBox = ref<HTMLElement | null>(null);
 let turnstile: TurnstileHandle | null = null;
+let unmounted = false;
 const errorMessage = ref(
   props.linkError
     ? 'That sign-in link has expired or was already used. Ask for a new one below.'
@@ -57,10 +58,13 @@ async function showTurnstile() {
   await nextTick();
   if (!turnstileBox.value || !props.turnstileSiteKey) return;
   try {
-    turnstile = await mountTurnstile(turnstileBox.value, props.turnstileSiteKey, {
+    const handle = await mountTurnstile(turnstileBox.value, props.turnstileSiteKey, {
       onToken: (token) => (turnstileToken.value = token),
       onLost: () => (turnstileToken.value = ''),
     });
+    // Cloudflare's script can arrive after the form has gone: don't leave a widget behind.
+    if (unmounted) handle.remove();
+    else turnstile = handle;
   } catch {
     errorMessage.value = 'Unable to load the security check. Please reload the page.';
   }
@@ -72,7 +76,10 @@ function hideTurnstile() {
   turnstileToken.value = '';
 }
 
-onBeforeUnmount(hideTurnstile);
+onBeforeUnmount(() => {
+  unmounted = true;
+  hideTurnstile();
+});
 
 onMounted(() => {
   void loadFormToken();
