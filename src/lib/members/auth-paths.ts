@@ -46,6 +46,8 @@ export function safeMemberRedirect(next: string | null | undefined): string {
   if (value.includes('\\') || /[\u0000-\u001f]/.test(value)) return '/members/me';
   const pathEnd = value.search(/[?#]/);
   const path = pathEnd === -1 ? value : value.slice(0, pathEnd);
+  // "/members/me/../../admin" would leave the member's pages once the browser resolves it.
+  if (/(?:^|\/)(?:\.|%2e){1,2}(?:\/|$)/i.test(path)) return '/members/me';
   return isMemberAccountPage(path) ? value : '/members/me';
 }
 

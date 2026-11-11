@@ -60,9 +60,19 @@ describe('POST /api/member/sign-in', () => {
     assert.equal(response.status, 200);
     assert.equal((await response.json()).ok, true);
     assert.equal(deliver.mock.calls[0].arguments[0], 'sam@example.com');
+    assert.equal(deliver.mock.calls[0].arguments[2], '/members/me');
     const values = inserts.find((call) => call.method === 'values')!.args[0];
     assert.ok(!JSON.stringify(values).includes('sam@example.com'));
     assert.ok(!JSON.stringify(values).includes('203.0.113.9'));
+  });
+
+  it('sends the link to the page that asked, within the member’s own pages only', async () => {
+    stubReserve();
+    const deliver = stubDelivery();
+    await run(POST, valid({ next: '/members/me/data' }));
+    await run(POST, valid({ next: 'https://evil.example/' }));
+    assert.equal(deliver.mock.calls[0].arguments[2], '/members/me/data');
+    assert.equal(deliver.mock.calls[1].arguments[2], '/members/me');
   });
 
   it('answers a filled honeypot or an instant submit as usual and sends nothing', async () => {

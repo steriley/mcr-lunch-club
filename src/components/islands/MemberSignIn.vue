@@ -61,6 +61,7 @@ async function requestEmail() {
     email: email.value,
     formToken: formToken.value,
     website: website.value,
+    next: props.next,
   });
   if (!checked.success) {
     errorMessage.value = checked.error.issues[0]?.message ?? 'Enter a valid email address.';

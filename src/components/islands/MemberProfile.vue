@@ -36,7 +36,8 @@ async function save(update: { displayName?: string; showPublicly?: boolean }, do
     return false;
   }
   profile.value = result.data;
-  name.value = result.data.displayName ?? '';
+  // Saving only the privacy setting keeps a name the member is still typing.
+  if (update.displayName !== undefined) name.value = result.data.displayName ?? '';
   message.value = done;
   return true;
 }

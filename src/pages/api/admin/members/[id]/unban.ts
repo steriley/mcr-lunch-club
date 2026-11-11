@@ -21,11 +21,19 @@ export const POST = adminRoute(
   async ({ request, params, actor }) => {
     if (!(await memberAccounts.find(db, params.id))) return errorResponse('member_not_found');
     await auth.api.unbanUser({ headers: request.headers, body: { userId: params.id } });
-    await memberAccounts.recordEvent(db, {
-      memberId: params.id,
-      actorId: actor.id,
-      action: 'unbanned',
-    });
+    // The lift has happened; a failure to log it must not report it as failed.
+    try {
+      await memberAccounts.recordEvent(db, {
+        memberId: params.id,
+        actorId: actor.id,
+        action: 'unbanned',
+      });
+    } catch (error) {
+      console.error(
+        '[admin] Unban member: could not log the event:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
+    }
     return jsonResponse({ member: await memberAccounts.find(db, params.id) });
   }
 );

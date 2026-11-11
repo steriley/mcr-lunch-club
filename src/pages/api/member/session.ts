@@ -29,6 +29,7 @@ export const GET: APIRoute = async ({ request }) => {
   const profile = await memberAccounts.getProfile(db, signedInUser.id).catch(() => null);
   return jsonResponse({
     state: 'member',
-    displayName: profile?.displayName ?? null,
+    // A name the Chairs hid is never shown, the member's own header included (as on /members/me).
+    displayName: profile && !profile.nameHidden ? profile.displayName : null,
   });
 };

@@ -13,6 +13,7 @@ import { isChairEmail } from '@/lib/chair-accounts';
 import { db } from '@/lib/db';
 import { isMemberSignupEnabled } from '@/lib/env';
 import { sendMail } from '@/lib/mail/send';
+import { safeMemberRedirect } from '@/lib/members/auth-paths';
 import { isMembersEnabled } from '@/lib/members/flag';
 import {
   checkFormToken,
@@ -47,7 +48,7 @@ function clientIp(request: Request, readClientAddress: () => string): string | n
  * route tests.
  */
 export const signInDelivery = {
-  async deliver(email: string, headers: Headers): Promise<void> {
+  async deliver(email: string, headers: Headers, callbackURL = '/members/me'): Promise<void> {
     try {
       if (await isChairEmail(db, email)) return;
       const parts = await collectSignInEmail(async () => {
@@ -55,7 +56,7 @@ export const signInDelivery = {
           headers,
           body: {
             email,
-            callbackURL: '/members/me',
+            callbackURL,
             newUserCallbackURL: '/members/me?welcome=1',
             errorCallbackURL: '/members/sign-in',
           },
@@ -95,7 +96,7 @@ export const POST: APIRoute = async (context) => {
 
   const parsed = signInRequestSchema.safeParse(await readJson(request));
   if (!parsed.success) return validationError(parsed.error);
-  const { email, formToken, website } = parsed.data;
+  const { email, formToken, website, next } = parsed.data;
 
   // A filled honeypot or an instant submit is a bot: answer as usual, send nothing.
   if (website?.trim()) return accepted();
@@ -123,6 +124,7 @@ export const POST: APIRoute = async (context) => {
 
   // Everything that depends on who the email belongs to runs after the response, so the answer
   // and its timing are the same for a member, a stranger and a Chair.
-  waitUntil(signInDelivery.deliver(email, new Headers(request.headers)));
+  // The link lands where the form was asked to send the member, within their own pages only.
+  waitUntil(signInDelivery.deliver(email, new Headers(request.headers), safeMemberRedirect(next)));
   return accepted();
 };

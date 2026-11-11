@@ -85,6 +85,9 @@ describe('safeMemberRedirect', () => {
       '/members/me\\..\\admin',
       '/members/meal',
       '/members/me\n',
+      '/members/me/../../admin',
+      '/members/me/%2e%2e/%2E%2E/admin',
+      '/members/me/./../../admin',
     ]) {
       assert.equal(safeMemberRedirect(next), '/members/me', String(next));
     }

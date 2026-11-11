@@ -34,7 +34,7 @@ describe('display names (#136)', () => {
 
 describe('the display-name profanity filter (#136)', () => {
   it('catches look-alike characters and spacing tricks', () => {
-    for (const name of ['shit', 'Sh1t Lord', 'f u c k', 's-h-i-t', 'C0ck', 'fμck']) {
+    for (const name of ['shit', 'Sh1t Lord', 'f u c k', 's-h-i-t', 'f.u.c.k', 'C0ck', 'fμck']) {
       assert.ok(isOffensiveName(name), name);
     }
   });
@@ -51,6 +51,12 @@ describe('the display-name profanity filter (#136)', () => {
       'Assam Tea',
       'Fukuoka',
       'Grass Hopper',
+      // Ordinary names that only spell something when their words are run together.
+      'Dan Alexander',
+      'Ana Lopez',
+      'Diana Lyons',
+      'Susan Alder',
+      'Pen Island',
     ]) {
       assert.ok(!isOffensiveName(name), name);
     }

@@ -10,6 +10,8 @@ export const signInRequestSchema = z.object({
     .max(254, 'Enter a valid email address.'),
   /** The time-trap token from GET /api/member/sign-in. */
   formToken: z.string().max(200),
+  /** Where the emailed link lands; checked on the server with safeMemberRedirect. */
+  next: z.string().max(200).optional(),
   /** Honeypot: hidden from people, so anything in it means a bot. */
   website: z.string().max(200).optional(),
 });

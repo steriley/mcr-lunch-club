@@ -229,14 +229,16 @@ async function listMembers(
   db: Database,
   limit = MEMBER_LIST_LIMIT
 ): Promise<{ total: number; members: MemberSummary[] }> {
-  const [{ total }] = await db.select({ total: count() }).from(user).where(isMemberRow);
-  const rows = await db
-    .select(summaryColumns)
-    .from(user)
-    .leftJoin(memberProfiles, eq(memberProfiles.userId, user.id))
-    .where(isMemberRow)
-    .orderBy(desc(user.createdAt), desc(user.id))
-    .limit(limit);
+  const [[{ total }], rows] = await Promise.all([
+    db.select({ total: count() }).from(user).where(isMemberRow),
+    db
+      .select(summaryColumns)
+      .from(user)
+      .leftJoin(memberProfiles, eq(memberProfiles.userId, user.id))
+      .where(isMemberRow)
+      .orderBy(desc(user.createdAt), desc(user.id))
+      .limit(limit),
+  ]);
   return {
     total,
     members: rows.filter((row) => !hasAdminRole(row.role)).map(toSummary),
@@ -355,44 +357,47 @@ async function exportMemberData(db: Database, userId: string) {
       role: user.role,
       emailVerified: user.emailVerified,
       banned: user.banned,
+      banExpires: user.banExpires,
       createdAt: user.createdAt,
     })
     .from(user)
     .where(eq(user.id, userId));
   if (!account || hasAdminRole(account.role)) return null;
 
-  const [profile] = await db.select().from(memberProfiles).where(eq(memberProfiles.userId, userId));
-  const reservedNames = await db
-    .select({ reservedAt: memberReservedNames.reservedAt })
-    .from(memberReservedNames)
-    .where(eq(memberReservedNames.userId, userId));
-  const passkeys = await db
-    .select({
-      name: passkey.name,
-      deviceType: passkey.deviceType,
-      backedUp: passkey.backedUp,
-      createdAt: passkey.createdAt,
-    })
-    .from(passkey)
-    .where(eq(passkey.userId, userId));
-  const sessions = await db
-    .select({
-      createdAt: session.createdAt,
-      expiresAt: session.expiresAt,
-      ipAddress: session.ipAddress,
-      userAgent: session.userAgent,
-    })
-    .from(session)
-    .where(eq(session.userId, userId));
-  const events = await db
-    .select({
-      action: memberEvents.action,
-      detail: memberEvents.detail,
-      at: memberEvents.createdAt,
-    })
-    .from(memberEvents)
-    .where(eq(memberEvents.userId, userId))
-    .orderBy(memberEvents.createdAt);
+  const [[profile], reservedNames, passkeys, sessions, events] = await Promise.all([
+    db.select().from(memberProfiles).where(eq(memberProfiles.userId, userId)),
+    db
+      .select({ reservedAt: memberReservedNames.reservedAt })
+      .from(memberReservedNames)
+      .where(eq(memberReservedNames.userId, userId)),
+    db
+      .select({
+        name: passkey.name,
+        deviceType: passkey.deviceType,
+        backedUp: passkey.backedUp,
+        createdAt: passkey.createdAt,
+      })
+      .from(passkey)
+      .where(eq(passkey.userId, userId)),
+    db
+      .select({
+        createdAt: session.createdAt,
+        expiresAt: session.expiresAt,
+        ipAddress: session.ipAddress,
+        userAgent: session.userAgent,
+      })
+      .from(session)
+      .where(eq(session.userId, userId)),
+    db
+      .select({
+        action: memberEvents.action,
+        detail: memberEvents.detail,
+        at: memberEvents.createdAt,
+      })
+      .from(memberEvents)
+      .where(eq(memberEvents.userId, userId))
+      .orderBy(memberEvents.createdAt),
+  ]);
 
   return {
     exportedAt: new Date().toISOString(),
@@ -400,7 +405,7 @@ async function exportMemberData(db: Database, userId: string) {
       email: account.email,
       name: account.name,
       emailVerified: account.emailVerified,
-      banned: Boolean(account.banned),
+      banned: isBanned(account),
       joinedAt: account.createdAt.toISOString(),
     },
     profile: profile
