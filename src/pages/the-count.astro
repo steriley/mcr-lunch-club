@@ -1,0 +1,129 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import Icon from '@/components/Icon.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import { db } from '@/lib/db';
+import { isMembersEnabled } from '@/lib/members/flag';
+import { theCount, type CountEntry } from '@/lib/public-scores';
+import { bandLabel } from '@/lib/swing';
+
+// The Count (#138): rendered on demand, behind the `members` flag, cached for five minutes.
+export const prerender = false;
+
+if (!(await isMembersEnabled())) {
+  return new Response('Not found', {
+    status: 404,
+    headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' },
+  });
+}
+
+const count = await theCount(db);
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=0, s-maxage=300, stale-while-revalidate=600'
+);
+
+const dissent = (entry: CountEntry) =>
+  `Chairs: ${bandLabel(entry.chairsBand)}. The People would have it ${bandLabel(entry.peopleBand)}.`;
+---
+
+<Layout
+  title="The Count — the People against the Chairs | MCR Lunch Club"
+  description="Where the People's lunch logs sit against the Chairs' verdicts. Unofficial, and no part of any verdict."
+>
+  <div class="max-w-3xl mx-auto px-4 pt-4 pb-8 sm:pt-6 sm:pb-12 w-full space-y-8 font-sans">
+    <Breadcrumbs items={[{ label: 'Map', href: '/' }, { label: 'The Count' }]} />
+
+    <header class="space-y-2">
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-ink flex items-center gap-3">
+        <Icon name="scales" class="icon-banner-tier" />
+        The Count
+      </h1>
+      <p class="text-sm text-dim max-w-[60ch]">
+        How far public opinion sits from the Chairs’ verdicts, venue by venue. The People’s score is
+        unofficial and takes no part in any verdict. Only venues with at least five eligible members
+        are counted.
+      </p>
+    </header>
+
+    <section class="space-y-2" aria-labelledby="approval-heading">
+      <h2 id="approval-heading" class="text-xl font-bold tracking-tight text-ink">
+        The Chairs’ Approval Rating
+      </h2>
+      {count.approvalRating ? (
+        <p class="text-base text-ink" data-testid="approval-rating">
+          <strong class="text-3xl tabular-nums">{count.approvalRating.percent}%</strong>
+          <span class="text-graphite">
+            of {count.approvalRating.quorate}
+            {count.approvalRating.quorate === 1 ? 'venue' : 'venues'} counted have the People inside
+            the Chairs’ verdict.
+          </span>
+        </p>
+      ) : (
+        <p class="text-sm text-dim">Polls are still open: no venue has a quorum yet.</p>
+      )}
+    </section>
+
+    <section class="space-y-3" aria-labelledby="generous-heading">
+      <h2 id="generous-heading" class="text-xl font-bold tracking-tight text-ink">
+        Where the People are kinder
+      </h2>
+      {count.moreGenerous.length ? (
+        <ul class="space-y-2">
+          {count.moreGenerous.map((entry) => (
+            <li class="rounded-xl border border-hairline bg-surface px-4 py-2.5">
+              <a class="font-bold text-ink underline" href={`/venues/${entry.slug}`}>
+                {entry.name}
+              </a>
+              <span class="block text-sm text-graphite">{dissent(entry)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="text-sm text-dim">Nothing to report.</p>
+      )}
+    </section>
+
+    <section class="space-y-3" aria-labelledby="harsher-heading">
+      <h2 id="harsher-heading" class="text-xl font-bold tracking-tight text-ink">
+        Where the People are sterner
+      </h2>
+      {count.harsher.length ? (
+        <ul class="space-y-2">
+          {count.harsher.map((entry) => (
+            <li class="rounded-xl border border-hairline bg-surface px-4 py-2.5">
+              <a class="font-bold text-ink underline" href={`/venues/${entry.slug}`}>
+                {entry.name}
+              </a>
+              <span class="block text-sm text-graphite">{dissent(entry)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="text-sm text-dim">Nothing to report.</p>
+      )}
+    </section>
+
+    <section class="space-y-3" aria-labelledby="contested-heading">
+      <h2 id="contested-heading" class="text-xl font-bold tracking-tight text-ink">
+        Most Contested
+      </h2>
+      {count.mostContested.length ? (
+        <ul class="space-y-2">
+          {count.mostContested.map((entry) => (
+            <li class="rounded-xl border border-hairline bg-surface px-4 py-2.5">
+              <a class="font-bold text-ink underline" href={`/venues/${entry.slug}`}>
+                {entry.name}
+              </a>
+              <span class="block text-sm text-graphite">
+                {entry.eligibleMembers} members, split on the verdict.
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="text-sm text-dim">Nothing to report.</p>
+      )}
+    </section>
+  </div>
+</Layout>

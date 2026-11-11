@@ -19,6 +19,8 @@ import {
 } from '@/lib/public-data';
 import VenueRouteMap from '@/components/islands/VenueRouteMap.vue';
 import PublicInspections from '@/components/islands/PublicInspections.vue';
+import SwingOMeter from '@/components/islands/SwingOMeter.vue';
+import { meterMode } from '@/lib/swing';
 import { isLoggableVenue } from '@/lib/member-inspection-rules';
 import { isMembersEnabled } from '@/lib/members/flag';
 import { getPublicMapApiKey } from '@/lib/env';
@@ -76,6 +78,10 @@ const canLog =
     longitude: venue.lng,
     closedAt: venue.closed ? 'closed' : null,
   });
+
+// The Swing-o-meter (#138) is behind the same flag; Gone But Not Forgotten and closed venues get none.
+const hasSwingMeter =
+  membersEnabled && meterMode({ tier: venue.tier, closed: venue.closed }).kind !== 'none';
 
 const tier = tierInfo(venue.tier);
 const hasLocation = venue.lat !== null && venue.lng !== null;
@@ -347,6 +353,19 @@ function truncate(text: string, max: number): string {
             — The Chairs
           </footer>
         </blockquote>
+      )}
+
+      {hasSwingMeter && (
+        <section class="space-y-3" aria-labelledby="swing-heading">
+          <h2
+            id="swing-heading"
+            class="text-xl font-bold tracking-tight text-ink flex items-center gap-2"
+          >
+            <Icon name="scales" class="icon-md" />
+            <span>The Swing-o-meter</span>
+          </h2>
+          <SwingOMeter client:visible slug={venue.slug} venueName={venue.name} canLog={canLog} />
+        </section>
       )}
 
       <!-- Formal Inspection History Ledger -->
