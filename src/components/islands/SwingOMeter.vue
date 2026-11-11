@@ -131,100 +131,129 @@ const costNote = computed(() =>
     <p v-else-if="state === 'failed'" class="text-sm text-dim font-sans">
       The People’s Verdict couldn’t be read just now.
     </p>
-    <div v-else-if="swing" class="space-y-3 font-sans">
-      <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <p class="text-base font-bold text-ink" data-testid="swing-headline">
-          <template v-if="swing.headline">{{ swing.headline.text }}</template>
-          <template v-else>Polls Open</template>
+    <div
+      v-else-if="swing"
+      class="swing-card rounded-xl border border-hairline bg-surface shadow-xs font-sans"
+    >
+      <div class="swing-head">
+        <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          <p class="swing-headline text-ink" data-testid="swing-headline">
+            <template v-if="swing.headline">{{ swing.headline.text }}</template>
+            <template v-else>Polls Open</template>
+          </p>
+          <span
+            class="rounded-full border border-hairline-strong px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-dim"
+            >Unofficial</span
+          >
+        </div>
+        <p class="mt-1 text-sm leading-snug text-graphite" data-testid="swing-explanation">
+          {{ explanation }}
         </p>
-        <span
-          class="rounded-full border border-hairline px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-dim"
-          >Unofficial</span
-        >
       </div>
-      <p class="text-sm text-graphite" data-testid="swing-explanation">{{ explanation }}</p>
 
-      <div class="py-0.5">
-        <div
-          class="swing-track"
-          :class="{ 'is-muted': !swing.quorate }"
-          role="img"
-          :aria-label="
-            swing.description ??
-            `Polls open at ${venueName}: ${swing.eligibleMembers} of ${swing.quorum} members needed.`
-          "
-        >
-          <div
+      <div class="swing-body">
+        <div class="swing-captions" aria-hidden="true">
+          <span
             v-for="segment in segments"
             :key="segment.band"
-            class="swing-segment"
-            :class="{ 'is-chairs': isChairs(segment.band) }"
-            :style="{ flexGrow: segment.width, '--band': segment.color }"
+            class="swing-caption"
+            :style="{ flexGrow: segment.width }"
           >
-            <svg
-              class="swing-glyph"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
+            <template v-if="isChairs(segment.band)"
+              ><span class="swing-seal">C</span>Chairs’ verdict</template
             >
-              <path :d="segment.glyph" />
-            </svg>
-            <span class="swing-label">{{ segment.label }}</span>
-            <span v-if="isChairs(segment.band)" class="swing-seal" title="The Chairs’ verdict"
-              >C</span
+          </span>
+        </div>
+        <div class="swing-lane" :class="{ 'has-bar': swing.position !== null }">
+          <div
+            class="swing-track"
+            role="img"
+            :aria-label="
+              swing.description ??
+              `Polls open at ${venueName}: ${swing.eligibleMembers} of ${swing.quorum} members needed.`
+            "
+          >
+            <div
+              v-for="segment in segments"
+              :key="segment.band"
+              class="swing-segment"
+              :class="{ 'is-chairs': isChairs(segment.band) }"
+              :style="{ flexGrow: segment.width, '--band': segment.color }"
             >
+              <svg
+                class="swing-glyph"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path :d="segment.glyph" />
+              </svg>
+              <span class="swing-label">{{ segment.label }}</span>
+            </div>
           </div>
           <div
             v-if="swing.position !== null"
-            class="swing-bar"
+            class="swing-pin"
             :style="{ left: `${shown}%` }"
             data-testid="swing-bar"
-          ></div>
+            aria-hidden="true"
+          >
+            <span class="swing-bar"></span>
+          </div>
+          <span
+            v-if="swing.position !== null"
+            class="swing-pin-label"
+            :style="{
+              left: `clamp(1.75rem, ${shown}cqw, calc(100cqw - 1.75rem))`,
+            }"
+            aria-hidden="true"
+            >People</span
+          >
+        </div>
+
+        <p class="swing-counts text-sm text-graphite" data-testid="swing-counts">
+          <template v-if="swing.quorate">
+            {{ swing.eligibleMembers }} members · {{ swing.eligibleLogs }}
+            {{ swing.eligibleLogs === 1 ? 'log' : 'logs' }}{{ costNote }}
+          </template>
+          <template v-else>
+            <span class="inline-flex items-center gap-1 align-middle" aria-hidden="true">
+              <span
+                v-for="(dot, index) in dots"
+                :key="index"
+                class="size-2 rounded-full border border-dim"
+                :class="dot.on ? 'bg-ink' : 'bg-transparent'"
+              ></span>
+            </span>
+            {{ swing.eligibleMembers }} of {{ swing.quorum }} members so far.
+            <a v-if="canLog" class="swing-link" :href="`/log/${encodeURIComponent(slug)}`"
+              >Log a visit</a
+            >
+          </template>
+        </p>
+
+        <div
+          v-if="swing.quorate && swing.eligibleLogs > 0"
+          class="swing-split"
+          role="img"
+          :aria-label="
+            verdictShares.map((share) => `${share.count} ${share.label.toLowerCase()}`).join(', ')
+          "
+        >
+          <span
+            v-for="share in verdictShares"
+            :key="share.vote"
+            :style="{ width: `${share.percent}%`, background: share.color }"
+          ></span>
         </div>
       </div>
 
-      <p class="text-sm text-graphite" data-testid="swing-counts">
-        <template v-if="swing.quorate">
-          {{ swing.eligibleMembers }} members · {{ swing.eligibleLogs }}
-          {{ swing.eligibleLogs === 1 ? 'log' : 'logs' }}{{ costNote }}
-        </template>
-        <template v-else>
-          <span class="inline-flex items-center gap-1 align-middle" aria-hidden="true">
-            <span
-              v-for="(dot, index) in dots"
-              :key="index"
-              class="size-2 rounded-full border border-dim"
-              :class="dot.on ? 'bg-ink' : 'bg-transparent'"
-            ></span>
-          </span>
-          {{ swing.eligibleMembers }} of {{ swing.quorum }} members so far.
-          <a v-if="canLog" class="underline" :href="`/log/${encodeURIComponent(slug)}`"
-            >Log a visit</a
-          >
-        </template>
-      </p>
-
-      <div
-        v-if="swing.quorate && swing.eligibleLogs > 0"
-        class="swing-split"
-        role="img"
-        :aria-label="
-          verdictShares.map((share) => `${share.count} ${share.label.toLowerCase()}`).join(', ')
-        "
-      >
-        <span
-          v-for="share in verdictShares"
-          :key="share.vote"
-          :style="{ width: `${share.percent}%`, background: share.color }"
-        ></span>
-      </div>
-
-      <details v-if="sparkline" class="text-sm text-graphite">
-        <summary class="cursor-pointer">Last 90 days</summary>
+      <details v-if="sparkline" class="swing-history text-sm text-graphite">
+        <summary>Last 90 days</summary>
         <svg
           class="mt-2 w-full h-10"
           :viewBox="`0 0 ${SPARK_W} ${SPARK_H}`"
@@ -250,30 +279,62 @@ const costNote = computed(() =>
         </svg>
       </details>
 
-      <p class="text-xs text-dim">
+      <p class="swing-foot text-xs text-dim">
         Unofficial: it takes no part in the Chairs’ verdict.
-        <a class="underline" href="/the-count">See The Count</a>.
+        <a class="swing-link" href="/the-count">See The Count</a>.
       </p>
     </div>
   </div>
 </template>
 
 <style scoped>
+.swing-head {
+  padding: 0.875rem 1rem 0.75rem;
+}
+.swing-headline {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+.swing-body {
+  padding: 0.25rem 1rem 0.875rem;
+}
+.swing-captions {
+  display: flex;
+  height: 1.25rem;
+}
+.swing-caption {
+  flex-basis: 0;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 0.3rem;
+  padding-bottom: 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--color-ink-soft);
+  white-space: nowrap;
+}
+.swing-lane {
+  position: relative;
+  container-type: inline-size;
+  margin-bottom: 0.25rem;
+}
+.swing-lane.has-bar {
+  margin-bottom: 1.6rem;
+}
 .swing-track {
   position: relative;
   display: flex;
-  height: 2.5rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--color-hairline);
-}
-.swing-segment:first-child {
-  border-radius: 0.5rem 0 0 0.5rem;
-}
-.swing-segment:last-child {
-  border-radius: 0 0.5rem 0.5rem 0;
-}
-.swing-track.is-muted {
-  opacity: 0.55;
+  height: 2.75rem;
+  border-radius: 0.625rem;
+  overflow: hidden;
+  border: 1px solid var(--color-hairline-strong);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
 }
 .swing-segment {
   flex-basis: 0;
@@ -285,58 +346,89 @@ const costNote = computed(() =>
   gap: 0.3rem;
   background: var(--band);
   color: var(--color-parchment-fixed);
+  box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.16);
 }
 .swing-segment + .swing-segment {
-  border-left: 1px solid var(--color-hairline);
+  border-left: 2px solid var(--color-surface);
 }
 .swing-segment.is-chairs {
-  box-shadow: inset 0 0 0 2px var(--color-ink);
+  box-shadow:
+    inset 0 0 0 2px var(--color-ink),
+    inset 0 0 0 3px var(--color-surface),
+    inset 0 -3px 0 3px rgb(0 0 0 / 0.16);
 }
 .swing-glyph {
-  width: 0.85rem;
-  height: 0.85rem;
+  width: 0.9rem;
+  height: 0.9rem;
   flex: none;
 }
 .swing-label {
-  font-size: 0.7rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0 0.25rem;
+  padding-right: 0.125rem;
 }
 .swing-seal {
-  position: absolute;
-  top: 2px;
-  left: 3px;
-  width: 1rem;
-  height: 1rem;
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
   border-radius: 9999px;
-  background: var(--color-surface);
-  color: var(--color-ink);
-  font-size: 0.6rem;
+  background: var(--color-ink);
+  color: var(--color-surface);
+  font-size: 0.5625rem;
   font-weight: 800;
-  line-height: 1rem;
+  line-height: 0.875rem;
   text-align: center;
+  letter-spacing: 0;
+}
+.swing-pin {
+  position: absolute;
+  top: 0;
+  bottom: -0.25rem;
+  width: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  transition: left 900ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .swing-bar {
-  position: absolute;
-  top: -2px;
-  bottom: -2px;
+  flex: none;
   width: 6px;
-  margin-left: -3px;
   border-radius: 3px;
   background: var(--color-ink);
   box-shadow:
     0 0 0 2px var(--color-surface),
     0 1px 4px rgb(0 0 0 / 0.4);
+}
+.swing-pin-label {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  transform: translateX(-50%);
+  padding: 0.125rem 0.45rem;
+  border-radius: 9999px;
+  background: var(--color-ink);
+  color: var(--color-surface);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
   transition: left 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.swing-counts {
+  margin-top: 0.125rem;
 }
 .swing-split {
   display: flex;
+  gap: 2px;
   height: 0.375rem;
+  margin-top: 0.625rem;
   border-radius: 9999px;
   overflow: hidden;
   background: var(--color-hairline);
@@ -345,12 +437,39 @@ const costNote = computed(() =>
   display: block;
   height: 100%;
 }
+.swing-history {
+  border-top: 1px solid var(--color-hairline);
+  padding: 0.5rem 1rem;
+}
+.swing-history summary {
+  cursor: pointer;
+  border-radius: 0.25rem;
+  font-weight: 600;
+}
+.swing-foot {
+  border-top: 1px solid var(--color-hairline);
+  padding: 0.625rem 1rem;
+}
+.swing-link {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.swing-link:hover {
+  color: var(--color-ink);
+}
+.swing-link:focus-visible,
+.swing-history summary:focus-visible {
+  outline: 2px solid var(--ledger-gold, var(--color-navy));
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
 .swing-spark-band {
   fill: var(--color-hairline);
   opacity: 0.6;
 }
 @media (prefers-reduced-motion: reduce) {
-  .swing-bar {
+  .swing-pin,
+  .swing-pin-label {
     transition: none;
   }
 }
