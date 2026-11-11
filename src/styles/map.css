@@ -2,6 +2,9 @@
 @import 'leaflet/dist/leaflet.css';
 
 .leaflet-container {
+  /* Leaflet's panes and controls use z-index up to 1000. Without their own stacking context they
+     paint over the sticky header (and the Chairs' sticky publish bar) when the map scrolls under it. */
+  isolation: isolate;
   font-family: 'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', sans-serif;
   background-color: var(--ledger-paper);
 }
