@@ -89,3 +89,26 @@ export async function signIn(page: Page) {
   await page.waitForURL((url) => !url.pathname.startsWith('/admin/login'));
   await page.waitForLoadState('networkidle');
 }
+
+export const memberEmail = process.env.SEED_MEMBER_EMAIL ?? 'member@lunch.test';
+const memberPassword = process.env.SEED_MEMBER_PASSWORD ?? 'local-member-password';
+
+/**
+ * Signs in as the seeded test member with its local-only password (#136), waiting out Better
+ * Auth's sign-in rate limit like `signIn`. Members have no password on any deployment.
+ */
+export async function signInAsMember(page: Page, baseURL: string) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const response = await page.request.post('/api/auth/sign-in/email', {
+      data: { email: memberEmail, password: memberPassword },
+      headers: { origin: baseURL },
+    });
+    if (response.status() !== 429) {
+      expect(response.status(), 'the seeded member signs in locally').toBe(200);
+      return;
+    }
+    const retryAfter = Number(response.headers()['x-retry-after']) || 10;
+    await page.waitForTimeout(retryAfter * 1000 + 500);
+  }
+  throw new Error('The seeded member could not sign in: still rate-limited.');
+}

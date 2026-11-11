@@ -1,5 +1,5 @@
 import type { Page, Response } from '@playwright/test';
-import { expect, test, visit } from './fixtures';
+import { expect, signInAsMember, test, visit } from './fixtures';
 
 /**
  * Members and the public pages (#136, PR a; epic #135 "Performance budget"), against the built site.
@@ -8,9 +8,6 @@ import { expect, test, visit } from './fixtures';
  * - A signed-out visitor to the prerendered pages makes no member or auth request, and the pages
  *   load no auth or passkey code, within a fixed JavaScript budget.
  */
-
-const memberEmail = process.env.SEED_MEMBER_EMAIL ?? 'member@lunch.test';
-const memberPassword = process.env.SEED_MEMBER_PASSWORD ?? 'local-member-password';
 
 /**
  * JavaScript a signed-out visit to a venue page may download, in bytes (uncompressed). Set from
@@ -36,11 +33,9 @@ test.describe('the test member', () => {
   );
 
   test('is bounced from the Chairs’ Area and its API', async ({ page, baseURL, monitor }) => {
-    const signIn = await page.request.post('/api/auth/sign-in/email', {
-      data: { email: memberEmail, password: memberPassword },
-      headers: { origin: baseURL! },
-    });
-    expect(signIn.status(), 'the seeded member signs in locally').toBe(200);
+    // Its sign-in may wait out Better Auth's rate limit after the rest of the suite's.
+    test.slow();
+    await signInAsMember(page, baseURL!);
 
     // The readable signed-in hint follows the session (epic #135), for page scripts to check.
     const hint = (await page.context().cookies()).find((cookie) => cookie.name === 'signed_in');
@@ -141,10 +136,22 @@ test.describe('member sign-in with the members flag off (#136)', () => {
     baseURL,
   }) => {
     const headers = { origin: baseURL! };
-    for (const path of ['/members', '/members/me']) {
+    for (const path of ['/members', '/members/me', '/members/me/data', '/members/sign-in']) {
       expect((await page.request.get(path)).status(), path).toBe(404);
     }
-    expect((await page.request.get('/api/member/sign-in')).status()).toBe(404);
+    for (const path of ['/api/member/sign-in', '/api/member/session', '/api/member/export']) {
+      expect((await page.request.get(path)).status(), path).toBe(404);
+    }
+    expect(
+      (
+        await page.request.patch('/api/member/profile', { data: { showPublicly: true }, headers })
+      ).status()
+    ).toBe(404);
+    expect(
+      (
+        await page.request.delete('/api/member/account', { data: { confirm: 'delete' }, headers })
+      ).status()
+    ).toBe(404);
     for (const path of [
       '/api/member/sign-in',
       '/api/auth/sign-in/magic-link',
@@ -159,5 +166,10 @@ test.describe('member sign-in with the members flag off (#136)', () => {
       expect(response.status(), path).toBe(404);
     }
     expect((await page.request.get('/api/auth/magic-link/verify?token=x')).status()).toBe(404);
+  });
+
+  test('the header has no member sign-in', async ({ page }) => {
+    await visit(page, '/');
+    await expect(page.locator('[data-member-header]')).toHaveCount(0);
   });
 });

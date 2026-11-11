@@ -1,6 +1,11 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { isMemberRoute, memberAuthPathAccess } from './auth-paths';
+import {
+  isMemberAccountPage,
+  isMemberRoute,
+  memberAuthPathAccess,
+  safeMemberRedirect,
+} from './auth-paths';
 
 describe('memberAuthPathAccess', () => {
   it('never opens Better Auth’s own request endpoints: requests go through /api/member/sign-in', () => {
@@ -51,6 +56,37 @@ describe('isMemberRoute', () => {
     }
     for (const path of ['/membership', '/api/members-list', '/admin/members', '/']) {
       assert.equal(isMemberRoute(path), false, path);
+    }
+  });
+});
+
+describe('isMemberAccountPage', () => {
+  it('covers the signed-in member’s own pages only', () => {
+    for (const path of ['/members/me', '/members/me/data']) {
+      assert.equal(isMemberAccountPage(path), true, path);
+    }
+    for (const path of ['/members', '/members/sign-in', '/members/meal', '/api/member/session']) {
+      assert.equal(isMemberAccountPage(path), false, path);
+    }
+  });
+});
+
+describe('safeMemberRedirect', () => {
+  it('keeps the member on their own pages', () => {
+    assert.equal(safeMemberRedirect('/members/me/data'), '/members/me/data');
+    assert.equal(safeMemberRedirect('/members/me?welcome=1'), '/members/me?welcome=1');
+    for (const next of [
+      null,
+      '',
+      '/',
+      '/admin',
+      'https://evil.example/members/me',
+      '//evil.example/members/me',
+      '/members/me\\..\\admin',
+      '/members/meal',
+      '/members/me\n',
+    ]) {
+      assert.equal(safeMemberRedirect(next), '/members/me', String(next));
     }
   });
 });

@@ -91,6 +91,12 @@ jobs:
         if: steps.playwright-cache.outputs.cache-hit == 'true'
       # Serves .vercel/output and drives it in a browser: fails on any CSP violation or page error.
       - run: pnpm check:built
+      # The same build served with the members flag on (#136): the member pages render on demand,
+      # so they follow the server's flag without a second build.
+      - name: Member accounts with the flag on
+        run: pnpm check:built e2e/member-accounts.spec.ts
+        env:
+          MEMBERS_FLAG: 'on'
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

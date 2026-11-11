@@ -1,0 +1,45 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import MemberPasskeys from '@/components/islands/MemberPasskeys.vue';
+import MemberProfile from '@/components/islands/MemberProfile.vue';
+import { db } from '@/lib/db';
+import { getPasskeyEnvironment } from '@/lib/env';
+import { memberAccounts } from '@/lib/members/profiles';
+import { hasPasskeyGrant } from '@/lib/passkeys';
+
+export const prerender = false;
+
+// The middleware has checked the flag and that a member (not a Chair) is signed in (#136).
+const member = Astro.locals.user!;
+const profile = await memberAccounts.getProfile(db, member.id);
+if (!profile) return Astro.redirect('/members/sign-in');
+const canAddPasskeyNow = await hasPasskeyGrant(db, member.id);
+const { host: passkeyHost } = getPasskeyEnvironment();
+const welcome = Astro.url.searchParams.has('welcome');
+---
+
+<Layout
+  title="Your account — MCR Lunch Club"
+  description="Your MCR Lunch Club member account."
+  noindex
+>
+  <section class="mx-auto w-full max-w-2xl space-y-6 px-4 py-10">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Members</p>
+      <h1 class="mt-2 text-3xl font-bold text-ink">
+        {profile.displayName && !profile.nameHidden ? profile.displayName : 'Your account'}
+      </h1>
+      <p class="mt-2 text-sm text-soot">Signed in as {member.email}</p>
+    </div>
+    {welcome && (
+      <p
+        role="status"
+        class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700"
+      >
+        Welcome to the club. Choose a display name, and add a passkey to sign in faster next time.
+      </p>
+    )}
+    <MemberProfile client:load profile={profile} />
+    <MemberPasskeys client:load passkeyHost={passkeyHost} canAddNow={canAddPasskeyNow} />
+  </section>
+</Layout>

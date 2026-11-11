@@ -51,7 +51,15 @@ export const signInDelivery = {
     try {
       if (await isChairEmail(db, email)) return;
       const parts = await collectSignInEmail(async () => {
-        await auth.api.signInMagicLink({ headers, body: { email, callbackURL: '/' } });
+        await auth.api.signInMagicLink({
+          headers,
+          body: {
+            email,
+            callbackURL: '/members/me',
+            newUserCallbackURL: '/members/me?welcome=1',
+            errorCallbackURL: '/members/sign-in',
+          },
+        });
         await auth.api.sendVerificationOTP({ body: { email, type: 'sign-in' } });
       });
       if (!parts.url || !parts.otp) throw new Error('The sign-in link or code was not made.');

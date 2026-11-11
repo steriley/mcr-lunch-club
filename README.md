@@ -192,7 +192,7 @@ Environment Variables**. Never commit real values.
 | `BETTER_AUTH_URL`                                                 | Main site origin: `http://localhost:4321` locally, `https://mcrlunchclub.com` on Vercel Production. Not needed for Preview, which uses its own Vercel URL. See _Signing in on more than one domain_ below.                                                                                                                                                                                                                                                                                                                      |
 | `BETTER_AUTH_ALLOWED_HOSTS`                                       | Optional, comma-separated: extra hosts the Chairs' Area works on, e.g. the production `mcr-lunch-club.vercel.app` alias.                                                                                                                                                                                                                                                                                                                                                                                                        |
 | `PASSKEY_ORIGIN` / `PASSKEY_RP_ID`                                | Optional. Where Chairs' passkeys work. Default to `BETTER_AUTH_URL` and its host name, which is right when that is the custom domain. Passkeys are bound to this one domain, so Previews and `vercel.app` addresses use passwords. See "Passkeys for Chairs".                                                                                                                                                                                                                                                                   |
-| `MEMBERS_FLAG`                                                    | Local and CI only: `on` or `off` forces the `members` flag (Vercel Flags) outside production. Deployments always read Vercel Flags. Off when unset.                                                                                                                                                                                                                                                                                                                                                                             |
+| `MEMBERS_FLAG`                                                    | Local and CI only: `on` or `off` forces the `members` flag (Vercel Flags) anywhere but Vercel, local builds included. Deployments always read Vercel Flags. Off when unset.                                                                                                                                                                                                                                                                                                                                                     |
 | `RESEND_API_KEY` / `RESEND_EMAIL_DOMAIN`                          | Set by the Resend integration. Sign-in email is sent only from the Production deployment; everywhere else (Previews included) the message is logged instead.                                                                                                                                                                                                                                                                                                                                                                    |
 | `MAIL_FROM`                                                       | Optional sender, e.g. `MCR Lunch Club <noreply@mail.example.com>`. Defaults to `noreply@` the `RESEND_EMAIL_DOMAIN`.                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `MEMBER_SIGNUP_ENABLED`                                           | Kill switch: `false` stops member sign-in emails without a deploy (the request answers 503). On by default.                                                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -458,8 +458,40 @@ fails closed and is checked on the server; Production turns it on only after Tur
 - A readable `signed_in=1` cookie follows the session, so public pages can tell whether to ask the
   server who is signed in (epic #135, "Performance budget").
 
-Locally: `MEMBERS_FLAG=on pnpm dev`, request a sign-in at `/api/member/sign-in`, and copy the link
-or code from the terminal.
+Locally: `MEMBERS_FLAG=on pnpm dev`, sign in at `/members/sign-in`, and copy the link or code
+from the terminal.
+
+### Member accounts and the Members list (#136)
+
+- **Pages** (on demand, behind the flag): `/members/sign-in` (email, then link or code; or a
+  passkey), `/members/me` (display name, privacy, passkeys, sign out) and `/members/me/data`
+  (download a JSON copy, delete the account). The middleware sends a signed-out visitor from
+  `/members/me/**` to sign in, and a Chair to `/admin`. `/api/member/**` has the admin API's
+  origin check on writes and `no-store`; its routes use `memberRoute` (`src/lib/member-api.ts`).
+- **Profiles** are `member_profiles`, one row per member, created on first visit. Display names
+  are 2–30 characters, unique ignoring case (`src/lib/members/display-name.ts`) and checked on the
+  server by a profanity filter (`obscenity`, `src/lib/members/display-name-filter.ts`, never in the
+  browser). Names are private until the member turns on "Show my name publicly".
+- **Moderation** is the Chairs' Members list (`/admin/members`): when each member joined, their
+  display name and its state, no email addresses. A Chair can hide a name (it stays taken, by
+  everyone: `member_reserved_names`), let a member whose second name was hidden choose again, or
+  ban the account (Better Auth's ban). Every action is logged in `member_events`. A member whose
+  name is hidden may choose one new name; if that is hidden too, only a Chair can unlock it.
+- **Deleting an account** needs a sign-in in the last ten minutes (`freshAge` is `0`, so this is
+  checked explicitly). It deletes the account and every member-owned row by cascade, including
+  `member_events`, plus the member's sign-in rate-limit hashes and any unused link, code or passkey
+  grant. Nothing is kept: a banned member who deletes their account can join again. Tables added
+  later for member-owned data must cascade the same way (the rule is above `memberProfiles` in
+  `src/db/schema.ts`).
+- **The header island** (`src/components/MemberHeader.astro`) is rendered only while the flag is
+  on. Prerendered pages read the flag when they are built, so turning the flag on in Vercel shows
+  "Sign in" on them from the next deployment. The island asks `/api/member/session` who is signed
+  in only when the `signed_in` hint cookie is set, and that route clears a hint that outlived its
+  session. A Chair sees a link to the Chairs' Area.
+- **Testing locally:** the seeded test member (`member@lunch.test`) has a display name. Build and
+  serve with `MEMBERS_FLAG=on` to see the header on prerendered pages; `MEMBERS_FLAG=on pnpm
+check:built e2e/member-accounts.spec.ts` runs the member pages in a browser (CI does this after
+  the main `check:built`, against the same build).
 
 ### Passkeys for Chairs
 

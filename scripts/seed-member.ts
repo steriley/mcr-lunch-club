@@ -9,11 +9,15 @@
  * NODE_ENV is production (src/lib/auth-config.ts), so this account only works locally and in CI,
  * and the script itself refuses to run in production without --force.
  *
- * The member's display name and profile row arrive with member_profiles in a later PR of #136.
+ * The member also gets a profile row with SEED_MEMBER_NAME as their display name (default "Test
+ * Member"), so the profile page and the Chairs' Members list have something to show. A name the
+ * member already has is left alone.
  */
 import { closeDatabase, db } from '@/lib/db-script';
 import { createAuth } from '@/lib/auth-config';
 import { getSeedMemberEnvironment, isProduction } from '@/lib/env';
+import { displayNameSchema } from '@/lib/members/display-name';
+import { memberAccounts } from '@/lib/members/profiles';
 import { hasAdminRole } from '@/lib/roles';
 
 const force = process.argv.slice(2).includes('--force');
@@ -45,8 +49,10 @@ if (existing && hasAdminRole((existing.user as { role?: string | null }).role)) 
   process.exit(1);
 }
 
+let memberId: string;
 if (existing) {
   const userId = existing.user.id;
+  memberId = userId;
   await context.internalAdapter.updateUser(userId, { role: 'user', emailVerified: true });
   const hashedPassword = await context.password.hash(password);
   if (await context.internalAdapter.findCredentialAccount(userId)) {
@@ -65,6 +71,7 @@ if (existing) {
     { email, name, role: 'user', emailVerified: true },
     { method: 'admin' }
   );
+  memberId = createdUser.id;
   await context.internalAdapter.linkAccount({
     userId: createdUser.id,
     providerId: 'credential',
@@ -72,6 +79,14 @@ if (existing) {
     password: await context.password.hash(password),
   });
   console.log(`Created test member: ${email}`);
+}
+
+const profile = await memberAccounts.getProfile(db, memberId);
+const displayName = displayNameSchema.safeParse(name);
+if (profile && !profile.displayName && displayName.success) {
+  const saved = await memberAccounts.updateProfile(db, memberId, { displayName: displayName.data });
+  if (saved.ok) console.log(`Test member display name: ${displayName.data}`);
+  else console.warn(`Test member left without a display name (${saved.error}).`);
 }
 
 await closeDatabase();
