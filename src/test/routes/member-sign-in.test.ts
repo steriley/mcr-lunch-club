@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { GET, POST, signInDelivery } from '@/pages/api/member/sign-in';
 import { mailTransport, type MailMessage } from '@/lib/mail/send';
 import { issueFormToken, recordSignInEmailPart } from '@/lib/members/sign-in';
+import { turnstileTransport } from '@/lib/members/turnstile';
 import { adminRequest, restoreStubs, run, stubAuthApi, stubDb } from '../route-helpers';
 
 /** /api/member/sign-in (#136, PR b): one email with a magic link and a code. */
@@ -13,11 +14,23 @@ const saved = {
   MEMBER_SIGNUP_ENABLED: process.env.MEMBER_SIGNUP_ENABLED,
 };
 let mailed: MailMessage[];
+let siteverify: ReturnType<typeof stubTurnstile>;
+/** What Cloudflare's siteverify answers: success, failure, or (null) no answer at all. */
+let verdict: boolean | null;
+
+function stubTurnstile() {
+  return mock.method(turnstileTransport, 'post', async () => {
+    if (verdict === null) throw new Error('network down');
+    return Response.json({ success: verdict });
+  });
+}
 
 beforeEach(() => {
   process.env.MEMBERS_FLAG = 'on';
   delete process.env.MEMBER_SIGNUP_ENABLED;
   mailed = [];
+  verdict = true;
+  siteverify = stubTurnstile();
   mock.method(mailTransport, 'log', (message: MailMessage) => mailed.push(message));
 });
 
@@ -35,7 +48,12 @@ const request = (body: unknown, origin?: string | null) => ({
   clientAddress: '203.0.113.9',
 });
 const valid = (overrides: Record<string, unknown> = {}) =>
-  request({ email: 'Sam@Example.com', formToken: settledToken(), ...overrides });
+  request({
+    email: 'Sam@Example.com',
+    formToken: settledToken(),
+    turnstileToken: 'XXXX.DUMMY.TOKEN.XXXX',
+    ...overrides,
+  });
 
 const NO_COUNTS = { site: 1, emailShort: 1, emailDay: 1, senderHour: 1 };
 
@@ -90,6 +108,50 @@ describe('POST /api/member/sign-in', () => {
       assert.equal((await run(POST, valid({ formToken }))).status, 400);
     }
     assert.equal((await run(POST, request({ email: 'sam@example.com' }))).status, 400);
+  });
+
+  it('asks Cloudflare to check the Turnstile token, with the sender’s address', async () => {
+    stubReserve();
+    stubDelivery();
+    await run(POST, valid());
+    const body = siteverify.mock.calls[0].arguments[0] as URLSearchParams;
+    assert.equal(body.get('response'), 'XXXX.DUMMY.TOKEN.XXXX');
+    assert.equal(body.get('remoteip'), '203.0.113.9');
+    assert.ok(body.get('secret'));
+  });
+
+  it('refuses a failed or missing Turnstile check before any limit is used or email made', async () => {
+    const deliver = stubDelivery();
+    const inserts = stubDb('insert', []);
+
+    verdict = false;
+    const failed = await run(POST, valid());
+    assert.equal(failed.status, 400);
+    assert.match((await failed.json()).error, /security check/);
+
+    const missing = await run(POST, valid({ turnstileToken: undefined }));
+    assert.equal(missing.status, 400);
+    assert.equal(siteverify.mock.callCount(), 1, 'a missing token never reaches Cloudflare');
+
+    assert.equal(deliver.mock.callCount(), 0);
+    assert.equal(inserts.length, 0);
+  });
+
+  it('fails closed (503) when Cloudflare can’t be reached', async () => {
+    const deliver = stubDelivery();
+    const inserts = stubDb('insert', []);
+    verdict = null;
+    assert.equal((await run(POST, valid())).status, 503);
+    assert.equal(deliver.mock.callCount(), 0);
+    assert.equal(inserts.length, 0);
+  });
+
+  it('answers a bot caught by the honeypot or time trap without asking Cloudflare', async () => {
+    stubDelivery();
+    stubDb('insert', []);
+    await run(POST, valid({ website: 'https://spam.example' }));
+    await run(POST, valid({ formToken: issueFormToken() }));
+    assert.equal(siteverify.mock.callCount(), 0);
   });
 
   it('rejects bad emails and foreign origins', async () => {

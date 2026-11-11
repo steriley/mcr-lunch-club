@@ -22,20 +22,32 @@ test.skip(
 test('a signed-out visitor is sent to sign in, and the form asks for an email', async ({
   page,
 }) => {
-  await visit(page, '/members/me/data');
+  await visit(page, '/members/me/data', 200, { settle: false });
   const url = new URL(page.url());
   expect(url.pathname).toBe('/members/sign-in');
   expect(url.searchParams.get('next')).toBe('/members/me/data');
 
   await expect(page.getByRole('heading', { name: 'Confirm it’s you' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Sign in or join' })).toBeVisible();
-  await expect(page.getByTestId('member-send-email')).toBeEnabled();
+  await expect(page.getByTestId('member-send-email')).toBeVisible();
   // The nav on this on-demand page offers sign-in, at the far right of the pill.
   const signInLink = page.locator(mainNav('[data-member-signed-out]'));
   await expect(signInLink).toBeVisible();
   // The last item (Astro renders the component's script after it).
   const lastInNav = page.locator('.site-header-inner > .site-nav > :not(script)').last();
   await expect(lastInNav).toHaveAttribute('data-member-header', 'main');
+});
+
+test('the sign-in form gets a Turnstile token, and the CSP lets the widget run (#136, PR d)', async ({
+  page,
+}) => {
+  await visit(page, '/members/sign-in', 200, { settle: false });
+  // The send button waits for a token. Cloudflare's test site key passes on its own (and shows
+  // no frame), so an enabled button means its script, frame and connections were all allowed;
+  // the monitor fixture fails the test on any Content-Security-Policy violation.
+  await expect(page.getByTestId('member-send-email')).toBeDisabled();
+  await expect(page.getByTestId('member-send-email')).toBeEnabled({ timeout: 30_000 });
+  await expect(page.locator('input[name="cf-turnstile-response"]')).toHaveValue(/\S+/);
 });
 
 test('the member names themselves, chooses privacy and downloads their data', async ({
@@ -116,7 +128,7 @@ test('on a phone, sign-in is the last item of the burger menu, not in the header
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await visit(page, '/members/sign-in');
+  await visit(page, '/members/sign-in', 200, { settle: false });
   // Nothing member-related shows in the bar itself.
   await expect(page.locator(mainNav('[data-member-signed-out]'))).toBeHidden();
 

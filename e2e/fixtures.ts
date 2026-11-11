@@ -57,10 +57,17 @@ export const test = base.extend<{ monitor: Monitor }>({
 export { expect };
 
 /** Opens a page and lets its islands hydrate, so anything they get blocked from doing is reported. */
-export async function visit(page: Page, path: string, expectedStatus = 200): Promise<void> {
+export async function visit(
+  page: Page,
+  path: string,
+  expectedStatus = 200,
+  { settle = true }: { settle?: boolean } = {}
+): Promise<void> {
   const response = await page.goto(path);
   expect(response?.status(), `${path} status`).toBe(expectedStatus);
-  await page.waitForLoadState('networkidle');
+  // A page with Cloudflare's Turnstile widget never goes network-idle (it keeps checking in), so
+  // its tests pass `settle: false` and wait for what they need instead.
+  if (settle) await page.waitForLoadState('networkidle');
 }
 
 export const chairEmail = process.env.SMOKE_CHAIR_EMAIL ?? process.env.SEED_CHAIR_EMAIL;

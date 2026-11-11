@@ -194,6 +194,7 @@ Environment Variables**. Never commit real values.
 | `PASSKEY_ORIGIN` / `PASSKEY_RP_ID`                                | Optional. Where Chairs' passkeys work. Default to `BETTER_AUTH_URL` and its host name, which is right when that is the custom domain. Passkeys are bound to this one domain, so Previews and `vercel.app` addresses use passwords. See "Passkeys for Chairs".                                                                                                                                                                                                                                                                   |
 | `MEMBERS_FLAG`                                                    | Local and CI only: `on` or `off` forces the `members` flag (Vercel Flags) anywhere but Vercel, local builds included. Deployments always read Vercel Flags. Off when unset.                                                                                                                                                                                                                                                                                                                                                     |
 | `RESEND_API_KEY` / `RESEND_EMAIL_DOMAIN`                          | Set by the Resend integration. Sign-in email is sent only from the Production deployment; everywhere else (Previews included) the message is logged instead.                                                                                                                                                                                                                                                                                                                                                                    |
+| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY`                     | Cloudflare Turnstile keys for the member sign-in form. Read only on the Production deployment (secret key: sensitive, server-only); Previews and local use Cloudflare's test keys. With either missing in Production the form is closed.                                                                                                                                                                                                                                                                                        |
 | `MAIL_FROM`                                                       | Optional sender, e.g. `MCR Lunch Club <noreply@mail.example.com>`. Defaults to `noreply@` the `RESEND_EMAIL_DOMAIN`.                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `MEMBER_SIGNUP_ENABLED`                                           | Kill switch: `false` stops member sign-in emails without a deploy (the request answers 503). On by default.                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `MEMBER_SIGNIN_DAILY_CAP`                                         | Optional site-wide limit on sign-in emails per day. Default 80, below Resend's free 100 a day.                                                                                                                                                                                                                                                                                                                                                                                                                                  |
@@ -435,13 +436,21 @@ not sign you in on the `vercel.app` address; sign in on each separately.
 
 Members sign in by email: one request sends one email with a magic link and a 6-digit code (for
 reading the email on another device). Everything is behind the `members` Vercel Flags flag, which
-fails closed and is checked on the server; Production turns it on only after Turnstile lands.
+fails closed and is checked on the server. Turnstile (below) is in place, so Production can turn it on.
 
 - **Requests** go only through `POST /api/member/sign-in` (`GET` hands the form its time-trap
   token): the flag, the `MEMBER_SIGNUP_ENABLED` kill switch, a trusted origin, the honeypot and
-  time trap, then rate limits per email, per IP and site-wide (`src/lib/members/sign-in.ts`, table
+  time trap, the Turnstile check, then rate limits per email, per IP and site-wide (`src/lib/members/sign-in.ts`, table
   `member_sign_in_requests`, hashes only, two days' history). The answer never says whether an
   email has an account.
+- **Turnstile** guards the request form. The form loads Cloudflare's widget (only on
+  `/members/sign-in`) and sends its single-use token; the route checks it with `siteverify`
+  (`src/lib/members/turnstile.ts`) after the free checks and before any rate limit is used. An
+  unreachable Cloudflare or a missing secret refuses the request (503), never lets it through.
+  Production uses `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY`; everywhere else (local, CI,
+  Previews) uses Cloudflare's always-pass test keys, so no real challenge is needed. The widget's
+  hostname list in the Cloudflare dashboard must include the production host.
+  `challenges.cloudflare.com` is in `script-src`, `frame-src` and `connect-src` (`security.csp`).
 - **Better Auth's own request endpoints are closed to the web**, and so is every email-code
   endpoint the club doesn't use, password reset by email included (`src/lib/members/auth-paths.ts`).
   Verifying a link (`/api/auth/magic-link/verify`) or code (`/api/auth/sign-in/email-otp`) is

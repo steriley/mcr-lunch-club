@@ -28,7 +28,10 @@ export default defineConfig({
         // CARTO map tiles and venue photos on Vercel Blob.
         "img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://*.public.blob.vercel-storage.com",
         "font-src 'self'",
-        "connect-src 'self'",
+        // Cloudflare Turnstile on the member sign-in form (#136, PR d): its script, its challenge
+        // frame, and the requests the widget makes.
+        "connect-src 'self' https://challenges.cloudflare.com",
+        'frame-src https://challenges.cloudflare.com',
         "object-src 'none'",
         // The service worker (/sw.js) and the web app manifest; worker-src would otherwise fall back
         // to the hash-based script-src, which blocks registration.
@@ -38,7 +41,10 @@ export default defineConfig({
         "form-action 'self'",
       ],
       // The theme script is inline (ThemeScript.astro); see src/lib/theme-script.ts.
-      scriptDirective: { hashes: [THEME_SCRIPT_HASH] },
+      scriptDirective: {
+        hashes: [THEME_SCRIPT_HASH],
+        resources: ["'self'", 'https://challenges.cloudflare.com'],
+      },
       styleDirective: {
         resources: [
           // Scoped to elements: a bare 'self' next to the attribute entry makes Astro warn that

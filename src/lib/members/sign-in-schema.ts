@@ -12,6 +12,8 @@ export const signInRequestSchema = z.object({
   formToken: z.string().max(200),
   /** Where the emailed link lands; checked on the server with safeMemberRedirect. */
   next: z.string().max(200).optional(),
+  /** The Turnstile token from the widget; the route checks it with Cloudflare. */
+  turnstileToken: z.string().max(2048).optional(),
   /** Honeypot: hidden from people, so anything in it means a bot. */
   website: z.string().max(200).optional(),
 });

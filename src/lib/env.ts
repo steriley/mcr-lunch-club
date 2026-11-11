@@ -228,6 +228,32 @@ export function getMemberSignInDailyCap(): number {
   return Number.isFinite(configured) && configured > 0 ? configured : 80;
 }
 
+/** Cloudflare's published Turnstile test keys: the widget always passes and siteverify accepts it. */
+export const TURNSTILE_TEST_SITE_KEY = '1x00000000000000000000AA';
+const TURNSTILE_TEST_SECRET_KEY = '1x0000000000000000000000000000000AA';
+
+/**
+ * Turnstile on the member sign-in form (#136, PR d). Only the Production deployment
+ * (VERCEL_ENV=production) uses the configured TURNSTILE_SITE_KEY / TURNSTILE_SECRET_KEY, and it
+ * fails closed: a missing key means no widget and every request refused. Everywhere else (local,
+ * CI, Previews, whose `*.vercel.app` hosts the widget's hostname list won't normally allow) uses
+ * Cloudflare's test keys, so no real challenge is needed and no real key is exposed.
+ */
+export function getTurnstileEnvironment(): {
+  mode: 'live' | 'test';
+  siteKey: string | null;
+  secretKey: string | null;
+} {
+  if (env.VERCEL_ENV === 'production') {
+    return {
+      mode: 'live',
+      siteKey: optional('TURNSTILE_SITE_KEY') ?? null,
+      secretKey: optional('TURNSTILE_SECRET_KEY') ?? null,
+    };
+  }
+  return { mode: 'test', siteKey: TURNSTILE_TEST_SITE_KEY, secretKey: TURNSTILE_TEST_SECRET_KEY };
+}
+
 /** The seeded test member (#136): local development and CI only, never a real account. */
 export function getSeedMemberEnvironment() {
   return {
