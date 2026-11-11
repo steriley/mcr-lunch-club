@@ -43,10 +43,7 @@ function input(venueId: string, overrides: Record<string, unknown> = {}) {
     venueId,
     visitDate: '2026-11-11',
     dish: 'Steak pie',
-    pricePaidPence: 850,
-    qualityScore: 4,
-    valueScore: 4,
-    wouldReturn: true,
+    cost: '££',
     verdictVote: 'approve',
     pullQuote: null,
     ...overrides,
@@ -96,10 +93,8 @@ describe('member inspections (database)', { skip: skipIntegration }, () => {
         memberId: 'sam',
         visitDate: '2026-11-11',
         dish: 'Pie',
-        qualityScore: 3,
-        valueScore: 3,
-        wouldReturn: true,
-        verdictVote: 'consider' as const,
+        cost: '££' as const,
+        verdictVote: 'if_we_must' as const,
       };
       await db.insert(memberInspections).values({ ...row, venueId: venue });
       // Across all venues, not per venue.
@@ -278,7 +273,7 @@ describe('member inspections (database)', { skip: skipIntegration }, () => {
       await createMember('sam');
       await createMember('alex');
       const saved = await log('sam', venue, NOON);
-      const change = { ...input(venue), dish: 'Fish and chips', qualityScore: 2 };
+      const change = { ...input(venue), dish: 'Fish and chips', verdictVote: 'reject' as const };
 
       const edited = await api.update(
         db,
@@ -360,25 +355,22 @@ describe('member inspections (database)', { skip: skipIntegration }, () => {
       assert.ok((await statuses(venue)).every((row) => row.status === 'visible'));
     });
 
-    it('holds a week whose scores jump more than 1.5 points against the 90 days before', async () => {
+    it('holds a week whose verdicts swing more than 1.5 points against the 90 days before', async () => {
       const db = await testDb();
       const monthAgo = new Date(NOON.getTime() - 30 * DAY);
       const members = ['a', 'b', 'c'];
       for (const id of members) {
         await createMember(id);
-        await log(id, venue, monthAgo, { qualityScore: 2, valueScore: 2 });
-        await log(id, venue, new Date(monthAgo.getTime() + DAY), {
-          qualityScore: 2,
-          valueScore: 2,
-        });
+        await log(id, venue, monthAgo, { verdictVote: 'reject' });
+        await log(id, venue, new Date(monthAgo.getTime() + DAY), { verdictVote: 'reject' });
       }
-      await log('a', venue, new Date(NOON.getTime() - 2 * DAY), { qualityScore: 5, valueScore: 5 });
-      await log('b', venue, new Date(NOON.getTime() - DAY), { qualityScore: 5, valueScore: 5 });
+      await log('a', venue, new Date(NOON.getTime() - 2 * DAY), { verdictVote: 'approve' });
+      await log('b', venue, new Date(NOON.getTime() - DAY), { verdictVote: 'approve' });
       assert.ok(
         (await statuses(venue)).every((row) => row.status === 'visible'),
         'two is not enough'
       );
-      const third = await log('c', venue, NOON, { qualityScore: 5, valueScore: 4 });
+      const third = await log('c', venue, NOON, { verdictVote: 'approve' });
       assert.equal(third.status, 'held');
 
       const held = (await statuses(venue)).filter((row) => row.status === 'held');
@@ -392,13 +384,7 @@ describe('member inspections (database)', { skip: skipIntegration }, () => {
         ok: false,
         error: 'not_held',
       });
-      await api.update(
-        db,
-        'c',
-        third.id,
-        { ...input(venue), qualityScore: 5, valueScore: 5 },
-        NOON
-      );
+      await api.update(db, 'c', third.id, { ...input(venue), verdictVote: 'approve' }, NOON);
       const after = await db
         .select({ status: memberInspections.status, reviewedBy: memberInspections.reviewedBy })
         .from(memberInspections)
@@ -489,8 +475,8 @@ describe('member inspections (database)', { skip: skipIntegration }, () => {
         },
       ]);
       await log('shy', venue, NOON, { pullQuote: 'Good pie' });
-      await log('proud', venue, new Date(NOON.getTime() - DAY), { qualityScore: 2, valueScore: 2 });
-      await log('proud', venue, NOON, { qualityScore: 4, valueScore: 4 });
+      await log('proud', venue, new Date(NOON.getTime() - DAY), { verdictVote: 'reject' });
+      await log('proud', venue, NOON, { verdictVote: 'approve' });
       const removed = await log('proud', venue, new Date(NOON.getTime() - 2 * DAY));
       await api.remove(db, { id: removed.id, actorId: 'chair', reason: 'Duplicate' });
 
@@ -514,17 +500,14 @@ describe('member inspections (database)', { skip: skipIntegration }, () => {
 
       // Nothing that identifies or locates the member.
       assert.deepEqual(Object.keys(feed.recent[0]).sort(), [
+        'cost',
         'dish',
         'displayName',
-        'pricePaidPence',
         'provisional',
         'pullQuote',
-        'qualityScore',
-        'valueScore',
         'verdictVote',
         'verifiedOnSite',
         'visitDate',
-        'wouldReturn',
       ]);
 
       // A Chair hiding the name hides it here too.

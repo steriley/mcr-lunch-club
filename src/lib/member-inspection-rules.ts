@@ -1,7 +1,11 @@
 import '@/lib/zod-browser';
 import { z } from 'zod';
 import { haversineMetres, type LatLng } from '@/lib/map/ranking';
-import { MEMBER_VERDICT_VOTES } from '@/lib/member-inspection-display';
+import {
+  MEMBER_COSTS,
+  MEMBER_VERDICT_VOTES,
+  type MemberVerdictVote,
+} from '@/lib/member-inspection-display';
 import { CLOSED_BUT_LISTED_TIER, isMappable, type VisibilityFields } from '@/lib/visibility';
 
 /**
@@ -14,7 +18,6 @@ import { CLOSED_BUT_LISTED_TIER, isMappable, type VisibilityFields } from '@/lib
 
 export const DISH_MAX = 120;
 export const PULL_QUOTE_MAX = 140;
-const PRICE_MAX_PENCE = 10_000;
 /** How far back a lunch can be logged: today and the six days before it (Europe/London). */
 const LOG_DAYS_BACK = 6;
 /** How long after saving a member may edit or delete a log. */
@@ -47,21 +50,6 @@ const pullQuoteSchema = z.preprocess(
     .nullable()
 );
 
-const score = (label: string) =>
-  z
-    .number({ error: `Give ${label} from 1 to 5 stars.` })
-    .int(`Give ${label} from 1 to 5 stars.`)
-    .min(1, `Give ${label} from 1 to 5 stars.`)
-    .max(5, `Give ${label} from 1 to 5 stars.`);
-
-const priceSchema = z
-  .number({ error: 'Use a price such as 8.50.' })
-  .int('Use a price such as 8.50.')
-  .min(0, 'Use a price such as 8.50.')
-  .max(PRICE_MAX_PENCE, `Prices above £${PRICE_MAX_PENCE / 100} can’t be logged.`)
-  .nullable()
-  .default(null);
-
 /** The browser's position when the member saved, used once for the on-site check and dropped. */
 const positionSchema = z
   .object({
@@ -74,10 +62,7 @@ const positionSchema = z
 /** What a member can change after saving: everything but the venue, the day and the check. */
 const editableFields = {
   dish: dishSchema,
-  pricePaidPence: priceSchema,
-  qualityScore: score('the food'),
-  valueScore: score('value'),
-  wouldReturn: z.boolean({ error: 'Say whether you’d go back.' }),
+  cost: z.enum(MEMBER_COSTS, { error: 'Choose what it cost: £, ££ or £££.' }),
   verdictVote: z.enum(MEMBER_VERDICT_VOTES, { error: 'Choose a verdict.' }),
   pullQuote: pullQuoteSchema,
 };
@@ -95,14 +80,6 @@ export const memberInspectionUpdateSchema = z.object(editableFields);
 
 export type MemberInspectionInput = z.output<typeof memberInspectionInputSchema>;
 export type MemberInspectionUpdate = z.output<typeof memberInspectionUpdateSchema>;
-
-/** "8.50", "£8.5" or "8" as pence; null for an empty field, NaN for anything else. */
-export function parsePounds(raw: string): number | null {
-  const value = raw.trim().replace(/^£/, '').trim();
-  if (!value) return null;
-  if (!/^\d{1,3}(?:\.\d{1,2})?$/.test(value)) return Number.NaN;
-  return Math.round(Number(value) * 100);
-}
 
 // ---------------------------------------------------------------------------------------------
 // Days (Europe/London calendar dates as YYYY-MM-DD)
@@ -185,9 +162,12 @@ export function memberWeight(distinctVenues: number): number {
   return WEIGHT_MIN + progress * (WEIGHT_MAX - WEIGHT_MIN);
 }
 
-/** One log's score: the mean of its two star rows. */
-export function logScore(log: { qualityScore: number; valueScore: number }): number {
-  return (log.qualityScore + log.valueScore) / 2;
+/** What each verdict is worth in the people's score, out of 5. */
+const VERDICT_SCORES: Record<MemberVerdictVote, number> = { approve: 5, if_we_must: 3, reject: 1 };
+
+/** One log's score, from its verdict. */
+export function logScore(log: { verdictVote: MemberVerdictVote }): number {
+  return VERDICT_SCORES[log.verdictVote];
 }
 
 /** The weighted mean of eligible logs' scores, or null when there are none. */

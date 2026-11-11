@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { formatDate } from '@/lib/dates';
-import { VERDICT_VOTE_LABELS, formatPence } from '@/lib/member-inspection-display';
+import TierChip from '@/components/TierChip.vue';
+import { VERDICT_VOTE_TIERS } from '@/lib/member-inspection-display';
 import type { PublicInspectionsFeed } from '@/lib/member-inspections';
+import { tierInfo } from '@/lib/tiers';
 
 /**
  * "Recent inspections from the public" on a venue page (#137). The page is prerendered, so this
@@ -29,7 +31,6 @@ onMounted(async () => {
   }
 });
 
-const stars = (count: number) => '★'.repeat(count) + '☆'.repeat(5 - count);
 const badgeClass =
   'inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]';
 </script>
@@ -63,7 +64,7 @@ const badgeClass =
             <span class="text-xs font-bold tabular-nums text-ink-soft">
               {{ formatDate(log.visitDate) }} · {{ log.displayName ?? 'A member' }}
             </span>
-            <span class="flex flex-wrap gap-1.5">
+            <span class="flex flex-wrap items-center gap-1.5">
               <span
                 v-if="log.provisional"
                 :class="[badgeClass, 'bg-neutral-wash text-graphite']"
@@ -75,28 +76,16 @@ const badgeClass =
                 :class="[badgeClass, 'bg-emerald-100 text-emerald-800']"
                 >Verified on site</span
               >
-              <span :class="[badgeClass, 'bg-ochre-wash text-navy']">{{
-                VERDICT_VOTE_LABELS[log.verdictVote]
-              }}</span>
+              <TierChip
+                is-static
+                selected
+                :name="tierInfo(VERDICT_VOTE_TIERS[log.verdictVote]).label"
+                :color="tierInfo(VERDICT_VOTE_TIERS[log.verdictVote]).color"
+                :glyph="tierInfo(VERDICT_VOTE_TIERS[log.verdictVote]).glyph"
+              />
             </span>
           </div>
-          <p class="text-sm text-ink">
-            {{ log.dish
-            }}<template v-if="log.pricePaidPence !== null">
-              · {{ formatPence(log.pricePaidPence) }}</template
-            >
-          </p>
-          <p class="text-xs text-graphite">
-            Food
-            <span class="text-ochre" :aria-label="`${log.qualityScore} of 5`">{{
-              stars(log.qualityScore)
-            }}</span>
-            · Value
-            <span class="text-ochre" :aria-label="`${log.valueScore} of 5`">{{
-              stars(log.valueScore)
-            }}</span>
-            · {{ log.wouldReturn ? 'Would go back' : 'Wouldn’t go back' }}
-          </p>
+          <p class="text-sm text-ink">{{ log.dish }} · {{ log.cost }}</p>
           <p v-if="log.pullQuote" class="text-sm italic text-ink">“{{ log.pullQuote }}”</p>
         </li>
       </ul>

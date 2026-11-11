@@ -1,5 +1,6 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import LogLunchForm from '@/components/islands/LogLunchForm.vue';
 import { db } from '@/lib/db';
 import { formatDate } from '@/lib/dates';
@@ -25,6 +26,12 @@ const selected = slug ? (venues.find((venue) => venue.slug === slug) ?? null) : 
 <Layout title="Log a lunch — MCR Lunch Club" description="Log your lunch for the ledger." noindex>
   <section class="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8 sm:py-10">
     <div>
+      <Breadcrumbs
+        items={[
+          { label: 'Your lunches', href: '/members/me/inspections' },
+          { label: 'Log a lunch' },
+        ]}
+      />
       <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">People’s Inspections</p>
       <h1 class="mt-2 text-3xl font-bold text-ink">
         {selected ? `Log a lunch at ${selected.name}` : 'Log a lunch'}

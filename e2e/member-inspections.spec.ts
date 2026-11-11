@@ -49,7 +49,7 @@ test('a signed-out visitor sees the public feed and is sent to sign in to log', 
   await section.scrollIntoViewIfNeeded();
   await expect(page.getByTestId('public-inspections')).toHaveAttribute('data-state', 'ready');
 
-  await section.getByRole('link', { name: 'Log a lunch' }).click();
+  await section.getByRole('link', { name: 'Log your lunch' }).click();
   await page.waitForURL(/\/members\/sign-in/);
   expect(new URL(page.url()).searchParams.get('next')).toBe(`/log/${slug}`);
 });
@@ -65,18 +65,15 @@ test('the member logs a lunch, sees it, and deletes it', async ({ page, baseURL 
   await expect(form).toBeVisible();
   const dish = `Test pie ${Date.now().toString(36)}`;
   await form.getByRole('textbox', { name: 'What you ate' }).fill(dish);
-  await form.getByRole('textbox', { name: /Price paid/ }).fill('8.50');
-  await form.getByRole('group', { name: 'The food' }).locator('label').nth(3).click();
-  await form.getByRole('group', { name: 'Value for money' }).locator('label').nth(4).click();
-  await form.getByRole('group', { name: 'Would you go back?' }).getByText('Yes').click();
-  await form.getByRole('group', { name: 'Your verdict' }).getByText('Approve').click();
+  await form.getByRole('group', { name: 'What it cost' }).getByText('££', { exact: true }).click();
+  await form.getByRole('group', { name: 'Your verdict' }).getByText('Approved').click();
   await form.getByRole('textbox', { name: /One line for the ledger/ }).fill('A pie of note.');
   await page.getByTestId('log-lunch-save').click();
 
   await page.waitForURL(/\/members\/me\/inspections\?saved/);
   const entry = page.getByTestId('member-inspection').filter({ hasText: dish });
   await expect(entry).toBeVisible();
-  await expect(entry).toContainText('£8.50');
+  await expect(entry).toContainText('££');
 
   // One lunch a day: the form gives way to the day's log.
   await visit(page, `/log/${slug}`);

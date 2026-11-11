@@ -12,20 +12,16 @@ import {
   memberInspectionInputSchema,
   memberInspectionUpdateSchema,
   memberWeight,
-  parsePounds,
   verifyOnSite,
+  logScore,
   weightedScore,
 } from './member-inspection-rules';
-import { formatPence } from './member-inspection-display';
 
 const VALID = {
   venueId: '3f2b7a52-5c1e-4c0d-9a4f-1a2b3c4d5e6f',
   visitDate: '2026-11-11',
   dish: '  Steak   pie ',
-  pricePaidPence: 850,
-  qualityScore: 4,
-  valueScore: 5,
-  wouldReturn: true,
+  cost: '££',
   verdictVote: 'approve',
   pullQuote: '   ',
 };
@@ -47,6 +43,12 @@ describe('memberWeight', () => {
 });
 
 describe('weightedScore', () => {
+  it('scores a log from its verdict', () => {
+    assert.equal(logScore({ verdictVote: 'approve' }), 5);
+    assert.equal(logScore({ verdictVote: 'if_we_must' }), 3);
+    assert.equal(logScore({ verdictVote: 'reject' }), 1);
+  });
+
   it('weights each log by its member', () => {
     assert.equal(weightedScore([]), null);
     assert.equal(
@@ -91,18 +93,6 @@ describe('days', () => {
   });
 });
 
-describe('prices', () => {
-  it('reads pounds as pence', () => {
-    assert.equal(parsePounds(''), null);
-    assert.equal(parsePounds('8.50'), 850);
-    assert.equal(parsePounds('£8.5'), 850);
-    assert.equal(parsePounds(' 12 '), 1200);
-    assert.ok(Number.isNaN(parsePounds('eight')));
-    assert.ok(Number.isNaN(parsePounds('8.505')));
-    assert.equal(formatPence(850), '£8.50');
-  });
-});
-
 describe('memberInspectionInputSchema', () => {
   it('tidies text, drops an empty quote and has no position by default', () => {
     const parsed = memberInspectionInputSchema.parse(VALID);
@@ -111,17 +101,16 @@ describe('memberInspectionInputSchema', () => {
     assert.equal(parsed.position, null);
   });
 
-  it('refuses out-of-range scores, prices and over-long text', () => {
+  it('refuses an unknown cost or verdict and over-long text', () => {
     for (const [field, value] of [
-      ['qualityScore', 0],
-      ['qualityScore', 6],
-      ['valueScore', 2.5],
-      ['pricePaidPence', -1],
-      ['pricePaidPence', 10_001],
+      ['cost', '£££££'],
+      ['cost', '8.50'],
+      ['cost', ''],
       ['dish', ''],
       ['dish', 'x'.repeat(121)],
       ['pullQuote', 'x'.repeat(141)],
       ['verdictVote', 'adore'],
+      ['verdictVote', 'consider'],
       ['visitDate', '11/11/2026'],
       ['venueId', 'chip-shop'],
     ] as const) {
@@ -133,9 +122,8 @@ describe('memberInspectionInputSchema', () => {
 
   it('accepts the limits', () => {
     for (const [field, value] of [
-      ['pricePaidPence', 0],
-      ['pricePaidPence', 10_000],
-      ['pricePaidPence', null],
+      ['cost', '£'],
+      ['cost', '£££'],
       ['dish', 'x'.repeat(120)],
       ['pullQuote', 'x'.repeat(140)],
     ] as const) {

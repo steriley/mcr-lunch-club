@@ -21,6 +21,7 @@ import { GOLDEN_CUT_SIZE } from '../lib/golden-cut-schema';
 import {
   MEMBER_HOLD_REASONS,
   MEMBER_INSPECTION_STATUSES,
+  MEMBER_COSTS,
   MEMBER_VERDICT_VOTES,
   MEMBER_VERIFICATIONS,
 } from '../lib/member-inspection-display';
@@ -579,6 +580,7 @@ export const memberEvents = pgTable(
   (table) => [index('member_events_user_idx').on(table.userId, table.createdAt)]
 );
 
+export const memberCostEnum = pgEnum('member_cost', MEMBER_COSTS);
 export const memberVerdictVoteEnum = pgEnum('member_verdict_vote', MEMBER_VERDICT_VOTES);
 export const memberInspectionVerificationEnum = pgEnum(
   'member_inspection_verification',
@@ -617,10 +619,7 @@ export const memberInspections = pgTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     visitDate: date('visit_date').notNull(),
     dish: text('dish').notNull(),
-    pricePaidPence: integer('price_paid_pence'),
-    qualityScore: smallint('quality_score').notNull(),
-    valueScore: smallint('value_score').notNull(),
-    wouldReturn: boolean('would_return').notNull(),
+    cost: memberCostEnum('cost').notNull(),
     verdictVote: memberVerdictVoteEnum('verdict_vote').notNull(),
     pullQuote: text('pull_quote'),
     verifiedOnSite: boolean('verified_on_site').notNull().default(false),
@@ -647,12 +646,6 @@ export const memberInspections = pgTable(
       .on(table.createdAt)
       .where(sql`${table.status} = 'held'`),
     check('member_inspections_dish_length', sql`char_length(${table.dish}) between 1 and 120`),
-    check(
-      'member_inspections_price_range',
-      sql`${table.pricePaidPence} is null or ${table.pricePaidPence} between 0 and 10000`
-    ),
-    check('member_inspections_quality_range', sql`${table.qualityScore} between 1 and 5`),
-    check('member_inspections_value_range', sql`${table.valueScore} between 1 and 5`),
     check(
       'member_inspections_quote_length',
       sql`${table.pullQuote} is null or char_length(${table.pullQuote}) between 1 and 140`

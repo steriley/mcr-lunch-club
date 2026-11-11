@@ -1,17 +1,15 @@
+CREATE TYPE "public"."member_cost" AS ENUM('£', '££', '£££');--> statement-breakpoint
 CREATE TYPE "public"."member_inspection_hold_reason" AS ENUM('new_accounts', 'score_spike');--> statement-breakpoint
 CREATE TYPE "public"."member_inspection_status" AS ENUM('visible', 'held', 'removed');--> statement-breakpoint
 CREATE TYPE "public"."member_inspection_verification" AS ENUM('none', 'gps');--> statement-breakpoint
-CREATE TYPE "public"."member_verdict_vote" AS ENUM('approve', 'consider', 'if_we_must', 'reject');--> statement-breakpoint
+CREATE TYPE "public"."member_verdict_vote" AS ENUM('approve', 'if_we_must', 'reject');--> statement-breakpoint
 CREATE TABLE "member_inspections" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"venue_id" uuid NOT NULL,
 	"member_id" text NOT NULL,
 	"visit_date" date NOT NULL,
 	"dish" text NOT NULL,
-	"price_paid_pence" integer,
-	"quality_score" smallint NOT NULL,
-	"value_score" smallint NOT NULL,
-	"would_return" boolean NOT NULL,
+	"cost" "member_cost" NOT NULL,
 	"verdict_vote" "member_verdict_vote" NOT NULL,
 	"pull_quote" text,
 	"verified_on_site" boolean DEFAULT false NOT NULL,
@@ -25,9 +23,6 @@ CREATE TABLE "member_inspections" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "member_inspections_dish_length" CHECK (char_length("member_inspections"."dish") between 1 and 120),
-	CONSTRAINT "member_inspections_price_range" CHECK ("member_inspections"."price_paid_pence" is null or "member_inspections"."price_paid_pence" between 0 and 10000),
-	CONSTRAINT "member_inspections_quality_range" CHECK ("member_inspections"."quality_score" between 1 and 5),
-	CONSTRAINT "member_inspections_value_range" CHECK ("member_inspections"."value_score" between 1 and 5),
 	CONSTRAINT "member_inspections_quote_length" CHECK ("member_inspections"."pull_quote" is null or char_length("member_inspections"."pull_quote") between 1 and 140),
 	CONSTRAINT "member_inspections_verified_matches" CHECK ("member_inspections"."verified_on_site" = ("member_inspections"."verification" <> 'none')),
 	CONSTRAINT "member_inspections_removal_reason" CHECK ("member_inspections"."status" <> 'removed' or char_length(trim("member_inspections"."review_reason")) > 0)

@@ -30,10 +30,7 @@ const BODY = {
   venueId: VENUE_ID,
   visitDate: '2026-11-11',
   dish: ' Steak pie ',
-  pricePaidPence: 850,
-  qualityScore: 4,
-  valueScore: 3,
-  wouldReturn: true,
+  cost: '££',
   verdictVote: 'approve',
   pullQuote: '',
   position: { lat: 53.48, lng: -2.25 },
@@ -103,9 +100,9 @@ describe('POST /api/member/inspections', () => {
   it('refuses a malformed log before it reaches the database', async () => {
     signInAs(MEMBER);
     const create = mock.method(memberInspectionsApi, 'create', async () => ({ ok: true }));
-    const response = await run(CREATE, memberCall('POST', { ...BODY, qualityScore: 6 }));
+    const response = await run(CREATE, memberCall('POST', { ...BODY, cost: '£££££' }));
     assert.equal(response.status, 400);
-    assert.ok((await response.json()).fields.qualityScore);
+    assert.ok((await response.json()).fields.cost);
     assert.equal(create.mock.callCount(), 0);
   });
 
