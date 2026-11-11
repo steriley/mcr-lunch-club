@@ -18,7 +18,7 @@ const now = new Date();
 const today = londonDate(now);
 const [venues, loggedToday] = await Promise.all([
   memberInspectionsApi.listLoggableVenues(db),
-  memberInspectionsApi.findForDate(db, member.id, today, now),
+  memberInspectionsApi.findBlockingToday(db, member.id, now),
 ]);
 const selected = slug ? (venues.find((venue) => venue.slug === slug) ?? null) : null;
 ---
@@ -44,11 +44,17 @@ const selected = slug ? (venues.find((venue) => venue.slug === slug) ?? null) : 
         data-testid="logged-today"
       >
         <p class="text-ink">
-          You’ve already logged today’s lunch: <strong>{loggedToday.dish}</strong> at{' '}
+          {loggedToday.visitDate === today
+            ? 'You’ve already logged today’s lunch: '
+            : 'You’ve already logged a lunch today: '}
+          <strong>{loggedToday.dish}</strong> at{' '}
           <a href={`/venues/${loggedToday.venue.slug}`} class="font-semibold hover:underline">
             {loggedToday.venue.name}
           </a>{' '}
-          ({formatDate(loggedToday.visitDate)}). One lunch a day, as the Constitution intends.
+          ({formatDate(loggedToday.visitDate)}).
+          {loggedToday.visitDate === today
+            ? ' One lunch a day, as the Constitution intends.'
+            : ' One new log a day: come back tomorrow for the next.'}
         </p>
         <div class="flex flex-wrap gap-3">
           {loggedToday.canEdit && (

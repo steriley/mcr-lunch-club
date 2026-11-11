@@ -126,6 +126,17 @@ describe('member inspections (database)', { skip: skipIntegration }, () => {
       );
     });
 
+    it('the log page sees what blocks a new log today: today’s lunch, or one already saved today', async () => {
+      const db = await testDb();
+      await createMember('sam');
+      assert.equal(await api.findBlockingToday(db, 'sam', NOON), null);
+      // Yesterday's lunch, back-filled this morning.
+      const backFilled = await log('sam', venue, NOON, { visitDate: '2026-11-10' });
+      assert.equal((await api.findBlockingToday(db, 'sam', NOON))?.id, backFilled.id);
+      // Tomorrow it no longer blocks anything.
+      assert.equal(await api.findBlockingToday(db, 'sam', new Date(NOON.getTime() + DAY)), null);
+    });
+
     it('a race for the same day ends with one log', async () => {
       const db = await testDb();
       await createMember('sam');
@@ -519,6 +530,32 @@ describe('member inspections (database)', { skip: skipIntegration }, () => {
       assert.ok(hidden!.recent.every((entry) => entry.displayName === null));
 
       assert.equal(await api.recentPublic(db, 'nowhere'), null);
+    });
+
+    it('leaves out a banned member’s logs while the ban lasts', async () => {
+      const db = await testDb();
+      for (const id of ['good', 'stuffer']) await createMember(id);
+      for (const day of [1, 0]) {
+        const when = new Date(NOON.getTime() - day * DAY);
+        await log('good', venue, when, { verdictVote: 'if_we_must' });
+        await log('stuffer', venue, when, { verdictVote: 'approve', dish: 'Stuffed pie' });
+      }
+      const before = await api.recentPublic(db, 'chip-shop');
+      assert.equal(before!.recent.length, 4);
+      assert.equal(before!.eligibleLogs, 4);
+
+      await db.update(user).set({ banned: true }).where(eq(user.id, 'stuffer'));
+      const banned = await api.recentPublic(db, 'chip-shop');
+      assert.ok(banned!.recent.every((entry) => entry.dish === 'Steak pie'));
+      assert.equal(banned!.eligibleLogs, 2);
+      assert.equal(banned!.score, 3);
+
+      // An expired ban no longer hides them.
+      await db
+        .update(user)
+        .set({ banExpires: new Date(Date.now() - 60_000) })
+        .where(eq(user.id, 'stuffer'));
+      assert.equal((await api.recentPublic(db, 'chip-shop'))!.recent.length, 4);
     });
   });
 

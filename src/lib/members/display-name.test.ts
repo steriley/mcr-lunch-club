@@ -2,7 +2,7 @@ import '@/test/setup-env';
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { displayNameKey, displayNameSchema, profileUpdateSchema } from '@/lib/members/display-name';
-import { isOffensiveName } from '@/lib/members/display-name-filter';
+import { isOffensiveFoodText, isOffensiveName } from '@/lib/members/display-name-filter';
 import { isFreshSignIn } from '@/lib/members/profiles';
 
 describe('display names (#136)', () => {
@@ -70,5 +70,26 @@ describe('a fresh sign-in (#136)', () => {
     assert.ok(isFreshSignIn('2026-11-10T11:50:00Z', now));
     assert.ok(!isFreshSignIn(new Date('2026-11-10T11:49:59Z'), now));
     assert.ok(!isFreshSignIn(new Date('2026-11-10T12:01:00Z'), now));
+  });
+});
+
+describe('the lunch-log profanity filter (#137)', () => {
+  it('lets traditional dishes through, in a dish or a quote', () => {
+    for (const text of [
+      'Spotted dick and custard',
+      'Faggots and peas',
+      'Pork faggots, mash and gravy',
+      'Cock-a-leekie soup',
+      'The best spotted dick in Manchester.',
+    ]) {
+      assert.ok(!isOffensiveFoodText(text), text);
+    }
+  });
+
+  it('still catches the same words used any other way, and display names get no exceptions', () => {
+    for (const text of ['what a dick', 'faggot', 'cock', 'f u c k this place', 'sh1t pie']) {
+      assert.ok(isOffensiveFoodText(text), text);
+    }
+    assert.ok(isOffensiveName('Spotted Dick'));
   });
 });

@@ -39,3 +39,21 @@ function joinSpelledOut(name: string): string {
 export function isOffensiveName(name: string): boolean {
   return matcher.hasMatch(name) || matcher.hasMatch(joinSpelledOut(name));
 }
+
+/**
+ * Traditional dishes whose names the filter would otherwise refuse. They are removed before a
+ * dish or pull quote is checked (#137), so "Spotted dick and custard" passes; the same words used
+ * any other way are still caught. Display names never get these exceptions.
+ */
+const DISH_NAMES = [
+  /\bspotted[\s-]+dick\b/giu,
+  /\bcock[\s-]*a[\s-]*leekie\b/giu,
+  // Faggots as a dish: "faggots and peas", "pork faggots, mash and gravy", "faggots with onions".
+  /\b(?:pork\s+|brain\s+)?faggots?(?=\s*(?:,|&|\+|\band\b|\bwith\b|\bin\b|\bn\b|'n'))/giu,
+];
+
+/** The profanity check on a lunch log's dish and pull quote: the name check, less known dishes. */
+export function isOffensiveFoodText(text: string): boolean {
+  const cleaned = DISH_NAMES.reduce((out, pattern) => out.replace(pattern, ' '), text);
+  return isOffensiveName(cleaned);
+}
