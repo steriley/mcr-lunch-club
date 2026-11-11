@@ -34,6 +34,21 @@ export function memberAuthPathAccess(path: string, membersEnabled: boolean): Aut
 /** Sign-in paths whose sessions belong to members only: Chairs never sign in by email. */
 export const EMAIL_SIGN_IN_PATHS: ReadonlySet<string> = VERIFY_PATHS;
 
+/** The signed-in member's own pages; a signed-out visitor is sent to sign in. */
+export function isMemberAccountPage(pathname: string): boolean {
+  return pathname === '/members/me' || pathname.startsWith('/members/me/');
+}
+
+/** Where a member goes after signing in: their own pages only, so `?next=` can't send them away. */
+export function safeMemberRedirect(next: string | null | undefined): string {
+  const value = String(next ?? '').trim();
+  // eslint-disable-next-line no-control-regex
+  if (value.includes('\\') || /[\u0000-\u001f]/.test(value)) return '/members/me';
+  const pathEnd = value.search(/[?#]/);
+  const path = pathEnd === -1 ? value : value.slice(0, pathEnd);
+  return isMemberAccountPage(path) ? value : '/members/me';
+}
+
 /** Member-only pages and API routes, closed while the flag is off. */
 export function isMemberRoute(pathname: string): boolean {
   return (

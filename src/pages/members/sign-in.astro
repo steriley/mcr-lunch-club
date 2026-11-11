@@ -1,0 +1,41 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import MemberSignIn from '@/components/islands/MemberSignIn.vue';
+import { auth } from '@/lib/auth';
+import { getPasskeyEnvironment } from '@/lib/env';
+import { safeMemberRedirect } from '@/lib/members/auth-paths';
+import { hasAdminRole, isBanned } from '@/lib/roles';
+
+export const prerender = false;
+
+// Member sign-in (#136). Reached only while the `members` flag is on (middleware).
+const requested = Astro.url.searchParams.get('next');
+const next = safeMemberRedirect(requested);
+const linkError = Astro.url.searchParams.get('error');
+
+const session = await auth.api.getSession({ headers: Astro.request.headers });
+const signedIn = session?.user && !isBanned(session.user) ? session.user : null;
+// A Chair's place is the Chairs' Area: Chairs never sign in by email.
+if (signedIn && hasAdminRole(signedIn.role)) return Astro.redirect('/admin');
+// A signed-in member is sent on, unless a page asked them to confirm it's them.
+const confirming = Boolean(signedIn && requested);
+if (signedIn && !confirming) return Astro.redirect(next);
+
+const { host: passkeyHost } = getPasskeyEnvironment();
+---
+
+<Layout
+  title="Sign in — MCR Lunch Club"
+  description="Sign in to your MCR Lunch Club member account."
+  noindex
+>
+  <section class="mx-auto flex w-full max-w-5xl flex-1 items-center justify-center px-4 py-12">
+    <MemberSignIn
+      client:load
+      next={next}
+      passkeyHost={passkeyHost}
+      linkError={linkError}
+      confirming={confirming}
+    />
+  </section>
+</Layout>

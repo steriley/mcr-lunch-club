@@ -7,6 +7,7 @@ const saved = {
   FLAGS: process.env.FLAGS,
   MEMBERS_FLAG: process.env.MEMBERS_FLAG,
   NODE_ENV: process.env.NODE_ENV,
+  VERCEL: process.env.VERCEL,
 };
 
 afterEach(() => {
@@ -26,16 +27,20 @@ describe('members flag', () => {
     assert.equal(await isMembersEnabled(), false);
   });
 
-  it('can be forced on or off outside production with MEMBERS_FLAG', async () => {
-    delete process.env.NODE_ENV;
-    process.env.MEMBERS_FLAG = 'on';
-    assert.equal(await isMembersEnabled(), true);
-    process.env.MEMBERS_FLAG = 'off';
-    assert.equal(await isMembersEnabled(), false);
+  it('can be forced on or off with MEMBERS_FLAG off Vercel, local builds included', async () => {
+    delete process.env.VERCEL;
+    for (const nodeEnv of [undefined, 'production']) {
+      if (nodeEnv) process.env.NODE_ENV = nodeEnv;
+      else delete process.env.NODE_ENV;
+      process.env.MEMBERS_FLAG = 'on';
+      assert.equal(await isMembersEnabled(), true, `NODE_ENV=${nodeEnv}`);
+      process.env.MEMBERS_FLAG = 'off';
+      assert.equal(await isMembersEnabled(), false, `NODE_ENV=${nodeEnv}`);
+    }
   });
 
-  it('ignores MEMBERS_FLAG on deployments', async () => {
-    process.env.NODE_ENV = 'production';
+  it('ignores MEMBERS_FLAG on Vercel deployments, builds and functions alike', async () => {
+    process.env.VERCEL = '1';
     process.env.MEMBERS_FLAG = 'on';
     delete process.env.FLAGS;
     assert.equal(await isMembersEnabled(), false);

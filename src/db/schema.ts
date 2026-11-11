@@ -484,6 +484,95 @@ export const memberSignInRequests = pgTable(
   ]
 );
 
+/**
+ * Member accounts (#136, PR c). Members are Better Auth users with the `user` role; these tables
+ * hold what the club adds to them.
+ *
+ * **Cascade rule:** every member-owned row references `user.id` with `on delete cascade`, so
+ * deleting a member's account (src/lib/members/profiles.ts, `deleteMemberAccount`) removes all of
+ * it, their `member_events` included. Nothing about a deleted member is kept, not even a ban or a
+ * name a Chair hid: a member who deletes their account and signs up again starts afresh (#136,
+ * "Decisions"). Tables added by later issues for member-owned data must follow the same rule.
+ */
+
+/**
+ * One row per member, created when they first open their profile (or by the seed). The display
+ * name is unique ignoring case and spacing (`display_name_key`, src/lib/members/display-name.ts),
+ * and is shown publicly only while `show_publicly` is on and no Chair has hidden it.
+ */
+export const memberProfiles = pgTable(
+  'member_profiles',
+  {
+    userId: text('user_id')
+      .primaryKey()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    displayName: text('display_name'),
+    // The normalised name the uniqueness rule compares; set and cleared with display_name.
+    displayNameKey: text('display_name_key').unique('member_profiles_display_name_key_unique'),
+    showPublicly: boolean('show_publicly').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+    // A Chair hid the current name. It is never shown publicly and stays taken
+    // (member_reserved_names); the member may choose one new name.
+    hiddenByChairAt: timestamp('hidden_by_chair_at', { withTimezone: true }),
+    // The member used their one rename after a hide. If that name is hidden too, they can't set a
+    // name until a Chair clears this.
+    renamedAfterHideAt: timestamp('renamed_after_hide_at', { withTimezone: true }),
+  },
+  (table) => [
+    check(
+      'member_profiles_name_and_key',
+      sql`(${table.displayName} is null) = (${table.displayNameKey} is null)`
+    ),
+  ]
+);
+
+/**
+ * Display names a Chair hid. They stay taken, by everyone including the member who had them, so
+ * an offensive name can't be claimed again. Deleted with the member's account (cascade rule above).
+ */
+export const memberReservedNames = pgTable(
+  'member_reserved_names',
+  {
+    nameKey: text('name_key').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    reservedAt: timestamp('reserved_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('member_reserved_names_user_idx').on(table.userId)]
+);
+
+export const memberEventActionEnum = pgEnum('member_event_action', [
+  'name_hidden',
+  'name_allowed',
+  'banned',
+  'unbanned',
+]);
+
+/**
+ * What the Chairs did to a member's account, for the Members list. `user_id` is the member and
+ * cascades (rule above); `actor_id` is the Chair and is kept as null if the Chair's account goes.
+ */
+export const memberEvents = pgTable(
+  'member_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    actorId: text('actor_id').references(() => user.id, { onDelete: 'set null' }),
+    action: memberEventActionEnum('action').notNull(),
+    // The hidden name, for a name_hidden event; nothing else is recorded.
+    detail: text('detail'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('member_events_user_idx').on(table.userId, table.createdAt)]
+);
+
 export type VenueRow = typeof venues.$inferSelect;
 export type BriberyRow = typeof briberyRecords.$inferSelect;
 export type SuggestionRow = typeof venueSuggestions.$inferSelect;
@@ -495,3 +584,4 @@ export type TierProposalRow = typeof tierProposals.$inferSelect;
 export type VenueImageRow = typeof venueImages.$inferSelect;
 export type PushSubscriptionRow = typeof pushSubscriptions.$inferSelect;
 export type NotificationPreferencesRow = typeof notificationPreferences.$inferSelect;
+export type MemberProfileRow = typeof memberProfiles.$inferSelect;

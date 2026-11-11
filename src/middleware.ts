@@ -7,7 +7,7 @@ import {
   jsonError,
 } from '@/lib/admin-api';
 import { auth } from '@/lib/auth';
-import { isMemberRoute } from '@/lib/members/auth-paths';
+import { isMemberAccountPage, isMemberRoute } from '@/lib/members/auth-paths';
 import { isMembersEnabled } from '@/lib/members/flag';
 
 const ADMIN_PAGE_HEADERS = {
@@ -45,8 +45,29 @@ export const onRequest = defineMiddleware(async (context, next) => {
         headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' },
       });
     }
+    // The member API gets the admin API's origin check on writes; its handlers check again.
+    if (
+      pathname.startsWith('/api/member') &&
+      isMutatingMethod(request.method) &&
+      !hasTrustedOrigin(request)
+    ) {
+      return jsonError(403, 'Forbidden');
+    }
+    if (isMemberAccountPage(pathname)) {
+      const session = await auth.api.getSession({ headers: request.headers });
+      if (!session?.user || isBanned(session.user)) {
+        const destination = new URL('/members/sign-in', url.origin);
+        destination.searchParams.set('next', pathname + url.search);
+        return redirect(destination.pathname + destination.search);
+      }
+      // Chairs have no member account; their place is the Chairs' Area.
+      if (hasAdminRole(session.user.role)) return redirect('/admin');
+      locals.user = session.user;
+      locals.session = session;
+    }
     const response = await next();
     response.headers.set('Cache-Control', 'no-store');
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
     return response;
   }
 

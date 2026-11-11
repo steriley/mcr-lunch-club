@@ -1,0 +1,22 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import MemberData from '@/components/islands/MemberData.vue';
+import { isFreshSignIn } from '@/lib/members/profiles';
+
+export const prerender = false;
+
+// The middleware has checked the flag and that a member (not a Chair) is signed in (#136).
+const freshSignIn = isFreshSignIn(Astro.locals.session!.session.createdAt);
+---
+
+<Layout title="Your data — MCR Lunch Club" description="Download or delete your data." noindex>
+  <section class="mx-auto w-full max-w-2xl space-y-6 px-4 py-10">
+    <div>
+      <a href="/members/me" class="text-sm font-semibold text-navy hover:underline">
+        ← Your account
+      </a>
+      <h1 class="mt-3 text-3xl font-bold text-ink">Your data</h1>
+    </div>
+    <MemberData client:load freshSignIn={freshSignIn} />
+  </section>
+</Layout>

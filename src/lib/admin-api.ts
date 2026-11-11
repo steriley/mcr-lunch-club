@@ -225,6 +225,25 @@ export const ERROR_HTTP = {
     status: 400,
     message: 'A venue that is not Approved cannot be in The Golden Cut.',
   },
+  // Members (#136)
+  member_not_found: { status: 404, message: 'Member not found.' },
+  name_taken: {
+    status: 409,
+    message: 'That name is taken. Choose another.',
+    fields: { displayName: 'That name is taken. Choose another.' },
+  },
+  name_offensive: {
+    status: 400,
+    message: 'That name isn’t allowed. Choose another.',
+    fields: { displayName: 'That name isn’t allowed. Choose another.' },
+  },
+  name_locked: {
+    status: 403,
+    message: 'Your display name was hidden by the Chairs, so it can’t be changed for now.',
+  },
+  no_display_name: { status: 409, message: 'This member has no display name to hide.' },
+  name_already_hidden: { status: 409, message: 'This name is already hidden.' },
+  name_not_locked: { status: 409, message: 'This member can already choose a name.' },
   // Bribery
   bribery_venue_unknown: {
     status: 400,

@@ -10,7 +10,9 @@ import Snow from '@/components/Snow.astro';
 import PwaStatus from '@/components/PwaStatus.vue';
 import InstallApp from '@/components/InstallApp.vue';
 import StandaloneBack from '@/components/StandaloneBack.astro';
+import MemberHeader from '@/components/MemberHeader.astro';
 import { BUILT_AT } from '@/lib/build-time';
+import { isMembersEnabled } from '@/lib/members/flag';
 import {
   countPublicInspections,
   countPublicInspectionsForBuild,
@@ -50,6 +52,9 @@ const venueCount = await (
   Astro.isPrerendered ? countPublicVenuesForBuild() : countPublicVenues()
 ).catch(() => null);
 const currentYear = new Date().getFullYear();
+// The member header (#136) exists only while the `members` flag is on. Prerendered pages read the
+// flag when they are built, so turning it on shows "Sign in" on them from the next build.
+const membersEnabled = await isMembersEnabled().catch(() => false);
 const navigation: NavItem[] = [
   { href: '/manifesto', label: 'The Manifesto', icon: 'history_edu' },
   { href: '/verdicts/approved', label: 'Verdicts', icon: 'military_tech' },
@@ -113,6 +118,8 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
           counts={navCounts}
           ariaLabel="Main navigation"
         />
+
+        {membersEnabled && <MemberHeader />}
 
         <details class="mobile-menu">
           <summary class="mobile-menu-trigger" aria-label="Menu">

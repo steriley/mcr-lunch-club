@@ -17,7 +17,8 @@ import { runtimeImports } from './imports';
 
 const LIB = path.resolve('src/lib');
 const HTTP_ONLY = ['@/lib/admin-api', '@/lib/auth'];
-const ALLOWED = new Set(['admin-api.ts', 'auth.ts']);
+// The HTTP modules themselves: the admin API and its member counterpart (#136).
+const ALLOWED = new Set(['admin-api.ts', 'member-api.ts', 'auth.ts']);
 
 function libModules(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {

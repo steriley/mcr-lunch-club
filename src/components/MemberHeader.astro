@@ -1,0 +1,155 @@
+---
+/**
+ * "Sign in" or the member's account link, in the site header (#136). Layout renders it only while
+ * the `members` flag is on; with the flag off there is nothing here at all.
+ *
+ * Prerendered pages ship the signed-out state. The script asks /api/member/session who is signed
+ * in only when the readable `signed_in` hint cookie is set (src/lib/auth-config.ts), so a
+ * signed-out visitor makes no member or auth request (epic #135, "Performance budget";
+ * e2e/members.spec.ts). A Chair gets a link to the Chairs' Area instead of a member link. The
+ * script is bundled, so it needs no CSP hash, and it loads no auth code.
+ */
+---
+
+<div class="member-header" data-member-header>
+  <a href="/members/sign-in" class="member-header-link" data-member-signed-out>
+    Sign in
+  </a>
+  <a href="/members/me" class="member-header-link" data-member-account hidden>
+    <span class="member-header-initial" aria-hidden="true" data-member-initial></span>
+    <span data-member-name>Your account</span>
+  </a>
+  <a href="/admin" class="member-header-link" data-member-chair hidden>
+    Chairs’ Area
+  </a>
+</div>
+
+<style>
+  .member-header {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+  }
+
+  .member-header[data-state='checking'] .member-header-link {
+    visibility: hidden;
+  }
+
+  .member-header-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    max-width: 14rem;
+    padding: 6px 14px;
+    border: 1px solid color-mix(in srgb, var(--color-hairline) 80%, transparent);
+    border-radius: 999px;
+    background: var(--ledger-card);
+    color: var(--color-deep-ink);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .member-header-link[hidden] {
+    display: none;
+  }
+
+  .member-header-link:hover {
+    background: var(--ledger-parchment);
+  }
+
+  .member-header-link > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .member-header-initial {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: var(--color-navy-fixed);
+    color: var(--color-white);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* Phones and tablets: the main nav folds into the menu; this sits just before it. */
+  @media (max-width: 1000px) {
+    .member-header {
+      margin-left: auto;
+    }
+
+    .member-header + :global(.mobile-menu) {
+      margin-left: 0;
+    }
+  }
+
+  /* Small phones: the member is their initial, so the club's name keeps its room. */
+  @media (max-width: 480px) {
+    [data-member-account] {
+      padding: 9px;
+    }
+
+    [data-member-name] {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+</style>
+
+<script>
+  const HINT = /(?:^|;\s*)signed_in=1(?:;|$)/;
+  const TIMEOUT_MS = 4000;
+
+  type MemberSession =
+    { state: 'signed_out' } | { state: 'chair' } | { state: 'member'; displayName: string | null };
+
+  async function readSession(): Promise<MemberSession | null> {
+    try {
+      const response = await fetch('/api/member/session', {
+        credentials: 'same-origin',
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+      });
+      return response.ok ? ((await response.json()) as MemberSession) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function show(root: HTMLElement, session: MemberSession | null) {
+    const signedOut = root.querySelector<HTMLElement>('[data-member-signed-out]');
+    const account = root.querySelector<HTMLElement>('[data-member-account]');
+    const chair = root.querySelector<HTMLElement>('[data-member-chair]');
+    if (session?.state === 'member' && account) {
+      const name = session.displayName?.trim() || 'Your account';
+      account.querySelector('[data-member-name]')!.textContent = name;
+      account.querySelector('[data-member-initial]')!.textContent = (
+        session.displayName?.trim()[0] ?? '•'
+      ).toUpperCase();
+      account.hidden = false;
+      if (signedOut) signedOut.hidden = true;
+    } else if (session?.state === 'chair' && chair) {
+      chair.hidden = false;
+      if (signedOut) signedOut.hidden = true;
+    } else if (session?.state === 'signed_out') {
+      // The server cleared the hint too; this covers a response that was cached on the way.
+      document.cookie = 'signed_in=; Path=/; Max-Age=0; SameSite=Lax';
+    }
+    delete root.dataset.state;
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-member-header]')) {
+    if (!HINT.test(document.cookie)) continue;
+    root.dataset.state = 'checking';
+    void readSession().then((session) => show(root, session));
+  }
+</script>

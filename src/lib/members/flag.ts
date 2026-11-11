@@ -1,4 +1,3 @@
-import { isProduction } from '@/lib/env';
 import { isFlagOn } from '@/lib/flags';
 
 /**
@@ -10,12 +9,14 @@ import { isFlagOn } from '@/lib/flags';
 const MEMBERS_FLAG = 'members';
 
 /**
- * Outside production, `MEMBERS_FLAG=on` or `off` overrides the flag, so local development, the
- * database tests and `pnpm check:built` can exercise both states. Deployments (NODE_ENV is
- * production on every Vercel deployment) always ask Vercel Flags.
+ * Off Vercel, `MEMBERS_FLAG=on` or `off` overrides the flag, so local development, the database
+ * tests, a local `pnpm build` (whose prerendered pages show the member header only with the flag
+ * on) and `pnpm check:built` can exercise both states. Vercel sets `VERCEL=1` in every deployment's
+ * build and functions, so deployments always ask Vercel Flags. (NODE_ENV can't tell them apart:
+ * `astro build` runs as production everywhere.)
  */
 function localOverride(): boolean | null {
-  if (isProduction()) return null;
+  if (process.env.VERCEL) return null;
   const value = process.env.MEMBERS_FLAG?.trim().toLowerCase();
   if (value === 'on') return true;
   if (value === 'off') return false;

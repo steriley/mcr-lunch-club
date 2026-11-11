@@ -1,0 +1,6 @@
+---
+export const prerender = false;
+
+// /members is the member's own area (#136); the middleware has already checked the flag.
+return Astro.redirect('/members/me');
+---

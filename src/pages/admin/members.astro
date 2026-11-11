@@ -1,0 +1,27 @@
+---
+import MemberList from '@/components/admin/MemberList.vue';
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { db } from '@/lib/db';
+import { memberAccounts, MEMBER_LIST_LIMIT } from '@/lib/members/profiles';
+
+export const prerender = false;
+
+// Members (#136): the public's accounts, newest first. No email addresses: Chairs moderate what
+// the public could see (display names), and ban accounts.
+const { total, members } = await memberAccounts.list(db);
+---
+
+<AdminLayout title="Members">
+  <div class="space-y-6">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">The People’s Ledger</p>
+      <h1 class="mt-2 text-3xl font-bold text-ink">Members</h1>
+      <p class="mt-2 text-sm text-soot">
+        {total === 1 ? '1 member' : `${total} members`}
+        {total > members.length && ` · the newest ${MEMBER_LIST_LIMIT} shown`}
+      </p>
+    </div>
+
+    <MemberList client:load members={members} />
+  </div>
+</AdminLayout>
