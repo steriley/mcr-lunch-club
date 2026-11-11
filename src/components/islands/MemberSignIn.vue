@@ -1,20 +1,23 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { apiFetch } from '@/lib/api-fetch';
 import { authClient } from '@/lib/auth-client';
 import { browserHasWebAuthn, canOfferPasskey } from '@/lib/passkey-support';
 import { signInRequestSchema } from '@/lib/members/sign-in-schema';
+import { mountTurnstile, type TurnstileHandle } from '@/lib/members/turnstile-widget';
 
 /**
  * Member sign-in (#136): ask for an email, then either tap the link it carries or type its 6-digit
  * code here (for when the email is on another device). Members who added a passkey can use that
- * instead. Requests go through POST /api/member/sign-in, which applies the rate limits, honeypot
- * and time trap; the code is checked by Better Auth.
+ * instead. Requests go through POST /api/member/sign-in, which applies the Turnstile check, rate
+ * limits, honeypot and time trap; the code is checked by Better Auth.
  */
 const props = defineProps<{
   /** Where to go once signed in (already checked on the server). */
   next: string;
   passkeyHost: string | null;
+  /** Turnstile's public site key; null when none is set (Production), which closes the form. */
+  turnstileSiteKey: string | null;
   /** A magic link that failed sends the member back here with Better Auth's error code. */
   linkError?: string | null;
   /** Signing in again to confirm it's them, e.g. before deleting the account. */
@@ -28,6 +31,9 @@ const email = ref('');
 const website = ref('');
 const code = ref('');
 const formToken = ref('');
+const turnstileToken = ref('');
+const turnstileBox = ref<HTMLElement | null>(null);
+let turnstile: TurnstileHandle | null = null;
 const errorMessage = ref(
   props.linkError
     ? 'That sign-in link has expired or was already used. Ask for a new one below.'
@@ -46,8 +52,32 @@ async function loadFormToken() {
   else errorMessage.value = result.error;
 }
 
+/** Shows the security check under the email field; each token works for one request. */
+async function showTurnstile() {
+  await nextTick();
+  if (!turnstileBox.value || !props.turnstileSiteKey) return;
+  try {
+    turnstile = await mountTurnstile(turnstileBox.value, props.turnstileSiteKey, {
+      onToken: (token) => (turnstileToken.value = token),
+      onLost: () => (turnstileToken.value = ''),
+    });
+  } catch {
+    errorMessage.value = 'Unable to load the security check. Please reload the page.';
+  }
+}
+
+function hideTurnstile() {
+  turnstile?.remove();
+  turnstile = null;
+  turnstileToken.value = '';
+}
+
+onBeforeUnmount(hideTurnstile);
+
 onMounted(() => {
   void loadFormToken();
+  if (props.turnstileSiteKey) void showTurnstile();
+  else errorMessage.value = 'Signing in by email is unavailable right now. Please try again later.';
   offerPasskey.value = canOfferPasskey({
     pageHost: window.location.host,
     passkeyHost: props.passkeyHost,
@@ -61,6 +91,7 @@ async function requestEmail() {
     email: email.value,
     formToken: formToken.value,
     website: website.value,
+    turnstileToken: turnstileToken.value,
     next: props.next,
   });
   if (!checked.success) {
@@ -77,10 +108,14 @@ async function requestEmail() {
   isSending.value = false;
   if (!result.ok) {
     errorMessage.value = result.error;
+    // The token is spent whatever the answer: ask for a new one.
+    turnstileToken.value = '';
+    turnstile?.reset();
     return;
   }
   email.value = checked.data.email;
   code.value = '';
+  hideTurnstile();
   step.value = 'code';
 }
 
@@ -150,6 +185,7 @@ function startAgain() {
   errorMessage.value = '';
   code.value = '';
   void loadFormToken();
+  void showTurnstile();
 }
 
 const inputClass =
@@ -210,6 +246,7 @@ const primaryClass =
           placeholder="you@example.com"
         />
       </label>
+      <div ref="turnstileBox" data-testid="member-turnstile" class="mt-4 min-h-[65px]"></div>
       <!-- Honeypot: hidden from people, so anything typed here comes from a bot. -->
       <label class="member-honeypot" aria-hidden="true">
         Website
@@ -221,7 +258,7 @@ const primaryClass =
         data-testid="member-send-email"
         class="mt-5"
         :class="primaryClass"
-        :disabled="isSending || !formToken"
+        :disabled="isSending || !formToken || !turnstileToken"
       >
         {{ isSending ? 'Sending…' : 'Email me a link and code' }}
       </button>

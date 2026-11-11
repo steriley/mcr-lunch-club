@@ -25,6 +25,7 @@ import {
   signInEmail,
 } from '@/lib/members/sign-in';
 import { signInRequestSchema } from '@/lib/members/sign-in-schema';
+import { verifyTurnstile } from '@/lib/members/turnstile';
 
 export const prerender = false;
 
@@ -96,7 +97,7 @@ export const POST: APIRoute = async (context) => {
 
   const parsed = signInRequestSchema.safeParse(await readJson(request));
   if (!parsed.success) return validationError(parsed.error);
-  const { email, formToken, website, next } = parsed.data;
+  const { email, formToken, turnstileToken, website, next } = parsed.data;
 
   // A filled honeypot or an instant submit is a bot: answer as usual, send nothing.
   if (website?.trim()) return accepted();
@@ -104,11 +105,19 @@ export const POST: APIRoute = async (context) => {
   if (timing === 'too_fast') return accepted();
   if (timing !== 'ok') return jsonError(400, 'This form has expired. Please reload the page.');
 
+  // Turnstile (PR d): after the free checks and before the rate limits, so a failed challenge never
+  // uses up anyone's allowance. The answer doesn't depend on the email, so it reveals nothing.
+  const ip = clientIp(request, () => context.clientAddress);
+  const challenge = await verifyTurnstile(turnstileToken, ip);
+  if (challenge === 'failed') {
+    return jsonError(400, 'The security check didn’t pass. Please complete it and try again.');
+  }
+  if (challenge === 'unavailable') {
+    return jsonError(503, 'We couldn’t run the security check just now. Please try again shortly.');
+  }
+
   try {
-    const hashes = {
-      email: emailHash(email),
-      sender: senderHash(clientIp(request, () => context.clientAddress)),
-    };
+    const hashes = { email: emailHash(email), sender: senderHash(ip) };
     const limited = await reserveSignIn(db, hashes);
     if (limited !== 'ok') {
       return jsonError(

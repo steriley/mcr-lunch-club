@@ -34,6 +34,7 @@ const needles = [
   'api.openrouteservice.org',
   'BLOB_READ_WRITE_TOKEN',
   'VAPID_PRIVATE_KEY',
+  'TURNSTILE_SECRET_KEY',
   // The push sender (src/lib/push/web-push-sender.ts) is server-only.
   'Received unexpected response code',
   '@resvg/resvg-js',
@@ -45,6 +46,8 @@ for (const [name, value] of [
   ['ORS_API_KEY', getOrsApiKey()],
   ['BLOB_READ_WRITE_TOKEN', getBlobToken()],
   ['VAPID_PRIVATE_KEY', getPushEnvironment()?.privateKey],
+  // The configured key, not getTurnstileEnvironment()'s: that one is Cloudflare's public test key off Vercel.
+  ['TURNSTILE_SECRET_KEY', process.env.TURNSTILE_SECRET_KEY?.trim()],
 ] as const) {
   if (value) {
     needles.push(value);

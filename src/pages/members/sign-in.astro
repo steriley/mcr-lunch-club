@@ -2,7 +2,7 @@
 import Layout from '@/layouts/Layout.astro';
 import MemberSignIn from '@/components/islands/MemberSignIn.vue';
 import { auth } from '@/lib/auth';
-import { getPasskeyEnvironment } from '@/lib/env';
+import { getPasskeyEnvironment, getTurnstileEnvironment } from '@/lib/env';
 import { safeMemberRedirect } from '@/lib/members/auth-paths';
 import { hasAdminRole, isBanned } from '@/lib/roles';
 
@@ -22,6 +22,8 @@ const confirming = Boolean(signedIn && requested);
 if (signedIn && !confirming) return Astro.redirect(next);
 
 const { host: passkeyHost } = getPasskeyEnvironment();
+// Null in Production without a key: the form then says sign-in is unavailable (fails closed).
+const { siteKey: turnstileSiteKey } = getTurnstileEnvironment();
 ---
 
 <Layout
@@ -34,6 +36,7 @@ const { host: passkeyHost } = getPasskeyEnvironment();
       client:load
       next={next}
       passkeyHost={passkeyHost}
+      turnstileSiteKey={turnstileSiteKey}
       linkError={linkError}
       confirming={confirming}
     />
