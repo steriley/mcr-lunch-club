@@ -24,11 +24,19 @@ export const POST = adminRoute(
       headers: request.headers,
       body: { userId: params.id, banReason: 'Banned by the Chairs.' },
     });
-    await memberAccounts.recordEvent(db, {
-      memberId: params.id,
-      actorId: actor.id,
-      action: 'banned',
-    });
+    // The ban has happened; a failure to log it must not report it as failed.
+    try {
+      await memberAccounts.recordEvent(db, {
+        memberId: params.id,
+        actorId: actor.id,
+        action: 'banned',
+      });
+    } catch (error) {
+      console.error(
+        '[admin] Ban member: could not log the event:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
+    }
     return jsonResponse({ member: await memberAccounts.find(db, params.id) });
   }
 );

@@ -8,7 +8,15 @@ import { GET as EXPORT } from '@/pages/api/member/export';
 import { POST as BAN } from '@/pages/api/admin/members/[id]/ban';
 import { POST as HIDE_NAME } from '@/pages/api/admin/members/[id]/hide-name';
 import { memberAccounts, type MemberSummary } from '@/lib/members/profiles';
-import { ADMIN, adminRequest, restoreStubs, run, signInAs, stubAuthApi } from '../route-helpers';
+import {
+  ADMIN,
+  adminRequest,
+  quietly,
+  restoreStubs,
+  run,
+  signInAs,
+  stubAuthApi,
+} from '../route-helpers';
 
 /** The member API (/api/member/**) and the Chairs' member routes (#136, PR c). */
 
@@ -214,6 +222,16 @@ describe('the Chairs’ member routes', () => {
       actorId: ADMIN.id,
       action: 'banned',
     });
+  });
+
+  it('reports a ban that happened even if logging it fails', async () => {
+    signInAs();
+    mock.method(memberAccounts, 'find', async () => SUMMARY);
+    stubAuthApi('banUser', () => ({}));
+    mock.method(memberAccounts, 'recordEvent', async () => {
+      throw new Error('database unavailable');
+    });
+    assert.equal((await quietly(() => adminCall(BAN))).status, 200);
   });
 
   it('answers 404 for a Chair’s account, and touches nothing', async () => {
