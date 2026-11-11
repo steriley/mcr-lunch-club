@@ -13,10 +13,10 @@ import {
 import { tierInfo } from '@/lib/tiers';
 
 /**
- * The Swing-o-meter on a venue page (#138): a compact colour-coded row with a sliding bar that
- * moves from the Chairs' band to the People's score. The page is prerendered, so this fetches the
- * meter when it scrolls into view. Only rendered while the `members` flag is on, for venues that
- * get a meter. Unofficial: nothing here is called a verdict.
+ * The People's Verdict on a venue page (#138): a compact row of the three tier colours with a
+ * sliding bar that moves from the Chairs' band to the People's score. The segments use the tier
+ * colours the verdict filter chips use. The page is prerendered, so this fetches the meter when it
+ * scrolls into view. Only rendered while the `members` flag is on, for venues that get a meter.
  */
 const props = defineProps<{ slug: string; venueName: string; canLog: boolean }>();
 
@@ -35,6 +35,7 @@ const segments = SWING_BANDS.map(({ band, min, max }) => ({
   width: max - min,
   label: bandLabel(band),
   color: tierInfo(BAND_TIERS[band]).color,
+  glyph: tierInfo(BAND_TIERS[band]).glyph,
 }));
 
 onMounted(async () => {
@@ -106,6 +107,19 @@ const sparkline = computed(() => {
   };
 });
 
+/** One line under the headline: what the meter indicates, and that the Chairs still decide. */
+const explanation = computed(() => {
+  const body = swing.value;
+  if (!body) return '';
+  if (!body.quorate) {
+    return `Shown once ${body.quorum} members have each logged a lunch here on two different days. It sets what members think against the Chairs’ verdict.`;
+  }
+  if (body.chairsBand === null) {
+    return 'Where members’ own lunch logs would put this venue. The Chairs haven’t decided it yet.';
+  }
+  return 'Where members’ own lunch logs put this venue, set against the Chairs’ verdict. A guide, not a ruling: the Chairs decide.';
+});
+
 const costNote = computed(() =>
   swing.value?.typicalCost ? ` · typically ${swing.value.typicalCost}` : ''
 );
@@ -115,7 +129,7 @@ const costNote = computed(() =>
   <div class="swing" data-testid="swing-o-meter" :data-state="state">
     <p v-if="state === 'loading'" class="text-sm text-dim font-sans">Counting the votes…</p>
     <p v-else-if="state === 'failed'" class="text-sm text-dim font-sans">
-      The Swing-o-meter couldn’t be read just now.
+      The People’s Verdict couldn’t be read just now.
     </p>
     <div v-else-if="swing" class="space-y-3 font-sans">
       <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
@@ -125,9 +139,10 @@ const costNote = computed(() =>
         </p>
         <span
           class="rounded-full border border-hairline px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-dim"
-          >Unofficial · not a verdict</span
+          >Unofficial</span
         >
       </div>
+      <p class="text-sm text-graphite" data-testid="swing-explanation">{{ explanation }}</p>
 
       <div class="py-0.5">
         <div
@@ -146,6 +161,18 @@ const costNote = computed(() =>
             :class="{ 'is-chairs': isChairs(segment.band) }"
             :style="{ flexGrow: segment.width, '--band': segment.color }"
           >
+            <svg
+              class="swing-glyph"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path :d="segment.glyph" />
+            </svg>
             <span class="swing-label">{{ segment.label }}</span>
             <span v-if="isChairs(segment.band)" class="swing-seal" title="The Chairs’ verdict"
               >C</span
@@ -224,7 +251,7 @@ const costNote = computed(() =>
       </details>
 
       <p class="text-xs text-dim">
-        The People’s score is unofficial and takes no part in the Chairs’ verdict.
+        Unofficial: it takes no part in the Chairs’ verdict.
         <a class="underline" href="/the-count">See The Count</a>.
       </p>
     </div>
@@ -255,16 +282,20 @@ const costNote = computed(() =>
   align-items: center;
   justify-content: center;
   min-width: 0;
-  background: color-mix(in srgb, var(--band) 16%, var(--color-surface));
-  color: var(--color-ink);
+  gap: 0.3rem;
+  background: var(--band);
+  color: var(--color-parchment-fixed);
 }
 .swing-segment + .swing-segment {
   border-left: 1px solid var(--color-hairline);
 }
 .swing-segment.is-chairs {
-  background: var(--band);
-  color: var(--color-parchment-fixed);
   box-shadow: inset 0 0 0 2px var(--color-ink);
+}
+.swing-glyph {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: none;
 }
 .swing-label {
   font-size: 0.7rem;
