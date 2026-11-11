@@ -1,4 +1,5 @@
 import { getTurnstileEnvironment } from '@/lib/env';
+import { TURNSTILE_TOKEN_MAX_LENGTH } from '@/lib/members/sign-in-schema';
 
 /**
  * Cloudflare Turnstile for the member sign-in form (#136, PR d): the server side. The widget on the
@@ -7,7 +8,6 @@ import { getTurnstileEnvironment } from '@/lib/env';
  */
 
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
-const MAX_TOKEN_LENGTH = 2048;
 const VERIFY_TIMEOUT_MS = 5000;
 
 /** `unavailable`: no secret key, or Cloudflare couldn't be asked. Both fail closed. */
@@ -29,7 +29,8 @@ export async function verifyTurnstile(
 ): Promise<TurnstileResult> {
   const { secretKey } = getTurnstileEnvironment();
   if (!secretKey) return 'unavailable';
-  if (typeof token !== 'string' || !token || token.length > MAX_TOKEN_LENGTH) return 'failed';
+  if (typeof token !== 'string' || !token || token.length > TURNSTILE_TOKEN_MAX_LENGTH)
+    return 'failed';
 
   const body = new URLSearchParams({ secret: secretKey, response: token });
   if (remoteIp) body.set('remoteip', remoteIp);

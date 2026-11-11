@@ -29,7 +29,8 @@ test('a signed-out visitor is sent to sign in, and the form asks for an email', 
 
   await expect(page.getByRole('heading', { name: 'Confirm it’s you' })).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Sign in or join' })).toBeVisible();
-  await expect(page.getByTestId('member-send-email')).toBeVisible();
+  // Enabled once the form token has loaded and Turnstile has given a token.
+  await expect(page.getByTestId('member-send-email')).toBeEnabled({ timeout: 30_000 });
   // The nav on this on-demand page offers sign-in, at the far right of the pill.
   const signInLink = page.locator(mainNav('[data-member-signed-out]'));
   await expect(signInLink).toBeVisible();
@@ -42,8 +43,8 @@ test('the sign-in form gets a Turnstile token, and the CSP lets the widget run (
   page,
 }) => {
   await visit(page, '/members/sign-in', 200, { settle: false });
-  // The send button waits for a token. Cloudflare's test site key passes on its own (and shows
-  // no frame), so an enabled button means its script, frame and connections were all allowed;
+  // The send button waits for a token. Cloudflare's test site key (visible, always passes) needs
+  // no click, so an enabled button means its script, frame and connections were all allowed;
   // the monitor fixture fails the test on any Content-Security-Policy violation.
   await expect(page.getByTestId('member-send-email')).toBeDisabled();
   await expect(page.getByTestId('member-send-email')).toBeEnabled({ timeout: 30_000 });
