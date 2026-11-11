@@ -52,7 +52,7 @@ const venueCount = await (
   Astro.isPrerendered ? countPublicVenuesForBuild() : countPublicVenues()
 ).catch(() => null);
 const currentYear = new Date().getFullYear();
-// The member header (#136) exists only while the `members` flag is on. Prerendered pages read the
+// The member link (#136), last in each nav, exists only while the `members` flag is on. Prerendered pages read the
 // flag when they are built, so turning it on shows "Sign in" on them from the next build.
 const membersEnabled = await isMembersEnabled().catch(() => false);
 const navigation: NavItem[] = [
@@ -117,9 +117,9 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
           currentPath={currentPath}
           counts={navCounts}
           ariaLabel="Main navigation"
-        />
-
-        {membersEnabled && <MemberHeader />}
+        >
+          {membersEnabled && <MemberHeader placement="main" />}
+        </SiteNav>
 
         <details class="mobile-menu">
           <summary class="mobile-menu-trigger" aria-label="Menu">
@@ -135,7 +135,9 @@ const navCounts = { '/inspections': inspectionCount, '/verdicts/approved': venue
               currentPath={currentPath}
               counts={navCounts}
               ariaLabel="Mobile navigation"
-            />
+            >
+              {membersEnabled && <MemberHeader placement="menu" />}
+            </SiteNav>
           </div>
         </details>
       </div>

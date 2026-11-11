@@ -483,7 +483,7 @@ from the terminal.
   grant. Nothing is kept: a banned member who deletes their account can join again. Tables added
   later for member-owned data must cascade the same way (the rule is above `memberProfiles` in
   `src/db/schema.ts`).
-- **The header island** (`src/components/MemberHeader.astro`) is rendered only while the flag is
+- **The member link** (`src/components/MemberHeader.astro`) is the last item of the nav: at the far right of the pill on wide screens, at the bottom of the burger menu on phones. It is rendered only while the flag is
   on. Prerendered pages read the flag when they are built, so turning the flag on in Vercel shows
   "Sign in" on them from the next deployment. The island asks `/api/member/session` who is signed
   in only when the `signed_in` hint cookie is set, and that route clears a hint that outlived its
