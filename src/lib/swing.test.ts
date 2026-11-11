@@ -164,7 +164,7 @@ describe('headlines', () => {
     assert.equal(headlineFor({ kind: 'none' }, 90), null);
   });
 
-  it('never calls the score a verdict', () => {
+  it('keeps the word verdict for the Chairs in its own text', () => {
     const swing = buildVenueSwing(
       approved,
       summariseLogs(['a', 'b', 'c', 'd', 'e'].map((id) => log(id, 'reject', 1))),

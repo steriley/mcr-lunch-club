@@ -2,7 +2,7 @@ import type { MemberCost, MemberVerdictVote } from '@/lib/member-inspection-disp
 import { tierInfo, type TierValue } from '@/lib/tiers';
 
 /**
- * The Swing-o-meter (#138): where the People's lunch logs sit against the Chairs' verdict.
+ * The People's Verdict, or Swing-o-meter (#138): where the People's lunch logs sit against the Chairs' verdict.
  * Pure and browser-safe (no Zod, no database), so the venue page's island, The Count and the tests
  * share it.
  *
@@ -11,7 +11,8 @@ import { tierInfo, type TierValue } from '@/lib/tiers';
  * Assessed are holding states, so those venues get a Straw Poll (no Chairs' band, no headline of
  * agreement). Gone But Not Forgotten and closed venues get no meter.
  *
- * Copy must never call the People's score a verdict.
+ * The section is titled "The People's Verdict" and is always explained as a guide the Chairs do not
+ * have to follow; the headlines and descriptions keep the word "verdict" for the Chairs.
  */
 
 export type SwingBand = 'rejected' | 'if_we_must' | 'approved';

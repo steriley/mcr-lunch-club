@@ -27,12 +27,12 @@ test('an Approved venue shows the meter, with the Chairs’ band marked and poll
 }) => {
   const slug = await venueSlug(page, 'approved');
   await visit(page, `/venues/${slug}`);
-  const section = page.getByRole('region', { name: 'The Swing-o-meter' });
+  const section = page.getByRole('region', { name: 'The People’s Verdict' });
   test.skip((await section.count()) === 0, 'the site was built with the members flag off');
   await section.scrollIntoViewIfNeeded();
   const meter = page.getByTestId('swing-o-meter');
   await expect(meter).toHaveAttribute('data-state', 'ready');
-  await expect(meter.getByText('Unofficial · not a verdict')).toBeVisible();
+  await expect(meter.getByText('Unofficial', { exact: true })).toBeVisible();
   // Three bands, labelled in text so colour is never the only signal.
   for (const label of ['Rejected', 'If We Must', 'Approved']) {
     await expect(meter.locator('.swing-label', { hasText: label })).toBeVisible();
@@ -46,7 +46,7 @@ test('the meter fits a phone without sideways scrolling', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   const slug = await venueSlug(page, 'approved');
   await visit(page, `/venues/${slug}`);
-  const section = page.getByRole('region', { name: 'The Swing-o-meter' });
+  const section = page.getByRole('region', { name: 'The People’s Verdict' });
   test.skip((await section.count()) === 0, 'the site was built with the members flag off');
   await section.scrollIntoViewIfNeeded();
   await expect(page.getByTestId('swing-o-meter')).toHaveAttribute('data-state', 'ready');
