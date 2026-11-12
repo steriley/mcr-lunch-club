@@ -1,5 +1,5 @@
 import { createHmac } from 'node:crypto';
-import { and, eq, gte, lte, ne, sql } from 'drizzle-orm';
+import { and, eq, gte, lte, sql } from 'drizzle-orm';
 import { contactMessages } from '@/db/schema';
 import type { ContactInput } from '@/lib/contact-schema';
 import type { Database } from '@/lib/db-client';
@@ -28,8 +28,12 @@ function keyed(purpose: string, value: string): string {
     .slice(0, 32);
 }
 
-/** Keyed hash of the sender's IP, domain-separated from the other forms'; the IP is never stored. */
-export const contactSenderHash = (ip: string | null) => (ip ? keyed('contact', ip) : null);
+/**
+ * Keyed hash of the sender's IP, domain-separated from the other forms'; the IP is never stored.
+ * Senders whose address the host can't supply share one bucket, so the per-sender limits and the
+ * repeat check still apply to them together.
+ */
+export const contactSenderHash = (ip: string | null) => keyed('contact', ip ?? 'unknown');
 
 /**
  * Keyed hash of a message body for the duplicate check. Case, spacing and Unicode compatibility
@@ -49,7 +53,7 @@ export type ContactSubmitResult =
  * moment can't all pass a check none of them has been counted against. A refused or repeated
  * message takes its row back out, so it never shows in the inbox or uses up an allowance.
  *
- * A repeat is the same sender and the same body (after folding) within a day.
+ * A repeat is the same sender and the same body (after folding) within a day, sent before this one.
  */
 export async function submitContactMessage(
   db: Database,
@@ -73,12 +77,15 @@ export async function submitContactMessage(
 
   const { createdAt, senderHash: sender, bodyHash: body, id } = contactMessages;
   const fromSender = senderHash ? sql`${sender} = ${senderHash}` : sql`false`;
+  // Only a message strictly before this one makes it a repeat, so of two identical messages sent
+  // at the same moment (a double click), the first is kept and only the second is dropped.
+  const earlier = sql`(${createdAt}, ${id}) < (${now}, ${stored.id})`;
   const [counts] = await db
     .select({
       site: sql<number>`count(*)::int`,
       senderDay: sql<number>`count(*) filter (where ${fromSender})::int`,
       senderHour: sql<number>`count(*) filter (where ${fromSender} and ${createdAt} >= ${new Date(now.getTime() - HOUR)})::int`,
-      repeats: sql<number>`count(*) filter (where ${fromSender} and ${body} = ${bodyHash} and ${ne(id, stored.id)})::int`,
+      repeats: sql<number>`count(*) filter (where ${fromSender} and ${body} = ${bodyHash} and ${earlier})::int`,
     })
     .from(contactMessages)
     .where(and(gte(createdAt, new Date(now.getTime() - DAY)), lte(createdAt, now)));

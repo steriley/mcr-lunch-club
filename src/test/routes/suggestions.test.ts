@@ -82,7 +82,7 @@ describe('POST /api/suggestions', () => {
     assert.ok(!JSON.stringify(values).includes('203.0.113.7'));
   });
 
-  it('falls back to x-forwarded-for when the host cannot supply the client address', async () => {
+  it('ignores a client-written x-forwarded-for when the host cannot supply the address', async () => {
     notLimited();
     const inserts = stubDb('insert', []);
     const response = await run(
@@ -90,7 +90,10 @@ describe('POST /api/suggestions', () => {
       publicContext(input, { ip: null, forwardedFor: '198.51.100.1, 10.0.0.1' })
     );
     assert.equal(response.status, 201);
-    assert.ok((inserts.find((call) => call.method === 'values')!.args[0] as any).senderHash);
+    assert.equal(
+      (inserts.find((call) => call.method === 'values')!.args[0] as any).senderHash,
+      null
+    );
   });
 
   it('pretends to accept honeypot submissions without storing them', async () => {

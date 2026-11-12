@@ -8,7 +8,12 @@ import {
   loadContactMessages,
   setContactMessageStatus,
 } from '@/lib/contact-inbox';
-import { CONTACT_RATE_LIMITS, contactSenderHash, submitContactMessage } from '@/lib/contact-submit';
+import {
+  CONTACT_RATE_LIMITS,
+  contactBodyHash,
+  contactSenderHash,
+  submitContactMessage,
+} from '@/lib/contact-submit';
 import { closeTestDb, resetTestDb, skipIntegration, testDb } from './db';
 
 const MINUTE = 60_000;
@@ -62,6 +67,30 @@ describe('contact messages (database)', { skip: skipIntegration }, () => {
       'stored'
     );
     assert.equal((await rows()).length, 3);
+  });
+
+  it('of two identical messages at the same instant (a double click), drops only the later', async () => {
+    const db = await testDb();
+    const sender = contactSenderHash('203.0.113.5');
+    const now = new Date();
+    const twin = (id: string) =>
+      db.insert(contactMessages).values({
+        id,
+        ...message(1),
+        senderHash: sender,
+        bodyHash: contactBodyHash(message(1).message),
+        createdAt: now,
+      });
+
+    // The other click, already written at the same instant but ordered after this one.
+    await twin('ffffffff-ffff-4fff-bfff-ffffffffffff');
+    assert.equal((await submitContactMessage(db, message(1), sender, now)).result, 'stored');
+
+    // Ordered before it: this one is the repeat.
+    await resetTestDb();
+    await twin('00000000-0000-4000-8000-000000000000');
+    assert.equal((await submitContactMessage(db, message(1), sender, now)).result, 'duplicate');
+    assert.equal((await rows()).length, 1);
   });
 
   it('allows three an hour and ten a day per sender, refusing without storing', async () => {

@@ -198,6 +198,56 @@ describe('POST /api/contact', () => {
     assert.deepEqual(logged, ['[contact] honeypot']);
   });
 
+  it('answers a honeypot or too-fast bot with success even when its fields are invalid', async () => {
+    const inserts = stubDb('insert', []);
+    for (const body of [
+      { name: 'A', email: 'nope', message: 'x', formToken: settledToken(), website: 'spam' },
+      { name: 'A', email: 'nope', message: 'x', formToken: contactForm.issue() },
+    ]) {
+      const response = await run(POST, publicContext(body));
+      assert.equal(response.status, 201);
+      assert.deepEqual(await response.json(), { ok: true });
+    }
+    assert.equal(inserts.length, 0);
+    assert.deepEqual(logged, ['[contact] honeypot', '[contact] too_fast']);
+  });
+
+  it('stops reading a streamed body with no Content-Length once it passes the cap', async () => {
+    const inserts = stubDb('insert', []);
+    let pulled = 0;
+    const chunk = new TextEncoder().encode('x'.repeat(4096));
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled += 1;
+        if (pulled > 1000) controller.close();
+        else controller.enqueue(chunk);
+      },
+    });
+    const request = new Request(`${SITE}/api/contact`, {
+      method: 'POST',
+      headers: { origin: SITE, 'content-type': 'application/json' },
+      body: stream,
+      duplex: 'half',
+    } as RequestInit);
+    assert.equal(request.headers.get('content-length'), null);
+    const response = await run(POST, { request, clientAddress: '203.0.113.7' });
+    assert.equal(response.status, 413);
+    assert.ok(pulled < 10, `read ${pulled} chunks`);
+    assert.equal(inserts.length, 0);
+  });
+
+  it('never keys the sender on a client-written x-forwarded-for', async () => {
+    const hashes = new Set<unknown>();
+    for (const spoof of ['198.51.100.1', '198.51.100.2']) {
+      const { inserts } = stubSubmit();
+      const context = publicContext(input(), { ip: null });
+      context.request.headers.set('x-forwarded-for', spoof);
+      assert.equal((await run(POST, context)).status, 201);
+      hashes.add(stored(inserts)!.senderHash);
+    }
+    assert.equal(hashes.size, 1, 'both share the unknown-sender bucket');
+  });
+
   it('pretends to accept a submit faster than the time trap', async () => {
     const inserts = stubDb('insert', []);
     const response = await run(POST, publicContext({ ...input(), formToken: contactForm.issue() }));

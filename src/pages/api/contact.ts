@@ -9,6 +9,7 @@ import {
 import { isContactEnabled } from '@/lib/contact-flag';
 import { contactInputSchema } from '@/lib/contact-schema';
 import { contactSenderHash, submitContactMessage } from '@/lib/contact-submit';
+import { clientIp } from '@/lib/client-ip';
 import { db } from '@/lib/db';
 import { formTokens } from '@/lib/form-token';
 import { notifyChairs } from '@/lib/push/dispatch';
@@ -39,29 +40,49 @@ function logOutcome(outcome: ContactLogOutcome): void {
   console.info(`[contact] ${outcome}`);
 }
 
-function clientIp(request: Request, readClientAddress: () => string): string | null {
-  try {
-    return readClientAddress();
-  } catch {
-    return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
-  }
-}
+const TOO_LARGE = 'That message is too long to send.';
 
-/** The body as JSON, or a Response saying why not: too large (413) or not JSON at all (400). */
+/**
+ * The body as JSON, or a Response saying why not: too large (413) or not JSON at all (400). The
+ * stream is read with a running count and cancelled past the cap, so a body sent without (or
+ * understating) Content-Length is never buffered beyond it.
+ */
 async function readCappedJson(request: Request): Promise<unknown | Response> {
   const declared = Number(request.headers.get('content-length'));
   if (Number.isFinite(declared) && declared > CONTACT_MAX_BODY_BYTES) {
-    return jsonError(413, 'That message is too long to send.');
+    return jsonError(413, TOO_LARGE);
   }
-  const text = await request.text();
-  if (new TextEncoder().encode(text).length > CONTACT_MAX_BODY_BYTES) {
-    return jsonError(413, 'That message is too long to send.');
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+  if (request.body) {
+    const reader = request.body.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      received += value.byteLength;
+      if (received > CONTACT_MAX_BODY_BYTES) {
+        await reader.cancel().catch(() => {});
+        return jsonError(413, TOO_LARGE);
+      }
+      chunks.push(value);
+    }
+  }
+  const bytes = new Uint8Array(received);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
   }
   try {
-    return JSON.parse(text);
+    return JSON.parse(new TextDecoder().decode(bytes));
   } catch {
     return jsonError(400, 'Please correct the highlighted fields.');
   }
+}
+
+/** A field of the raw body, before validation, for the bot checks. */
+function rawField(body: unknown, key: string): unknown {
+  return body && typeof body === 'object' ? (body as Record<string, unknown>)[key] : undefined;
 }
 
 /**
@@ -90,26 +111,30 @@ export const POST: APIRoute = async (context) => {
   const body = await readCappedJson(request);
   if (body instanceof Response) return body;
 
-  const parsed = contactInputSchema.safeParse(body);
-  if (!parsed.success) return validationError(parsed.error);
-  const { formToken, website, ...input } = parsed.data;
-
-  if (website?.trim()) {
+  // The bot checks read the raw body, before validation: a bot that trips one is told it worked,
+  // never which of its fields were wrong.
+  const website = rawField(body, 'website');
+  if (typeof website === 'string' ? website.trim() : website != null) {
     logOutcome('honeypot');
     return accepted();
   }
-  const timing = contactForm.check(formToken);
+  const timing = contactForm.check(rawField(body, 'formToken'));
   if (timing === 'too_fast') {
     logOutcome('too_fast');
     return accepted();
   }
+
+  const parsed = contactInputSchema.safeParse(body);
+  if (!parsed.success) return validationError(parsed.error);
+  const { formToken: _formToken, website: _website, ...input } = parsed.data;
+
   if (timing !== 'ok') {
     logOutcome('expired');
     return jsonError(400, 'This form has expired. Please reload the page and send it again.');
   }
 
   try {
-    const sender = contactSenderHash(clientIp(request, () => context.clientAddress));
+    const sender = contactSenderHash(clientIp(() => context.clientAddress));
     const submitted = await submitContactMessage(db, input, sender);
     switch (submitted.result) {
       case 'stored':

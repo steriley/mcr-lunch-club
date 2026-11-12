@@ -7,12 +7,15 @@ import { senderHash as suggestionSenderHash } from './suggestions';
 describe('contact hashes', () => {
   it('hashes the sender, never storing the address, and apart from the other forms', () => {
     const hash = contactSenderHash('203.0.113.7');
-    assert.match(hash!, /^[0-9a-f]{32}$/);
-    assert.ok(!hash!.includes('203'));
+    assert.match(hash, /^[0-9a-f]{32}$/);
+    assert.ok(!hash.includes('203'));
     assert.notEqual(hash, suggestionSenderHash('203.0.113.7'));
     assert.equal(contactSenderHash('203.0.113.7'), hash);
     assert.notEqual(contactSenderHash('203.0.113.8'), hash);
-    assert.equal(contactSenderHash(null), null);
+    // Senders with no known address share one bucket rather than escaping the limits.
+    assert.equal(contactSenderHash(null), contactSenderHash(null));
+    assert.match(contactSenderHash(null), /^[0-9a-f]{32}$/);
+    assert.notEqual(contactSenderHash(null), hash);
   });
 
   it('folds case, spacing and compatibility forms before hashing a body', () => {
