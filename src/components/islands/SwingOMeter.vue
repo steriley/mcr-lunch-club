@@ -114,7 +114,7 @@ const explanation = computed(() => {
   const body = swing.value;
   if (!body) return '';
   if (body.chairsBand === null) {
-    return 'Where members’ own lunch logs would put this venue. The Chairs haven’t decided it yet.';
+    return 'Where members’ own lunch logs would put this venue. A guide, not a ruling: the Chairs haven’t decided it yet, and they decide.';
   }
   return 'Where members’ own lunch logs put this venue, set against the Chairs’ verdict. A guide, not a ruling: the Chairs decide.';
 });

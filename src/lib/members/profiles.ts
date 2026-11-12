@@ -441,7 +441,8 @@ async function exportMemberData(db: Database, userId: string) {
  */
 async function deleteMemberAccount(
   db: Database,
-  userId: string
+  userId: string,
+  now: Date = new Date()
 ): Promise<Outcome<{ deleted: true }, 'member_not_found'>> {
   return outcomeTransaction(db, async (tx) => {
     const member = await findMemberUser(tx, userId, true);
@@ -467,12 +468,15 @@ async function deleteMemberAccount(
         )
       );
     // The cascade takes their lunch logs with them, so the venues they logged at are rescored.
+    // Each rescore takes that venue's advisory lock until commit. Taking them in one fixed order
+    // means two deletions that share venues queue behind each other instead of deadlocking.
     const venuesLogged = await tx
       .selectDistinct({ id: memberInspections.venueId })
       .from(memberInspections)
-      .where(eq(memberInspections.memberId, userId));
+      .where(eq(memberInspections.memberId, userId))
+      .orderBy(memberInspections.venueId);
     await tx.delete(user).where(eq(user.id, userId));
-    for (const { id } of venuesLogged) await recomputeVenueScore(tx, id);
+    for (const { id } of venuesLogged) await recomputeVenueScore(tx, id, now);
     return ok({ deleted: true as const });
   });
 }

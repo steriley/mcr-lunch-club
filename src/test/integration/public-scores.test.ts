@@ -158,6 +158,57 @@ describe('public scores (database)', { skip: skipIntegration }, () => {
     assert.equal((await api.recentPublic(db, 'old-cafe'))?.verdictPending, false);
   });
 
+  it('shows no people’s score below the quorum, only the note', async () => {
+    const db = await testDb();
+    await eligibleVotes(venue, MEMBERS.slice(0, 2));
+    const feed = await api.recentPublic(db, 'chip-shop');
+    assert.equal(feed?.verdictPending, true);
+    assert.equal(feed?.score, null);
+    assert.equal(feed?.eligibleLogs, 0);
+    assert.ok(feed!.recent.length > 0, 'the logs themselves still show');
+  });
+
+  it('agrees with the meter while the stored aggregate waits for the daily refresh', async () => {
+    const db = await testDb();
+    await eligibleVotes(venue, MEMBERS);
+    // A ban lifts by itself (a timed ban ending): the live rows count five again at once, but the
+    // stored aggregate, and so the meter, wait for the refresh. The note must follow the meter.
+    await db.update(user).set({ banned: true }).where(eq(user.id, 'a'));
+    await refreshAllScores(db, new Date(NOON.getTime() + 2 * DAY));
+    await db.update(user).set({ banned: false }).where(eq(user.id, 'a'));
+    const swing = await venueSwing(db, 'chip-shop');
+    const feed = await api.recentPublic(db, 'chip-shop');
+    assert.equal(swing?.quorate, false);
+    assert.equal(feed?.verdictPending, true, 'the note stands in for the hidden meter');
+
+    await refreshAllScores(db, new Date(NOON.getTime() + 3 * DAY));
+    assert.equal((await venueSwing(db, 'chip-shop'))?.quorate, true);
+    assert.equal((await api.recentPublic(db, 'chip-shop'))?.verdictPending, false);
+  });
+
+  it('deletes two accounts that share venues at the same moment, without a deadlock', async () => {
+    const db = await testDb();
+    const others = [];
+    for (const name of ['Pie Shop', 'Noodle Bar', 'Deli', 'Taco Stand']) {
+      others.push(await createVenue(name, { tier: 'approved' }));
+    }
+    const shared = [venue, ...others];
+    // Logged in opposite orders. Postgres often returns the distinct venues sorted anyway, so this
+    // may pass without the explicit order in deleteMemberAccount; it checks both deletions succeed.
+    const day = (n: number) => new Date(NOON.getTime() + n * DAY);
+    for (const [n, id] of shared.entries()) await log('a', id, day(n));
+    for (const [n, id] of [...shared].reverse().entries()) await log('b', id, day(n));
+
+    const results = await Promise.all([
+      memberAccounts.delete(db, 'a'),
+      memberAccounts.delete(db, 'b'),
+    ]);
+    assert.deepEqual(
+      results.map((result) => result.ok),
+      [true, true]
+    );
+  });
+
   it('counts every log when members save at the same moment', async () => {
     const db = await testDb();
     for (const id of MEMBERS) await log(id, venue, NOON);

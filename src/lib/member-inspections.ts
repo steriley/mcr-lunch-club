@@ -4,6 +4,7 @@ import {
   briberyRecords,
   memberInspections,
   memberProfiles,
+  venuePublicScores,
   venues,
   type MemberInspectionRow,
 } from '@/db/schema';
@@ -504,12 +505,16 @@ interface PublicMemberInspection {
 
 export interface PublicInspectionsFeed {
   recent: PublicMemberInspection[];
-  /** The weighted mean of eligible visible logs (Two-Visit Rule, member weights). */
+  /**
+   * The weighted mean of eligible visible logs (Two-Visit Rule, member weights). Null while
+   * `verdictPending`: a venue short of its quorum shows no public number at all.
+   */
   score: number | null;
   eligibleLogs: number;
   /**
    * The venue gets a People's Verdict meter but is short of its quorum, so the page says so under
    * "Recent inspections from the public". False once there is a quorum and for venues with no meter.
+   * Read from the stored aggregate (venue_public_scores), like the meter, so the two always agree.
    */
   verdictPending: boolean;
   /** Whether the Chairs have given a verdict, for the wording of that note. */
@@ -531,7 +536,7 @@ async function recentPublic(db: Database, slug: string): Promise<PublicInspectio
     notBanned
   );
 
-  const [recent, scored] = await Promise.all([
+  const [recent, scored, [stored]] = await Promise.all([
     db
       .select({
         visitDate: memberInspections.visitDate,
@@ -550,29 +555,38 @@ async function recentPublic(db: Database, slug: string): Promise<PublicInspectio
       .limit(PUBLIC_RECENT_LIMIT),
     db
       .select({
-        memberId: memberInspections.memberId,
         verdictVote: memberInspections.verdictVote,
         venuesLogged,
       })
       .from(memberInspections)
       .where(and(visibleHere, sql`${daysAtVenue} >= ${ELIGIBLE_AFTER_DAYS}`)),
+    // The meter's own count: the note stands in for the hidden meter, so it must read the same
+    // stored aggregate the swing endpoint does, not a live recount that can run ahead of it.
+    db
+      .select({ eligibleMembers: venuePublicScores.eligibleMembers })
+      .from(venuePublicScores)
+      .where(eq(venuePublicScores.venueId, venue.id))
+      .limit(1),
   ]);
+
+  const verdictPending = mode.kind !== 'none' && !hasQuorum(stored?.eligibleMembers ?? 0);
 
   return {
     recent: recent.map(({ daysAtVenue: days, ...row }) => ({
       ...row,
       provisional: !isEligibleCount(Number(days)),
     })),
-    score: weightedScore(
-      scored.map((row) => ({
-        score: logScore(row),
-        weight: memberWeight(Number(row.venuesLogged)),
-      }))
-    ),
-    eligibleLogs: scored.length,
-    // Counted from the same live rows as the score above, so the note never contradicts the feed.
-    verdictPending:
-      mode.kind !== 'none' && !hasQuorum(new Set(scored.map((row) => row.memberId)).size),
+    // Below the quorum the People's Verdict is withheld, so no number is shown in its place.
+    score: verdictPending
+      ? null
+      : weightedScore(
+          scored.map((row) => ({
+            score: logScore(row),
+            weight: memberWeight(Number(row.venuesLogged)),
+          }))
+        ),
+    eligibleLogs: verdictPending ? 0 : scored.length,
+    verdictPending,
     chairsDecided: mode.kind === 'decided',
   };
 }
