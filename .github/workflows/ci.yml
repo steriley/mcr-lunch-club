@@ -93,8 +93,10 @@ jobs:
       - run: pnpm check:built
       # The same build served with the members flag on (#136): the member pages render on demand,
       # so they follow the server's flag without a second build.
-      - name: Member accounts and lunch logs with the flag on
-        run: pnpm check:built e2e/member-accounts.spec.ts e2e/member-inspections.spec.ts
+      # swing.spec's venue-page checks skip on this flag-off build; The Count renders on demand and
+      # so is checked in a browser, CSP included.
+      - name: Member accounts, lunch logs and The Count with the flag on
+        run: pnpm check:built e2e/member-accounts.spec.ts e2e/member-inspections.spec.ts e2e/swing.spec.ts
         env:
           MEMBERS_FLAG: 'on'
       - uses: actions/upload-artifact@v4

@@ -52,6 +52,21 @@ test('the note fits a phone without sideways scrolling', async ({ page }) => {
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
+test('The Count, rendered on demand, runs in a browser within its CSP', async ({
+  page,
+  monitor,
+}) => {
+  // The first public page on the public Layout that renders on demand: its policy is sent before
+  // components run, so any inline script Astro could only hash on a prerendered page would show
+  // up here as a violation (the fixture fails the test on any).
+  await visit(page, '/the-count');
+  await expect(page.getByRole('heading', { name: 'The Count' })).toBeVisible();
+  await page.locator('footer').scrollIntoViewIfNeeded();
+  await page.waitForLoadState('networkidle');
+  expect(monitor.violations).toEqual([]);
+  expect(monitor.errors).toEqual([]);
+});
+
 test('the API and The Count answer, and carry nothing about members', async ({ request }) => {
   const count = await request.get('/the-count');
   expect(count.status()).toBe(200);

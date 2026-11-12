@@ -3,11 +3,12 @@ import { after, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { eq, sql } from 'drizzle-orm';
 import { user } from '@/db/auth-schema';
-import { briberyRecords, memberInspections, memberProfiles } from '@/db/schema';
+import { briberyRecords, memberInspections, memberProfiles, venuePublicScores } from '@/db/schema';
 import { londonDate } from '@/lib/london-date';
 import { memberInspectionInputSchema } from '@/lib/member-inspection-rules';
 import { isEligible, memberInspectionsApi as api } from '@/lib/member-inspections';
 import { memberAccounts } from '@/lib/members/profiles';
+import { SWING_QUORUM } from '@/lib/swing';
 import {
   closeTestDb,
   createAdmin,
@@ -467,6 +468,23 @@ describe('member inspections (database)', { skip: skipIntegration }, () => {
   });
 
   describe('the public feed', () => {
+    /**
+     * The feed shows a score only once the venue's meter has its quorum, read from the stored
+     * aggregate. These tests are about the score's arithmetic over a few logs, so they mark the
+     * venue quorate there; the withholding itself is tested in public-scores.test.ts.
+     */
+    async function markQuorate(venueId: string) {
+      await (
+        await testDb()
+      )
+        .insert(venuePublicScores)
+        .values({ venueId, eligibleMembers: SWING_QUORUM })
+        .onConflictDoUpdate({
+          target: venuePublicScores.venueId,
+          set: { eligibleMembers: SWING_QUORUM },
+        });
+    }
+
     it('shows the last five visible logs, names only when opted in, and a weighted score', async () => {
       const db = await testDb();
       await createMember('shy');
@@ -505,9 +523,15 @@ describe('member inspections (database)', { skip: skipIntegration }, () => {
       assert.equal(shy.displayName, null);
       assert.equal(shy.provisional, true);
 
+      // Short of the quorum, no number is shown in place of the People's Verdict.
+      assert.equal(feed.verdictPending, true);
+      assert.equal(feed.score, null);
+      await markQuorate(venue);
+      const scored = (await api.recentPublic(db, 'chip-shop'))!;
+
       // Only Proud Diner's two logs are eligible: one member, so the plain mean.
-      assert.equal(feed.eligibleLogs, 2);
-      assert.equal(feed.score, 3);
+      assert.equal(scored.eligibleLogs, 2);
+      assert.equal(scored.score, 3);
 
       // Nothing that identifies or locates the member.
       assert.deepEqual(Object.keys(feed.recent[0]).sort(), [
@@ -540,6 +564,7 @@ describe('member inspections (database)', { skip: skipIntegration }, () => {
         await log('good', venue, when, { verdictVote: 'if_we_must' });
         await log('stuffer', venue, when, { verdictVote: 'approve', dish: 'Stuffed pie' });
       }
+      await markQuorate(venue);
       const before = await api.recentPublic(db, 'chip-shop');
       assert.equal(before!.recent.length, 4);
       assert.equal(before!.eligibleLogs, 4);
