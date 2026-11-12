@@ -4,7 +4,8 @@
   "crons": [
     { "path": "/api/cron/weekly-bulletin", "schedule": "0 0 * * 4" },
     { "path": "/api/cron/publish-pending", "schedule": "0 5 * * *" },
-    { "path": "/api/cron/refresh-scores", "schedule": "20 3 * * *" }
+    { "path": "/api/cron/refresh-scores", "schedule": "20 3 * * *" },
+    { "path": "/api/cron/contact-retention", "schedule": "40 2 * * *" }
   ],
   "headers": [
     {

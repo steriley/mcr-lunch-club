@@ -1,0 +1,61 @@
+---
+import ContactInbox from '@/components/admin/ContactInbox.vue';
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { loadContactMessages, type ContactInboxView } from '@/lib/contact-inbox';
+import { CONTACT_RETENTION_DAYS } from '@/lib/contact-schema';
+import { db } from '@/lib/db';
+
+export const prerender = false;
+
+const view: ContactInboxView =
+  Astro.url.searchParams.get('view') === 'handled' ? 'handled' : 'inbox';
+const { messages, totals } = await loadContactMessages(db, view);
+const unread = totals.get('new') ?? 0;
+const tabs = [
+  {
+    view: 'inbox',
+    label: 'Inbox',
+    total: (totals.get('new') ?? 0) + (totals.get('read') ?? 0),
+    href: '/admin/contact',
+  },
+  {
+    view: 'handled',
+    label: 'Handled',
+    total: totals.get('handled') ?? 0,
+    href: '/admin/contact?view=handled',
+  },
+].map((tab) => ({ ...tab, active: tab.view === view }));
+---
+
+<AdminLayout title="Messages">
+  <div class="space-y-6">
+    <div>
+      <p class="text-xs font-bold uppercase tracking-[0.2em] text-ochre">Correspondence</p>
+      <h1 class="mt-2 text-3xl font-bold text-ink">Messages</h1>
+      <p class="mt-2 max-w-2xl text-sm text-soot">
+        Sent from the public contact form. Nothing here appears on the site. Reply from your own
+        email; messages are deleted after {CONTACT_RETENTION_DAYS} days, whatever their status.
+        {unread > 0 && <strong class="text-ink">{unread} unread.</strong>}
+      </p>
+    </div>
+
+    <nav class="flex flex-wrap gap-2" aria-label="Message status">
+      {tabs.map((tab) => (
+        <a
+          href={tab.href}
+          class:list={[
+            'rounded-full border px-3 py-1.5 text-sm font-semibold',
+            tab.active
+              ? 'border-navy bg-navy-fixed text-white'
+              : 'border-hairline bg-surface text-ink hover:bg-linen',
+          ]}
+          aria-current={tab.active ? 'page' : undefined}
+        >
+          {tab.label} <span class="ml-1 opacity-75">{tab.total}</span>
+        </a>
+      ))}
+    </nav>
+
+    <ContactInbox client:load messages={messages} view={view} />
+  </div>
+</AdminLayout>

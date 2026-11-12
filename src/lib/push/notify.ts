@@ -15,6 +15,7 @@ import {
 } from '@/lib/push/messages';
 import {
   badgeFor,
+  claimContactSlots,
   claimSuggestionSlots,
   loadChairs,
   loadPendingWork,
@@ -53,7 +54,9 @@ function hostOf(endpoint: string): string {
 }
 
 async function venueName(db: Database, event: PushEvent): Promise<string | null> {
-  if (event.type === 'suggestion' || event.type === 'passkey_added') return null;
+  if (event.type === 'suggestion' || event.type === 'contact' || event.type === 'passkey_added') {
+    return null;
+  }
   const [row] = await db
     .select({ name: venues.name })
     .from(venues)
@@ -127,6 +130,8 @@ export async function deliverPushEvent(
   let recipients = selectRecipients(event, chairs, now);
   // A flood of suggestions collapses into one rolling notification, at most every ten minutes.
   if (event.type === 'suggestion') recipients = await claimSuggestionSlots(db, recipients, now);
+  // Contact messages likewise, at most every fifteen minutes (#132).
+  if (event.type === 'contact') recipients = await claimContactSlots(db, recipients, now);
   if (recipients.length === 0) return EMPTY;
 
   const subscriptions = await subscriptionsFor(db, recipients);
@@ -142,6 +147,7 @@ export async function deliverPushEvent(
         venueName: name,
         badge: badgeCount(userId, work, preferences.get(userId)!),
         suggestionCount: work.newSuggestions,
+        contactCount: work.newContactMessages,
       }),
     deliveryOptions(event, secondsUntilLondonMidnight(now)),
     deps

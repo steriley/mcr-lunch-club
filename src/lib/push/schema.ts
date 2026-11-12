@@ -42,6 +42,7 @@ export const preferencesSchema = z
     decisions: z.boolean(),
     visits: z.boolean(),
     suggestions: z.boolean(),
+    contact: z.boolean(),
     promptDismissed: z.boolean(),
   })
   .partial()

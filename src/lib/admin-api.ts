@@ -141,6 +141,7 @@ export const ERROR_HTTP = {
   proposal_not_found: { status: 404, message: 'Proposal not found.' },
   bribery_not_found: { status: 404, message: 'Bribery record not found.' },
   suggestion_not_found: { status: 404, message: 'Suggestion not found.' },
+  contact_message_not_found: { status: 404, message: 'Message not found.' },
   user_not_found: { status: 404, message: 'User not found.' },
   note_not_found: { status: 404, message: 'Note not found.' },
   visit_not_found: { status: 404, message: 'Visit not found.' },

@@ -32,7 +32,7 @@ const publicFiles = [
   ),
   ...files(path.join(ROOT, 'components')).filter(
     (file) =>
-      !/(Venue(Form|Table|Closure)|Proposal|TierProposal|Pending|VisitedToday|PlaceSearch|Suggestion|User|Bribery|Admin|Login|Session|ChangePassword|ImageUpload|ConfirmDialog|TierBadge|VenueVisits)/.test(
+      !/(Venue(Form|Table|Closure)|Proposal|TierProposal|Pending|VisitedToday|PlaceSearch|Suggestion|ContactInbox|User|Bribery|Admin|Login|Session|ChangePassword|ImageUpload|ConfirmDialog|TierBadge|VenueVisits)/.test(
         path.basename(file)
       )
   ),
@@ -199,5 +199,61 @@ describe('the public lunch-log feed leaks nothing about members', () => {
     );
     assert.ok(block.includes('displayName'));
     for (const pattern of LEAKS) assert.doesNotMatch(block, pattern);
+  });
+});
+
+/**
+ * Contact messages (#132) are Chairs-only: the public route writes them through contact-submit.ts
+ * and nothing public reads them. The retention cron deletes old ones and is refused without the
+ * cron secret, so it is the one public-folder route allowed the inbox module.
+ */
+describe('public code never reads contact messages', () => {
+  const CONTACT_FORBIDDEN = [
+    /contact_messages/,
+    /contactMessages/,
+    /lib\/contact-inbox/,
+    /ContactInbox/,
+    /SerializedContactMessage/,
+  ];
+  const RETENTION_CRON = path.join(ROOT, 'pages/api/cron/contact-retention.ts');
+
+  it('checks the contact page, its island and its route', () => {
+    for (const file of [
+      'pages/contact.astro',
+      'pages/api/contact.ts',
+      'components/islands/ContactForm.vue',
+    ]) {
+      assert.ok(publicFiles.includes(path.join(ROOT, file)), file);
+    }
+    assert.ok(!publicFiles.some((file) => file.endsWith('ContactInbox.vue')));
+  });
+
+  for (const file of publicFiles.filter((file) => file !== RETENTION_CRON)) {
+    it(path.relative(ROOT, file), () => {
+      const source = readFileSync(file, 'utf8');
+      for (const pattern of CONTACT_FORBIDDEN) assert.doesNotMatch(source, pattern);
+    });
+  }
+
+  it('the public write path only writes: it exports no reader or serializer', () => {
+    const source = readFileSync(path.join(ROOT, 'lib/contact-submit.ts'), 'utf8');
+    const exported = [...source.matchAll(/export\s+(?:async\s+)?(?:function|const|type)\s+(\w+)/g)]
+      .map((match) => match[1])
+      .sort();
+    assert.deepEqual(exported, [
+      'CONTACT_RATE_LIMITS',
+      'ContactSubmitResult',
+      'contactBodyHash',
+      'contactSenderHash',
+      'submitContactMessage',
+    ]);
+  });
+
+  it('the browser-shipped schema imports nothing server-side', () => {
+    const source = readFileSync(path.join(ROOT, 'lib/contact-schema.ts'), 'utf8');
+    const imports = [...source.matchAll(/^import\s+(?:[^'"]+from\s+)?'([^']+)'/gm)].map(
+      (match) => match[1]
+    );
+    assert.deepEqual(imports, ['@/lib/zod-browser', 'zod']);
   });
 });

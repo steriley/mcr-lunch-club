@@ -3,22 +3,26 @@
  * web-push, so the rules are unit tested. src/lib/push/notify.ts loads the rows and sends.
  *
  * Payloads carry the minimum, because they show on lock screens: the event, the venue name, who
- * acted, where a tap goes and a tag. Never a decline reason, an internal note, a suggestion's
- * text or anything about who sent it.
+ * acted, where a tap goes and a tag. Never a decline reason, an internal note, a suggestion's or
+ * contact message's text, or anything about who sent it.
  */
 import type { InspectionRow, TierProposalRow } from '@/db/schema';
 import { isActiveChair } from '@/lib/roles';
 import { tierLabel, type TierValue } from '@/lib/tiers';
 import type { PushMessage } from '@/lib/pwa/push';
 
-type PushEventKind = 'proposals' | 'decisions' | 'visits' | 'suggestions';
+type PushEventKind = 'proposals' | 'decisions' | 'visits' | 'suggestions' | 'contact';
 
-/** The preference each event is filed under, and its defaults (#115: all on but suggestions). */
+/**
+ * The preference each event is filed under, and its defaults (#115: all on but suggestions;
+ * #132: contact messages are opt-in too).
+ */
 export interface NotificationPreferences {
   proposals: boolean;
   decisions: boolean;
   visits: boolean;
   suggestions: boolean;
+  contact: boolean;
 }
 
 export const DEFAULT_PREFERENCES: NotificationPreferences = {
@@ -26,6 +30,7 @@ export const DEFAULT_PREFERENCES: NotificationPreferences = {
   decisions: true,
   visits: true,
   suggestions: false,
+  contact: false,
 };
 
 export type PushEvent =
@@ -65,6 +70,8 @@ export type PushEvent =
       secondChairName: string | null;
     }
   | { type: 'suggestion' }
+  /** A message from the public contact form (#132). Says nothing about who sent it or what. */
+  | { type: 'contact' }
   /** A passkey was added to this Chair's account (#153): for them only, and always sent. */
   | { type: 'passkey_added'; userId: string };
 
@@ -119,6 +126,7 @@ const EVENT_KIND: Record<PushEvent['type'], PushEventKind | null> = {
   visit_waiting: 'visits',
   visit_confirmed: 'visits',
   suggestion: 'suggestions',
+  contact: 'contact',
   passkey_added: null,
 };
 
@@ -161,6 +169,7 @@ export function selectRecipients(
           : [];
       break;
     case 'suggestion':
+    case 'contact':
       eligible = chairs;
       break;
     case 'passkey_added':
@@ -177,11 +186,12 @@ export interface PendingWork {
   /** The first presser of each of today's pending inspections. */
   visitPressers: (string | null)[];
   newSuggestions: number;
+  newContactMessages: number;
 }
 
 /**
  * The items this Chair can act on: other Chairs' proposals and visit presses (never their own),
- * plus new suggestions when they follow those.
+ * plus new suggestions and contact messages when they follow those.
  */
 export function badgeCount(
   userId: string,
@@ -192,7 +202,8 @@ export function badgeCount(
   return (
     others(work.proposalProposers) +
     others(work.visitPressers) +
-    (preferences.suggestions ? work.newSuggestions : 0)
+    (preferences.suggestions ? work.newSuggestions : 0) +
+    (preferences.contact ? work.newContactMessages : 0)
   );
 }
 
@@ -217,7 +228,12 @@ const DAY = 24 * 3600;
 /** The notification for an event, for one recipient (the badge is theirs). */
 export function buildMessage(
   event: PushEvent,
-  context: { venueName?: string | null; badge: number; suggestionCount?: number }
+  context: {
+    venueName?: string | null;
+    badge: number;
+    suggestionCount?: number;
+    contactCount?: number;
+  }
 ): PushMessage {
   const venue = short(context.venueName, 'A venue');
   const { badge } = context;
@@ -278,6 +294,18 @@ export function buildMessage(
         badge,
       };
     }
+    case 'contact': {
+      // Never the sender, the topic or the text: this shows on a lock screen.
+      const count = Math.max(1, context.contactCount ?? 1);
+      return {
+        title:
+          count === 1 ? 'New message from the website' : `${count} new messages from the website`,
+        body: 'Waiting in the Chairs’ contact inbox.',
+        tag: 'contact',
+        url: '/admin/contact',
+        badge,
+      };
+    }
     case 'passkey_added':
       return {
         title: 'A passkey was added to your account',
@@ -314,6 +342,7 @@ export function deliveryOptions(
     case 'visit_confirmed':
       return { urgency: 'high', ttl: secondsToMidnight };
     case 'suggestion':
+    case 'contact':
       return { urgency: 'low', ttl: DAY };
     case 'test':
       return { urgency: 'normal', ttl: 3600 };

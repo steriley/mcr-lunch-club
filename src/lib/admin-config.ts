@@ -6,6 +6,7 @@ export const ADMIN_NAV = [
   { href: '/admin/pending', label: 'Pending' },
   { href: '/admin/venues', label: 'Venues' },
   { href: '/admin/suggestions', label: 'Suggestions' },
+  { href: '/admin/contact', label: 'Messages' },
   { href: '/admin/golden-cut', label: 'Golden Cut' },
   { href: '/admin/bribery', label: 'Bribery Records' },
   { href: '/admin/users', label: 'Users' },

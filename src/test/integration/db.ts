@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { user } from '@/db/auth-schema';
-import { venues } from '@/db/schema';
+import { contactMessages, venues } from '@/db/schema';
 import { createDatabase, type DatabaseClient } from '@/lib/db-client';
 
 /**
@@ -53,7 +53,9 @@ export async function closeTestDb(): Promise<void> {
 
 export async function resetTestDb(): Promise<void> {
   const db = await testDb();
-  await db.execute(sql`truncate table ${venues}, ${user} restart identity cascade`);
+  await db.execute(
+    sql`truncate table ${venues}, ${user}, ${contactMessages} restart identity cascade`
+  );
 }
 
 export interface TestAdmin {

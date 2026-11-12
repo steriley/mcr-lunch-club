@@ -17,6 +17,7 @@ const {
   hidden: hiddenVenues,
   awaitingCountersign,
   newSuggestions,
+  newContactMessages,
 } = await loadDashboard(db, currentUser!.id);
 
 // A one-time nudge towards notifications, for a Chair with no device subscribed (#115).
@@ -40,6 +41,12 @@ const stats = [
     href: '/admin/suggestions',
     tone: 'bg-plum-tint text-plum',
   },
+  {
+    label: 'Unread messages',
+    value: newContactMessages,
+    href: '/admin/contact',
+    tone: 'bg-steel-tint text-steel',
+  },
 ];
 ---
 
@@ -49,7 +56,7 @@ const stats = [
 
     {showNotificationPrompt && <NotificationPrompt client:load />}
 
-    <div class="grid grid-cols-2 gap-2.5 sm:gap-4">
+    <div class="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-4">
       {stats.map((stat) => (
         <a
           href={stat.href}

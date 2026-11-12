@@ -1,0 +1,52 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import PageRibbon from '@/components/PageRibbon.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import ContactForm from '@/components/islands/ContactForm.vue';
+
+// A static shell: whether the form is open is asked at runtime (GET /api/contact), so switching
+// the `contact` flag off needs no rebuild (#132).
+export const prerender = true;
+---
+
+<Layout
+  title="Contact the Chairs — MCR Lunch Club"
+  description="Write to the Chairs of the MCR Lunch Club: general enquiries, venues, press and everything else."
+>
+  <PageRibbon
+    icon="mail"
+    kicker="The Usher’s Desk"
+    title="Contact the Chairs"
+    quote={[
+      'Correspondence is received, read and, where it merits one, answered.',
+      { text: 'Bribes are recorded in the Register, not the inbox.', accent: true },
+    ]}
+    width="max-w-2xl"
+  />
+
+  <div class="max-w-2xl mx-auto px-4 pt-4 pb-10 sm:pt-6 sm:pb-14 w-full space-y-6">
+    <Breadcrumbs items={[{ label: 'Map', href: '/' }, { label: 'Contact' }]} />
+
+    <p class="text-sm text-stone-700 font-sans">
+      For a venue the Chairs should assess, use{' '}
+      <a href="/#suggest-a-venue" class="underline">
+        Suggest a Venue
+      </a>
+      . Before writing about a verdict, read the{' '}
+      <a href="/faqs" class="underline">
+        FAQs
+      </a>
+      : most questions have been asked, and answered, before.
+    </p>
+
+    <section class="bg-card rounded-2xl border border-hairline p-5 sm:p-6 shadow-sm">
+      <ContactForm client:load />
+      <noscript>
+        <p class="text-sm text-stone-700 font-sans">
+          The contact form needs JavaScript. Please turn it on, or come back from a browser that has
+          it.
+        </p>
+      </noscript>
+    </section>
+  </div>
+</Layout>
