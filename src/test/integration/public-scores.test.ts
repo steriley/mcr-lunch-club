@@ -140,6 +140,23 @@ describe('public scores (database)', { skip: skipIntegration }, () => {
     assert.equal(swing?.quorate, false);
   });
 
+  it('tells the public feed whether the verdict is still pending', async () => {
+    const db = await testDb();
+    const before = await api.recentPublic(db, 'chip-shop');
+    assert.equal(before?.verdictPending, true);
+    assert.equal(before?.chairsDecided, true);
+
+    await eligibleVotes(venue, MEMBERS);
+    assert.equal((await api.recentPublic(db, 'chip-shop'))?.verdictPending, false);
+
+    await createVenue('Pie Shop', { tier: 'under_consideration' });
+    assert.equal((await api.recentPublic(db, 'pie-shop'))?.verdictPending, true);
+    assert.equal((await api.recentPublic(db, 'pie-shop'))?.chairsDecided, false);
+
+    await createVenue('Old Cafe', { tier: 'gone_but_not_forgotten' });
+    assert.equal((await api.recentPublic(db, 'old-cafe'))?.verdictPending, false);
+  });
+
   it('puts the People in another band when they disagree with the Chairs', async () => {
     const db = await testDb();
     // Five members with full weight, so they outweigh the prior.
