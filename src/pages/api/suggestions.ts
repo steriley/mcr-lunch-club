@@ -8,21 +8,13 @@ import {
   serverError,
   validationError,
 } from '@/lib/admin-api';
+import { clientIp } from '@/lib/client-ip';
 import { db } from '@/lib/db';
 import { notifyChairs } from '@/lib/push/dispatch';
 import { suggestionInputSchema } from '@/lib/suggestion-schema';
 import { isSuggestionRateLimited, senderHash } from '@/lib/suggestions';
 
 export const prerender = false;
-
-/** Astro's clientAddress getter throws where the host can't supply it, so it's read lazily here. */
-function clientIp(request: Request, readClientAddress: () => string): string | null {
-  try {
-    return readClientAddress();
-  } catch {
-    return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
-  }
-}
 
 /** Public "Suggest a Venue" endpoint. Suggestions land in the Chairs' Area inbox, never on the site. */
 export const POST: APIRoute = async (context) => {
@@ -36,7 +28,7 @@ export const POST: APIRoute = async (context) => {
   if (parsed.data.website?.trim()) return jsonResponse({ ok: true }, 201);
 
   try {
-    const hash = senderHash(clientIp(request, () => context.clientAddress));
+    const hash = senderHash(clientIp(() => context.clientAddress));
     if (await isSuggestionRateLimited(db, hash)) {
       return jsonError(
         429,

@@ -10,6 +10,7 @@ import {
 } from '@/lib/admin-api';
 import { auth } from '@/lib/auth';
 import { isChairEmail } from '@/lib/chair-accounts';
+import { clientIp } from '@/lib/client-ip';
 import { db } from '@/lib/db';
 import { isMemberSignupEnabled } from '@/lib/env';
 import { sendMail } from '@/lib/mail/send';
@@ -34,14 +35,6 @@ const NO_STORE = { 'Cache-Control': 'no-store' };
 /** The same answer whether or not an email belongs to anyone, a Chair, or a refused request. */
 const accepted = () =>
   jsonResponse({ ok: true, message: 'Check your email for a sign-in link and code.' });
-
-function clientIp(request: Request, readClientAddress: () => string): string | null {
-  try {
-    return readClientAddress();
-  } catch {
-    return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
-  }
-}
 
 /**
  * Makes and sends the sign-in email. Chairs never sign in by email, so nothing is made for a
@@ -107,7 +100,7 @@ export const POST: APIRoute = async (context) => {
 
   // Turnstile (PR d): after the free checks and before the rate limits, so a failed challenge never
   // uses up anyone's allowance. The answer doesn't depend on the email, so it reveals nothing.
-  const ip = clientIp(request, () => context.clientAddress);
+  const ip = clientIp(() => context.clientAddress);
   const challenge = await verifyTurnstile(turnstileToken, ip);
   if (challenge === 'failed') {
     return jsonError(400, 'The security check didn’t pass. Please complete it and try again.');
