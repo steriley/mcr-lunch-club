@@ -3,7 +3,7 @@ import { after, beforeEach, describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { eq } from 'drizzle-orm';
 import { user } from '@/db/auth-schema';
-import { pushSubscriptions, venueSuggestions } from '@/db/schema';
+import { contactMessages, pushSubscriptions, venueSuggestions } from '@/db/schema';
 import type { PushSender, SendResult } from '@/lib/push/delivery';
 import { proposalEvent } from '@/lib/push/messages';
 import { deliverPushEvent, sendTestPush } from '@/lib/push/notify';
@@ -196,6 +196,53 @@ describe('push notifications (database)', { skip: skipIntegration }, () => {
     assert.equal(later.sent[0].payload.body, 'Waiting in the Chairs’ inbox.');
   });
 
+  it('throttles contact pushes to one per Chair per fifteen minutes, opt-in only (#132)', async () => {
+    const db = await testDb();
+    await upsertSubscription(db, jo.id, device('jo'));
+    await upsertSubscription(db, alex.id, device('alex'));
+    await savePreferences(db, jo.id, { contact: true });
+    const write = () =>
+      db.insert(contactMessages).values({
+        name: 'Reynolds',
+        email: 'reynolds@example.com',
+        topic: 'general',
+        message: 'SECRET-BODY about the pasties',
+        bodyHash: crypto.randomUUID(),
+      });
+
+    const start = new Date();
+    await write();
+    const first = fakeSender();
+    await deliverPushEvent(db, { type: 'contact' }, { sender: first.sender, now: start });
+    assert.deepEqual(
+      first.sent.map((push) => [push.endpoint, push.payload.title]),
+      [[device('jo').endpoint, 'New message from the website']]
+    );
+    assert.equal(first.sent[0].payload.badge, 1);
+    assert.ok(!JSON.stringify(first.sent).includes('SECRET-BODY'));
+    assert.ok(!JSON.stringify(first.sent).includes('Reynolds'));
+
+    await write();
+    const soon = fakeSender();
+    await deliverPushEvent(
+      db,
+      { type: 'contact' },
+      { sender: soon.sender, now: new Date(start.getTime() + 14 * 60_000) }
+    );
+    assert.equal(soon.sent.length, 0);
+
+    await write();
+    const later = fakeSender();
+    await deliverPushEvent(
+      db,
+      { type: 'contact' },
+      { sender: later.sender, now: new Date(start.getTime() + 16 * 60_000) }
+    );
+    assert.equal(later.sent[0].payload.title, '3 new messages from the website');
+    assert.equal(await badgeFor(db, jo.id), 3);
+    assert.equal(await badgeFor(db, alex.id), 0);
+  });
+
   it('counts the badge without the Chair’s own items', async () => {
     const db = await testDb();
     await proposeTier(db, venueId, 'if_we_must', sam);
@@ -231,6 +278,7 @@ describe('push notifications (database)', { skip: skipIntegration }, () => {
       decisions: true,
       visits: true,
       suggestions: false,
+      contact: false,
       promptDismissed: false,
     });
     await savePreferences(db, sam.id, { visits: false, promptDismissed: true });

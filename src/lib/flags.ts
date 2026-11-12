@@ -14,3 +14,16 @@ export async function isFlagOn(key: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * The opposite failure: true only when the flag is reachable and set to a literal `false`. For a
+ * kill switch on something that should stay up when Flags is down or the flag was never made.
+ */
+export async function isFlagSwitchedOff(key: string): Promise<boolean> {
+  try {
+    const result = await flagsClient.evaluate(key, true);
+    return result.reason !== Reason.ERROR && result.value === false;
+  } catch {
+    return false;
+  }
+}

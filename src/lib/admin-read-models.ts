@@ -1,6 +1,12 @@
 import { asc, count, desc, eq, not } from 'drizzle-orm';
 import { user } from '@/db/auth-schema';
-import { briberyRecords, tierProposals, venueSuggestions, venues } from '@/db/schema';
+import {
+  briberyRecords,
+  contactMessages,
+  tierProposals,
+  venueSuggestions,
+  venues,
+} from '@/db/schema';
 import { serializeBribery } from '@/lib/bribery';
 import { formatDate } from '@/lib/dates';
 import type { Database } from '@/lib/db-client';
@@ -43,7 +49,7 @@ export interface Viewer {
 // ---- Dashboard -------------------------------------------------------------
 
 export async function loadDashboard(db: Database, viewerId: string) {
-  const [hidden, recent, [suggestions], [pendingChanges]] = await Promise.all([
+  const [hidden, recent, [suggestions], [pendingChanges], [contact]] = await Promise.all([
     db
       .select({ id: venues.id, name: venues.name, tier: venues.tier, updatedAt: venues.updatedAt })
       .from(venues)
@@ -67,12 +73,14 @@ export async function loadDashboard(db: Database, viewerId: string) {
       .limit(8),
     db.select({ total: count() }).from(venueSuggestions).where(eq(venueSuggestions.status, 'new')),
     db.select({ total: count() }).from(tierProposals).where(eq(tierProposals.status, 'pending')),
+    db.select({ total: count() }).from(contactMessages).where(eq(contactMessages.status, 'new')),
   ]);
   const pendingInspections = await listPendingInspections(db, viewerId);
 
   return {
     awaitingCountersign: pendingChanges.total + pendingInspections.length,
     newSuggestions: suggestions.total,
+    newContactMessages: contact.total,
     recent: recent.map((venue) => ({
       id: venue.id,
       name: venue.name,

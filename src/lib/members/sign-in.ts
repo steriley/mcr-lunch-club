@@ -1,9 +1,10 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac } from 'node:crypto';
 import { and, eq, gte, lt, lte, sql } from 'drizzle-orm';
 import { memberSignInRequests } from '@/db/schema';
 import type { Database } from '@/lib/db-client';
 import { getAuthEnvironment, getMemberSignInDailyCap } from '@/lib/env';
+import { formTokens } from '@/lib/form-token';
 import type { MailMessage } from '@/lib/mail/send';
 
 /**
@@ -94,43 +95,11 @@ export async function reserveSignIn(
   return result;
 }
 
-/**
- * The time trap: the form fetches a signed timestamp when it opens and sends it back. A submit
- * within MIN_FORM_MS is a bot (silently ignored); after MAX_FORM_MS the form must be reloaded.
- * The key is derived from BETTER_AUTH_SECRET with its own purpose, so the secret is never used
- * directly and no new variable is needed.
- */
-export const MIN_FORM_MS = 3 * 1000;
-export const MAX_FORM_MS = 2 * HOUR;
-
-function formSignature(issuedAt: number): string {
-  const key = createHmac('sha256', getAuthEnvironment().secret)
-    .update('member-sign-in-form')
-    .digest();
-  return createHmac('sha256', key).update(String(issuedAt)).digest('hex');
-}
-
-export function issueFormToken(now: Date = new Date()): string {
-  const issuedAt = now.getTime();
-  return `${issuedAt}.${formSignature(issuedAt)}`;
-}
-
-export type FormTokenResult = 'ok' | 'too_fast' | 'expired' | 'invalid';
-
-export function checkFormToken(token: unknown, now: Date = new Date()): FormTokenResult {
-  if (typeof token !== 'string') return 'invalid';
-  const [stamp, signature] = token.split('.');
-  const issuedAt = Number(stamp);
-  if (!Number.isSafeInteger(issuedAt) || !signature) return 'invalid';
-  const expected = Buffer.from(formSignature(issuedAt));
-  const given = Buffer.from(signature);
-  if (expected.length !== given.length || !timingSafeEqual(expected, given)) return 'invalid';
-  const age = now.getTime() - issuedAt;
-  if (age < 0) return 'invalid';
-  if (age < MIN_FORM_MS) return 'too_fast';
-  if (age > MAX_FORM_MS) return 'expired';
-  return 'ok';
-}
+/** The sign-in form's time trap (src/lib/form-token.ts); the purpose keeps its tokens its own. */
+const signInForm = formTokens('member-sign-in-form');
+export const issueFormToken = (now?: Date) => signInForm.issue(now);
+export const checkFormToken = (token: unknown, now?: Date) => signInForm.check(token, now);
+export { MAX_FORM_MS, MIN_FORM_MS } from '@/lib/form-token';
 
 /**
  * Better Auth hands the magic link and the code to two separate callbacks. While the route asks

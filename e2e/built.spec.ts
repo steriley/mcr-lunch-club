@@ -330,7 +330,7 @@ test.describe('Chairs’ notifications', () => {
       section.getByRole('heading', { name: 'Notifications on this device' })
     ).toBeVisible();
     await expect(section.getByText('Off for this device.')).toBeVisible();
-    await expect(section.getByRole('checkbox')).toHaveCount(4);
+    await expect(section.getByRole('checkbox')).toHaveCount(5);
 
     await section.getByRole('button', { name: 'Enable notifications' }).click();
     await expect(section.getByText('Blocked for this device.')).toBeVisible();
@@ -389,6 +389,7 @@ test.describe('Chairs’ Area', () => {
       '/admin/golden-cut',
       '/admin/pending',
       '/admin/suggestions',
+      '/admin/contact',
       '/admin/users',
       '/admin/account',
     ];

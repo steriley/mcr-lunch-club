@@ -44,6 +44,11 @@ const EVENTS: { key: keyof NotificationPreferences; label: string; hint: string 
     hint: 'A Chair needs a countersign before midnight, or yours was countersigned.',
   },
   { key: 'suggestions', label: 'New venue suggestions', hint: 'At most one every ten minutes.' },
+  {
+    key: 'contact',
+    label: 'Messages from the contact form',
+    hint: 'At most one every fifteen minutes.',
+  },
 ];
 
 const stateText = computed(

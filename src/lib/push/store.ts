@@ -1,6 +1,7 @@
 import { and, count, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm';
 import { user } from '@/db/auth-schema';
 import {
+  contactMessages,
   inspections,
   notificationPreferences,
   pushSubscriptions,
@@ -24,6 +25,8 @@ import type { PushSubscriptionInput } from '@/lib/push/schema';
 
 /** At most one suggestion push per Chair in this window; the next one carries the running count. */
 const SUGGESTION_PUSH_INTERVAL_MS = 10 * 60_000;
+/** At most one contact-message push per Chair in this window (#132). */
+const CONTACT_PUSH_INTERVAL_MS = 15 * 60_000;
 /** "Send a test notification": a few a minute at most. */
 const TEST_PUSH_INTERVAL_MS = 15_000;
 
@@ -34,6 +37,7 @@ function preferencesOf(row: Partial<NotificationPreferencesRow> | null | undefin
     decisions: row.decisions ?? DEFAULT_PREFERENCES.decisions,
     visits: row.visits ?? DEFAULT_PREFERENCES.visits,
     suggestions: row.suggestions ?? DEFAULT_PREFERENCES.suggestions,
+    contact: row.contact ?? DEFAULT_PREFERENCES.contact,
   };
 }
 
@@ -217,6 +221,35 @@ export async function claimSuggestionSlots(
 }
 
 /**
+ * The same for contact messages (#132): a burst of messages buzzes each Chair once, and the next
+ * push carries the running count. Messages in between still reach the inbox.
+ */
+export async function claimContactSlots(
+  db: Database,
+  userIds: string[],
+  now: Date = new Date()
+): Promise<string[]> {
+  if (userIds.length === 0) return [];
+  const rows = await db
+    .update(notificationPreferences)
+    .set({ contactNotifiedAt: now })
+    .where(
+      and(
+        inArray(notificationPreferences.userId, userIds),
+        or(
+          isNull(notificationPreferences.contactNotifiedAt),
+          lt(
+            notificationPreferences.contactNotifiedAt,
+            new Date(now.getTime() - CONTACT_PUSH_INTERVAL_MS)
+          )
+        )
+      )
+    )
+    .returning({ userId: notificationPreferences.userId });
+  return rows.map((row) => row.userId);
+}
+
+/**
  * Chairs' accounts with their preferences; members are never loaded (#136). selectRecipients
  * keeps the active Chairs among them.
  */
@@ -249,9 +282,20 @@ async function countNewSuggestions(db: Database): Promise<number> {
   return row?.total ?? 0;
 }
 
-/** Pending proposals, today's unconfirmed visit presses and new suggestions, for the badge. */
+async function countNewContactMessages(db: Database): Promise<number> {
+  const [row] = await db
+    .select({ total: count() })
+    .from(contactMessages)
+    .where(eq(contactMessages.status, 'new'));
+  return row?.total ?? 0;
+}
+
+/**
+ * Pending proposals, today's unconfirmed visit presses, new suggestions and unread contact
+ * messages, for the badge.
+ */
 export async function loadPendingWork(db: Database, now: Date = new Date()): Promise<PendingWork> {
-  const [proposals, visits, newSuggestions] = await Promise.all([
+  const [proposals, visits, newSuggestions, newContactMessages] = await Promise.all([
     db
       .select({ by: tierProposals.proposedBy })
       .from(tierProposals)
@@ -267,11 +311,13 @@ export async function loadPendingWork(db: Database, now: Date = new Date()): Pro
         )
       ),
     countNewSuggestions(db),
+    countNewContactMessages(db),
   ]);
   return {
     proposalProposers: proposals.map((row) => row.by),
     visitPressers: visits.map((row) => row.by),
     newSuggestions,
+    newContactMessages,
   };
 }
 

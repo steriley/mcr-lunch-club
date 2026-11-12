@@ -368,6 +368,7 @@ export const FAQ_PARTS: FaqPart[] = [
         q: 'Can we contact the Chairs directly?',
         a: [
           'Please do not approach a Chair mid-meal, mid-sentence, or mid-sandwich. If you recognise one, the correct response is to do absolutely nothing out of the ordinary. This is the hardest thing in hospitality.',
+          'In writing, however, you may: <a href="/contact">contact the Chairs</a> through the Usher’s Desk. Every message is read, and answered where it merits an answer.',
         ],
         quote: {
           text: 'The best service I ever received was from a waiter who knew exactly who I was and treated me precisely like everyone else. I gave him a sticker. He cried. We do not speak of it.',

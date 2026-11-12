@@ -18,6 +18,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { user } from './auth-schema';
+import { CONTACT_STATUSES, CONTACT_TOPICS } from '../lib/contact-schema';
 import { CUISINE_VALUES } from '../lib/cuisines';
 import { GOLDEN_CUT_SIZE } from '../lib/golden-cut-schema';
 import {
@@ -429,6 +430,35 @@ export const venueSuggestions = pgTable('venue_suggestions', {
   reviewedBy: text('reviewed_by').references(() => user.id, { onDelete: 'set null' }),
 });
 
+export const contactTopicEnum = pgEnum('contact_topic', CONTACT_TOPICS);
+export const contactStatusEnum = pgEnum('contact_status', CONTACT_STATUSES);
+
+/**
+ * Messages from the public contact form (#132). Chairs-only: no public page, component or
+ * serializer reads this table (src/test/public-safety.test.ts); the public route only writes to it
+ * through src/lib/contact-submit.ts. Both hashes are keyed HMACs: the sender's IP and the message
+ * body are never used to identify anyone, only to rate-limit and drop repeats. Rows older than
+ * CONTACT_RETENTION_DAYS are deleted daily (/api/cron/contact-retention).
+ */
+export const contactMessages = pgTable(
+  'contact_messages',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: text('name').notNull(),
+    email: text('email').notNull(),
+    topic: contactTopicEnum('topic').notNull(),
+    message: text('message').notNull(),
+    senderHash: text('sender_hash'),
+    bodyHash: text('body_hash').notNull(),
+    status: contactStatusEnum('status').notNull().default('new'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('contact_messages_created_idx').on(table.createdAt),
+    index('contact_messages_sender_idx').on(table.senderHash, table.createdAt),
+  ]
+);
+
 /**
  * A browser's Web Push subscription for a Chair (#115). One row per device, unique by endpoint: a
  * device that signs in as someone else moves to them. Deleting the user deletes their devices.
@@ -454,8 +484,9 @@ export const pushSubscriptions = pgTable(
 );
 
 /**
- * Which pushes a Chair wants, account-wide. No row means the defaults (all on but suggestions).
- * The timestamps throttle suggestion and test pushes and remember the dashboard prompt.
+ * Which pushes a Chair wants, account-wide. No row means the defaults (all on but suggestions and
+ * contact messages). The timestamps throttle suggestion, contact and test pushes and remember the
+ * dashboard prompt.
  */
 export const notificationPreferences = pgTable('notification_preferences', {
   userId: text('user_id')
@@ -466,6 +497,8 @@ export const notificationPreferences = pgTable('notification_preferences', {
   visits: boolean('visits').notNull().default(true),
   suggestions: boolean('suggestions').notNull().default(false),
   suggestionsNotifiedAt: timestamp('suggestions_notified_at', { withTimezone: true }),
+  contact: boolean('contact').notNull().default(false),
+  contactNotifiedAt: timestamp('contact_notified_at', { withTimezone: true }),
   testSentAt: timestamp('test_sent_at', { withTimezone: true }),
   promptDismissedAt: timestamp('prompt_dismissed_at', { withTimezone: true }),
   updatedAt: timestamp('updated_at', { withTimezone: true })
@@ -706,6 +739,7 @@ export const venuePublicScoreHistory = pgTable(
 export type VenueRow = typeof venues.$inferSelect;
 export type BriberyRow = typeof briberyRecords.$inferSelect;
 export type SuggestionRow = typeof venueSuggestions.$inferSelect;
+export type ContactMessageRow = typeof contactMessages.$inferSelect;
 export type VenueEventRow = typeof venueEvents.$inferSelect;
 export type InspectionRow = typeof inspections.$inferSelect;
 export type VenueVisitRow = typeof venueVisits.$inferSelect;

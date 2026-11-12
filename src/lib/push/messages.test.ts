@@ -105,11 +105,26 @@ describe('selectRecipients', () => {
     assert.deepEqual(selectRecipients({ type: 'suggestion' }, keen), ['jo']);
   });
 
+  it('sends contact messages only to Chairs who switched them on (off by default, #132)', () => {
+    assert.equal(DEFAULT_PREFERENCES.contact, false);
+    assert.deepEqual(selectRecipients({ type: 'contact' }, chairs), []);
+    const keen = chairs.map((c) =>
+      c.id === 'alex' ? { ...c, preferences: { ...c.preferences, contact: true } } : c
+    );
+    assert.deepEqual(selectRecipients({ type: 'contact' }, keen), ['alex']);
+  });
+
   it('tells only the owner when a passkey is added, whatever their preferences (#153)', () => {
     const event: PushEvent = { type: 'passkey_added', userId: 'muted' };
     assert.deepEqual(selectRecipients(event, chairs), ['muted']);
     const allOff = chair('quiet', {
-      preferences: { proposals: false, decisions: false, visits: false, suggestions: false },
+      preferences: {
+        proposals: false,
+        decisions: false,
+        visits: false,
+        suggestions: false,
+        contact: false,
+      },
     });
     assert.deepEqual(selectRecipients({ type: 'passkey_added', userId: 'quiet' }, [allOff]), [
       'quiet',
@@ -128,6 +143,7 @@ describe('badgeCount', () => {
     proposalProposers: ['sam', 'alex', null],
     visitPressers: ['sam', 'jo'],
     newSuggestions: 4,
+    newContactMessages: 2,
   };
 
   it("excludes the Chair's own proposals and visit presses", () => {
@@ -137,6 +153,10 @@ describe('badgeCount', () => {
 
   it('adds new suggestions for Chairs who follow them', () => {
     assert.equal(badgeCount('sam', work, { ...DEFAULT_PREFERENCES, suggestions: true }), 7);
+  });
+
+  it('adds unread contact messages for Chairs who follow them (#132)', () => {
+    assert.equal(badgeCount('sam', work, { ...DEFAULT_PREFERENCES, contact: true }), 5);
   });
 });
 
@@ -235,6 +255,21 @@ describe('buildMessage', () => {
       'url',
       'v',
     ]);
+  });
+
+  it('says a contact message arrived and nothing about it: no sender, topic or text (#132)', () => {
+    const one = buildMessage({ type: 'contact' }, { badge: 1, contactCount: 1 });
+    assert.equal(one.title, 'New message from the website');
+    assert.equal(one.tag, 'contact');
+    assert.equal(one.url, '/admin/contact');
+    assert.equal(
+      buildMessage({ type: 'contact' }, { badge: 0, contactCount: 4 }).title,
+      '4 new messages from the website'
+    );
+    // The event carries nothing but its type, so the payload can't either.
+    const payload = JSON.parse(encodeMessage(one));
+    assert.deepEqual(Object.keys(payload).sort(), ['badge', 'body', 'tag', 'title', 'url', 'v']);
+    assert.equal(deliveryOptions({ type: 'contact' }, 10).urgency, 'low');
   });
 
   it('says a passkey was added without naming the device, and links to Account', () => {
