@@ -15,10 +15,15 @@ import { tierInfo } from '@/lib/tiers';
 /**
  * The People's Verdict on a venue page (#138): a compact row of the three tier colours with a
  * sliding bar that moves from the Chairs' band to the People's score. The segments use the tier
- * colours the verdict filter chips use. The page is prerendered, so this fetches the meter when it
- * scrolls into view. Only rendered while the `members` flag is on, for venues that get a meter.
+ * colours the verdict filter chips use. The page is prerendered with this section hidden, so the
+ * island fetches the meter and reveals the section only once the venue has a quorum
+ * (`SWING_QUORUM` members). Until then nothing shows here; "Recent inspections from the public"
+ * carries the note that explains why. Only rendered while the `members` flag is on, for venues
+ * that get a meter.
  */
-const props = defineProps<{ slug: string; venueName: string; canLog: boolean }>();
+const props = defineProps<{ slug: string }>();
+
+const root = ref<HTMLElement | null>(null);
 
 const swing = ref<VenueSwing | null>(null);
 const state = ref<'loading' | 'ready' | 'failed'>('loading');
@@ -50,6 +55,8 @@ onMounted(async () => {
     swing.value = body;
     state.value = 'ready';
     if (body.position !== null) {
+      // A quorum: reveal the section (the page renders it hidden).
+      root.value?.closest('section')?.removeAttribute('hidden');
       // Draw the bar at the Chairs' band first, then let the CSS transition slide it across.
       // Under prefers-reduced-motion the transition is off, so it simply appears there.
       await nextTick();
@@ -76,12 +83,6 @@ const verdictShares = computed(() => {
     color: tierInfo(VERDICT_VOTE_TIERS[vote]).color,
   }));
 });
-
-const dots = computed(() =>
-  Array.from({ length: swing.value?.quorum ?? 0 }, (_, index) => ({
-    on: index < (swing.value?.eligibleMembers ?? 0),
-  }))
-);
 
 const SPARK_W = 200;
 const SPARK_H = 40;
@@ -111,9 +112,6 @@ const sparkline = computed(() => {
 const explanation = computed(() => {
   const body = swing.value;
   if (!body) return '';
-  if (!body.quorate) {
-    return `Shown once ${body.quorum} members have each logged a lunch here on two different days. It sets what members think against the Chairs’ verdict.`;
-  }
   if (body.chairsBand === null) {
     return 'Where members’ own lunch logs would put this venue. The Chairs haven’t decided it yet.';
   }
@@ -126,20 +124,15 @@ const costNote = computed(() =>
 </script>
 
 <template>
-  <div class="swing" data-testid="swing-o-meter" :data-state="state">
-    <p v-if="state === 'loading'" class="text-sm text-dim font-sans">Counting the votes…</p>
-    <p v-else-if="state === 'failed'" class="text-sm text-dim font-sans">
-      The People’s Verdict couldn’t be read just now.
-    </p>
+  <div ref="root" class="swing" data-testid="swing-o-meter" :data-state="state">
     <div
-      v-else-if="swing"
+      v-if="swing?.quorate"
       class="swing-card rounded-xl border border-hairline bg-surface shadow-xs font-sans"
     >
       <div class="swing-head">
         <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <p class="swing-headline text-ink" data-testid="swing-headline">
-            <template v-if="swing.headline">{{ swing.headline.text }}</template>
-            <template v-else>Polls Open</template>
+            {{ swing.headline?.text }}
           </p>
           <span
             class="rounded-full border border-hairline-strong px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-dim"
@@ -165,14 +158,7 @@ const costNote = computed(() =>
           </span>
         </div>
         <div class="swing-lane" :class="{ 'has-bar': swing.position !== null }">
-          <div
-            class="swing-track"
-            role="img"
-            :aria-label="
-              swing.description ??
-              `Polls open at ${venueName}: ${swing.eligibleMembers} of ${swing.quorum} members needed.`
-            "
-          >
+          <div class="swing-track" role="img" :aria-label="swing.description ?? ''">
             <div
               v-for="segment in segments"
               :key="segment.band"
@@ -216,28 +202,12 @@ const costNote = computed(() =>
         </div>
 
         <p class="swing-counts text-sm text-graphite" data-testid="swing-counts">
-          <template v-if="swing.quorate">
-            {{ swing.eligibleMembers }} members · {{ swing.eligibleLogs }}
-            {{ swing.eligibleLogs === 1 ? 'log' : 'logs' }}{{ costNote }}
-          </template>
-          <template v-else>
-            <span class="inline-flex items-center gap-1 align-middle" aria-hidden="true">
-              <span
-                v-for="(dot, index) in dots"
-                :key="index"
-                class="size-2 rounded-full border border-dim"
-                :class="dot.on ? 'bg-ink' : 'bg-transparent'"
-              ></span>
-            </span>
-            {{ swing.eligibleMembers }} of {{ swing.quorum }} members so far.
-            <a v-if="canLog" class="swing-link" :href="`/log/${encodeURIComponent(slug)}`"
-              >Log a visit</a
-            >
-          </template>
+          {{ swing.eligibleMembers }} members · {{ swing.eligibleLogs }}
+          {{ swing.eligibleLogs === 1 ? 'log' : 'logs' }}{{ costNote }}
         </p>
 
         <div
-          v-if="swing.quorate && swing.eligibleLogs > 0"
+          v-if="swing.eligibleLogs > 0"
           class="swing-split"
           role="img"
           :aria-label="

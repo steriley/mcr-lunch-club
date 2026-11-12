@@ -22,34 +22,30 @@ async function venueSlug(page: Page, tier: string): Promise<string> {
   return href!.replace(/^\/venues\//, '').replace(/\/$/, '');
 }
 
-test('an Approved venue shows the meter, with the Chairs’ band marked and polls open', async ({
+test('below a quorum the People’s Verdict stays hidden and the public feed says why', async ({
   page,
 }) => {
   const slug = await venueSlug(page, 'approved');
   await visit(page, `/venues/${slug}`);
-  const section = page.getByRole('region', { name: 'The People’s Verdict' });
+  const section = page.getByRole('region', { name: 'Recent inspections from the public' });
   test.skip((await section.count()) === 0, 'the site was built with the members flag off');
   await section.scrollIntoViewIfNeeded();
-  const meter = page.getByTestId('swing-o-meter');
-  await expect(meter).toHaveAttribute('data-state', 'ready');
-  await expect(meter.getByText('Unofficial', { exact: true })).toBeVisible();
-  // Three bands, labelled in text so colour is never the only signal.
-  for (const label of ['Rejected', 'If We Must', 'Approved']) {
-    await expect(meter.locator('.swing-label', { hasText: label })).toBeVisible();
-  }
-  await expect(meter.locator('.swing-seal')).toHaveCount(1);
-  // A fresh local database has no quorum: no bar, polls open.
-  await expect(page.getByTestId('swing-headline')).toHaveText(/Polls Open|The People/);
+  await expect(page.getByTestId('public-inspections')).toHaveAttribute('data-state', 'ready');
+  // A fresh local database has no quorum: the note explains it, and the meter's section is hidden.
+  await expect(page.getByTestId('verdict-pending')).toContainText('Two-Visit Rule');
+  await expect(page.getByTestId('verdict-pending')).toContainText('5 members');
+  await expect(page.getByRole('region', { name: 'The People’s Verdict' })).toHaveCount(0);
+  await expect(page.getByTestId('swing-bar')).toHaveCount(0);
 });
 
-test('the meter fits a phone without sideways scrolling', async ({ page }) => {
+test('the note fits a phone without sideways scrolling', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   const slug = await venueSlug(page, 'approved');
   await visit(page, `/venues/${slug}`);
-  const section = page.getByRole('region', { name: 'The People’s Verdict' });
+  const section = page.getByRole('region', { name: 'Recent inspections from the public' });
   test.skip((await section.count()) === 0, 'the site was built with the members flag off');
   await section.scrollIntoViewIfNeeded();
-  await expect(page.getByTestId('swing-o-meter')).toHaveAttribute('data-state', 'ready');
+  await expect(page.getByTestId('public-inspections')).toHaveAttribute('data-state', 'ready');
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth
   );

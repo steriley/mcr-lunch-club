@@ -4,6 +4,7 @@ import {
   briberyRecords,
   memberInspections,
   memberProfiles,
+  venuePublicScores,
   venues,
   type MemberInspectionRow,
 } from '@/db/schema';
@@ -39,6 +40,7 @@ import type {
 import { isOffensiveFoodText } from '@/lib/members/display-name-filter';
 import { fail, ok, outcomeTransaction, publicChange, type Outcome } from '@/lib/outcome';
 import { hasAdminRole } from '@/lib/roles';
+import { hasQuorum, meterMode } from '@/lib/swing';
 import { CLOSED_BUT_LISTED_TIER } from '@/lib/visibility';
 import { publicVenueCondition } from '@/lib/visibility-sql';
 import { daysAtVenue, notBanned, notRemoved, venuesLogged } from '@/lib/member-inspection-sql';
@@ -506,23 +508,31 @@ export interface PublicInspectionsFeed {
   /** The weighted mean of eligible visible logs (Two-Visit Rule, member weights). */
   score: number | null;
   eligibleLogs: number;
+  /**
+   * The venue gets a People's Verdict meter but is short of its quorum, so the page says so under
+   * "Recent inspections from the public". False once there is a quorum and for venues with no meter.
+   */
+  verdictPending: boolean;
+  /** Whether the Chairs have given a verdict, for the wording of that note. */
+  chairsDecided: boolean;
 }
 
 /** The venue page's "Recent inspections from the public". Null for a venue that isn't public. */
 async function recentPublic(db: Database, slug: string): Promise<PublicInspectionsFeed | null> {
   const [venue] = await db
-    .select({ id: venues.id })
+    .select({ id: venues.id, tier: venues.tier, closedAt: venues.closedAt })
     .from(venues)
     .where(and(eq(venues.slug, slug), publicVenueCondition()))
     .limit(1);
   if (!venue) return null;
+  const mode = meterMode({ tier: venue.tier, closed: venue.closedAt !== null });
   const visibleHere = and(
     eq(memberInspections.venueId, venue.id),
     eq(memberInspections.status, 'visible'),
     notBanned
   );
 
-  const [recent, scored] = await Promise.all([
+  const [recent, scored, [stored]] = await Promise.all([
     db
       .select({
         visitDate: memberInspections.visitDate,
@@ -546,6 +556,11 @@ async function recentPublic(db: Database, slug: string): Promise<PublicInspectio
       })
       .from(memberInspections)
       .where(and(visibleHere, sql`${daysAtVenue} >= ${ELIGIBLE_AFTER_DAYS}`)),
+    db
+      .select({ eligibleMembers: venuePublicScores.eligibleMembers })
+      .from(venuePublicScores)
+      .where(eq(venuePublicScores.venueId, venue.id))
+      .limit(1),
   ]);
 
   return {
@@ -560,6 +575,8 @@ async function recentPublic(db: Database, slug: string): Promise<PublicInspectio
       }))
     ),
     eligibleLogs: scored.length,
+    verdictPending: mode.kind !== 'none' && !hasQuorum(stored?.eligibleMembers ?? 0),
+    chairsDecided: mode.kind === 'decided',
   };
 }
 

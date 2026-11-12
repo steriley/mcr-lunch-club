@@ -79,7 +79,8 @@ const canLog =
     closedAt: venue.closed ? 'closed' : null,
   });
 
-// The Swing-o-meter (#138) is behind the same flag; Gone But Not Forgotten and closed venues get none.
+// The People's Verdict (#138) is behind the same flag, and its section stays hidden until the venue
+// has a quorum (the island reveals it); Gone But Not Forgotten and closed venues get none.
 const hasSwingMeter =
   membersEnabled && meterMode({ tier: venue.tier, closed: venue.closed }).kind !== 'none';
 
@@ -356,7 +357,7 @@ function truncate(text: string, max: number): string {
       )}
 
       {hasSwingMeter && (
-        <section class="space-y-3" aria-labelledby="swing-heading">
+        <section class="space-y-3" aria-labelledby="swing-heading" hidden>
           <h2
             id="swing-heading"
             class="text-xl font-bold tracking-tight text-ink flex items-center gap-2"
@@ -364,7 +365,7 @@ function truncate(text: string, max: number): string {
             <Icon name="scales" class="icon-md" />
             <span>The People’s Verdict</span>
           </h2>
-          <SwingOMeter client:visible slug={venue.slug} venueName={venue.name} canLog={canLog} />
+          <SwingOMeter client:idle slug={venue.slug} />
         </section>
       )}
 

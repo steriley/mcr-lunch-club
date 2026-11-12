@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { formatDate } from '@/lib/dates';
 import TierChip from '@/components/TierChip.vue';
 import { VERDICT_VOTE_TIERS } from '@/lib/member-inspection-display';
 import type { PublicInspectionsFeed } from '@/lib/member-inspections';
+import { SWING_QUORUM } from '@/lib/swing';
 import { tierInfo } from '@/lib/tiers';
 
 /**
@@ -30,6 +31,16 @@ onMounted(async () => {
     state.value = 'failed';
   }
 });
+
+/**
+ * Why the People's Verdict is not shown yet. The rule is five members who have each logged here on
+ * two different days (SWING_QUORUM, the Two-Visit Rule), so the note says that, not "five logs".
+ */
+const verdictPendingNote = computed(() =>
+  feed.value?.chairsDecided
+    ? `By the Two-Visit Rule, the People’s Verdict is withheld until ${SWING_QUORUM} members have each recorded two lunches here on separate days. Only then shall the public’s vote be weighed against the verdict of the Chairs.`
+    : `By the Two-Visit Rule, the People’s Verdict is withheld until ${SWING_QUORUM} members have each recorded two lunches here on separate days. Only then shall the public’s vote be tallied, while the Chairs yet deliberate.`
+);
 
 const badgeClass =
   'inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em]';
@@ -89,6 +100,13 @@ const badgeClass =
           <p v-if="log.pullQuote" class="text-sm italic text-ink">“{{ log.pullQuote }}”</p>
         </li>
       </ul>
+      <p
+        v-if="feed.verdictPending"
+        class="rounded-xl border border-dashed border-hairline bg-ivory px-4 py-3 text-sm italic text-graphite"
+        data-testid="verdict-pending"
+      >
+        {{ verdictPendingNote }}
+      </p>
     </template>
   </div>
 </template>
