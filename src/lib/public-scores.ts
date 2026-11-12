@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, isNull, notInArray, sql } from 'drizzle-orm';
 import {
   memberInspections,
   venuePublicScoreHistory,
@@ -14,13 +14,11 @@ import {
   SWING_HISTORY_DAYS,
   bandOf,
   buildVenueSwing,
-  chipText,
   distanceFromBand,
   hasQuorum,
   meterMode,
   peoplePosition,
   summariseLogs,
-  type MeterMode,
   type ScoreAggregate,
   type SwingBand,
   type SwingHistoryPoint,
@@ -96,17 +94,40 @@ function toAggregate(row: VenuePublicScoreRow | undefined): ScoreAggregate {
   };
 }
 
-/** Recomputes and stores one venue's aggregates. Call it inside the write's transaction. */
+/**
+ * Recomputes and stores one venue's aggregates. Call it inside the write's transaction. It takes a
+ * per-venue advisory lock first (held until the transaction ends), so two writes at one venue, or a
+ * write and the daily refresh, are taken one after the other and the later one reads the earlier
+ * one's committed logs instead of overwriting it with a stale total.
+ */
 export async function recomputeVenueScore(
-  db: Db,
+  db: Tx,
   venueId: string,
   now: Date = new Date()
 ): Promise<void> {
+  await db.execute(sql`select pg_advisory_xact_lock(hashtextextended(${venueId}, 0))`);
   const row = toRow(venueId, summariseLogs(await eligibleLogs(db, venueId)), now);
   await db
     .insert(venuePublicScores)
     .values(row)
     .onConflictDoUpdate({ target: venuePublicScores.venueId, set: row });
+}
+
+/**
+ * Recomputes every venue a member has logged at: for a ban or a lifted ban, which add or remove
+ * all their logs from those venues' scores at once. (A ban that expires on its own is caught by
+ * the daily refresh.)
+ */
+export async function recomputeMemberVenues(
+  db: Database,
+  memberId: string,
+  now: Date = new Date()
+): Promise<void> {
+  const rows = await db
+    .selectDistinct({ id: memberInspections.venueId })
+    .from(memberInspections)
+    .where(eq(memberInspections.memberId, memberId));
+  for (const { id } of rows) await db.transaction((tx) => recomputeVenueScore(tx, id, now));
 }
 
 /**
@@ -122,7 +143,7 @@ export async function refreshAllScores(
     .from(memberInspections);
   const withRows = await db.select({ id: venuePublicScores.venueId }).from(venuePublicScores);
   const ids = [...new Set([...withLogs, ...withRows].map((row) => row.id))];
-  for (const id of ids) await recomputeVenueScore(db, id, now);
+  for (const id of ids) await db.transaction((tx) => recomputeVenueScore(tx, id, now));
 
   const today = londonDate(now);
   const rows = await db
@@ -136,6 +157,7 @@ export async function refreshAllScores(
     .innerJoin(venues, eq(venues.id, venuePublicScores.venueId))
     .where(publicVenueCondition());
   let snapshots = 0;
+  const quorate: string[] = [];
   for (const row of rows) {
     const mode = meterMode({ tier: row.tier, closed: row.closedAt !== null });
     const aggregate = toAggregate(row.score);
@@ -156,7 +178,13 @@ export async function refreshAllScores(
         set: value,
       });
     snapshots += 1;
+    quorate.push(row.venueId);
   }
+  // A venue that is no longer quorate (or has lost its meter) keeps no history, so the sparkline
+  // never joins an old line to a new one across a gap.
+  await db
+    .delete(venuePublicScoreHistory)
+    .where(quorate.length ? notInArray(venuePublicScoreHistory.venueId, quorate) : sql`true`);
   await db
     .delete(venuePublicScoreHistory)
     .where(sql`${venuePublicScoreHistory.day} < ${addDays(today, -SWING_HISTORY_DAYS)}::date`);
@@ -323,14 +351,4 @@ export async function theCount(db: Database): Promise<TheCount> {
       : null,
     quorateVenues: meters.length,
   };
-}
-
-/** Chip text by venue slug, for decided venues above quorum only. */
-export async function swingChips(db: Database): Promise<Record<string, string>> {
-  const chips: Record<string, string> = {};
-  for (const meter of await quorateMeters(db)) {
-    const text = chipText(meter.mode as MeterMode, meter.position);
-    if (text) chips[meter.slug] = text;
-  }
-  return chips;
 }

@@ -176,12 +176,15 @@ export function peoplePosition(
   );
 }
 
-/** How far a position is outside a band, in points (0 inside it). Positive above, negative below. */
+/**
+ * How far a position is outside a band, in points (0 inside it). Positive above, negative below.
+ * "Inside" is `bandOf`'s answer, so an edge position counts as in the higher band here as it does
+ * in the headline; just above the top of a lower band the distance is a hair over zero, not zero.
+ */
 export function distanceFromBand(position: number, band: SwingBand): number {
+  if (bandOf(position) === band) return 0;
   const { min, max } = bandRange(band);
-  if (position < min) return position - min;
-  if (position >= max) return position - max;
-  return 0;
+  return position < min ? position - min : Math.max(position - max, Number.EPSILON);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -215,13 +218,6 @@ function meterDescription(mode: MeterMode, position: number): string {
   if (mode.kind === 'decided')
     return `${where} The Chairs’ verdict is ${bandLabel(mode.chairsBand)}.`;
   return `${where} The Chairs have not yet decided this venue.`;
-}
-
-/** The chip on a venue card: words, only above quorum and never for a Straw Poll. */
-export function chipText(mode: MeterMode, position: number): string | null {
-  if (mode.kind !== 'decided') return null;
-  const band = bandOf(position);
-  return band === mode.chairsBand ? 'The People Concur' : `People: ${bandLabel(band)}`;
 }
 
 // ---------------------------------------------------------------------------------------------

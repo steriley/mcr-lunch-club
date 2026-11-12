@@ -34,6 +34,15 @@ export const POST = adminRoute(
         error instanceof Error ? error.message : 'Unknown error'
       );
     }
+    // Their logs now count (or no longer count) in the People's Verdict at the venues they logged at.
+    try {
+      await memberAccounts.refreshScores(db, params.id);
+    } catch (error) {
+      console.error(
+        '[admin] Unban member: could not rescore their venues:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
+    }
     return jsonResponse({ member: await memberAccounts.find(db, params.id) });
   }
 );

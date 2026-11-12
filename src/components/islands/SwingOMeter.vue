@@ -89,10 +89,11 @@ const SPARK_H = 40;
 const sparkline = computed(() => {
   const body = swing.value;
   if (!body || body.history.length < 2) return null;
-  const last = new Date(`${body.history[body.history.length - 1].day}T00:00:00Z`).getTime();
+  // Anchored to today, so a history that has stopped growing drifts left instead of looking current.
+  const today = new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`).getTime();
   const points = body.history.map((point) => {
-    const age = (last - new Date(`${point.day}T00:00:00Z`).getTime()) / 86_400_000;
-    const x = SPARK_W - (age / SWING_HISTORY_DAYS) * SPARK_W;
+    const age = (today - new Date(`${point.day}T00:00:00Z`).getTime()) / 86_400_000;
+    const x = Math.min(SPARK_W, Math.max(0, SPARK_W - (age / SWING_HISTORY_DAYS) * SPARK_W));
     const y = SPARK_H - (point.position / 100) * SPARK_H;
     return `${x.toFixed(1)},${y.toFixed(1)}`;
   });

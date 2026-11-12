@@ -2,6 +2,7 @@ import { and, count, desc, eq, inArray, isNull, ne, not, or, sql } from 'drizzle
 import { passkey, session, user, verification } from '@/db/auth-schema';
 import {
   memberEvents,
+  memberInspections,
   memberProfiles,
   memberReservedNames,
   memberSignInRequests,
@@ -11,6 +12,7 @@ import { isUniqueViolation } from '@/lib/db-errors';
 import type { Database, Tx } from '@/lib/db-client';
 import { displayNameKey, type ProfileUpdate } from '@/lib/members/display-name';
 import { exportOwnLogs } from '@/lib/member-inspections';
+import { recomputeMemberVenues, recomputeVenueScore } from '@/lib/public-scores';
 import { isOffensiveName } from '@/lib/members/display-name-filter';
 import { emailHash } from '@/lib/members/sign-in';
 import { fail, ok, outcomeTransaction, type Outcome } from '@/lib/outcome';
@@ -464,7 +466,13 @@ async function deleteMemberAccount(
           )
         )
       );
+    // The cascade takes their lunch logs with them, so the venues they logged at are rescored.
+    const venuesLogged = await tx
+      .selectDistinct({ id: memberInspections.venueId })
+      .from(memberInspections)
+      .where(eq(memberInspections.memberId, userId));
     await tx.delete(user).where(eq(user.id, userId));
+    for (const { id } of venuesLogged) await recomputeVenueScore(tx, id);
     return ok({ deleted: true as const });
   });
 }
@@ -482,6 +490,8 @@ export const memberAccounts = {
   hideName: hideMemberName,
   allowName: allowMemberName,
   recordEvent: recordMemberEvent,
+  /** After a ban or a lifted ban: rescores the venues the member logged at. */
+  refreshScores: recomputeMemberVenues,
   exportData: exportMemberData,
   delete: deleteMemberAccount,
 };
