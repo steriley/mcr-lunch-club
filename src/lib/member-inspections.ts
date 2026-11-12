@@ -4,7 +4,6 @@ import {
   briberyRecords,
   memberInspections,
   memberProfiles,
-  venuePublicScores,
   venues,
   type MemberInspectionRow,
 } from '@/db/schema';
@@ -532,7 +531,7 @@ async function recentPublic(db: Database, slug: string): Promise<PublicInspectio
     notBanned
   );
 
-  const [recent, scored, [stored]] = await Promise.all([
+  const [recent, scored] = await Promise.all([
     db
       .select({
         visitDate: memberInspections.visitDate,
@@ -551,16 +550,12 @@ async function recentPublic(db: Database, slug: string): Promise<PublicInspectio
       .limit(PUBLIC_RECENT_LIMIT),
     db
       .select({
+        memberId: memberInspections.memberId,
         verdictVote: memberInspections.verdictVote,
         venuesLogged,
       })
       .from(memberInspections)
       .where(and(visibleHere, sql`${daysAtVenue} >= ${ELIGIBLE_AFTER_DAYS}`)),
-    db
-      .select({ eligibleMembers: venuePublicScores.eligibleMembers })
-      .from(venuePublicScores)
-      .where(eq(venuePublicScores.venueId, venue.id))
-      .limit(1),
   ]);
 
   return {
@@ -575,7 +570,9 @@ async function recentPublic(db: Database, slug: string): Promise<PublicInspectio
       }))
     ),
     eligibleLogs: scored.length,
-    verdictPending: mode.kind !== 'none' && !hasQuorum(stored?.eligibleMembers ?? 0),
+    // Counted from the same live rows as the score above, so the note never contradicts the feed.
+    verdictPending:
+      mode.kind !== 'none' && !hasQuorum(new Set(scored.map((row) => row.memberId)).size),
     chairsDecided: mode.kind === 'decided',
   };
 }

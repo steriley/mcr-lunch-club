@@ -9,7 +9,6 @@ import {
   bandCentre,
   bandOf,
   buildVenueSwing,
-  chipText,
   distanceFromBand,
   hasQuorum,
   headlineFor,
@@ -109,6 +108,12 @@ describe('the People’s score', () => {
 
   it('measures how far a position is outside a band', () => {
     assert.equal(distanceFromBand(50, 'if_we_must'), 0);
+    // The edges belong to the higher band, as they do for the headline.
+    assert.equal(distanceFromBand(30, 'if_we_must'), 0);
+    assert.ok(distanceFromBand(30, 'rejected') > 0);
+    assert.ok(distanceFromBand(65, 'if_we_must') > 0);
+    assert.equal(distanceFromBand(100, 'approved'), 0);
+    assert.equal(distanceFromBand(0, 'rejected'), 0);
     assert.equal(distanceFromBand(20, 'if_we_must'), -10);
     assert.equal(distanceFromBand(90, 'if_we_must'), 25);
   });
@@ -160,7 +165,6 @@ describe('headlines', () => {
 
   it('gives a Straw Poll no verdict to agree or dissent with', () => {
     assert.equal(headlineFor({ kind: 'straw_poll' }, 90)?.kind, 'straw_poll');
-    assert.equal(chipText({ kind: 'straw_poll' }, 90), null);
     assert.equal(headlineFor({ kind: 'none' }, 90), null);
   });
 
@@ -174,10 +178,5 @@ describe('headlines', () => {
     for (const text of [swing.headline?.text, swing.description]) {
       assert.ok(text && !/verdict/i.test(text.replace('The Chairs’ verdict is', '')));
     }
-  });
-
-  it('writes the chip in words', () => {
-    assert.equal(chipText(approved, 80), 'The People Concur');
-    assert.equal(chipText(approved, 50), 'People: If We Must');
   });
 });

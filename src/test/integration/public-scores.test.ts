@@ -7,7 +7,8 @@ import { venuePublicScoreHistory, venuePublicScores, venues } from '@/db/schema'
 import { londonDate } from '@/lib/london-date';
 import { memberInspectionInputSchema } from '@/lib/member-inspection-rules';
 import { memberInspectionsApi as api } from '@/lib/member-inspections';
-import { refreshAllScores, swingChips, theCount, venueSwing } from '@/lib/public-scores';
+import { memberAccounts } from '@/lib/members/profiles';
+import { recomputeMemberVenues, refreshAllScores, theCount, venueSwing } from '@/lib/public-scores';
 import { closeTestDb, createAdmin, createVenue, resetTestDb, skipIntegration, testDb } from './db';
 
 /** The Swing-o-meter's data (#138): stored aggregates, quorum, tiers, and the daily refresh. */
@@ -157,6 +158,50 @@ describe('public scores (database)', { skip: skipIntegration }, () => {
     assert.equal((await api.recentPublic(db, 'old-cafe'))?.verdictPending, false);
   });
 
+  it('counts every log when members save at the same moment', async () => {
+    const db = await testDb();
+    for (const id of MEMBERS) await log(id, venue, NOON);
+    const nextDay = new Date(NOON.getTime() + DAY);
+    await Promise.all(MEMBERS.map((id) => log(id, venue, nextDay)));
+    const [row] = await db
+      .select()
+      .from(venuePublicScores)
+      .where(eq(venuePublicScores.venueId, venue));
+    assert.equal(row.eligibleMembers, 5);
+    assert.equal(row.eligibleLogs, 10);
+  });
+
+  it('rescores a member’s venues when they are banned or unbanned', async () => {
+    const db = await testDb();
+    await eligibleVotes(venue, MEMBERS);
+    assert.equal((await venueSwing(db, 'chip-shop'))?.quorate, true);
+    await db.update(user).set({ banned: true }).where(eq(user.id, 'a'));
+    await recomputeMemberVenues(db, 'a');
+    assert.equal((await venueSwing(db, 'chip-shop'))?.eligibleMembers, 4);
+    await db.update(user).set({ banned: false }).where(eq(user.id, 'a'));
+    await recomputeMemberVenues(db, 'a');
+    assert.equal((await venueSwing(db, 'chip-shop'))?.quorate, true);
+  });
+
+  it('rescores the venues of a member whose account is deleted', async () => {
+    const db = await testDb();
+    await eligibleVotes(venue, MEMBERS);
+    assert.ok((await memberAccounts.delete(db, 'a')).ok);
+    const swing = await venueSwing(db, 'chip-shop');
+    assert.equal(swing?.eligibleMembers, 4);
+    assert.equal(swing?.quorate, false);
+  });
+
+  it('drops a venue’s history when it falls below the quorum', async () => {
+    const db = await testDb();
+    await eligibleVotes(venue, MEMBERS);
+    await refreshAllScores(db, new Date(NOON.getTime() + 3 * DAY));
+    assert.equal((await db.select().from(venuePublicScoreHistory)).length, 1);
+    await db.update(user).set({ banned: true }).where(eq(user.id, 'a'));
+    await refreshAllScores(db, new Date(NOON.getTime() + 4 * DAY));
+    assert.equal((await db.select().from(venuePublicScoreHistory)).length, 0);
+  });
+
   it('puts the People in another band when they disagree with the Chairs', async () => {
     const db = await testDb();
     // Five members with full weight, so they outweigh the prior.
@@ -205,7 +250,7 @@ describe('public scores (database)', { skip: skipIntegration }, () => {
     assert.equal(await venueSwing(db, 'nowhere'), null);
   });
 
-  it('keeps Straw Polls out of The Count and the chips', async () => {
+  it('keeps Straw Polls out of The Count', async () => {
     const db = await testDb();
     const holding = await createVenue('Pie Shop', { tier: 'under_consideration' });
     await eligibleVotes(holding, MEMBERS);
@@ -214,7 +259,6 @@ describe('public scores (database)', { skip: skipIntegration }, () => {
     assert.equal(count.quorateVenues, 2);
     assert.equal(count.approvalRating?.quorate, 1);
     assert.equal(count.approvalRating?.percent, 100);
-    assert.deepEqual(await swingChips(db), { 'chip-shop': 'The People Concur' });
   });
 
   it('writes one history point a day for quorate venues, and prunes old ones', async () => {
