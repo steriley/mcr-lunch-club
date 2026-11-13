@@ -1,217 +1,216 @@
 <template>
-  <div
-    v-if="isOpen"
-    class="fixed inset-0 z-[10020] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
-    @click.self="closeModal"
+  <!-- z-[10020] keeps it above the map's panes. -->
+  <AppDialog
+    :open="isOpen"
+    variant="bare"
+    overlay-class="z-[10020] bg-black/60 backdrop-blur-xs"
+    content-class="z-[10020] bg-card rounded-2xl border-2 border-navy shadow-2xl overflow-hidden font-sans flex flex-col max-h-[90vh]"
+    @update:open="(open) => !open && closeModal()"
+    @open-auto-focus="focusFirstField"
   >
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="suggest-modal-title"
-      class="w-full max-w-md bg-card rounded-2xl border-2 border-navy shadow-2xl overflow-hidden font-sans flex flex-col max-h-[90vh]"
-    >
-      <!-- Header -->
-      <div class="bg-navy-fixed text-white p-4 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <Icon name="scroll" class="icon-lg" />
-          <div>
-            <h2 id="suggest-modal-title" class="text-base font-bold font-serif-header">
-              Petition the Chairs
-            </h2>
-            <p class="text-xs text-blue-100">Suggest a venue for the Chairs to assess</p>
-          </div>
+    <!-- Header -->
+    <div class="bg-navy-fixed text-white p-4 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <Icon name="scroll" class="icon-lg" />
+        <div>
+          <DialogTitle class="text-base font-bold font-serif-header">
+            Petition the Chairs
+          </DialogTitle>
+          <p class="text-xs text-blue-100">Suggest a venue for the Chairs to assess</p>
         </div>
-        <button
-          type="button"
-          @click="closeModal"
-          class="text-white/80 hover:text-white text-lg p-1"
-          aria-label="Close"
-        >
-          <Icon name="close" class="icon-md" />
-        </button>
       </div>
-
-      <!-- Sent -->
-      <div v-if="sent" class="p-6 space-y-4 text-center text-ink" role="status">
-        <Icon name="mail" class="icon-xl mx-auto text-navy" />
-        <h3 class="text-lg font-bold font-serif-header">Petition received</h3>
-        <p class="text-sm text-stone-700">
-          The Chairs will review <strong>{{ sentName }}</strong
-          >. If it merits attention it will appear under <em>To Be Assessed</em> once they have
-          looked into it.
-        </p>
-        <button
-          ref="doneButton"
-          type="button"
-          class="w-full bg-navy-fixed hover:bg-deep text-white py-2.5 px-4 rounded-lg font-bold text-sm"
-          @click="closeModal"
-        >
-          Done
-        </button>
-      </div>
-
-      <!-- Form -->
-      <form
-        v-else
-        @submit.prevent="submitPetition"
-        class="p-5 overflow-y-auto space-y-3 text-sm text-ink"
-        novalidate
+      <button
+        type="button"
+        @click="closeModal"
+        class="text-white/80 hover:text-white text-lg p-1"
+        aria-label="Close"
       >
-        <div class="bg-blue-50 border border-blue-200 p-2.5 rounded text-xs text-blue-900">
-          <strong>Article 3.1:</strong> Members may petition for new venues. The Chairs review every
-          petition; a venue enters <em>To Be Assessed</em> only once they accept it.
-        </div>
+        <Icon name="close" class="icon-md" />
+      </button>
+    </div>
 
-        <p
-          v-if="formError"
-          role="alert"
-          class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700"
+    <!-- Sent -->
+    <div v-if="sent" class="p-6 space-y-4 text-center text-ink" role="status">
+      <Icon name="mail" class="icon-xl mx-auto text-navy" />
+      <h3 class="text-lg font-bold font-serif-header">Petition received</h3>
+      <p class="text-sm text-stone-700">
+        The Chairs will review <strong>{{ sentName }}</strong
+        >. If it merits attention it will appear under <em>To Be Assessed</em> once they have looked
+        into it.
+      </p>
+      <button
+        ref="doneButton"
+        type="button"
+        class="w-full bg-navy-fixed hover:bg-deep text-white py-2.5 px-4 rounded-lg font-bold text-sm"
+        @click="closeModal"
+      >
+        Done
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form
+      v-else
+      @submit.prevent="submitPetition"
+      class="p-5 overflow-y-auto space-y-3 text-sm text-ink"
+      novalidate
+    >
+      <div class="bg-blue-50 border border-blue-200 p-2.5 rounded text-xs text-blue-900">
+        <strong>Article 3.1:</strong> Members may petition for new venues. The Chairs review every
+        petition; a venue enters <em>To Be Assessed</em> only once they accept it.
+      </div>
+
+      <p
+        v-if="formError"
+        role="alert"
+        class="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700"
+      >
+        {{ formError }}
+      </p>
+
+      <div>
+        <label for="suggest-name" class="block font-semibold mb-1 text-xs"
+          >Establishment name</label
         >
-          {{ formError }}
-        </p>
+        <input
+          id="suggest-name"
+          ref="firstField"
+          v-model="form.name"
+          type="text"
+          placeholder="e.g. Sampaio's Pasties"
+          class="suggest-input"
+          :aria-invalid="Boolean(errors.name)"
+          required
+          maxlength="200"
+        />
+        <p v-if="errors.name" class="suggest-error">{{ errors.name }}</p>
+      </div>
 
+      <div>
+        <label for="suggest-address" class="block font-semibold mb-1 text-xs"
+          >Address or street (Manchester)</label
+        >
+        <input
+          id="suggest-address"
+          v-model="form.address"
+          type="text"
+          placeholder="e.g. 14 Peter Street, M2 5QR"
+          class="suggest-input"
+          :aria-invalid="Boolean(errors.address)"
+          required
+          maxlength="255"
+        />
+        <p v-if="errors.address" class="suggest-error">{{ errors.address }}</p>
+      </div>
+
+      <div class="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
         <div>
-          <label for="suggest-name" class="block font-semibold mb-1 text-xs"
-            >Establishment name</label
-          >
+          <label for="suggest-cuisine" class="block font-semibold mb-1 text-xs">Cuisine</label>
           <input
-            id="suggest-name"
-            ref="firstField"
-            v-model="form.name"
+            id="suggest-cuisine"
+            v-model="form.cuisine"
             type="text"
-            placeholder="e.g. Sampaio's Pasties"
-            class="suggest-input"
-            :aria-invalid="Boolean(errors.name)"
-            required
-            maxlength="200"
-          />
-          <p v-if="errors.name" class="suggest-error">{{ errors.name }}</p>
-        </div>
-
-        <div>
-          <label for="suggest-address" class="block font-semibold mb-1 text-xs"
-            >Address or street (Manchester)</label
-          >
-          <input
-            id="suggest-address"
-            v-model="form.address"
-            type="text"
-            placeholder="e.g. 14 Peter Street, M2 5QR"
-            class="suggest-input"
-            :aria-invalid="Boolean(errors.address)"
-            required
-            maxlength="255"
-          />
-          <p v-if="errors.address" class="suggest-error">{{ errors.address }}</p>
-        </div>
-
-        <div class="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3">
-          <div>
-            <label for="suggest-cuisine" class="block font-semibold mb-1 text-xs">Cuisine</label>
-            <input
-              id="suggest-cuisine"
-              v-model="form.cuisine"
-              type="text"
-              placeholder="e.g. Portuguese Deli"
-              class="suggest-input"
-              maxlength="120"
-            />
-            <p v-if="errors.cuisine" class="suggest-error">{{ errors.cuisine }}</p>
-          </div>
-
-          <div>
-            <label for="suggest-cost" class="block font-semibold mb-1 text-xs">Expected cost</label>
-            <select
-              id="suggest-cost"
-              v-model="form.cost"
-              class="suggest-input font-sans tabular-nums font-bold"
-            >
-              <option value="£">£ (under £10)</option>
-              <option value="££">££ (above £10)</option>
-              <option value="£££">£££ (payday treat)</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label for="suggest-order" class="block font-semibold mb-1 text-xs"
-            >What should the Chairs order?</label
-          >
-          <input
-            id="suggest-order"
-            v-model="form.recommendedOrder"
-            type="text"
-            placeholder="The dish that proves your case"
-            class="suggest-input"
-            maxlength="500"
-          />
-          <p v-if="errors.recommendedOrder" class="suggest-error">{{ errors.recommendedOrder }}</p>
-        </div>
-
-        <div>
-          <label for="suggest-rationale" class="block font-semibold mb-1 text-xs"
-            >Why does it merit attention?</label
-          >
-          <textarea
-            id="suggest-rationale"
-            v-model="form.rationale"
-            rows="3"
-            placeholder="Make your case. (Keep bribery attempts out of it.)"
-            class="suggest-input"
-            :aria-invalid="Boolean(errors.rationale)"
-            required
-            maxlength="2000"
-          ></textarea>
-          <p v-if="errors.rationale" class="suggest-error">{{ errors.rationale }}</p>
-        </div>
-
-        <div>
-          <label for="suggest-submitter" class="block font-semibold mb-1 text-xs"
-            >Your name <span class="font-normal text-stone-500">(optional)</span></label
-          >
-          <input
-            id="suggest-submitter"
-            v-model="form.submitterName"
-            type="text"
-            placeholder="e.g. Delegate Reynolds"
+            placeholder="e.g. Portuguese Deli"
             class="suggest-input"
             maxlength="120"
           />
+          <p v-if="errors.cuisine" class="suggest-error">{{ errors.cuisine }}</p>
         </div>
 
-        <!-- Honeypot: hidden from people and assistive tech. -->
-        <div class="hidden" aria-hidden="true">
-          <label for="suggest-website">Website</label>
-          <input
-            id="suggest-website"
-            v-model="form.website"
-            type="text"
-            tabindex="-1"
-            autocomplete="off"
-          />
-        </div>
-
-        <div class="pt-2">
-          <button
-            type="submit"
-            :disabled="submitting || !online"
-            class="w-full bg-navy-fixed hover:bg-deep disabled:opacity-60 text-white py-2.5 px-4 rounded-lg font-bold text-sm shadow transition-colors cursor-pointer"
+        <div>
+          <label for="suggest-cost" class="block font-semibold mb-1 text-xs">Expected cost</label>
+          <select
+            id="suggest-cost"
+            v-model="form.cost"
+            class="suggest-input font-sans tabular-nums font-bold"
           >
-            {{ submitting ? 'Sending…' : 'Submit petition to the Chairs' }}
-          </button>
-          <!-- Nothing is queued: the server limits petitions per sender, which needs a live request. -->
-          <p v-if="!online" class="suggest-error mt-2 text-center" role="status">
-            You're offline. Your suggestion will be here when you're back.
-          </p>
+            <option value="£">£ (under £10)</option>
+            <option value="££">££ (above £10)</option>
+            <option value="£££">£££ (payday treat)</option>
+          </select>
         </div>
-      </form>
-    </div>
-  </div>
+      </div>
+
+      <div>
+        <label for="suggest-order" class="block font-semibold mb-1 text-xs"
+          >What should the Chairs order?</label
+        >
+        <input
+          id="suggest-order"
+          v-model="form.recommendedOrder"
+          type="text"
+          placeholder="The dish that proves your case"
+          class="suggest-input"
+          maxlength="500"
+        />
+        <p v-if="errors.recommendedOrder" class="suggest-error">{{ errors.recommendedOrder }}</p>
+      </div>
+
+      <div>
+        <label for="suggest-rationale" class="block font-semibold mb-1 text-xs"
+          >Why does it merit attention?</label
+        >
+        <textarea
+          id="suggest-rationale"
+          v-model="form.rationale"
+          rows="3"
+          placeholder="Make your case. (Keep bribery attempts out of it.)"
+          class="suggest-input"
+          :aria-invalid="Boolean(errors.rationale)"
+          required
+          maxlength="2000"
+        ></textarea>
+        <p v-if="errors.rationale" class="suggest-error">{{ errors.rationale }}</p>
+      </div>
+
+      <div>
+        <label for="suggest-submitter" class="block font-semibold mb-1 text-xs"
+          >Your name <span class="font-normal text-stone-500">(optional)</span></label
+        >
+        <input
+          id="suggest-submitter"
+          v-model="form.submitterName"
+          type="text"
+          placeholder="e.g. Delegate Reynolds"
+          class="suggest-input"
+          maxlength="120"
+        />
+      </div>
+
+      <!-- Honeypot: hidden from people and assistive tech. -->
+      <div class="hidden" aria-hidden="true">
+        <label for="suggest-website">Website</label>
+        <input
+          id="suggest-website"
+          v-model="form.website"
+          type="text"
+          tabindex="-1"
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="pt-2">
+        <button
+          type="submit"
+          :disabled="submitting || !online"
+          class="w-full bg-navy-fixed hover:bg-deep disabled:opacity-60 text-white py-2.5 px-4 rounded-lg font-bold text-sm shadow transition-colors cursor-pointer"
+        >
+          {{ submitting ? 'Sending…' : 'Submit petition to the Chairs' }}
+        </button>
+        <!-- Nothing is queued: the server limits petitions per sender, which needs a live request. -->
+        <p v-if="!online" class="suggest-error mt-2 text-center" role="status">
+          You're offline. Your suggestion will be here when you're back.
+        </p>
+      </div>
+    </form>
+  </AppDialog>
 </template>
 
 <script setup lang="ts">
 import Icon from '@/components/Icon.vue';
-import { nextTick, onUnmounted, reactive, ref, watch } from 'vue';
+import AppDialog from '@/components/ui/AppDialog.vue';
+import { DialogTitle } from 'reka-ui';
+import { nextTick, reactive, ref } from 'vue';
 import { useStore } from '@nanostores/vue';
 import { $isSuggestModalOpen, closeSuggestModal } from '@/stores/filters';
 import type { CostTier } from '@/types';
@@ -242,24 +241,11 @@ const sentName = ref('');
 const firstField = ref<HTMLInputElement | null>(null);
 const doneButton = ref<HTMLButtonElement | null>(null);
 
-function onKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape') closeModal();
+// Focus starts on the first field, not the close button.
+function focusFirstField(event: Event) {
+  event.preventDefault();
+  firstField.value?.focus();
 }
-
-watch(isOpen, async (open) => {
-  if (typeof window === 'undefined') return;
-  if (open) {
-    window.addEventListener('keydown', onKeydown);
-    await nextTick();
-    firstField.value?.focus();
-  } else {
-    window.removeEventListener('keydown', onKeydown);
-  }
-});
-
-onUnmounted(() => {
-  if (typeof window !== 'undefined') window.removeEventListener('keydown', onKeydown);
-});
 
 function closeModal() {
   closeSuggestModal();

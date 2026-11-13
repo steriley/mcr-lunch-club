@@ -9,6 +9,13 @@ export interface PlaceCandidate {
 </script>
 
 <script setup lang="ts">
+import {
+  ComboboxAnchor,
+  ComboboxContent,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxRoot,
+} from 'reka-ui';
 import { onBeforeUnmount, ref, watch } from 'vue';
 import { apiFetch } from '@/lib/api-fetch';
 
@@ -22,6 +29,7 @@ const query = ref(props.initialQuery ?? '');
 const results = ref<PlaceCandidate[]>([]);
 const status = ref<'idle' | 'loading' | 'done' | 'error'>('idle');
 const errorMessage = ref('');
+const open = ref(false);
 let timer: ReturnType<typeof setTimeout> | undefined;
 let controller: AbortController | undefined;
 
@@ -50,6 +58,7 @@ async function search(text: string) {
   }
   results.value = result.data.results ?? [];
   status.value = 'done';
+  open.value = results.value.length > 0;
 }
 
 watch(
@@ -61,6 +70,7 @@ watch(
       controller?.abort();
       results.value = [];
       status.value = 'idle';
+      open.value = false;
       return;
     }
     timer = setTimeout(() => {
@@ -75,10 +85,13 @@ onBeforeUnmount(() => {
   controller?.abort();
 });
 
-function pick(candidate: PlaceCandidate) {
-  emit('pick', candidate);
+// The query stays as typed (resetSearchTermOnSelect is off); the list closes and empties.
+function pick(candidate: unknown) {
+  if (!candidate) return;
+  emit('pick', candidate as PlaceCandidate);
   results.value = [];
   status.value = 'idle';
+  open.value = false;
 }
 
 const inputClass =
@@ -87,16 +100,51 @@ const inputClass =
 
 <template>
   <div class="space-y-2">
-    <label class="block text-sm font-semibold text-ink">
-      <span class="mb-2 block">Find the venue</span>
-      <input
-        v-model="query"
-        type="search"
-        autocomplete="off"
-        :class="inputClass"
-        placeholder="Venue name or address, e.g. Crazy Pedro's Bridge Street"
-      />
-    </label>
+    <!-- Plain text, not type=search: Chrome clears a search field on Escape, and here Escape only closes the list.
+         The server does the matching (ignore-filter); Reka supplies the combobox roles, arrow keys,
+         Enter to pick and Escape to close. The list renders in place, not in a floating layer, and
+         without ComboboxViewport, which injects a <style> element that the CSP blocks. -->
+    <ComboboxRoot
+      :open="open && results.length > 0"
+      :model-value="null"
+      ignore-filter
+      :reset-search-term-on-select="false"
+      :reset-search-term-on-blur="false"
+      @update:open="open = $event"
+      @update:model-value="pick"
+    >
+      <label class="block text-sm font-semibold text-ink">
+        <span class="mb-2 block">Find the venue</span>
+        <ComboboxAnchor>
+          <ComboboxInput
+            v-model="query"
+            type="text"
+            inputmode="search"
+            enterkeyhint="search"
+            autocomplete="off"
+            :class="inputClass"
+            placeholder="Venue name or address, e.g. Crazy Pedro's Bridge Street"
+          />
+        </ComboboxAnchor>
+      </label>
+      <ComboboxContent
+        class="mt-2 divide-y divide-sand overflow-hidden rounded-lg border border-hairline bg-surface"
+        aria-label="Search results"
+      >
+        <ComboboxItem
+          v-for="candidate in results"
+          :key="`${candidate.lat},${candidate.lng},${candidate.label}`"
+          :value="candidate"
+          class="block w-full cursor-pointer px-3 py-2 text-left text-sm outline-none data-[highlighted]:bg-linen"
+        >
+          <span class="block font-semibold text-ink">{{ candidate.label }}</span>
+          <span class="block text-xs text-graphite"
+            >{{ candidate.address }} · {{ candidate.lat.toFixed(5) }},
+            {{ candidate.lng.toFixed(5) }}</span
+          >
+        </ComboboxItem>
+      </ComboboxContent>
+    </ComboboxRoot>
     <p v-if="status === 'idle' && query.trim().length < MIN_LENGTH" class="text-xs text-graphite">
       Type at least {{ MIN_LENGTH }} characters. Results are limited to Greater Manchester.
     </p>
@@ -111,27 +159,5 @@ const inputClass =
     <p v-if="status === 'done' && !results.length" role="status" class="text-sm text-graphite">
       No matches. Try another spelling, or enter the location manually.
     </p>
-    <ul
-      v-if="results.length"
-      class="divide-y divide-sand overflow-hidden rounded-lg border border-hairline bg-surface"
-      aria-label="Search results"
-    >
-      <li
-        v-for="candidate in results"
-        :key="`${candidate.lat},${candidate.lng},${candidate.label}`"
-      >
-        <button
-          type="button"
-          class="block w-full px-3 py-2 text-left text-sm hover:bg-linen focus:bg-linen focus:outline-none"
-          @click="pick(candidate)"
-        >
-          <span class="block font-semibold text-ink">{{ candidate.label }}</span>
-          <span class="block text-xs text-graphite"
-            >{{ candidate.address }} · {{ candidate.lat.toFixed(5) }},
-            {{ candidate.lng.toFixed(5) }}</span
-          >
-        </button>
-      </li>
-    </ul>
   </div>
 </template>
