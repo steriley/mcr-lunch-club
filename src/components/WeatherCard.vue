@@ -3,6 +3,7 @@
   <FieldPanel
     v-if="online"
     title="Atmospheric Dispatch"
+    description="Manchester’s weather right now, from the Met Office, for deciding whether to walk."
     class="weather-card"
     :class="`theme-${themeFor(currentIcon)}`"
     aria-label="Manchester weather forecast"
@@ -528,7 +529,7 @@ onMounted(async () => {
 .weather-copy h3 {
   margin: 0;
   color: var(--color-weather-ink);
-  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', sans-serif;
   font-size: 14px;
   font-weight: 700;
   line-height: 1.3;

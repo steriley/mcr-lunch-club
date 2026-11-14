@@ -9,7 +9,7 @@ test.describe('homepage map framing', () => {
     await visit(page, '/');
     const pill = page.locator('.map-outliers');
     await expect(pill).toBeVisible();
-    await expect(pill).toContainText(/^\d+ more further out · Show all\s*$/);
+    await expect(pill).toContainText(/^\d+ more further out · Fit all on map\s*$/);
 
     // No single cluster holds most of the venues on show.
     const shown = Number(

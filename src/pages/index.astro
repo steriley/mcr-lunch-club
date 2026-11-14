@@ -118,6 +118,11 @@ const summonsColumns = [
             <h1 class="bench-title" id="bench-title">
               The Sovereign Bench of Manchester Lunch
             </h1>
+            <p class="bench-purpose section-purpose" data-golden-only>
+              {isGoldenCut
+                ? 'The Chairs’ five picks of the Approved venues, in rank order.'
+                : 'The five Approved venues nearest to Lunch Club HQ.'}
+            </p>
           </div>
         </div>
 
@@ -148,7 +153,11 @@ const summonsColumns = [
                     onerror="this.onerror=null;this.parentElement.classList.add('is-placeholder')"
                   />
                 )}
-                <a class="bench-seal" href={hero.href} aria-label={`View ${hero.name}'s audit`}>
+                <a
+                  class="bench-seal"
+                  href={hero.href}
+                  aria-label={`View the audit for ${hero.name}`}
+                >
                   <img src="/brand/approved-sticker-256.webp" width="256" height="256" alt="" />
                 </a>
               </div>
@@ -168,6 +177,32 @@ const summonsColumns = [
                   )}
                 </div>
 
+                {/* Everything on the bench is Approved: the sticker is decoration, this row is the verdict. */}
+                <div class="bench-hero-verdict">
+                  <span class="bench-hero-tier">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                      focusable="false"
+                    >
+                      <path d={tierInfo('approved').glyph}></path>
+                    </svg>
+                    {tierInfo('approved').label}
+                  </span>
+                  <BenchWalk walk={hero.walk} venueName={hero.name} />
+                  {hero.inspectionCount > 0 && (
+                    <span class="bench-count">
+                      {hero.inspectionCount}{' '}
+                      {hero.inspectionCount === 1 ? 'Inspection' : 'Inspections'}
+                    </span>
+                  )}
+                </div>
+
                 {hero.eatLikeUs && (
                   <div class="bench-eat">
                     <Icon name="restaurant" />
@@ -184,16 +219,6 @@ const summonsColumns = [
                     <cite>— The Chairs</cite>
                   </blockquote>
                 )}
-
-                <div class="bench-telemetry">
-                  <BenchWalk walk={hero.walk} venueName={hero.name} />
-                  {hero.inspectionCount > 0 && (
-                    <span class="bench-count">
-                      {hero.inspectionCount}{' '}
-                      {hero.inspectionCount === 1 ? 'Inspection' : 'Inspections'}
-                    </span>
-                  )}
-                </div>
               </div>
             </article>
           ) : (
@@ -233,6 +258,10 @@ const summonsColumns = [
           </h2>
           <span>Potential {gazetteLabel(nextBulletinIssue(issue))}</span>
         </div>
+        <p class="section-purpose">
+          This week’s inspection targets. Tuesday: the Approved or Under Consideration venue longest
+          without a visit. Wednesday: the To Be Assessed venue that has waited longest.
+        </p>
         <div class="weekly-summons-grid">
           {summonsColumns.map(({ day, card, tier, empty }) => (
             <div class="weekly-summons-column">
@@ -257,6 +286,10 @@ const summonsColumns = [
           </span>
           <div class="bulletin-copy">
             <strong>Weekly inspection bulletin</strong>
+            <p class="section-purpose">
+              Verdicts that have moved since the last issue, and how many venues are still waiting
+              for one.
+            </p>
             <p>
               {bulletin} {backlog}
             </p>

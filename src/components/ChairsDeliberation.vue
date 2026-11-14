@@ -2,6 +2,7 @@
   <FieldPanel
     class="is-link"
     title="Chairs' Deliberation"
+    description="The Chairs’ decrees on lunch, one at a time, changing every minute."
     @mouseenter="paused = true"
     @mouseleave="paused = false"
     @focusin="paused = true"

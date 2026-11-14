@@ -7,6 +7,7 @@
       </h2>
       <slot name="badge" />
     </div>
+    <p v-if="description" class="section-purpose">{{ description }}</p>
     <slot />
     <div class="field-panel-footer">
       <slot name="footer" />
@@ -17,8 +18,9 @@
 <script setup lang="ts">
 /**
  * The shared frame of the two home page field panels (Chairs' Deliberation and
- * Atmospheric Dispatch): the heading with its icon and optional badge, the
- * body, and the footer. Styles are the global `.field-panel*` rules.
+ * Atmospheric Dispatch): the heading with its icon and optional badge, a line
+ * saying what the panel is for, the body, and the footer. Styles are the global
+ * `.field-panel*` rules.
  */
-defineProps<{ title: string }>();
+defineProps<{ title: string; description?: string }>();
 </script>
