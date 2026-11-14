@@ -199,6 +199,14 @@
   white-space: nowrap;
 }
 
+/* On a phone the title and the count share one line: the icon is decoration and "venues" is implied. */
+@media (max-width: 480px) {
+  .map-header-icon,
+  .map-header-count-noun {
+    display: none;
+  }
+}
+
 /*
  * The Sovereign Bench: the homepage aside. A navy panel with one hero card
  * (photo across the top, copy below) and up to four pillars, all in one column.
@@ -265,6 +273,27 @@
     Georgia,
     serif;
   letter-spacing: -0.01em;
+}
+
+/* One plain line under a section heading saying what the section is for. */
+
+.section-purpose {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.bench-purpose {
+  margin-top: 4px;
+  color: var(--color-on-dark-warm);
+  font-size: 13px;
+}
+
+.weekly-bulletin .bulletin-copy .section-purpose {
+  margin-bottom: 4px;
+  color: var(--color-muted);
+  font-size: 12px;
 }
 
 .bench-empty {
@@ -433,13 +462,19 @@
   background: color-mix(in srgb, var(--color-surface) 80%, transparent);
 }
 
+/* The whole card is the link to the full verdict, so the quote is clamped to a taste of it. */
+
 .bench-quote p {
+  display: -webkit-box;
   margin: 0;
+  overflow: hidden;
   font:
     italic 400 13px/1.6 'Playfair Display',
     'Playfair Display Fallback',
     Georgia,
     serif;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .bench-quote cite {
@@ -485,6 +520,39 @@
 .bench-hero-title-row .bench-cost {
   padding-top: 5px;
   font-size: 14px;
+}
+
+/* The decision facts, straight under the name: verdict, walk, inspections. */
+
+.bench-hero-verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+
+.bench-hero-tier {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 2px 6px;
+  border: 1px solid var(--color-tier-approved-edge);
+  border-radius: 4px;
+  background: var(--color-tier-approved);
+  color: var(--color-on-dark);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.bench-hero-tier svg {
+  width: 14px;
+  height: 14px;
+}
+
+.bench-hero-verdict .bench-walk {
+  font-size: 13px;
 }
 
 /* Near Me: the pillar card as a selectable list row. */
@@ -881,21 +949,16 @@ a.bench-details {
   border-radius: 12px;
   background: var(--ledger-parchment);
   color: var(--ledger-ink);
-  box-shadow: 0 1px 3px rgb(22 19 15 / 5%);
 }
 
+/* The icon sits straight on the strip, so it takes the theme-aware ochre like the heading beside it. */
 .bulletin-icon {
   display: grid;
-  flex: 0 0 42px;
-  width: 42px;
-  height: 42px;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
   place-items: center;
-  border: 1px solid var(--ledger-border);
-  border-radius: 50%;
-  background: var(--color-peach-pale);
-  /* A -fixed colour: the peach circle stays pale in dark mode, so the icon must stay dark
-     (the plain ochre token lightens in dark mode and fell to 1.45:1 here). */
-  color: var(--color-ochre-fixed);
+  color: var(--color-ochre);
 }
 
 .bulletin-icon .icon {
@@ -949,14 +1012,12 @@ a.bench-details {
   gap: 12px;
 }
 
-.field-panel,
-.weekly-summons {
+.field-panel {
   min-width: 0;
   padding: 13px 14px;
   border: 1px solid var(--ledger-border);
   border-radius: 12px;
   background: var(--ledger-card);
-  box-shadow: 0 1px 3px rgb(22 19 15 / 5%);
 }
 
 .field-panel {
@@ -1032,6 +1093,8 @@ a.bench-details {
     'Playfair Display Fallback',
     Georgia,
     serif;
+  /* A decree is a short pull quote of two or three lines: even them out rather than strand a word. */
+  text-wrap: balance;
 }
 
 .field-panel-footer {
@@ -1097,11 +1160,13 @@ a.bench-details {
   font-size: 12px;
 }
 
+/* Two venue cards under a heading: the cards are the containers, so the section has no frame of its own. */
+
 .weekly-summons {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: 9px;
-  background: var(--ledger-parchment);
 }
 
 .weekly-summons-heading {
@@ -1190,13 +1255,14 @@ a.bench-details {
 
   .weekly-bulletin {
     display: grid;
-    grid-template-columns: 42px minmax(0, 1fr);
+    grid-template-columns: 24px minmax(0, 1fr);
     gap: 8px 10px;
     padding: 11px;
   }
 
   .bulletin-icon {
     grid-row: 1 / 3;
+    align-self: start;
   }
 
   .weekly-bulletin a {

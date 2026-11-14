@@ -541,7 +541,8 @@
   display: none;
 }
 
-.bench-telemetry > :first-child:last-child {
+/* Only a lone count or Details button sits right; a lone walk stays left. */
+.bench-telemetry > :is(.bench-count, .bench-details):only-child {
   margin-left: auto;
 }
 

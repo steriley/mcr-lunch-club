@@ -6,6 +6,7 @@
           :tiers="ALL_TIERS"
           :selected="filters.tiers"
           :counts="tierCounts"
+          show-more
           @toggle="toggleTier"
         />
 

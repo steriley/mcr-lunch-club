@@ -20,9 +20,24 @@
         </div>
       </div>
       <span class="map-header-count"
-        >{{ visibleVenuesCount }} of {{ totalVenuesCount }} venues shown</span
+        >{{ visibleVenuesCount }} of {{ totalVenuesCount }}
+        <span class="map-header-count-noun">venues</span> shown</span
       >
     </header>
+
+    <!-- The default verdicts leave some venues off the map; the chips say so too, but on a phone they scroll out of sight. -->
+    <p v-if="hiddenVerdicts.length > 0" class="map-hidden-note">
+      <span
+        >Not shown:
+        <template v-for="(verdict, index) in hiddenVerdicts" :key="verdict.label"
+          ><template v-if="index > 0"> · </template>{{ verdict.label }}
+          {{ verdict.count }}</template
+        ></span
+      >
+      <button type="button" class="map-hidden-button" @click="showEveryVerdict">
+        Show all verdicts
+      </button>
+    </p>
 
     <!-- Map Container (positioning context for the floating controls) -->
     <div class="relative w-full flex-1 min-h-0" :aria-busy="!mapReady">
@@ -43,7 +58,7 @@
         class="map-outliers"
         @click="frameEverything"
       >
-        <strong>{{ outsideCount }} more further out</strong> · Show all
+        <strong>{{ outsideCount }} more further out</strong> · Fit all on map
       </button>
 
       <!-- Quick Map Controls (Floating top left) -->
@@ -99,7 +114,14 @@ import Icon from '@/components/Icon.vue';
 import '@/styles/map.css';
 import { ref, onMounted, onUnmounted, computed, nextTick, watch } from 'vue';
 import { useStore } from '@nanostores/vue';
-import { $filteredVenues, $filters, openNearMe, resetFilters, toggleTier } from '@/stores/filters';
+import {
+  $filteredVenues,
+  $filters,
+  openNearMe,
+  resetFilters,
+  setTiers,
+  toggleTier,
+} from '@/stores/filters';
 import { $hoveredVenueId, $mapSelection, selectMapVenue } from '@/stores/results';
 import { whenIdle } from '@/lib/idle';
 import { $inspectionsList, $venuesList } from '@/stores/ledger';
@@ -127,7 +149,7 @@ import {
   type MarkerFrame,
   type PlacedLabel,
 } from '@/lib/map/scene';
-import { tierInfo } from '@/lib/tiers';
+import { TIERS, TIER_VALUES, tierInfo } from '@/lib/tiers';
 import { onThemeChange } from '@/lib/theme';
 import { themeColor } from '@/lib/theme-color';
 
@@ -203,6 +225,20 @@ const outsideCount = ref(0);
 
 const visibleVenuesCount = computed(() => filteredVenues.value.length);
 const totalVenuesCount = computed(() => venuesList.value.length);
+
+// The verdicts the chips have switched off, with how many venues each holds (the chips' own counts).
+const hiddenVerdicts = computed(() =>
+  TIERS.filter((tier) => !filters.value.tiers.includes(tier.value))
+    .map((tier) => ({
+      label: tier.label,
+      count: venuesList.value.filter((venue) => venue.tier === tier.value).length,
+    }))
+    .filter((verdict) => verdict.count > 0)
+);
+
+function showEveryVerdict() {
+  setTiers([...TIER_VALUES]);
+}
 
 let cancelStart: (() => void) | null = null;
 
@@ -914,6 +950,54 @@ function onMapKeydown(event: KeyboardEvent) {
 }
 
 .map-empty-button:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* Which verdicts are off the map, under the header strip. */
+.map-hidden-note {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px 12px;
+  margin: 0;
+  padding: 6px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ochre) 30%, transparent);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font:
+    500 12px/1.4 'Plus Jakarta Sans',
+    'Plus Jakarta Sans Fallback',
+    sans-serif;
+}
+
+.map-hidden-button {
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--color-navy);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* Touch: a 44px target that overlaps the note's own padding instead of growing the strip. */
+@media (pointer: coarse) {
+  .map-hidden-button {
+    min-height: 44px;
+    margin-block: -10px;
+  }
+}
+
+.map-hidden-button:hover {
+  color: var(--color-action-hover);
+}
+
+.map-hidden-button:focus-visible {
   outline: 2px solid var(--color-gold);
   outline-offset: 2px;
 }

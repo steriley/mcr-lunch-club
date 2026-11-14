@@ -372,6 +372,21 @@
     font-family: 'Playfair Display', 'Playfair Display Fallback', Georgia, 'Times New Roman', serif;
   }
 
+  /* Both are progressive: a browser without them keeps its default wrap. Balance evens out short
+     headings and pull quotes; pretty keeps a lone word off the last line of running copy. */
+  h1,
+  h2,
+  h3,
+  .font-serif-header {
+    text-wrap: balance;
+  }
+
+  p,
+  li,
+  blockquote {
+    text-wrap: pretty;
+  }
+
   .font-sans {
     font-family: 'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', sans-serif;
   }
@@ -634,8 +649,19 @@
     font-size: 15px;
   }
 
+  /* Tighter tracking lets the whole tagline fit beside the menu button at 390px. */
   .brand-caption {
     font-size: 12px;
+    letter-spacing: 0.1em;
+  }
+}
+
+/* On the narrowest phones the tagline wraps to a second line rather than being cut off. */
+@media (max-width: 374px) {
+  .brand-caption {
+    overflow: visible;
+    text-overflow: clip;
+    white-space: normal;
   }
 }
 
