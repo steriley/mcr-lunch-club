@@ -1,8 +1,8 @@
 # Runs the checks that used to run inside every Vercel build, so a Deploy Hook
 # rebuild (an admin save, the Wednesday cron) no longer re-tests an unchanged commit.
 # Make the "checks" job a required status check on main so nothing untested reaches production.
-# "checks" is only a gate: it passes when "static" and "e2e" both pass, and fails if either failed,
-# was cancelled or was skipped. Branch protection names "checks", so keep that job name.
+# "checks" is only a gate: it passes when "static", "db" and every "e2e" leg pass, and fails if any
+# failed, was cancelled or was skipped. Branch protection names "checks", so keep that job name.
 name: CI
 
 on:
@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Everything that needs neither a database, a build nor a browser. Runs beside "e2e".
+  # Everything that needs neither a database, a build nor a browser. Runs beside "db" and "e2e".
   static:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -52,10 +52,68 @@ jobs:
       - run: pnpm test
       - run: pnpm typecheck
 
-  # The database, the build and the browser checks.
-  e2e:
+  # The database integration tests. They need Postgres but no build and no browser, so this runs on the
+  # plain runner (Postgres on localhost, which the tests insist on: they truncate their database).
+  db:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      # A throwaway database on the service container: the integration tests need "test" in the name.
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/lunch_test
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/lunch_ci
+      BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
+      BETTER_AUTH_URL: http://localhost:4321
+      SEED_CHAIR_EMAIL: chair@lunch.test
+      SEED_CHAIR_PASSWORD: ci-only-chair-password
+      SEED_MEMBER_EMAIL: member@lunch.test
+      SEED_MEMBER_PASSWORD: ci-only-member-password
+      BLOB_READ_WRITE_TOKEN: ci-only-not-a-real-token
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Throwaway VAPID keys for this run, as the push-notification tests ran with them before the split.
+      - name: Generate VAPID keys
+        run: pnpm --silent push:keys >> "$GITHUB_ENV"
+      - name: Create database
+        run: psql postgres://postgres:postgres@localhost:5432/postgres -c 'create database lunch_test'
+      # The suites skip themselves (and still exit 0) when they refuse the database, so also fail if
+      # nothing ran.
+      - name: Database integration tests
+        run: |
+          set -o pipefail
+          pnpm test:db 2>&1 | tee test-db.log
+          grep -Eq '^# tests [1-9]' test-db.log
+
+  # The build and the browser checks, in two parallel legs that each build and serve the site on their
+  # own database: the members flag off (the default build), and the same build served with the flag on.
+  e2e:
+    name: e2e (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      # Let the other leg finish, so one failure shows everything that is wrong.
+      fail-fast: false
+      matrix:
+        include:
+          - name: members flag off
+            flag: 'off'
+          - name: members flag on
+            flag: 'on'
     # Chromium and its system libraries are already in this image, so there is no browser install or
     # cache. The tag must match @playwright/test in pnpm-lock.yaml (the "Check the Playwright image"
     # step fails if it drifts): bump both together.
@@ -73,10 +131,7 @@ jobs:
         options: >-
           --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      # Throwaway databases on the service container: the integration tests need "test" in the name.
-      # 127.0.0.1, not the service host: the integration tests refuse any database that is not local
-      # (they truncate it), so "Forward the test database to localhost" below bridges to the service.
-      TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/lunch_test
+      # A throwaway database on the service container.
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/lunch_ci
       BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
       BETTER_AUTH_URL: http://localhost:4321
@@ -105,29 +160,14 @@ jobs:
           installed=$(pnpm exec playwright --version | awk '{print $2}')
           echo "image $image, @playwright/test $installed"
           test "$image" = "$installed"
-      # The Playwright image has neither psql nor socat.
-      - name: Install psql and socat
-        run: |
-          command -v psql && command -v socat || (apt-get update && apt-get install -y --no-install-recommends postgresql-client socat)
+      # The Playwright image has no psql.
+      - name: Install psql
+        run: command -v psql || (apt-get update && apt-get install -y --no-install-recommends postgresql-client)
       # Throwaway VAPID keys for this run, so the Chairs' notification settings render in check:built.
       - name: Generate VAPID keys
         run: pnpm --silent push:keys >> "$GITHUB_ENV"
-      - name: Create databases
-        run: |
-          psql postgres://postgres:postgres@postgres:5432/postgres -c 'create database lunch_test'
-          psql postgres://postgres:postgres@postgres:5432/postgres -c 'create database lunch_ci'
-      - name: Forward the test database to localhost
-        run: |
-          setsid nohup socat TCP-LISTEN:5432,bind=127.0.0.1,fork,reuseaddr TCP:postgres:5432 >/dev/null 2>&1 &
-          for i in $(seq 20); do pg_isready -h 127.0.0.1 -q && exit 0; sleep 0.5; done
-          echo 'localhost:5432 never reached the postgres service' >&2; exit 1
-      # The suites skip themselves (and still exit 0) when they refuse the database, so also fail if
-      # nothing ran.
-      - name: Database integration tests
-        run: |
-          set -o pipefail
-          pnpm test:db 2>&1 | tee test-db.log
-          grep -Eq '^# tests [1-9]' test-db.log
+      - name: Create database
+        run: psql postgres://postgres:postgres@postgres:5432/postgres -c 'create database lunch_ci'
       # The build prerenders from the database: migrate it and load the site content first, so every
       # public page (venue pages included) is built, then seed the Chair and the test member the smoke
       # test signs in as.
@@ -142,6 +182,7 @@ jobs:
           key: astro-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**', 'public/**') }}
           restore-keys: |
             astro-${{ hashFiles('pnpm-lock.yaml') }}-
+      # Both legs build (the flag is set only when serving), so each fails on a CSP warning.
       - name: Build, failing on CSP warnings
         run: |
           set -o pipefail
@@ -149,32 +190,36 @@ jobs:
           ! grep -F '[WARN] [csp]' build.log
       - run: pnpm check:bundle
       # Serves .vercel/output and drives it in a browser: fails on any CSP violation or page error.
-      - run: pnpm check:built
+      - name: Smoke test the build
+        if: matrix.flag == 'off'
+        run: pnpm check:built
       # The same build served with the members flag on (#136): the member pages render on demand,
       # so they follow the server's flag without a second build.
       # swing.spec's venue-page checks skip on this flag-off build; The Count renders on demand and
       # so is checked in a browser, CSP included.
       - name: Member accounts, lunch logs and The Count with the flag on
+        if: matrix.flag == 'on'
         run: pnpm check:built e2e/member-accounts.spec.ts e2e/member-inspections.spec.ts e2e/swing.spec.ts
         env:
           MEMBERS_FLAG: 'on'
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-traces
+          name: playwright-traces-${{ matrix.flag }}
           path: test-results
           retention-days: 7
 
-  # The required status check. Always runs, and fails unless both jobs succeeded: a skipped or
-  # cancelled job reads as "skipped"/"cancelled", which must not pass.
+  # The required status check. Always runs, and fails unless every job succeeded: a skipped or
+  # cancelled job reads as "skipped"/"cancelled", which must not pass. "e2e" is one result for both legs.
   checks:
     if: always()
-    needs: [static, e2e]
+    needs: [static, db, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Require every job to have succeeded
         run: |
           echo "static: ${{ needs.static.result }}"
+          echo "db: ${{ needs.db.result }}"
           echo "e2e: ${{ needs.e2e.result }}"
-          test "${{ needs.static.result }}" = success && test "${{ needs.e2e.result }}" = success
+          test "${{ needs.static.result }}" = success && test "${{ needs.db.result }}" = success && test "${{ needs.e2e.result }}" = success
