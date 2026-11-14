@@ -60,6 +60,10 @@ jobs:
     # cache. The tag must match @playwright/test in pnpm-lock.yaml (the "Check the Playwright image"
     # step fails if it drifts): bump both together.
     container: mcr.microsoft.com/playwright:v1.63.0-noble
+    # Steps in a container job default to sh, which has no `pipefail`.
+    defaults:
+      run:
+        shell: bash
     services:
       # Inside a container job the service is reached by its label, not localhost.
       postgres:
@@ -70,7 +74,9 @@ jobs:
           --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       # Throwaway databases on the service container: the integration tests need "test" in the name.
-      TEST_DATABASE_URL: postgres://postgres:postgres@postgres:5432/lunch_test
+      # 127.0.0.1, not the service host: the integration tests refuse any database that is not local
+      # (they truncate it), so "Forward the test database to localhost" below bridges to the service.
+      TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/lunch_test
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/lunch_ci
       BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
       BETTER_AUTH_URL: http://localhost:4321
@@ -99,9 +105,10 @@ jobs:
           installed=$(pnpm exec playwright --version | awk '{print $2}')
           echo "image $image, @playwright/test $installed"
           test "$image" = "$installed"
-      # The Playwright image has no psql.
-      - name: Install psql
-        run: command -v psql || (apt-get update && apt-get install -y --no-install-recommends postgresql-client)
+      # The Playwright image has neither psql nor socat.
+      - name: Install psql and socat
+        run: |
+          command -v psql && command -v socat || (apt-get update && apt-get install -y --no-install-recommends postgresql-client socat)
       # Throwaway VAPID keys for this run, so the Chairs' notification settings render in check:built.
       - name: Generate VAPID keys
         run: pnpm --silent push:keys >> "$GITHUB_ENV"
@@ -109,7 +116,18 @@ jobs:
         run: |
           psql postgres://postgres:postgres@postgres:5432/postgres -c 'create database lunch_test'
           psql postgres://postgres:postgres@postgres:5432/postgres -c 'create database lunch_ci'
-      - run: pnpm test:db
+      - name: Forward the test database to localhost
+        run: |
+          setsid nohup socat TCP-LISTEN:5432,bind=127.0.0.1,fork,reuseaddr TCP:postgres:5432 >/dev/null 2>&1 &
+          for i in $(seq 20); do pg_isready -h 127.0.0.1 -q && exit 0; sleep 0.5; done
+          echo 'localhost:5432 never reached the postgres service' >&2; exit 1
+      # The suites skip themselves (and still exit 0) when they refuse the database, so also fail if
+      # nothing ran.
+      - name: Database integration tests
+        run: |
+          set -o pipefail
+          pnpm test:db 2>&1 | tee test-db.log
+          grep -Eq '^# tests [1-9]' test-db.log
       # The build prerenders from the database: migrate it and load the site content first, so every
       # public page (venue pages included) is built, then seed the Chair and the test member the smoke
       # test signs in as.
