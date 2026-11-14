@@ -1,6 +1,8 @@
 # Runs the checks that used to run inside every Vercel build, so a Deploy Hook
 # rebuild (an admin save, the Wednesday cron) no longer re-tests an unchanged commit.
 # Make the "checks" job a required status check on main so nothing untested reaches production.
+# "checks" is only a gate: it passes when "static" and "e2e" both pass, and fails if either failed,
+# was cancelled or was skipped. Branch protection names "checks", so keep that job name.
 name: CI
 
 on:
@@ -13,21 +15,63 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  checks:
+  # Everything that needs neither a database, a build nor a browser. Runs beside "e2e".
+  static:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # Never connected to: the unit tests and knip (which loads drizzle.config.ts) import modules that
+      # read these at load time and throw if they are missing. No VAPID keys: nothing here renders the
+      # Chairs' notification settings.
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/lunch_ci
+      BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
+      BETTER_AUTH_URL: http://localhost:4321
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # ESLint and Prettier keep a content-hashed cache, so an unchanged file is not checked again.
+      # The flags live here, not in package.json, so `pnpm lint` and `pnpm format:check` behave as before locally.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            node_modules/.cache/eslint
+            node_modules/.cache/prettier
+          key: lint-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', '.prettierrc*', 'package.json') }}-${{ github.sha }}
+          restore-keys: |
+            lint-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', '.prettierrc*', 'package.json') }}-
+      - run: pnpm lint --cache --cache-strategy content --cache-location node_modules/.cache/eslint/
+      - run: pnpm format:check --cache --cache-strategy content
+      - run: pnpm knip
+      - run: pnpm test
+      - run: pnpm typecheck
+
+  # The database, the build and the browser checks.
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Chromium and its system libraries are already in this image, so there is no browser install or
+    # cache. The tag must match @playwright/test in pnpm-lock.yaml (the "Check the Playwright image"
+    # step fails if it drifts): bump both together.
+    container: mcr.microsoft.com/playwright:v1.63.0-noble
     services:
+      # Inside a container job the service is reached by its label, not localhost.
       postgres:
         image: postgres:16
         env:
           POSTGRES_PASSWORD: postgres
-        ports: ['5432:5432']
         options: >-
           --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     env:
       # Throwaway databases on the service container: the integration tests need "test" in the name.
-      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/lunch_test
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/lunch_ci
+      TEST_DATABASE_URL: postgres://postgres:postgres@postgres:5432/lunch_test
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/lunch_ci
       BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
       BETTER_AUTH_URL: http://localhost:4321
       # A Chair for pnpm check:built to sign in as (throwaway database, so these are not secrets).
@@ -49,18 +93,22 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Check the Playwright image
+        run: |
+          image=$(grep -oP 'playwright:v\K[0-9.]+(?=-noble)' .github/workflows/ci.yml)
+          installed=$(pnpm exec playwright --version | awk '{print $2}')
+          echo "image $image, @playwright/test $installed"
+          test "$image" = "$installed"
+      # The Playwright image has no psql.
+      - name: Install psql
+        run: command -v psql || (apt-get update && apt-get install -y --no-install-recommends postgresql-client)
       # Throwaway VAPID keys for this run, so the Chairs' notification settings render in check:built.
       - name: Generate VAPID keys
         run: pnpm --silent push:keys >> "$GITHUB_ENV"
-      - run: pnpm lint
-      - run: pnpm format:check
-      - run: pnpm knip
-      - run: pnpm test
-      - run: pnpm typecheck
       - name: Create databases
         run: |
-          psql postgres://postgres:postgres@localhost:5432/postgres -c 'create database lunch_test'
-          psql postgres://postgres:postgres@localhost:5432/postgres -c 'create database lunch_ci'
+          psql postgres://postgres:postgres@postgres:5432/postgres -c 'create database lunch_test'
+          psql postgres://postgres:postgres@postgres:5432/postgres -c 'create database lunch_ci'
       - run: pnpm test:db
       # The build prerenders from the database: migrate it and load the site content first, so every
       # public page (venue pages included) is built, then seed the Chair and the test member the smoke
@@ -69,26 +117,19 @@ jobs:
       - run: pnpm db:import
       - run: pnpm db:seed
       - run: pnpm db:seed:member
+      # Astro's image and asset cache: a rebuild of an unchanged src/ and public/ reuses it.
+      - uses: actions/cache@v4
+        with:
+          path: node_modules/.astro
+          key: astro-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**', 'public/**') }}
+          restore-keys: |
+            astro-${{ hashFiles('pnpm-lock.yaml') }}-
       - name: Build, failing on CSP warnings
         run: |
           set -o pipefail
           pnpm build 2>&1 | tee build.log
           ! grep -F '[WARN] [csp]' build.log
       - run: pnpm check:bundle
-      - name: Get the Playwright version
-        id: playwright
-        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
-        id: playwright-cache
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      - name: Install Chromium
-        run: pnpm exec playwright install --with-deps chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-      - name: Install Chromium's system libraries
-        run: pnpm exec playwright install-deps chromium
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
       # Serves .vercel/output and drives it in a browser: fails on any CSP violation or page error.
       - run: pnpm check:built
       # The same build served with the members flag on (#136): the member pages render on demand,
@@ -105,3 +146,17 @@ jobs:
           name: playwright-traces
           path: test-results
           retention-days: 7
+
+  # The required status check. Always runs, and fails unless both jobs succeeded: a skipped or
+  # cancelled job reads as "skipped"/"cancelled", which must not pass.
+  checks:
+    if: always()
+    needs: [static, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Require every job to have succeeded
+        run: |
+          echo "static: ${{ needs.static.result }}"
+          echo "e2e: ${{ needs.e2e.result }}"
+          test "${{ needs.static.result }}" = success && test "${{ needs.e2e.result }}" = success
