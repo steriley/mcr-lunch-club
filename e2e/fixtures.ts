@@ -1,4 +1,5 @@
 import { expect, test as base, type Page } from '@playwright/test';
+import pg from 'pg';
 
 export interface Violation {
   directive: string;
@@ -70,6 +71,26 @@ export async function visit(
   if (settle) await page.waitForLoadState('networkidle');
 }
 
+/**
+ * Better Auth allows five password sign-ins a minute and keeps the count in the database. Tests sign in
+ * one after another, so before each sign-in the count is cleared, as the database tests do, instead of
+ * waiting out the minute. Only against the build under test and a throwaway database: never a deployment
+ * (SMOKE_BASE_URL), and outside CI only a local one. Elsewhere the 429 wait in the sign-in helpers still applies.
+ */
+async function resetSignInRateLimit(): Promise<void> {
+  const url = process.env.DATABASE_URL;
+  if (!url || process.env.SMOKE_BASE_URL) return;
+  const local = ['localhost', '127.0.0.1', '::1', '[::1]'].includes(new URL(url).hostname);
+  if (!local && !process.env.CI) return;
+  const client = new pg.Client({ connectionString: url });
+  await client.connect();
+  try {
+    await client.query('delete from rate_limit');
+  } finally {
+    await client.end();
+  }
+}
+
 export const chairEmail = process.env.SMOKE_CHAIR_EMAIL ?? process.env.SEED_CHAIR_EMAIL;
 export const chairPassword = process.env.SMOKE_CHAIR_PASSWORD ?? process.env.SEED_CHAIR_PASSWORD;
 
@@ -83,8 +104,9 @@ export async function signIn(page: Page) {
   await page.waitForLoadState('networkidle');
   await page.getByLabel(/email/i).fill(chairEmail!);
   await page.getByLabel(/password/i).fill(chairPassword!);
-  // Better Auth allows a few sign-ins per ten seconds, and several tests sign in back to back:
-  // when it answers 429, wait out the window and press again.
+  // When the count could not be cleared (see resetSignInRateLimit) and Better Auth answers 429, wait
+  // out the window and press again.
+  await resetSignInRateLimit();
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const answer = page.waitForResponse((response) => response.url().includes('/api/auth/sign-in'));
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
@@ -101,10 +123,11 @@ export const memberEmail = process.env.SEED_MEMBER_EMAIL ?? 'member@lunch.test';
 const memberPassword = process.env.SEED_MEMBER_PASSWORD ?? 'local-member-password';
 
 /**
- * Signs in as the seeded test member with its local-only password (#136), waiting out Better
- * Auth's sign-in rate limit like `signIn`. Members have no password on any deployment.
+ * Signs in as the seeded test member with its local-only password (#136), clearing or waiting out
+ * Better Auth's sign-in rate limit like `signIn`. Members have no password on any deployment.
  */
 export async function signInAsMember(page: Page, baseURL: string) {
+  await resetSignInRateLimit();
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const response = await page.request.post('/api/auth/sign-in/email', {
       data: { email: memberEmail, password: memberPassword },
